@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# expects 'create-controller' to have been run first so that the controller VM is initialized and available
+# expects 'clone-vm' to have been run first so that the controller VM is initialized and available
 # todo don't pass kubernetes_cert/key since this generates them
 # todo don't pass template-vmname since this doesn;t do the clone
 # todo consider --no-gen-cluster-certs
@@ -8,7 +8,9 @@
 set -e
 
 long_opts=template-vmname:,controller-hostname:,controller-ram:,controller-cpus:,vboxdir:,priv-key:,\
-etcd-download:,etcd-gzip:,kube-apiserver-download:,kube-apiserver-binary:,kubernetes-cert:,kubernetes-key:,\
+etcd-download:,etcd-gzip:,kube-apiserver-download:,kube-apiserver-binary:,\
+kube-controller-manager-download:,kube-controller-manager-binary:,\
+kubernetes-cert:,kubernetes-key:,\
 ca-cert:,ca-key:
 script_name=$(basename "$0")
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -24,6 +26,8 @@ etcd_download=
 etcd_gzip=
 kube_apiserver_download=
 kube_apiserver_binary=
+kube_controller_manager_download=
+kube_controller_manager_binary=
 kubernetes_cert=
 kubernetes_key=
 ca_cert=
@@ -91,6 +95,14 @@ function parse_args() {
         kube_apiserver_binary=$(opt_val "$2")
         shift 2
         ;;
+      --kube-controller-manager-download)
+        kube_controller_manager_download=$(opt_val "$2")
+        shift 2
+        ;;
+      --kube-controller-manager-binary)
+        kube_controller_manager_binary=$(opt_val "$2")
+        shift 2
+        ;;
       --kubernetes-cert)
         kubernetes_cert=$(opt_val "$2")
         shift 2
@@ -129,6 +141,8 @@ echo "etcd_download=$etcd_download"
 echo "etcd_gzip=$etcd_gzip"
 echo "kube_apiserver_download=$kube_apiserver_download"
 echo "kube_apiserver_binary=$kube_apiserver_binary"
+echo "kube_controller_manager_download=$kube_controller_manager_download"
+echo "kube_controller_manager_binary=$kube_controller_manager_binary"
 echo "kubernetes_cert=$kubernetes_cert"
 echo "kubernetes_key=$kubernetes_key"
 echo "ca_cert=$ca_cert"
@@ -168,7 +182,7 @@ $etcd_dir/install-etcd\
 
 echo "Installing kube-apiserver into controller"
 kube_apiserver_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/../control-plane/kube_apiserver" && pwd)"
-$kube_apiserver/install-kube_apiserver\
+$kube_apiserver_dir/install-kube_apiserver\
  --priv-key=$priv_key\
  --controller-ip=$controller_ip\
  --controller-hostname=$controller_hostname\
@@ -180,6 +194,17 @@ $kube_apiserver/install-kube_apiserver\
  --ca-key=$ca_key
 
 # kube-controller-manager
+kube_controller_manager_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/../control-plane/kube_kube_controller_manager" && pwd)"
+"$script_dir"/install-kube_kube_controller_manager\
+ --priv-key=$priv_key\
+ --controller-ip=$controller_ip\
+ --controller-hostname=$controller_hostname\
+ --kube-controller-manager-download=https://storage.googleapis.com/kubernetes-release/release/v1.20.1/bin/linux/amd64/kube-controller-manager\
+ --kube-controller-manager-binary=/home/eace/k8sbyhand/newroot/binaries\
+ --kubernetes-cert=/home/eace/k8sbyhand/newroot/tls/kubernetes.pem\
+ --kubernetes-key=/home/eace/k8sbyhand/newroot/tls/kubernetes-key.pem\
+ --ca-cert=/home/eace/k8sbyhand/newroot/tls/ca.pem\
+ --ca-key=/home/eace/k8sbyhand/newroot/tls/ca-key.pem
 
 # kube-scheduler
 

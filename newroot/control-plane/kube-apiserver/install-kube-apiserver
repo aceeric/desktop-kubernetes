@@ -105,7 +105,7 @@ else
   echo "No URL provided - skipping download and using provided binary"
 fi
 
-echo "Copying to controller"
+echo "Copying binary to controller"
 scp -i $priv_key $kube_apiserver_binary_actual root@$controller_ip:/usr/local/bin/
 exit
 

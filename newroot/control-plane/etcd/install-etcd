@@ -114,10 +114,8 @@ echo "Starting etcd service"
 ssh -i "$priv_key" root@$controller_ip "systemctl daemon-reload && systemctl enable etcd && systemctl start etcd"
 
 echo "Verifying etcd is running"
-if ! ssh -i "$priv_key" root@$controller_ip\
- "etcdctl --cert=/etc/etcd/kubernetes.pem --key=/etc/etcd/kubernetes-key.pem --cacert=/etc/etcd/ca.pem member list"; then
-  echo "Error: unable to verify installation of etcd on the controller"
-  exit 1
-fi
+
+ssh -i "$priv_key" root@$controller_ip\
+ "etcdctl --cert=/etc/etcd/kubernetes.pem --key=/etc/etcd/kubernetes-key.pem --cacert=/etc/etcd/ca.pem member list"
 
 echo "No errors detected with etcd installation"

@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+# clones the passed template VM into the a new VM with the passed characteristics (VM name, mem, etc.)
 set -e
 
 long_opts=template-vmname:,clone-vmname:,clone-ram:,clone-cpus:,vboxdir:
@@ -86,6 +87,7 @@ VBoxManage startvm $clone_vmname
 echo "Getting VM IP cloned VM $clone_vmname"
 ip=$("$script_dir"/get-vm-ip $clone_vmname)
 
+# set the hostname = the VM name
 # run the SSH cmd in the background (on the desktop) or SSH will hang when the machine is powered off
 echo "Changing the hostname for VM $clone_vmname"
 kickstart_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/../kickstart" && pwd)"

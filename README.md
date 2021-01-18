@@ -9,13 +9,15 @@ This project automates provisioning of a desktop Kubernetes cluster using Virtua
 | Hightower | Is presented intentionally as a series of manual labs to get hands-on experience with Kubernetes installation as a learning exercise | Is automated - brings up a desktop Kubernetes cluster with one controller and multiple workers with a single Bash shell script invocation |
 | Hightower | Uses [Google Cloud Platform](https://cloud.google.com/) to provision the compute resources | Provisions VMs on the desktop using VirtualBox |
 | Hightower | Uses Ubuntu | Uses CentOS 8 (for now) |
-| Hightower | Structures the tasks by related activities, e.g. creates all the certs, then generates configuration files, etc. | Structures the tasks more around the individual Kubernetes components where possible, because I was interested in delineating the specific dependencies and requirements for each component |
+| Hightower | Structures the installation and configuration tasks by related activities, e.g. creates all the certs, then generates configuration files, etc. | Structures the tasks more around the individual Kubernetes components where possible, because I was interested in delineating the specific dependencies and requirements for each component |
 | Hightower | Hand-generates the intra-node routing | Just uses the built-in routing that comes free with a VirtualBox bridged network - which is the network type I selected for this project because it provides host-to-guest, guest-to-guest, and guest-to-internet right out of the box |
 | Hightower | Implements Pod networking via the bridge network plugin from [containernetworking](https://github.com/containernetworking) | Per Serdar's variant, uses the kube-router from [cloudnativelabs](https://github.com/cloudnativelabs). I couldn't get the containernetworking plugin working on CentOS due to my limited understanding of Linux networking. The Kube Router says it "just works" and that was indeed my experience |
 | Hightower | Uses Cloudflare [cfssl](https://github.com/cloudflare/cfssl) to generate the cluster certs | Uses openssl since it is almost universally available - I was interested to see if openssl introduced any issues as compared to cfssl - and openssl seems to me to work just fine |
 | Serdar | Leaves provisioning of the VMs to you | Automates provisioning of the VMS. I was interested to get some experience with the `VBoxManage` utility and CentOS [Kickstart](https://docs.centos.org/en-US/centos/install-guide/Kickstart2/) for unattended OS installation. The script creates a template VM, and then clones it for each of the the cluster nodes. I also needed the VirtualBox Guest Additions, and came up with a way to automate that installation. The Guest Additions provide the ability to get the IP address from a VM. In VirtualBox bridged networking, the IP is assigned by your desktop's DHCP functionality so this is important |
 | Serdar | Disables the firewall on CentOS | Leaves the firewall running in the OS and configures the rules to support the requirements of the Kubernetes components |
 
+
+TODO LICENCING / ATTRIBUTION ETC.!!!
 
 
 another variant: https://github.com/bserdar/kubernetes-the-hard-way/blob/master/docs/02-client-tools.md
