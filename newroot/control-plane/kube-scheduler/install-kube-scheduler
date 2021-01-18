@@ -1,0 +1,154 @@
+#!/usr/bin/env bash
+
+# todo check no unused args (e.g. kubernetes_cert/key)
+set -e
+
+long_opts=priv-key:,controller-ip:,controller-hostname:,kube-scheduler-download:,kube-scheduler-binary:,kubernetes-cert:,kubernetes-key:,ca-cert:,ca-key:
+script_name=$(basename "$0")
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+priv_key=
+controller_ip=
+controller_hostname=
+kube_scheduler_download=
+kube_scheduler_binary=
+kubernetes_cert=
+kubernetes_key=
+ca_cert=
+ca_key=
+
+function opt_val() {
+  opt="$1"
+  if [[ "$opt" == =* ]]; then
+    echo "${opt:1}"
+  else
+    echo "$opt"
+  fi
+}
+
+function parse_args() {
+  if [[ "$#" -eq 0 ]]; then
+    echo "no args provided"
+    exit 1
+  fi
+  local parsed
+  parsed=$(getopt --options "" --longoptions $long_opts -n $script_name -- "$@")
+  eval set -- "$parsed"
+  while true; do
+    case "$1" in
+	    --priv-key)
+        priv_key=$(opt_val "$2")
+        shift 2
+        ;;
+	    --controller-ip)
+        controller_ip=$(opt_val "$2")
+        shift 2
+        ;;
+      --controller-hostname)
+        controller_hostname=$(opt_val "$2")
+        shift 2
+        ;;
+      --kube-scheduler-download)
+        kube_scheduler_download=$(opt_val "$2")
+        shift 2
+        ;;
+      --kube-scheduler-binary)
+        kube_scheduler_binary=$(opt_val "$2")
+        shift 2
+        ;;
+      --kubernetes-cert)
+        kubernetes_cert=$(opt_val "$2")
+        shift 2
+        ;;
+      --kubernetes-key)
+        kubernetes_key=$(opt_val "$2")
+        shift 2
+        ;;
+      --ca-cert)
+        ca_cert=$(opt_val "$2")
+        shift 2
+        ;;
+      --ca-key)
+        ca_key=$(opt_val "$2")
+        shift 2
+        ;;
+      --)
+        shift
+        break
+        ;;
+    esac
+  done
+}
+
+parse_args "$@"
+# todo validate args
+
+kube_scheduler_binary_actual="$($script_dir/../../scripts/make-download-path\
+ --download-url=$kube_scheduler_download --download-path=$kube_scheduler_binary)"
+
+# debug
+#echo "priv_key=$priv_key"
+#echo "controller_ip=$controller_ip"
+#echo "controller_hostname=$controller_hostname"
+#echo "kube_scheduler_download=$kube_scheduler_download"
+#echo "kube_scheduler_binary=$kube_scheduler_binary"
+#echo "kube_scheduler_binary_actual=$kube_scheduler_binary_actual"
+#echo "kubernetes_cert=$kubernetes_cert"
+#echo "kubernetes_key=$kubernetes_key"
+#echo "ca_cert=$ca_cert"
+#echo "ca_key=$ca_key"
+
+if [[ ! -z "$kube_scheduler_download" ]]; then
+  echo "Downloading kube-scheduler binary"
+  $script_dir/../../scripts/download-obj --url="$kube_scheduler_download" --dest="$kube_scheduler_binary_actual"
+  chmod +x $kube_scheduler_binary_actual
+else
+  echo "No URL provided - skipping download and using provided binary"
+fi
+
+echo "Copying kube-scheduler binary to controller VM"
+scp -i $priv_key $kube_scheduler_binary_actual root@$controller_ip:/usr/local/bin/
+
+echo "Generating TLS material for kube-scheduler"
+openssl req -newkey rsa:2048 -nodes -keyout $script_dir/kube-scheduler-key.pem\
+ -subj "/CN=system:kube-scheduler" -out $script_dir/kube-scheduler.csr
+openssl x509 -req -days 10000 -in $script_dir/kube-scheduler.csr -CA $ca_cert -CAkey $ca_key\
+ -CAcreateserial -sha256 -out $script_dir/kube-scheduler.pem
+# cleanup
+rm -f $script_dir/kube-scheduler.csr
+
+echo "Generating a kubeconfig file for the kube-scheduler service"
+kubectl config set-cluster kubernetes \
+--certificate-authority=$ca_cert \
+--embed-certs=true \
+--server=https://$controller_ip:6443 \
+--kubeconfig=$script_dir/kube-scheduler.kubeconfig
+
+kubectl config set-credentials system:kube-scheduler \
+--client-certificate=$script_dir/kube-scheduler.pem \
+--client-key=$script_dir/kube-scheduler-key.pem \
+--embed-certs=true \
+--kubeconfig=$script_dir/kube-scheduler.kubeconfig
+
+kubectl config set-context default \
+--cluster=kubernetes \
+--user=system:kube-scheduler \
+--kubeconfig=$script_dir/kube-scheduler.kubeconfig
+
+kubectl config use-context default --kubeconfig=$script_dir/kube-scheduler.kubeconfig
+
+echo "Copying kubeconfig file to controller VM"
+ssh -i "$priv_key" root@$controller_ip "mkdir -p /var/lib/kubernetes /etc/kubernetes/config"
+scp -i $priv_key $script_dir/kube-scheduler.kubeconfig root@$controller_ip:/var/lib/kubernetes/
+scp -i $priv_key $script_dir/kube-scheduler.yaml root@$controller_ip:/etc/kubernetes/config/
+
+echo "Copying kube-scheduler service file to controller VM"
+scp -i $priv_key $script_dir/kube-scheduler.service root@$controller_ip:/etc/systemd/system/
+
+echo "Starting kube-scheduler service"
+ssh -i "$priv_key" root@$controller_ip "systemctl daemon-reload && systemctl enable kube-scheduler && systemctl start kube-scheduler"
+
+echo "Verifying kube-scheduler is running"
+ssh -i "$priv_key" root@$controller_ip "systemctl is-active --quiet kube-scheduler"
+
+echo "No errors detected with kube-scheduler installation"

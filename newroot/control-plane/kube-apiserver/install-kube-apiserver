@@ -83,7 +83,7 @@ parse_args "$@"
 # todo validate args
 
 kube_apiserver_binary_actual="$($script_dir/../../scripts/make-download-path\
- --download-url=""$kube_apiserver_download"" --download-path=""$kube_apiserver_binary"")"
+ --download-url=$kube_apiserver_download --download-path=$kube_apiserver_binary)"
 
 # debug
 #echo "priv_key=$priv_key"

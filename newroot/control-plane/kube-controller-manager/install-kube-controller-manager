@@ -84,7 +84,7 @@ parse_args "$@"
 # todo validate args
 
 kube_controller_manager_binary_actual="$($script_dir/../../scripts/make-download-path\
- --download-url=""$kube_controller_manager_download"" --download-path=""$kube_controller_manager_binary"")"
+ --download-url=$kube_controller_manager_download --download-path=$kube_controller_manager_binary)"
 
 # debug
 #echo "priv_key=$priv_key"

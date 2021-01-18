@@ -8,3 +8,4 @@
 *.iso
 id_ed25519*
 **/binaries
+*.kubeconfig

@@ -1,16 +1,22 @@
 #!/usr/bin/env bash
 
-script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/../scripts" && pwd)"
-"$script_dir"/configure-controller\
+proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+$proj_root/scripts/configure-controller\
  --template-vmname=bingo\
  --controller-hostname=doc\
  --controller-ram=4096\
  --controller-cpus=2\
  --vboxdir=/sdb1/virtualbox\
- --priv-key=/home/eace/k8sbyhand/newroot/kickstart/id_ed25519\
+ --priv-key=$proj_root/kickstart/id_ed25519\
  --etcd-download=\
- --etcd-gzip=/home/eace/k8sbyhand/newroot/binaries/etcd-v3.4.14-linux-amd64.tar.gz\
- --kubernetes-cert=/home/eace/k8sbyhand/newroot/tls/kubernetes.pem\
- --kubernetes-key=/home/eace/k8sbyhand/newroot/tls/kubernetes-key.pem\
- --ca-cert=/home/eace/k8sbyhand/newroot/tls/ca.pem\
- --ca-key=/home/eace/k8sbyhand/newroot/tls/ca-key.pem
+ --etcd-gzip=$proj_root/binaries/etcd-v3.4.14-linux-amd64.tar.gz\
+ --kube-apiserver-download=\
+ --kube-apiserver-binary=$proj_root/binaries/kube-apiserver\
+ --kube-controller-manager-download=\
+ --kube-controller-manager-binary=$proj_root/binaries/kube-controller-manager\
+ --kube-scheduler-download=\
+ --kube-scheduler-binary=$proj_root/binaries/kube-scheduler\
+ --kubernetes-cert=$proj_root/tls/kubernetes.pem\
+ --kubernetes-key=$proj_root/tls/kubernetes-key.pem\
+ --ca-cert=$proj_root/tls/ca.pem\
+ --ca-key=$proj_root/tls/ca-key.pem

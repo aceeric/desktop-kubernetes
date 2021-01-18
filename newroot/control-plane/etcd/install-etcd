@@ -78,7 +78,7 @@ parse_args "$@"
 # todo validate args
 
 etcd_gzip_actual="$($script_dir/../../scripts/make-download-path\
- --download-url=""$etcd_download"" --download-path=""$etcd_gzip"")"
+ --download-url=$etcd_download --download-path=$etcd_gzip)"
 
 # debug
 #echo "priv_key=$priv_key"

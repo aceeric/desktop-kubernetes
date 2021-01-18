@@ -12,28 +12,28 @@ if which openssl &>/dev/null; then
   openssl_version=$(openssl version | awk '{print $2}')
   [[ $openssl_version == "$tested_openssl_version" ]] && openssl_ok=Yes || { openssl_ok=No; mismatch=1; }
 else
-  openssl_version=not found
+  openssl_version="not found"
 fi
 
 if which genisoimage &>/dev/null; then
   genisoimage_version=$(genisoimage --version | awk '{print $2}')
   [[ $genisoimage_version == "$tested_genisoimage_version" ]] && genisoimage_ok=Yes || { genisoimage_ok=No; mismatch=1; }
 else
-  genisoimage_version=not found
+  genisoimage_version="not found"
 fi
 
 if which vboxmanage &>/dev/null; then
   vboxmanage_version=$(vboxmanage --version | cut -d_ -f1)
   [[ $vboxmanage_version == "$tested_vboxmanage_version" ]] && vboxmanage_ok=Yes || { vboxmanage_ok=No; mismatch=1; }
 else
-  vboxmanage_version=not found
+  vboxmanage_version="not found"
 fi
 
 if which ssh &>/dev/null; then
   ssh_version=$(ssh -V 2> >(awk '{print $1}'))
   [[ $ssh_version == "$tested_ssh_version" ]] && ssh_ok=Yes || { ssh_ok=No; mismatch=1; }
 else
-  ssh_version=not found
+  ssh_version="not found"
 fi
 
 if which lsb_release &>/dev/null; then
@@ -47,12 +47,12 @@ if which kubectl &>/dev/null; then
   kubectl_version=$(kubectl version --short --client | cut -d: -f2- | xargs)
   [[ $kubectl_version == "$tested_kubectl_version" ]] && kubectl_ok=Yes || { kubectl_ok=No; mismatch=1; }
 else
-  kubectl_version=not found
+  kubectl_version="not found"
 fi
 
 cat <<EOF | column -t -s "|"
-component|tested|found|matches
----------|--------|-----|-------
+component|tested|found|matches?
+---------|------|-----|--------
 openssl|$tested_openssl_version|$openssl_version|$openssl_ok
 openssh|$tested_ssh_version|$ssh_version|$ssh_ok
 genisoimage|$tested_genisoimage_version|$genisoimage_version|$genisoimage_ok
