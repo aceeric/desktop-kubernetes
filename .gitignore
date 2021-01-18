@@ -1,0 +1,10 @@
+*.tgz
+*.gz
+.idea
+*.iml
+*.pem
+*.csr
+*.srl
+*.iso
+id_ed25519*
+**/binaries

@@ -1,0 +1,106 @@
+
+
+# HERE - RUN EACH SERVICE FROM THE CMDLINE TO MAKE SURE IT RUNS!!
+
+REMOVED (DEPRECATED)
+--kubelet-https=true \
+ADDED (REQUIRED)
+--service-account-signing-key-file=/var/lib/kubernetes/service-account-key.pem \
+--service-account-issuer="https://kubernetes.default.svc" \
+
+
+
+kube-apiserver \
+--advertise-address=192.168.0.46 \
+--allow-privileged=true \
+--apiserver-count=1 \
+--audit-log-maxage=30 \
+--audit-log-maxbackup=3 \
+--audit-log-maxsize=10 \
+--audit-log-path=/var/log/audit.log \
+--authorization-mode=Node,RBAC \
+--bind-address=0.0.0.0 \
+--client-ca-file=/var/lib/kubernetes/ca.pem \
+--enable-admission-plugins=NamespaceLifecycle,NodeRestriction,LimitRanger,ServiceAccount,DefaultStorageClass,ResourceQuota \
+--etcd-cafile=/var/lib/kubernetes/ca.pem \
+--etcd-certfile=/var/lib/kubernetes/kubernetes.pem \
+--etcd-keyfile=/var/lib/kubernetes/kubernetes-key.pem \
+--etcd-servers=https://192.168.0.46:2379 \
+--event-ttl=1h \
+--encryption-provider-config=/var/lib/kubernetes/encryption-config.yaml \
+--kubelet-certificate-authority=/var/lib/kubernetes/ca.pem \
+--kubelet-client-certificate=/var/lib/kubernetes/kubernetes.pem \
+--kubelet-client-key=/var/lib/kubernetes/kubernetes-key.pem \
+--runtime-config='api/all=true' \
+--service-account-key-file=/var/lib/kubernetes/service-account.pem \
+--service-account-signing-key-file=/var/lib/kubernetes/service-account-key.pem \
+--service-account-issuer="https://kubernetes.default.svc" \
+--service-cluster-ip-range=10.32.0.0/24 \
+--service-node-port-range=30000-32767 \
+--tls-cert-file=/var/lib/kubernetes/kubernetes.pem \
+--tls-private-key-file=/var/lib/kubernetes/kubernetes-key.pem \
+--v=2
+
+## FROM THE VM
+$ curl --cacert /var/lib/kubernetes/ca.pem https://192.168.0.46:6443/version
+{
+  "major": "1",
+  "minor": "20",
+  "gitVersion": "v1.20.1",
+  "gitCommit": "c4d752765b3bbac2237bf87cf0b1c2e307844666",
+  "gitTreeState": "clean",
+  "buildDate": "2020-12-18T12:00:47Z",
+  "goVersion": "go1.15.5",
+  "compiler": "gc",
+  "platform": "linux/amd64"
+}
+
+## SUCCESS!!
+
+## also in the VM
+CERT=admin && CERTDIR=/var/lib/kubernetes &&\
+ curl -cert $CERTDIR/$CERT.pem --key $CERTDIR/$CERT-key.pem --cacert $CERTDIR/ca.pem https://192.168.0.46:6443/version
+
+kubectl --kubeconfig=/var/lib/kubernetes/kube-controller-manager.kubeconfig get componentstatuses
+
+# WORKS
+
+
+## FROM THE DESKTOP (after firewall-cmd enabled the port -- servers/notes)
+# https://medium.com/platformer-blog/kubernetes-on-centos-7-with-firewalld-e7b53c1316af
+$ PROJROOT=/home/eace/k8sbyhand &&\
+  curl --cacert $PROJROOT/tls/ca.pem https://192.168.0.46:6443/version
+
+SUCCESS!!!
+
+AND...
+
+CERT=admin &&\
+ curl -cert $PROJROOT/tls/$CERT.pem --key $PROJROOT/tls/$CERT-key.pem --cacert $PROJROOT/tls/ca.pem https://192.168.0.46:6443/version
+
+SUCCESS!!!
+
+$ kubectl --kubeconfig=$PROJROOT/kubernetes-config-files/admin.kubeconfig get componentstatuses
+Error from server (Forbidden): componentstatuses is forbidden: User "admin" cannot list resource "componentstatuses" in API group "" at the cluster scope
+
+SUCCESS!!! (THE API SERVER IS TALKING TO KUBECTL)
+
+
+JUNK>>>>
+
+
+# per https://michaelheap.com/curl-58-unable-to-set-private-key-file-server-key-type-pem/
+
+$ openssl x509 -noout -modulus -in $PROJROOT/tls/admin.pem | openssl md5 &&
+  openssl rsa -noout -modulus -in $PROJROOT/tls/admin-key.pem | openssl md5
+
+$ openssl x509 -noout -modulus -in $PROJROOT/tls/kube-controller-manager.pem | openssl md5 &&
+  openssl rsa -noout -modulus -in $PROJROOT/tls/kube-controller-manager-key.pem | openssl md5
+
+# If the two values don’t match, you’re not using the correct combination.
+
+## ALTERNATE WAY NOTSURE ITS AS GOOD AS THE OTHER
+## https://www.sslshopper.com/certificate-key-matcher.html
+openssl pkey -in $PROJROOT/tls/admin-key.pem -pubout -outform pem | sha256sum &&\
+openssl x509 -in $PROJROOT/tls/admin.pem -pubkey -noout -outform pem | sha256sum &&\
+openssl req -in $PROJROOT/tls/admin.csr -pubkey -noout -outform pem | sha256sum

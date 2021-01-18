@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/../scripts" && pwd)"
+"$script_dir"/create-vm\
+ --template-vmname=bingo\
+ --centos-iso-path=/home/eace/k8sbyhand/newroot/media/CentOS-8.2.2004-x86_64-dvd1.iso\
+ --kickstart-iso-path=/home/eace/k8sbyhand/newroot/media/kickstart.iso\
+ --host-network-interface=enp0s31f6\
+ --vboxdir=/sdb1/virtualbox

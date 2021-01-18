@@ -1,0 +1,45 @@
+steps to set up a local kubernetes cluster
+
+1) Download Centos ISO
+2) Create RHEL Vbox VM
+   > TODO SCRIPTED
+3) Go through setup process - create user 'user'
+   > TODO SCRIPTED anaconda
+4) Install Vbox guest additions - would not need to do for headless!
+5) vbox networking - bridged
+6) kubernetes HERE!
+
+
+PREP - IN THE VM
+----------------
+$ mkdir k8sinstall && cd k8sinstall
+
+Install kubectl
+does this need to be done on the server??
+-----------------------------------------
+$ curl -LO "https://storage.googleapis.com/kubernetes-release/release/$(curl -s https://storage.googleapis.com/kubernetes-release/release/stable.txt)/bin/linux/amd64/kubectl"
+$ chmod +x ./kubectl &&
+  sudo mv ./kubectl /usr/local/bin/kubectl &&
+  kubectl version --client
+
+TOP LEVEL THINGS
+
+DONE
+1 - ssh without password
+2 - CA
+3 - api server cert, key
+4 - etc download, copy binaries, configure, run as service, verify
+
+NEXT - need certs and kube configs for all :
+- kubelet
+- kube-proxy
+- kube-controller-manager
+- kube-scheduler
+- admin user kube config only
+
+
+TO DO (biggies)
+1 - passwordless ssh in main VM then clone
+2 - use alphine docker file to run all setups from
+3 - ubuntu automated install
+4 - script creation of the VM

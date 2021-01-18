@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+# this test does not provide download paths so - they go to media
+./kuvbxctl\
+ --create-template-vm\
+ --template-vmname=foobar\
+ --centos-iso-download=http://mirror.umd.edu/centos/8.3.2011/isos/x86_64/CentOS-8.2.2004-x86_64-dvd1.iso\
+ --guest-additions-download=http://download.virtualbox.org/virtualbox/6.1.14/VBoxGuestAdditions_6.1.14.iso\
+ --host-network-interface=enp0s31f6\
+ --vboxdir=/sdb1/virtualbox/
+
+# TEST: http://mirror.umd.edu/centos/8.3.2011/isos/x86_64/CentOS-8.3.2011-x86_64-boot.iso\
+# WHAT I HAVE NOW: http://mirror.umd.edu/centos/8.3.2011/isos/x86_64/CentOS-8.2.2004-x86_64-dvd1.iso\

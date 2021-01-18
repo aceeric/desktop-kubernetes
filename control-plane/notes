@@ -1,0 +1,76 @@
+
+# control plane
+
+$ TAG=v1.20.1 &&\
+  for binary in kube-apiserver kube-controller-manager kube-scheduler; do\
+    curl -s https://storage.googleapis.com/kubernetes-release/release/$TAG/bin/linux/amd64/$binary -o $binary &&\
+    chmod +x $binary && scp -i $PROJROOT/servers/id_rsa $binary root@192.168.0.46:/usr/local/bin/;\
+  done
+
+# TODO encryption-config.yaml doesnt exist yet?
+# TODO why copy kubernetes.pem to /root/kubernetes and /var/lib/kubernetes?
+
+# Configure the Kubernetes API Server
+$ ssh -i $PROJROOT/servers/id_rsa root@192.168.0.46 "mkdir -p mkdir -p /var/lib/kubernetes/"
+$ for f in ca.pem ca-key.pem kubernetes-key.pem kubernetes.pem service-account-key.pem service-account.pem; do\
+    scp -i $PROJROOT/servers/id_rsa $PROJROOT/tls/$f root@192.168.0.46:/var/lib/kubernetes/;\
+  done
+scp -i $PROJROOT/servers/id_rsa $PROJROOT/encryption-keys/encryption-config.yaml root@192.168.0.46:/var/lib/kubernetes/
+
+# Create the kube-apiserver.service systemd unit file
+$ CONTROLLER_IP=192.168.0.46 && \
+  sed "s/CONTROLLER_IP/$CONTROLLER_IP/" $PROJROOT/control-plane/kube-apiserver.service \
+  | ssh -i $PROJROOT/servers/id_rsa root@192.168.0.46 "cat > /etc/systemd/system/kube-apiserver.service"
+
+# Configure the Kubernetes Controller Manager
+# TODO not convinced --cluster-cidr=10.200.0.0/16 will work!!!
+
+# TODO we should not copy kube-controller-manager.kubeconfig in two locations!
+scp -i $PROJROOT/servers/id_rsa $PROJROOT/kubernetes-config-files/kube-controller-manager.kubeconfig root@192.168.0.46:/var/lib/kubernetes/
+scp -i $PROJROOT/servers/id_rsa $PROJROOT/control-plane/kube-controller-manager.service root@192.168.0.46:/etc/systemd/system/kube-controller-manager.service
+
+# Configure the Kubernetes Scheduler
+ssh -i $PROJROOT/servers/id_rsa root@192.168.0.46 "cp /root/kubernetes/kube-scheduler.kubeconfig /var/lib/kubernetes/"
+ssh -i $PROJROOT/servers/id_rsa root@192.168.0.46 "mkdir -p /etc/kubernetes/config"
+
+scp -i $PROJROOT/servers/id_rsa $PROJROOT/control-plane/kube-scheduler.yaml root@192.168.0.46:/etc/kubernetes/config/kube-scheduler.yaml
+scp -i $PROJROOT/servers/id_rsa $PROJROOT/control-plane/kube-scheduler.service root@192.168.0.46:/etc/systemd/system/kube-scheduler.service
+
+# Start the Controller Services
+
+$ ssh -i $PROJROOT/servers/id_rsa root@192.168.0.46 "systemctl daemon-reload && \
+systemctl enable kube-apiserver kube-controller-manager kube-scheduler &&\
+systemctl start kube-apiserver kube-controller-manager kube-scheduler"
+
+
+# CHECK THE LOGS !!!
+journalctl -u kube-apiserver.service
+
+
+### WED NITE HERE -- LOOKS LIKE SOME STEPS MISSED FROM: /home/eace/github/kubernetes-the-hard-way/docs/08-bootstrapping-kubernetes-controllers.md
+
+## TODO NGINX HEALTH CHECKS
+
+## RBAC for Kubelet Authorization
+## this has to be done once the control plane is completely up!
+# configure RBAC permissions to allow the Kubernetes API Server to access the Kubelet API on each worker node
+# only need to be run once from one of the controller nodes
+# The Kubernetes API Server authenticates to the Kubelet as the `kubernetes` user using the client certificate
+#   as defined by the `--kubelet-client-certificate` flag.
+#   SEE: tls/csr.conf !!!
+
+PROJROOT=/home/eace/k8sbyhand &&\
+ kubectl apply -f $PROJROOT/control-plane/system-kube-apiserver-to-kubelet.yaml
+
+## TODO FRONTEND LOAD BALANCER
+
+
+
+
+
+
+
+
+
+
+

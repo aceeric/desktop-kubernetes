@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/../scripts" && pwd)"
+"$script_dir"/gen-cluster-tls\
+  --controller-ip=192.168.0.81\
+  --ca-cert=/home/eace/k8sbyhand/newroot/tls/ca.pem\
+  --ca-key=/home/eace/k8sbyhand/newroot/tls/ca-key.pem

@@ -1,0 +1,165 @@
+
+curl -sL https://raw.githubusercontent.com/cloudnativelabs/kube-router/master/daemonset/generic-kuberouter-all-features.yaml\
+ -o generic-kuberouter-all-features.yaml
+
+sed\
+ -e 's|"%CLUSTERCIDR%"|10.200.0.0/16|g'\
+ -e 's|%APISERVER%|https://192.168.0.46:6443|g'\
+ generic-kuberouter-all-features.yaml | kubectl apply -f -
+
+note: need to disable kube-proxy for the all features version !!!
+
+https://github.com/cloudnativelabs/kube-router/blob/master/docs/generic.md
+
+says add to kubelet config but I believe this is the default so I had omitted but will try
+
+--cni-conf-dir=/etc/cni/net.d
+
+TUE NITE:
+
+curl -sL https://raw.githubusercontent.com/cloudnativelabs/kube-router/master/daemonset/generic-kuberouter.yaml\
+ -o generic-kuberouter.yaml
+
+note:
+kubelet does not support   --allow-privileged=true \
+apiserver already has it
+
+STEPS 6:32 PM
+1) add to kube-controller-manager in cluster CONTROLLER
+--allocate-node-cidrs=true \              # ALREADY THERE
+--cluster-cidr=10.200.0.0/16 \            # ADDED
+--service-cluster-ip-range=10.32.0.0/24 \ # ADDED
+
+systemctl daemon-reload
+journalctl -fu kube-controller-manager && systemctl restart kube-controller-manager
+
+WORKER
+systemctl disable kube-proxy
+
+TERM
+kubectl delete ds -n kube-system --all
+
+WORKER
+edit kubelet /etc/systemd/system/kubelet.server
+add --cni-conf-dir=/etc/cni/net.d \
+AND CLEAR THE DIR!
+rm -f  /etc/cni/net.d/*
+systemctl daemon-reload && journalctl -fu kubelet && systemctl restart kubelet
+
+TERM
+sed\
+ -e 's|"%CLUSTERCIDR%"|10.200.0.0/16|g'\
+ -e 's|%APISERVER%|https://192.168.0.46:6443|g'\
+ generic-kuberouter-all-features.yaml | kubectl apply -f -
+
+kubectl -nkube-system delete po alpine
+kubectl apply -f /home/eace/k8sbyhand/dns-addon/pod.yaml
+
+WORKER
+/var/lib/kubelet/kubelet-config.yaml already had:
+resolvConf: "/etc/resolv.conf"
+
+NOTE CLEANUP OF POSSIBLE BAD (from prior try) ON WOPRKER
+rm -f /var/lib/kube-router/kubeconfig
+
+
+kubectl apply -f /home/eace/k8sbyhand/dns-addon/coredns.yaml
+
+kubectl -n kube-system logs coredns-75c4c67f76-q8kg6
+.:53
+[INFO] plugin/reload: Running configuration MD5 = b0741fcbd8bd79287446297caa87f7a1
+CoreDNS-1.8.0
+linux/amd64, go1.15.3, 054c9ae
+[ERROR] plugin/errors: 2 5461236126050605829.1674966641863166912. HINFO: read udp 10.200.0.3:59458->75.75.76.76:53: read: no route to host
+[ERROR] plugin/errors: 2 5461236126050605829.1674966641863166912. HINFO: read udp 10.200.0.3:37756->75.75.75.75:53: read: no route to host
+
+kubectl apply -f /home/eace/k8sbyhand/dns-addon/pod.yaml
+
+ ubectl -n kube-system exec -ti alpine -- nslookup kubernetes
+Server:		10.32.0.10
+Address:	10.32.0.10:53
+
+** server can't find kubernetes.cluster.local: NXDOMAIN
+** server can't find kubernetes.kube-system.svc.cluster.local: NXDOMAIN
+** server can't find kubernetes.cluster.local: NXDOMAIN
+** server can't find kubernetes.svc.cluster.local: NXDOMAIN
+** server can't find kubernetes.kube-system.svc.cluster.local: NXDOMAIN
+** server can't find kubernetes.svc.cluster.local: NXDOMAIN
+
+command terminated with exit code 1
+
+stopped/restarted firewalld in worker pod - made no difference
+
+then based on some people saying older version of busybox not working
+
+so from bserdar:
+$ kubectl run busybox --image=busybox:1.28 --command -- sleep 3600
+$ kubectl exec -n default -ti busybox -- nslookup kubernetes
+Server:    10.32.0.10
+Address 1: 10.32.0.10 kube-dns.kube-system.svc.cluster.local
+
+Name:      kubernetes
+Address 1: 10.32.0.1 kubernetes.default.svc.cluster.local
+
+WORKS BUT
+net net - disabled kube proxy and used kube router full
+don't know if this was actually required
+
+1) THIS IS IMPORTANT:https://github.com/cloudnativelabs/kube-router/blob/master/docs/generic.md
+2) --allow-privileged note above
+3) don't run kube proxy
+4) didn't do any special firewall rules?
+5) firewall-cmd --list-all-zones
+   libvirt (active)
+     target: ACCEPT
+     icmp-block-inversion: no
+     interfaces: virbr0
+     sources:
+     services: dhcp dhcpv6 dns ssh tftp
+     ports:
+     protocols: icmp ipv6-icmp
+     masquerade: no
+     forward-ports:
+     source-ports:
+     icmp-blocks:
+     rich rules:
+   	rule priority="32767" reject
+
+   public (active)
+     target: default
+     icmp-block-inversion: no
+     interfaces: enp0s3
+     sources:
+     services: cockpit dhcpv6-client ssh
+     ports: 10250/tcp 30000-32767/tcp 53/udp 53/tcp 9153/tcp
+     protocols:
+     masquerade: no
+     forward-ports:
+     source-ports:
+     icmp-blocks:
+     rich rules:
+
+SO BOTTOM LINE -------------------------------> RECOMMEND GO WITH KUBE-ROUTER AND NOT KUBE PROXY!!!
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

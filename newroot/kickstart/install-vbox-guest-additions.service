@@ -1,0 +1,12 @@
+[Unit]
+Description=Install VBox guest additions on boot
+After=default.target
+
+[Service]
+Type=simple
+RemainAfterExit=yes
+ExecStart=/usr/bin/bash /root/install-vbox-guest-additions.sh
+TimeoutStartSec=0
+
+[Install]
+WantedBy=default.target

@@ -1,0 +1,130 @@
+#!/usr/bin/env bash
+
+# Creates a Centos VM, and installs the OS using Kickstart
+# todo args: cpu / mem / storage
+
+set -e
+
+long_opts=template-vmname:,centos-iso-path:,kickstart-iso-path:,host-network-interface:,vboxdir:
+script_name=$(basename "$0")
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+template_vmname=
+centos_iso_path=
+kickstart_iso_path=
+host_network_interface=
+vboxdir=
+
+function opt_val() {
+  opt="$1"
+  if [[ "$opt" == =* ]]; then
+    echo "${opt:1}"
+  else
+    echo "$opt"
+  fi
+}
+
+function parse_args() {
+  if [[ "$#" -eq 0 ]]; then
+    echo "no args provided"
+    exit 1
+  fi
+  local parsed
+  parsed=$(getopt --options "" --longoptions $long_opts -n $script_name -- "$@")
+  eval set -- "$parsed"
+  while true; do
+    case "$1" in
+	    --template-vmname)
+        template_vmname=$(opt_val "$2")
+        shift 2
+        ;;
+      --centos-iso-path)
+        centos_iso_path=$(opt_val "$2")
+        shift 2
+        ;;
+      --kickstart-iso-path)
+        kickstart_iso_path=$(opt_val "$2")
+        shift 2
+        ;;
+      --host-network-interface)
+        host_network_interface=$(opt_val "$2")
+        shift 2
+        ;;
+      --vboxdir)
+        vboxdir=$(opt_val "$2")
+        shift 2
+        ;;
+      --)
+        shift
+        break
+        ;;
+    esac
+  done
+}
+
+parse_args "$@"
+# todo validate args
+
+# debug
+#echo "template_vmname=$template_vmname"
+#echo "centos_iso_path=$centos_iso_path"
+#echo "kickstart_iso_path=$kickstart_iso_path"
+#echo "host_network_interface=$host_network_interface"
+#echo "vboxdir=$vboxdir"
+
+VBoxManage createvm\
+ --name $template_vmname\
+ --ostype RedHat_64\
+ --register\
+ --basefolder $vboxdir
+
+VBoxManage modifyvm $template_vmname\
+ --ioapic on\
+ --cpus 2\
+ --memory 4096\
+ --vram 128\
+ --graphicscontroller vmsvga\
+ --boot1 dvd\
+ --nic1 bridged\
+ --nictype1 82540EM\
+ --cableconnected1 on\
+ --nicpromisc1 deny\
+ --macaddress1 auto\
+ --bridgeadapter1 $host_network_interface
+
+# create and attach a hard drive
+VBoxManage createhd --filename $vboxdir/$template_vmname/$template_vmname.vdi --size 20000 --format VDI
+VBoxManage storagectl $template_vmname --name SATA --add sata --controller IntelAHCI
+VBoxManage storageattach $template_vmname --storagectl SATA --port 1 --device 0 --type hdd\
+ --medium $vboxdir/$template_vmname/$template_vmname.vdi
+
+# configure and attach the Centos installation ISO
+VBoxManage storagectl $template_vmname --name IDE --add ide --controller PIIX4
+VBoxManage storageattach $template_vmname --storagectl IDE --port 1 --device 0 --type dvddrive\
+ --medium $centos_iso_path
+
+# attach the kickstart iso created by the gen-kickstart-iso script
+VBoxManage storageattach $template_vmname --storagectl IDE --port 1 --device 1 --type dvddrive\
+ --medium $kickstart_iso_path
+
+# set boot from DVD
+VBoxManage modifyvm $template_vmname --boot1 dvd --boot2 disk --boot3 none --boot4 none
+
+# start the VM which starts the unattended OS install
+echo "Starting VM to begin kickstart installation"
+VBoxManage startvm $template_vmname
+
+# wait for the VM to start - that means it's performing the installation
+"$script_dir"/wait-vm $template_vmname --started
+
+# wait for the VM to stop - that means the installation is complete because the kickstart file is
+# configured to shutdown on completion
+"$script_dir"/wait-vm $template_vmname --stopped
+
+# or the detach calls below fail...
+sleep 5s
+
+# detach Centos installation ISO and kickstart ISO
+echo "Detaching ISO files"
+VBoxManage storageattach $template_vmname --storagectl IDE --port 1 --device 0 --medium none
+VBoxManage storageattach $template_vmname --storagectl IDE --port 1 --device 1 --medium none

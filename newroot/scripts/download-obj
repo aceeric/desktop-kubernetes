@@ -1,0 +1,52 @@
+#!/usr/bin/env bash
+
+set -e
+
+url=
+dest=
+
+short_opts=u:d:
+long_opts=url:,dest:
+script_name=$(basename "$0")
+
+function opt_val() {
+  opt="$1"
+  if [[ "$opt" == =* ]]; then
+    echo "${opt:1}"
+  else
+    echo "$opt"
+  fi
+}
+
+parsed=$(getopt --options $short_opts --longoptions $long_opts -n $script_name -- "$@")
+
+if [[ "$?" -ne 0 ]]; then
+  exit 1
+fi
+
+eval set -- "$parsed"
+
+while true; do
+  case "$1" in
+    -u|--url)
+      url=$(opt_val "$2")
+      shift 2
+      ;;
+    -d|--dest)
+      dest=$(opt_val "$2")
+      shift 2
+      ;;
+    --)
+      shift
+      break
+      ;;
+  esac
+done
+
+# $# below is the left over args - and there shouldn't be any
+if [[ -z "$url" ]] || [[ -z "$dest" ]] || [[ "$#" -ne 0 ]]; then
+  echo "invalid args"
+  exit 1
+fi
+
+curl -sL "$url" -o "$dest"

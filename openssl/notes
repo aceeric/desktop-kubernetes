@@ -1,0 +1,48 @@
+
+PKI stuff - on my desktop
+https://scriptcrunch.com/create-ca-tls-ssl-certificates-keys/
+>>> THIS >>> https://kubernetes.io/docs/concepts/cluster-administration/certificates/
+-----------------------------------------
+
+# Generate the CA private key file
+$ openssl genrsa -out ca-key.pem 2048
+
+# Generate CA x509 cert file using the CA key
+$ openssl req -x509 -new -nodes -key ca-key.pem -subj "/CN=internalca" -days 10000 -out ca.pem
+
+# TODO BUILD THESE IN A LOOP
+
+# FOR NOW
+$ CONTROLLER_HOST=centos81 && CONTROLLER_IP=192.168.0.46
+# API SERVER
+$ openssl genrsa -out apiserver-key.pem 2048
+# configure the csr config file
+$ sed -e "9s|CN =.*|CN = $CONTROLLER_HOST|" -e "20s|IP.*|IP.1 = $CONTROLLER_IP|" csr.conf >| apiserver-csr.conf
+# create a CSR
+$ openssl req -new -key apiserver-key.pem -out apiserver.csr -config apiserver-csr.conf
+# gen server certificate using the ca.key, ca.crt and server.csr
+$ openssl x509 -req -in apiserver.csr -CA ca.pem -CAkey ca-key.pem -CAcreateserial -out apiserver.pem -days 10000 -extensions v3_ext -extfile apiserver-csr.conf
+# verify
+$ openssl x509  -noout -text -in apiserver.pem
+# cleanup
+$ rm -f apiserver.csr apiserver-csr.conf
+
+
+# how about ... https://github.com/coreos/coreos-kubernetes/blob/master/Documentation/openssl.md
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

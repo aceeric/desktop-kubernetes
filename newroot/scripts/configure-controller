@@ -1,0 +1,189 @@
+#!/usr/bin/env bash
+
+# expects 'create-controller' to have been run first so that the controller VM is initialized and available
+# todo don't pass kubernetes_cert/key since this generates them
+# todo don't pass template-vmname since this doesn;t do the clone
+# todo consider --no-gen-cluster-certs
+
+set -e
+
+long_opts=template-vmname:,controller-hostname:,controller-ram:,controller-cpus:,vboxdir:,priv-key:,\
+etcd-download:,etcd-gzip:,kube-apiserver-download:,kube-apiserver-binary:,kubernetes-cert:,kubernetes-key:,\
+ca-cert:,ca-key:
+script_name=$(basename "$0")
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# api
+template_vmname=
+controller_hostname=
+controller_ram=
+controller_cpus=
+vboxdir=
+priv_key=
+etcd_download=
+etcd_gzip=
+kube_apiserver_download=
+kube_apiserver_binary=
+kubernetes_cert=
+kubernetes_key=
+ca_cert=
+ca_key=
+
+# internal
+controller_ip=
+
+function opt_val() {
+  opt="$1"
+  if [[ "$opt" == =* ]]; then
+    echo "${opt:1}"
+  else
+    echo "$opt"
+  fi
+}
+
+function parse_args() {
+  if [[ "$#" -eq 0 ]]; then
+    echo "no args provided"
+    exit 1
+  fi
+  local parsed
+  parsed=$(getopt --options "" --longoptions $long_opts -n $script_name -- "$@")
+  eval set -- "$parsed"
+  while true; do
+    case "$1" in
+      --template-vmname)
+        template_vmname=$(opt_val "$2")
+        shift 2
+        ;;
+      --controller-hostname)
+        controller_hostname=$(opt_val "$2")
+        shift 2
+        ;;
+      --controller-ram)
+        controller_ram=$(opt_val "$2")
+        shift 2
+        ;;
+      --controller-cpus)
+        controller_cpus=$(opt_val "$2")
+        shift 2
+        ;;
+      --vboxdir)
+        vboxdir=$(opt_val "$2")
+        shift 2
+        ;;
+      --priv-key)
+        priv_key=$(opt_val "$2")
+        shift 2
+        ;;
+      --etcd-download)
+        etcd_download=$(opt_val "$2")
+        shift 2
+        ;;
+      --etcd-gzip)
+        etcd_gzip=$(opt_val "$2")
+        shift 2
+        ;;
+      --kube-apiserver-download)
+        kube_apiserver_download=$(opt_val "$2")
+        shift 2
+        ;;
+      --kube-apiserver-binary)
+        kube_apiserver_binary=$(opt_val "$2")
+        shift 2
+        ;;
+      --kubernetes-cert)
+        kubernetes_cert=$(opt_val "$2")
+        shift 2
+        ;;
+      --kubernetes-key)
+        kubernetes_key=$(opt_val "$2")
+        shift 2
+        ;;
+      --ca-cert)
+        ca_cert=$(opt_val "$2")
+        shift 2
+        ;;
+      --ca-key)
+        ca_key=$(opt_val "$2")
+        shift 2
+        ;;
+      --)
+        shift
+        break
+        ;;
+    esac
+  done
+}
+
+parse_args "$@"
+# todo validate args
+
+# debug
+echo "template_vmname=$template_vmname"
+echo "controller_hostname=$controller_hostname"
+echo "controller_ram=$controller_ram"
+echo "controller_cpus=$controller_cpus"
+echo "vboxdir=$vboxdir"
+echo "priv_key=$priv_key"
+echo "etcd_download=$etcd_download"
+echo "etcd_gzip=$etcd_gzip"
+echo "kube_apiserver_download=$kube_apiserver_download"
+echo "kube_apiserver_binary=$kube_apiserver_binary"
+echo "kubernetes_cert=$kubernetes_cert"
+echo "kubernetes_key=$kubernetes_key"
+echo "ca_cert=$ca_cert"
+echo "ca_key=$ca_key"
+exit
+
+run_count=$(VBoxManage list runningvms | awk '{print $1}' | grep -e'"'$controller_hostname'"' | wc -l)
+if [[ $run_count -eq 0 ]]; then
+  echo "Starting controller VM"
+  VBoxManage startvm $controller_hostname
+fi
+
+echo "Getting controller IP address from running VM"
+controller_ip=$("$script_dir"/get-vm-ip $controller_hostname)
+
+echo "Configuring firewall rules"
+"$script_dir"/configure-firewall $controller_ip $priv_key --controller
+
+echo "Generating cluster TLS material into tls directory on this machine"
+"$script_dir"/gen-root-ca
+"$script_dir"/gen-cluster-tls\
+  --controller-ip=$controller_ip\
+  --ca-cert=$ca_cert\
+  --ca-key=$ca_key
+
+echo "Installing etcd into controller"
+etcd_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/../control-plane/etcd" && pwd)"
+$etcd_dir/install-etcd\
+ --priv-key=$priv_key\
+ --controller-ip=$controller_ip\
+ --controller-hostname=$controller_hostname\
+ --etcd-download=$etcd_download\
+ --etcd-gzip=$etcd_gzip\
+ --kubernetes-cert=$kubernetes_cert\
+ --kubernetes-key=$kubernetes_key\
+ --ca-cert=$ca_cert
+
+echo "Installing kube-apiserver into controller"
+kube_apiserver_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/../control-plane/kube_apiserver" && pwd)"
+$kube_apiserver/install-kube_apiserver\
+ --priv-key=$priv_key\
+ --controller-ip=$controller_ip\
+ --controller-hostname=$controller_hostname\
+ --kube-apiserver-download=$kube_apiserver_download\
+ --kube-apiserver-binary=$kube_apiserver_binary\
+ --kubernetes-cert=$kubernetes_cert\
+ --kubernetes-key=$kubernetes_key\
+ --ca-cert=$ca_cert\
+ --ca-key=$ca_key
+
+# kube-controller-manager
+
+# kube-scheduler
+
+# see /home/eace/k8sbyhand/control-plane/testing line 64 getting component statuses would be good
+# but requires admin kube config and maybe RBACs?
+ 
+# stop the VM?

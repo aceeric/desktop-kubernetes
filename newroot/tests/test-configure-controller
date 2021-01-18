@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/../scripts" && pwd)"
+"$script_dir"/configure-controller\
+ --template-vmname=bingo\
+ --controller-hostname=doc\
+ --controller-ram=4096\
+ --controller-cpus=2\
+ --vboxdir=/sdb1/virtualbox\
+ --priv-key=/home/eace/k8sbyhand/newroot/kickstart/id_ed25519\
+ --etcd-download=\
+ --etcd-gzip=/home/eace/k8sbyhand/newroot/binaries/etcd-v3.4.14-linux-amd64.tar.gz\
+ --kubernetes-cert=/home/eace/k8sbyhand/newroot/tls/kubernetes.pem\
+ --kubernetes-key=/home/eace/k8sbyhand/newroot/tls/kubernetes-key.pem\
+ --ca-cert=/home/eace/k8sbyhand/newroot/tls/ca.pem\
+ --ca-key=/home/eace/k8sbyhand/newroot/tls/ca-key.pem

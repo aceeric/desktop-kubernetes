@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/../scripts" && pwd)"
+"$script_dir"/clone-vm\
+ --template-vmname=bingo\
+ --clone-vmname=doc\
+ --clone-ram=4096\
+ --clone-cpu=2\
+ --vboxdir=/sdb1/virtualbox

@@ -1,0 +1,227 @@
+#!/usr/bin/env bash
+
+set -e
+
+long_opts=help,create-template-vm,template-vmname:,centos-iso-download:,centos-iso-path:,\
+guest-additions-download:,guest-additions-path:,host-network-interface:,vboxdir:,\
+controller:,worker:,cluster-up:,cluster-down:
+script_name=$(basename "$0")
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+create_template_vm=0
+template_vmname=
+centos_iso_download=
+centos_iso_path=
+guest_additions_download=
+guest_additions_path=
+host_network_interface=
+vboxdir=
+controller=
+worker=()
+cluster_up=
+cluster_down=
+
+function usage() {
+  while IFS= read -r line; do
+    echo "${line:4}"
+  done <<< '
+    TODO USAGE INSTRUX
+    '
+}
+
+function opt_val() {
+  opt="$1"
+  if [[ "$opt" == =* ]]; then
+    echo "${opt:1}"
+  else
+    echo "$opt"
+  fi
+}
+
+function parse_args() {
+  if [[ "$#" -eq 0 ]]; then
+    echo "no args provided"
+    exit 1
+  fi
+  local parsed
+  parsed=$(getopt --options "" --longoptions $long_opts -n $script_name -- "$@")
+  if [[ "$?" -ne 0 ]]; then
+    exit 1
+  fi
+
+  eval set -- "$parsed"
+  while true; do
+    case "$1" in
+      --help)
+        usage
+        exit 1
+        ;;
+      --create-template-vm)
+        create_template_vm=1
+        shift 1
+        ;;
+	    --template-vmname)
+        template_vmname=$(opt_val "$2")
+        shift 2
+        ;;
+      --centos-iso-download)
+        centos_iso_download=$(opt_val "$2")
+        shift 2
+        ;;
+      --centos-iso-path)
+        centos_iso_path=$(opt_val "$2")
+        shift 2
+        ;;
+      --guest-additions-download)
+        guest_additions_download=$(opt_val "$2")
+        shift 2
+        ;;
+      --guest-additions-path)
+        guest_additions_path=$(opt_val "$2")
+        shift 2
+        ;;
+      --host-network-interface)
+        host_network_interface=$(opt_val "$2")
+        shift 2
+        ;;
+      --vboxdir)
+        vboxdir=$(opt_val "$2")
+        shift 2
+        ;;
+      --controller)
+        controller=$(opt_val "$2")
+        shift 2
+        ;;
+      --worker)
+        tmp=$(opt_val "$2")
+        worker+=("$tmp")
+        shift 2
+        ;;
+      --cluster-up)
+        cluster_up=$(opt_val "$2")
+        shift 2
+        ;;
+      --cluster-down)
+        cluster_down=$(opt_val "$2")
+        shift 2
+        ;;
+      --)
+        shift
+        break
+        ;;
+    esac
+  done
+
+  if [[ $# -ne 0 ]]; then
+    echo "Invalid args - no positional params are supported: $@"
+  fi
+}
+
+function validate_args() {
+  if [[ -z "$vboxdir" ]]; then
+    echo "Must provide virtual box directory"
+    exit 1
+  elif [[ -z "$template_vmname" ]]; then
+    echo "Must provide template VM name"
+    exit 1
+  fi
+
+  if [[ $create_template_vm -eq 1 ]]; then
+    if [[ -z "$centos_iso_download" ]] && [[ -z "$centos_iso_path" ]]; then
+      echo "Must provide centos ISO download or path"
+      exit 1
+    elif [[ -z "$guest_additions_download" ]] && [[ -z "$guest_additions_path" ]]; then
+      echo "Must provide guest additions download or path"
+      exit 1
+    elif [[ -z "$host_network_interface" ]]; then
+      echo "Must provide host network interface"
+      exit 1
+    fi
+  else
+    if [[ ! -z "$centos_iso_download" ]] || [[ ! -z "$centos_iso_path" ]]; then
+      echo "Do not provide Centos ISO download or path when using an existing template VM"
+      exit 1
+    elif [[ ! -z "$guest_additions_download" ]] || [[ ! -z "$guest_additions_path" ]]; then
+      echo "Do not provide guest additions download or path when using an existing template VM"
+      exit 1
+    fi
+  fi
+}
+
+# if an ISO download URL is provided and no path is provided, set the download path to the project
+# 'media' directory as a convenience. If the download path is a directory, get the download filename
+# from the url and make the download path = path+filename as a convenience.
+function tweak_download_paths() {
+  if [[ ! -z "$centos_iso_download" ]] && [[ -z "$centos_iso_path" ]]; then
+    centos_iso_path="$(realpath $script_dir/media/)"
+  fi
+  if [[ ! -z "$guest_additions_download" ]] && [[ -z "$guest_additions_path" ]]; then
+    guest_additions_path="$(realpath $script_dir/media/)"
+  fi
+  if [[ -d "$centos_iso_path" ]]; then
+    filename="${centos_iso_download##*/}"
+    centos_iso_path="$centos_iso_path/$filename"
+  fi
+  if [[ -d "$guest_additions_path" ]]; then
+    filename="${guest_additions_download##*/}"
+    guest_additions_path="$guest_additions_path/$filename"
+  fi
+}
+
+parse_args "$@"
+validate_args
+tweak_download_paths
+
+# debug
+#echo "create_template_vm=$create_template_vm"
+#echo "template_vmname=$template_vmname"
+#echo "centos_iso_download=$centos_iso_download"
+#echo "centos_iso_path=$centos_iso_path"
+#echo "guest_additions_download=$guest_additions_download"
+#echo "guest_additions_path=$guest_additions_path"
+#echo "host_network_interface=$host_network_interface"
+#echo "vboxdir=$vboxdir"
+#echo "controller=$controller"
+#echo "worker=${worker[@]}"
+
+if [[ $create_template_vm -eq 1 ]]; then
+  echo "Creating a template VM"
+  if [[ ! -z "$centos_iso_download" ]]; then
+    if [[ -f "$centos_iso_path" ]]; then
+      echo "Centos ISO already exists: $centos_iso_path -- can't overwrite"
+      exit 1
+    fi
+    if ! download-obj --url=$centos_iso_download --dest=$centos_iso_path; then
+      echo "Error downloading Centos ISO $centos_iso_download"
+      exit 1
+    fi
+  elif [[ ! -f "$centos_iso_path" ]]; then
+    echo "Centos ISO not found: $centos_iso_path"
+    exit 1
+  fi
+  if [[ ! -z "$guest_additions_download" ]]; then
+    if [[ -f "$guest_additions_path" ]]; then
+      echo "Guest additions ISO already exists: $guest_additions_path -- can't overwrite"
+      exit 1
+    fi
+    if ! download-obj --url=$guest_additions_download --dest=$guest_additions_path; then
+      echo "Error downloading guest additions ISO $guest_additions_download"
+      exit 1
+    fi
+  elif [[ ! -f "$guest_additions_path" ]]; then
+    echo "Guest additions ISO not found: $guest_additions_path"
+    exit 1
+  fi
+
+  #<<<<<<<<<<<<<<<<<<<<<<<<< HERE DO THE INSTALL AND THE GADDS INSTALL
+  # TODO do-provision
+
+fi
+
+if [[ ! -z "$controller" ]]; then
+  echo "Creating a controller"
+fi
+
+if [[ "${#worker[@]}" -ge 1 ]]; then
+  echo "Creating worker(s)"
+fi

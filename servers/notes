@@ -1,0 +1,94 @@
+
+# set up passwordless SSH into the controller
+
+# TODO RUN ALL THE SERVER STUFF IN A DOCKER CONTAINER?
+# TODO part of the server install should initialize authorized_keys
+
+ssh-keygen -t rsa -N '' -f ./id_rsa
+ssh-copy-id -i ./id_rsa.pub root@192.168.0.46  # CONTROLLER
+ssh-copy-id -i ./id_rsa.pub root@192.168.0.47  # WORKER
+
+# TEST
+ssh -i ./id_rsa root@192.168.0.46
+ssh -i ./id_rsa root@192.168.0.47
+
+# CENTOS FIREWALL
+https://medium.com/platformer-blog/kubernetes-on-centos-7-with-firewalld-e7b53c1316af
+# Also:
+https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/
+
+FOLLOW KUBE (2nd) FOR NOW...
+
+CONTROLLER
+firewall-cmd --permanent --add-port=6443/tcp
+firewall-cmd --permanent --add-port=2379-2380/tcp
+firewall-cmd --permanent --add-port=10250/tcp
+firewall-cmd --permanent --add-port=10251/tcp
+firewall-cmd --permanent --add-port=10252/tcp
+# IN MEDIUM - NOT IN KUBE DOCS:
+firewall-cmd --permanent --add-port=10255/tcp
+firewall-cmd --permanent --add-port=8472/udp
+firewall-cmd --add-masquerade --permanent
+# only if you want NodePorts exposed on control plane IP as well
+firewall-cmd --permanent --add-port=30000-32767/tcp
+
+
+TODO WORKERS??
+firewall-cmd --permanent --add-port=10250/tcp
+firewall-cmd --permanent --add-port=30000-32767/tcp
+
+BOTH
+systemctl restart firewalld
+
+NETWORKING!! ???
+https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/
+
+
+12-28:
+trying to get controller manager to start
+===========================
+FIRST
+modprobe br_netfilter
+
+cat <<EOF > /etc/sysctl.d/k8s.conf
+net.bridge.bridge-nf-call-ip6tables = 1
+net.bridge.bridge-nf-call-iptables = 1
+EOF
+sysctl --system
+
+NOPE!!
+
+SECOND:
+
+GOT kube-schuler starting by hand!!!
+then tried kube-controller-manager but still NO!
+
+THIRD
+# I1228 13:04:26.077711   54660 secure_serving.go:197] Serving securely on [::]:10257
+# so...
+firewall-cmd --permanent --add-port=10257/tcp
+
+NOPE!
+
+then - noticed that the failures seemed to get past themselves so
+- just re-enabled kube-scheduler kube-controller-manager and restarted and:
+
+in VM
+kubectl --kubeconfig=/var/lib/kubernetes/kube-controller-manager.kubeconfig get componentstatuses
+Warning: v1 ComponentStatus is deprecated in v1.19+
+NAME                 STATUS    MESSAGE             ERROR
+controller-manager   Healthy   ok
+scheduler            Healthy   ok
+etcd-0               Healthy   {"health":"true"}
+
+SUCCESS - UNSURE if networking changes were related....
+
+
+
+
+
+
+
+
+
+

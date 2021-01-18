@@ -1,0 +1,46 @@
+#!/usr/bin/env bash
+
+# Waits for a VM to be either stopped or started based on the passed option of '--stopped'
+# or '--started'. Usage:
+#   wait-vm MYVMNAME [ --started | --stopped ]
+
+vm=
+action=
+
+for var in "$@"; do
+  if [[ "${var:0:1}" == - ]]; then
+    action="$var"
+  else
+    vm="$var"
+  fi
+done
+
+if [[ -z "$vm" ]]; then
+  echo "No VM name supplied"
+  exit 1
+fi
+
+expected=
+if [[ "$action" == "--started" ]]; then
+  expected=1
+elif [[ "$action" == "--stopped" ]]; then
+  expected=0
+else
+  echo "unknown option: $action. Supported options: --started and --stopped"
+  exit 1
+fi
+
+if ! vboxmanage showvminfo "$vm" &>/dev/null; then
+  echo "No VM found matching name: $vm"
+  exit 1
+fi
+
+state=(stop start)
+echo "waiting for VM '$vm' to ${state[$expected]}"
+# just wait forever
+while true; do
+  actual=$(vboxmanage list runningvms | grep '"'"$vm"'"' | wc -l)
+  if [[ $expected -eq $actual ]]; then
+    exit 0
+  fi
+done

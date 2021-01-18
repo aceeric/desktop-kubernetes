@@ -1,0 +1,106 @@
+
+
+
+# TODO CHANGE APISERVER CERT/KEY TO KUBERNETES CERT/KEY!!
+
+
+
+
+
+
+# get etcd
+
+# https://gist.github.com/lukechilds/a83e1d7127b78fef38c2914c4ececc3c
+TAG=$(curl -s https://api.github.com/repos/etcd-io/etcd/releases/latest | grep '"tag_name":' | sed -E 's/.*"([^"]+)".*/\1/') &&\
+ RELEASE=etcd-$TAG-linux-amd64.tar.gz &&\
+ curl -sL https://github.com/etcd-io/etcd/releases/download/$TAG/$RELEASE -o $RELEASE
+
+# Extract and install the etcd server and the etcdctl command line utility on the controller
+
+# https://www.cyberciti.biz/faq/howto-use-tar-command-through-network-over-ssh-session/
+
+cat $RELEASE | ssh root@192.168.0.46 \
+ "tar zxvf - --no-same-owner --strip-components 1 -C /usr/local/bin/ etcd-v3.4.14-linux-amd64/etcd etcd-v3.4.14-linux-amd64/etcdctl"
+
+PROJROOT=/home/eace/k8sbyhand
+ssh -i $PROJROOT/servers/id_rsa root@192.168.0.46 "mkdir -p /etc/etcd /var/lib/etcd && chmod 700 /var/lib/etcd"
+# copy TLS stuff over (rereq openssl)
+scp -i $PROJROOT/servers/id_rsa $PROJROOT/tls/kubernetes.pem root@192.168.0.46:/etc/etcd
+scp -i $PROJROOT/servers/id_rsa $PROJROOT/tls/kubernetes-key.pem root@192.168.0.46:/etc/etcd
+scp -i $PROJROOT/servers/id_rsa $PROJROOT/tls/ca.pem root@192.168.0.46:/etc/etcd
+
+# Configure the etcd Server - has to run in the controller
+
+INTERNAL_IP=$(hostname -I | awk '{print $1}')
+ETCD_NAME=$(hostname -s)
+
+# A ONE-OFF TEST:
+etcd\
+  --name $ETCD_NAME \
+  --cert-file=/etc/etcd/kubernetes.pem \
+  --key-file=/etc/etcd/kubernetes-key.pem \
+  --peer-cert-file=/etc/etcd/kubernetes.pem \
+  --peer-key-file=/etc/etcd/kubernetes-key.pem \
+  --trusted-ca-file=/etc/etcd/ca.pem \
+  --peer-trusted-ca-file=/etc/etcd/ca.pem \
+  --peer-client-cert-auth \
+  --client-cert-auth \
+  --initial-advertise-peer-urls https://$INTERNAL_IP:2380 \
+  --listen-peer-urls https://$INTERNAL_IP:2380 \
+  --listen-client-urls https://$INTERNAL_IP:2379,https://127.0.0.1:2379 \
+  --advertise-client-urls https://$INTERNAL_IP:2379 \
+  --initial-cluster-token etcd-cluster-0 \
+  --initial-cluster $ETCD_NAME=https://$INTERNAL_IP:2380 \
+  --initial-cluster-state new \
+  --data-dir=/var/lib/etcd
+
+# now open a new terminal window
+su -l root
+cd /etc/ectd
+
+etcdctl --cert=kubernetes.pem --key=kubernetes-key.pem --cacert=ca.pem check perf
+
+
+## run this on the controller
+
+cat <<EOF >| /etc/systemd/system/etcd.service
+[Unit]
+Description=etcd
+Documentation=https://github.com/coreos
+
+[Service]
+Type=notify
+ExecStart=/usr/local/bin/etcd \\
+  --name $ETCD_NAME \\
+  --cert-file=/etc/etcd/kubernetes.pem \\
+  --key-file=/etc/etcd/kubernetes-key.pem \\
+  --peer-cert-file=/etc/etcd/kubernetes.pem \\
+  --peer-key-file=/etc/etcd/kubernetes-key.pem \\
+  --trusted-ca-file=/etc/etcd/ca.pem \\
+  --peer-trusted-ca-file=/etc/etcd/ca.pem \\
+  --peer-client-cert-auth \\
+  --client-cert-auth \\
+  --initial-advertise-peer-urls https://$INTERNAL_IP:2380 \\
+  --listen-peer-urls https://$INTERNAL_IP:2380 \\
+  --listen-client-urls https://$INTERNAL_IP:2379,https://127.0.0.1:2379 \\
+  --advertise-client-urls https://$INTERNAL_IP:2379 \\
+  --initial-cluster-token etcd-cluster-0 \\
+  --initial-cluster $ETCD_NAME=https://$INTERNAL_IP:2380 \\
+  --initial-cluster-state new \\
+  --data-dir=/var/lib/etcd
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+EOF
+
+## Start the etcd Server
+$ systemctl daemon-reload && systemctl enable etcd && systemctl start etcd
+
+## verify
+## TODO do this from the desktop to the VM
+$ etcdctl --cert=kubernetes.pem --key=kubernetes-key.pem --cacert=ca.pem member list
+da341fb68e1af20, started, centos81, https://192.168.0.46:2380, https://192.168.0.46:2379, false
+
+# SUCCESS!!

@@ -1,0 +1,34 @@
+
+
+# with ctr the namespace is really important - note the -namespace arg to the containerd shim
+
+ps -eaf --forest
+1078 /bin/containerd
+5677  \_ containerd-shim -namespace k8s.io ...
+5715  |   \_ /pause
+5678  \_ containerd-shim -namespace k8s.io ...
+5708  |   \_ /pause
+5742  \_ containerd-shim -namespace k8s.io ...
+5789  |   \_ sleep 60m
+5743  \_ containerd-shim -namespace k8s.io ...
+5779      \_ /coredns -conf /etc/coredns/Corefile
+
+
+# so:
+ctr -n k8s.io containers ls
+
+CONTAINER           IMAGE
+033a12ce1aaef...    sha256:80d28bedfe5dec59da9ebf8e6260224ac9008ab5c11dbbe16ee3ba3e4439ac2c
+07390c193e3db...    k8s.gcr.io/pause@sha256:927d98197ec1141a368550822d18fa1c60bdae27b78b0c004f705f548c07814f
+5b733106eebcb...    sha256:80d28bedfe5dec59da9ebf8e6260224ac9008ab5c11dbbe16ee3ba3e4439ac2c
+5ffb9cfd45c09...    k8s.gcr.io/pause@sha256:927d98197ec1141a368550822d18fa1c60bdae27b78b0c004f705f548c07814f
+90d0d090868e3...    docker.io/coredns/coredns:1.8.0
+c6a9298441b14...    docker.io/library/alpine:3.12.3
+fc7283040598c...    docker.io/coredns/coredns@sha256:cc8fb77bc2a0541949d1d9320a641b82fd392b0d3d8145469ca4709ae769980e
+ffb50c442c2d3...    docker.io/library/alpine:3.12.3
+
+# crictl already knows this??
+crictl ps
+CONTAINER      IMAGE          CREATED         STATE    NAME     ATTEMPT  POD ID
+90d0d090868e3  296a6d5035e2d  46 minutes ago  Running  coredns  1        033a12ce1aaef
+c6a9298441b14  389fef7118515  46 minutes ago  Running  alpine   2        5b733106eebcb

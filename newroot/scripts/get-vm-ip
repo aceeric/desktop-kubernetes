@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+if [[ "$#" -ne 1 ]]; then
+  echo "Only one arg allowed: the VM name. E.g. 'get-vm-ip my-vm-name"
+  exit 1
+fi
+
+vm="$1"
+
+while true; do
+  ip=$(VBoxManage guestproperty get "$vm" "/VirtualBox/GuestInfo/Net/0/V4/IP" 2>/dev/null)
+  if [[ $? -ne 0 ]] || [[ "$ip" == "No value set!" ]]; then
+    sleep 5s
+  else
+    break
+  fi
+done
+echo "$ip" | awk '{ print $2 }'

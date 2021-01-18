@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+./kuvbxctl\
+ --template-vmname=foobar\
+ --vboxdir=/sdb1/virtualbox/\
+ --controller=vmname=doc,memory=4096,cpus=2\
+ --worker=vmname=ham,memory=4096,cpus=2\
+ --worker=vmname=monk,memory=4096,cpus=2

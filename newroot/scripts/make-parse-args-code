@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+debug=("# debug")
+long_opts="long_opts="
+comma=""
+while IFS='$\n' read -r line; do
+  line="${line//=/}"
+  foo="${line//_/-}"
+  echo "      --$foo)"
+  echo "        $line=\$(opt_val \"\$2\")"
+  echo "        shift 2"
+  echo "        ;;"
+  debug+=("echo \"$line=\$$line\"")
+  long_opts="$long_opts$comma$foo:"
+  comma=","
+done
+
+for stmt in "${debug[@]}"; do
+  echo $stmt
+done
+
+echo "$long_opts"
