@@ -13,3 +13,11 @@ if [[ "$3" == "--controller" ]]; then
     systemctl restart firewalld
 EOF
 fi
+
+if [[ "$3" == "--worker" ]]; then
+  ssh -i "$priv_key" root@$vmip << EOF
+    firewall-cmd --permanent --add-port=10250/tcp
+    firewall-cmd --permanent --add-port=30000-32767/tcp
+    systemctl restart firewalld
+EOF
+fi

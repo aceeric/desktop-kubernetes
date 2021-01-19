@@ -1,0 +1,183 @@
+#!/usr/bin/env bash
+
+# Configures a worker node
+
+set -e
+
+long_opts=worker-hostname:,priv-key:,kubernetes-cert:,kubernetes-key:,ca-cert:,ca-key:
+script_name=$(basename "$0")
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# api
+worker_hostname=
+priv_key=
+kubernetes_cert=
+kubernetes_key=
+ca_cert=
+ca_key=
+
+# internal
+worker_ip=
+
+function opt_val() {
+  opt="$1"
+  if [[ "$opt" == =* ]]; then
+    echo "${opt:1}"
+  else
+    echo "$opt"
+  fi
+}
+
+function parse_args() {
+  if [[ "$#" -eq 0 ]]; then
+    echo "no args provided"
+    exit 1
+  fi
+  local parsed
+  parsed=$(getopt --options "" --longoptions $long_opts -n $script_name -- "$@")
+  eval set -- "$parsed"
+  while true; do
+    case "$1" in
+      --worker-hostname)
+        worker_hostname=$(opt_val "$2")
+        shift 2
+        ;;
+      --priv-key)
+        priv_key=$(opt_val "$2")
+        shift 2
+        ;;
+      --kubernetes-cert)
+        kubernetes_cert=$(opt_val "$2")
+        shift 2
+        ;;
+      --kubernetes-key)
+        kubernetes_key=$(opt_val "$2")
+        shift 2
+        ;;
+      --ca-cert)
+        ca_cert=$(opt_val "$2")
+        shift 2
+        ;;
+      --ca-key)
+        ca_key=$(opt_val "$2")
+        shift 2
+        ;;
+      --)
+        shift
+        break
+        ;;
+    esac
+  done
+}
+
+parse_args "$@"
+# todo validate args
+
+# debug
+echo "worker_hostname=$worker_hostname"
+echo "priv_key=$priv_key"
+echo "kubernetes_cert=$kubernetes_cert"
+echo "kubernetes_key=$kubernetes_key"
+echo "ca_cert=$ca_cert"
+echo "ca_key=$ca_key"
+
+run_count=$(VBoxManage list runningvms | awk '{print $1}' | grep -e'"'$worker_hostname'"' | wc -l)
+if [[ $run_count -eq 0 ]]; then
+  echo "Starting worker VM"
+  VBoxManage startvm $worker_hostname
+fi
+
+echo "Getting IP address from running VM"
+worker_ip=$("$script_dir"/get-vm-ip $worker_hostname)
+
+echo "Making worker configuration changes"
+# The socat binary enables support for the kubectl port-forward command. By default the kubelet
+# will fail to start if swap is enabled so disable swap
+ssh -i $priv_key root@$worker_ip << EOF
+  yum -y install socat conntrack ipset
+  [[ -z "$(swapon --show)" ]] || { swapoff -a; sed -i '/ swap /d' /etc/fstab; }
+EOF
+
+echo "Configuring firewall rules"
+"$script_dir"/configure-firewall $worker_ip $priv_key --worker
+
+
+# kubelet
+# containerd
+# runc
+# crictl
+
+
+
+exit
+echo "Generating cluster TLS material into tls directory on this machine"
+"$script_dir"/gen-root-ca
+"$script_dir"/gen-cluster-tls\
+  --controller-ip=$worker_ip\
+  --ca-cert=$ca_cert\
+  --ca-key=$ca_key
+
+echo "Installing etcd into controller"
+etcd_dir=$(realpath $script_dir/../control-plane/etcd)
+$etcd_dir/install-etcd\
+ --priv-key=$priv_key\
+ --controller-ip=$worker_ip\
+ --worker-hostname=$worker_hostname\
+ --etcd-download=$etcd_download\
+ --etcd-gzip=$etcd_gzip\
+ --kubernetes-cert=$kubernetes_cert\
+ --kubernetes-key=$kubernetes_key\
+ --ca-cert=$ca_cert
+
+echo "Installing kube-apiserver into controller"
+kube_apiserver_dir=$(realpath $script_dir/../control-plane/kube-apiserver)
+$kube_apiserver_dir/install-kube-apiserver\
+ --priv-key=$priv_key\
+ --controller-ip=$worker_ip\
+ --worker-hostname=$worker_hostname\
+ --kube-apiserver-download=$kube_apiserver_download\
+ --kube-apiserver-binary=$kube_apiserver_binary\
+ --kubernetes-cert=$kubernetes_cert\
+ --kubernetes-key=$kubernetes_key\
+ --ca-cert=$ca_cert\
+ --ca-key=$ca_key
+
+echo "Installing kube-controller-manager into controller"
+kube_controller_manager_dir=$(realpath $script_dir/../control-plane/kube_kube_controller_manager)
+$kube_controller_manager_dir/install-kube-controller-manager\
+ --priv-key=$priv_key\
+ --controller-ip=$worker_ip\
+ --worker-hostname=$worker_hostname\
+ --kube-controller-manager-download=$kube_controller_manager_download\
+ --kube-controller-manager-binary=$kube_controller_manager_binary\
+ --kubernetes-cert=$kubernetes_cert\
+ --kubernetes-key=$kubernetes_key\
+ --ca-cert=$ca_cert\
+ --ca-key=$ca_key
+
+echo "Installing kube-scheduler into controller"
+kube_scheduler_dir=$(realpath $script_dir/../control-plane/kube-scheduler)
+$kube_scheduler_dir/install-kube-scheduler\
+ --priv-key=$priv_key\
+ --controller-ip=$worker_ip\
+ --worker-hostname=$worker_hostname\
+ --kube-scheduler-download=$kube_scheduler_download\
+ --kube-scheduler-binary=$kube_scheduler_binary\
+ --kubernetes-cert=$kubernetes_cert\
+ --kubernetes-key=$kubernetes_key\
+ --ca-cert=$ca_cert\
+ --ca-key=$ca_key
+
+# todo may need to retry for some period to allow time for everything to come up
+
+healthy_count=$(kubectl --kubeconfig=$kube_controller_manager_dir/kube-controller-manager.kubeconfig\
+ get componentstatuses --no-headers | awk '{print $2}' | grep Healthy | wc -l)
+
+if [[ "$healthy_count" -ne 3 ]]; then
+  echo "Unable to verify that controller was successfully configured"
+  exit 1
+fi
+
+echo "No errors detected with controller installation"
+
+# todo stop the VM or leave it running? probably running for worker install - but maybe a script arg

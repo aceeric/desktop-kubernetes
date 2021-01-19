@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# expects 'create-controller' to have been run first so that the controller VM is initialized and available
+# Configures a controller node
 # todo don't pass kubernetes_cert/key since this generates them
 # todo don't pass template-vmname since this doesn't do the clone
 # todo consider --no-gen-cluster-certs

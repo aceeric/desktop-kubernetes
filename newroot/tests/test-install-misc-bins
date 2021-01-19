@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+$proj_root/worker/misc/install-misc-bins\
+ --priv-key=$proj_root/kickstart/id_ed25519\
+ --worker-ip=192.168.0.74\
+ --crictl-download=\
+ --crictl-binary=$proj_root/binaries/crictl-v1.19.0-linux-amd64.tar.gz\
+ --runc-download=\
+ --runc-binary=$proj_root/binaries/runc\
+ --cni-plugins-download=\
+ --cni-plugins-binary=$proj_root/binaries/cni-plugins-linux-amd64-v0.9.0.tgz\
+ --kubernetes-key=$proj_root/tls/kubernetes-key.pem\
+ --ca-cert=$proj_root/tls/ca.pem\
+ --ca-key=$proj_root/tls/ca-key.pem
+
+#$proj_root/worker/misc/install-misc-bins\\
+# --priv-key=$proj_root/kickstart/id_ed25519\
+# --worker-ip=192.168.0.74\
+# --crictl-download=https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.19.0/crictl-v1.19.0-linux-amd64.tar.gz\
+# --crictl-binary=$proj_root/binaries\
+# --runc-download=https://github.com/opencontainers/runc/releases/download/v1.0.0-rc92/runc.amd64\
+# --runc-binary=$proj_root/binaries/runc\
+# --cni-plugins-download=https://github.com/containernetworking/plugins/releases/download/v0.9.0/cni-plugins-linux-amd64-$TAG.tgz\
+# --cni-plugins-binary=$proj_root/binaries\
+# --kubernetes-key=$proj_root/tls/kubernetes-key.pem\
+# --ca-cert=$proj_root/tls/ca.pem\
+# --ca-key=$proj_root/tls/ca-key.pem

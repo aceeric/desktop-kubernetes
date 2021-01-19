@@ -1,9 +1,14 @@
 #!/usr/bin/env bash
 
-script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/../scripts" && pwd)"
-"$script_dir"/clone-vm\
+vmname="$1"
+if [[ -z "$vmname" ]]; then
+  echo "need a VM name in arg 1"
+  exit 1
+fi
+proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+$proj_root/scripts/clone-vm\
  --template-vmname=bingo\
- --clone-vmname=doc\
+ --clone-vmname=$vmname\
  --clone-ram=4096\
  --clone-cpu=2\
  --vboxdir=/sdb1/virtualbox

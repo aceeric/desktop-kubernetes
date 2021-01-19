@@ -43,7 +43,7 @@ If output is emphy then swap is not enabled. If swap is enabled run the followin
 
 swapoff -a
 
-[[ -z $(swapon --show) ]] && echo swap is already off || swapoff -a
+[[ -z $(swapon --show) ]] && echo swap is already off || { swapoff -a; sed -i '/ swap /d' /etc/fstab; }
 
 # makes it permanent
 sed -i '/ swap /d' /etc/fstab

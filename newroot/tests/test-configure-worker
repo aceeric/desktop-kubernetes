@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+$proj_root/scripts/configure-worker\
+ --worker-hostname=ham\
+ --priv-key=$proj_root/kickstart/id_ed25519\
+ --kubernetes-cert=$proj_root/tls/kubernetes.pem\
+ --kubernetes-key=$proj_root/tls/kubernetes-key.pem\
+ --ca-cert=$proj_root/tls/ca.pem\
+ --ca-key=$proj_root/tls/ca-key.pem
