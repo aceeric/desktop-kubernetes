@@ -1,18 +1,31 @@
 #!/usr/bin/env bash
 
-# Configures a worker node
+# Configures a worker node - expects a node already to have been cloned by the clone-vm function.
 
 set -e
 
-long_opts=worker-hostname:,priv-key:,kubernetes-cert:,kubernetes-key:,ca-cert:,ca-key:
+long_opts=controller-ip:,worker-hostname:,priv-key:,admin-kubeconfig:,crictl-download:,crictl-binary:,\
+runc-download:,runc-binary:,cni-plugins-download:,cni-plugins-binary:,containerd-download:,containerd-binary:,\
+ca-cert:,ca-key:
 script_name=$(basename "$0")
-script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 # api
+controller_ip=
+# hostname doubles for VM name here. The script will find a clone VM with this VirtualBox VM name
+# and change the hostname to match, then gen all the worker components wired up to that host name (which then
+# becomes a kubernetes node name)
 worker_hostname=
 priv_key=
-kubernetes_cert=
-kubernetes_key=
+admin_kubeconfig=
+crictl_download=
+crictl_binary=
+runc_download=
+runc_binary=
+cni_plugins_download=
+cni_plugins_binary=
+containerd_download=
+containerd_binary=
 ca_cert=
 ca_key=
 
@@ -38,6 +51,10 @@ function parse_args() {
   eval set -- "$parsed"
   while true; do
     case "$1" in
+      --controller-ip)
+        controller_ip=$(opt_val "$2")
+        shift 2
+        ;;
       --worker-hostname)
         worker_hostname=$(opt_val "$2")
         shift 2
@@ -46,12 +63,40 @@ function parse_args() {
         priv_key=$(opt_val "$2")
         shift 2
         ;;
-      --kubernetes-cert)
-        kubernetes_cert=$(opt_val "$2")
+      --admin-kubeconfig)
+        admin_kubeconfig=$(opt_val "$2")
         shift 2
         ;;
-      --kubernetes-key)
-        kubernetes_key=$(opt_val "$2")
+      --crictl-download)
+        crictl_download=$(opt_val "$2")
+        shift 2
+        ;;
+      --crictl-binary)
+        crictl_binary=$(opt_val "$2")
+        shift 2
+        ;;
+      --runc-download)
+        runc_download=$(opt_val "$2")
+        shift 2
+        ;;
+      --runc-binary)
+        runc_binary=$(opt_val "$2")
+        shift 2
+        ;;
+      --cni-plugins-download)
+        cni_plugins_download=$(opt_val "$2")
+        shift 2
+        ;;
+      --cni-plugins-binary)
+        cni_plugins_binary=$(opt_val "$2")
+        shift 2
+        ;;
+      --containerd-download)
+        containerd_download=$(opt_val "$2")
+        shift 2
+        ;;
+      --containerd-binary)
+        containerd_binary=$(opt_val "$2")
         shift 2
         ;;
       --ca-cert)
@@ -74,10 +119,18 @@ parse_args "$@"
 # todo validate args
 
 # debug
+echo "controller_ip=$controller_ip"
 echo "worker_hostname=$worker_hostname"
 echo "priv_key=$priv_key"
-echo "kubernetes_cert=$kubernetes_cert"
-echo "kubernetes_key=$kubernetes_key"
+echo "admin_kubeconfig=$admin_kubeconfig"
+echo "crictl_download=$crictl_download"
+echo "crictl_binary=$crictl_binary"
+echo "runc_download=$runc_download"
+echo "runc_binary=$runc_binary"
+echo "cni_plugins_download=$cni_plugins_download"
+echo "cni_plugins_binary=$cni_plugins_binary"
+echo "containerd_download=$containerd_download"
+echo "containerd_binary=$containerd_binary"
 echo "ca_cert=$ca_cert"
 echo "ca_key=$ca_key"
 
@@ -88,7 +141,7 @@ if [[ $run_count -eq 0 ]]; then
 fi
 
 echo "Getting IP address from running VM"
-worker_ip=$("$script_dir"/get-vm-ip $worker_hostname)
+worker_ip=$($proj_root/scripts/get-vm-ip $worker_hostname)
 
 echo "Making worker configuration changes"
 # The socat binary enables support for the kubectl port-forward command. By default the kubelet
@@ -99,85 +152,54 @@ ssh -i $priv_key root@$worker_ip << EOF
 EOF
 
 echo "Configuring firewall rules"
-"$script_dir"/configure-firewall $worker_ip $priv_key --worker
+$proj_root/scripts/configure-firewall $worker_ip $priv_key --worker
 
+echo "Generating TLS certs for the worker"
+TODO move gen-worker-tls to scripts
+TODO gen-worker-tls put certs in worker/tls
+TODO make name $worker_hostname-pem and -key.pem
+TODO mod install-kubelet to get named cert from tls dir
 
-# kubelet
-# containerd
-# runc
-# crictl
-
-
-
-exit
-echo "Generating cluster TLS material into tls directory on this machine"
-"$script_dir"/gen-root-ca
-"$script_dir"/gen-cluster-tls\
-  --controller-ip=$worker_ip\
+$proj_root/worker/kubelet/gen-worker-tls\
+  --worker-ip=$worker_ip\
+  --worker-hostname=$worker_hostname\
   --ca-cert=$ca_cert\
   --ca-key=$ca_key
 
-echo "Installing etcd into controller"
-etcd_dir=$(realpath $script_dir/../control-plane/etcd)
-$etcd_dir/install-etcd\
- --priv-key=$priv_key\
- --controller-ip=$worker_ip\
- --worker-hostname=$worker_hostname\
- --etcd-download=$etcd_download\
- --etcd-gzip=$etcd_gzip\
- --kubernetes-cert=$kubernetes_cert\
- --kubernetes-key=$kubernetes_key\
- --ca-cert=$ca_cert
+echo "Copying misc. binaries to the worker"
+$proj_root/worker/misc/install-misc-bins\
+ --priv-key=$prov_key\
+ --worker-ip=$worker_ip\
+ --crictl-download=$crictl_download\
+ --crictl-binary=$crictl_binary\
+ --runc-download=$runc_download\
+ --runc-binary=$runc_binary\
+ --cni-plugins-download=$cni_plugins_download\
+ --cni-plugins-binary=$cni_plugins_binary
 
-echo "Installing kube-apiserver into controller"
-kube_apiserver_dir=$(realpath $script_dir/../control-plane/kube-apiserver)
-$kube_apiserver_dir/install-kube-apiserver\
+echo "Installing containerd"
+$proj_root/worker/containerd/install-containerd\
+ --priv-key=$prov_key\
+ --worker-ip=$worker_ip\
+ --containerd-download=$containerd_download\
+ --containerd-binary=$containerd_binary
+
+echo "Installing the kubelet"
+$proj_root/worker/kubelet/install-kubelet\
  --priv-key=$priv_key\
- --controller-ip=$worker_ip\
+ --controller-ip=$controller_ip\
+ --worker-ip=$worker_ip\
  --worker-hostname=$worker_hostname\
- --kube-apiserver-download=$kube_apiserver_download\
- --kube-apiserver-binary=$kube_apiserver_binary\
- --kubernetes-cert=$kubernetes_cert\
- --kubernetes-key=$kubernetes_key\
+ --kubelet-download=$kubelet_download\
+ --kubelet-binary=$kubelet_binary\
  --ca-cert=$ca_cert\
  --ca-key=$ca_key
 
-echo "Installing kube-controller-manager into controller"
-kube_controller_manager_dir=$(realpath $script_dir/../control-plane/kube_kube_controller_manager)
-$kube_controller_manager_dir/install-kube-controller-manager\
- --priv-key=$priv_key\
- --controller-ip=$worker_ip\
- --worker-hostname=$worker_hostname\
- --kube-controller-manager-download=$kube_controller_manager_download\
- --kube-controller-manager-binary=$kube_controller_manager_binary\
- --kubernetes-cert=$kubernetes_cert\
- --kubernetes-key=$kubernetes_key\
- --ca-cert=$ca_cert\
- --ca-key=$ca_key
+ready_count=$(kubectl --kubeconfig $admin_kubeconfig get nodes | grep $worker_hostname | grep Ready | wc -l &>/dev/null)
 
-echo "Installing kube-scheduler into controller"
-kube_scheduler_dir=$(realpath $script_dir/../control-plane/kube-scheduler)
-$kube_scheduler_dir/install-kube-scheduler\
- --priv-key=$priv_key\
- --controller-ip=$worker_ip\
- --worker-hostname=$worker_hostname\
- --kube-scheduler-download=$kube_scheduler_download\
- --kube-scheduler-binary=$kube_scheduler_binary\
- --kubernetes-cert=$kubernetes_cert\
- --kubernetes-key=$kubernetes_key\
- --ca-cert=$ca_cert\
- --ca-key=$ca_key
-
-# todo may need to retry for some period to allow time for everything to come up
-
-healthy_count=$(kubectl --kubeconfig=$kube_controller_manager_dir/kube-controller-manager.kubeconfig\
- get componentstatuses --no-headers | awk '{print $2}' | grep Healthy | wc -l)
-
-if [[ "$healthy_count" -ne 3 ]]; then
-  echo "Unable to verify that controller was successfully configured"
+if [[ "$ready_count" -ne 1 ]]; then
+  echo "Unable to verify that the worker node was successfully configured"
   exit 1
 fi
 
-echo "No errors detected with controller installation"
-
-# todo stop the VM or leave it running? probably running for worker install - but maybe a script arg
+echo "No errors detected with worker installation"

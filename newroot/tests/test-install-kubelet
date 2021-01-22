@@ -1,10 +1,11 @@
 #!/usr/bin/env bash
 
 proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-$proj_root/scripts/install-kubelet\
+$proj_root/worker/kubelet/install-kubelet\
  --priv-key=$proj_root/kickstart/id_ed25519\
  --controller-ip=192.168.0.81\
- --controller-hostname=doc\
+ --worker-ip=192.168.0.74\
+ --worker-hostname=ham\
  --kubelet-binary=$proj_root/binaries/kubelet\
  --kubernetes-cert=$proj_root/tls/kubernetes.pem\
  --kubernetes-key=$proj_root/tls/kubernetes-key.pem\
@@ -12,10 +13,11 @@ $proj_root/scripts/install-kubelet\
  --ca-key=$proj_root/tls/ca-key.pem
 
 #proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-#$proj_root/scripts/install-kubelet\
+#$proj_root/worker/kubelet/install-kubelet\
 # --priv-key=$proj_root/kickstart/id_ed25519\
-# --controller-ip=192.168.0.ZZZ\
-# --controller-hostname=doc\
+# --controller-ip=192.168.0.81\
+# --worker-ip=192.168.0.74\
+# --worker-hostname=ham\
 # --kubelet-download=https://storage.googleapis.com/kubernetes-release/release/v1.20.1/bin/linux/amd64/kubelet\
 # --kubelet-binary=$proj_root/binaries\
 # --kubernetes-cert=$proj_root/tls/kubernetes.pem\

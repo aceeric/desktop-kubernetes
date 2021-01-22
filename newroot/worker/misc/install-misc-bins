@@ -2,8 +2,8 @@
 
 set -e
 
-long_opts=priv-key:,worker-ip:,crictl-download:,crictl-binary:,runc-download:,runc-binary:,cni-plugins-download:,\
-cni-plugins-binary:,kubernetes-cert:,kubernetes-key:,ca-cert:,ca-key:
+long_opts=priv-key:,worker-ip:,crictl-download:,crictl-binary:,runc-download:,runc-binary:,\
+cni-plugins-download:,cni-plugins-binary:
 script_name=$(basename "$0")
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
@@ -15,10 +15,6 @@ runc_download=
 runc_binary=
 cni_plugins_download=
 cni_plugins_binary=
-kubernetes_cert=
-kubernetes_key=
-ca_cert=
-ca_key=
 
 function opt_val() {
   opt="$1"
@@ -71,22 +67,6 @@ function parse_args() {
         cni_plugins_binary=$(opt_val "$2")
         shift 2
         ;;
-      --kubernetes-cert)
-        kubernetes_cert=$(opt_val "$2")
-        shift 2
-        ;;
-      --kubernetes-key)
-        kubernetes_key=$(opt_val "$2")
-        shift 2
-        ;;
-      --ca-cert)
-        ca_cert=$(opt_val "$2")
-        shift 2
-        ;;
-      --ca-key)
-        ca_key=$(opt_val "$2")
-        shift 2
-        ;;
       --)
         shift
         break
@@ -117,66 +97,37 @@ echo "runc_binary_actual=$runc_binary_actual"
 echo "cni_plugins_download=$cni_plugins_download"
 echo "cni_plugins_binary=$cni_plugins_binary"
 echo "cni_plugins_binary_actual=$cni_plugins_binary_actual"
-echo "kubernetes_cert=$kubernetes_cert"
-echo "kubernetes_key=$kubernetes_key"
-echo "ca_cert=$ca_cert"
-echo "ca_key=$ca_key"
 
+echo "Copying misc kubernetes binaries"
 
-
-exit
-
->>>>>> HERE -- DOWNLOAD
-
-
-
-
-if [[ ! -z "$kubelet_download" ]]; then
-  echo "Downloading kubelet binary"
-  $script_dir/../../scripts/download-obj --url="$kubelet_download" --dest="$kubelet_binary_actual"
-  chmod +x $kubelet_binary_actual
+if [[ ! -z "$crictl_download" ]]; then
+  echo "Downloading crictl binary"
+  $script_dir/../../scripts/download-obj --url="$crictl_download" --dest="$crictl_binary_actual"
 else
-  echo "No URL provided - skipping download and using provided binary"
+  echo "No URL provided - skipping download and using provided crictl binary"
 fi
-
 echo "Copying binary to controller"
-scp -i $priv_key $kubelet_binary_actual root@$worker_ip:/usr/local/bin/
-exit
+cat $crictl_binary_actual | ssh -i $priv_key root@$worker_ip\
+ "tar zxvf - --no-same-owner -C /usr/local/bin/ crictl && chmod +x /usr/local/bin/crictl"
 
-echo "Generating TLS material for kubelet"
-service_account_cert=$script_dir/../tls/service-account.pem
-service_account_key=$script_dir/../tls/service-account-key.pem
-service_account_csr=$script_dir/../tls/service-account.csr
-
-openssl req -nodes -newkey rsa:2048 -keyout $service_account_key -subj "/CN=service-accounts" -out $service_account_csr
-openssl x509 -req -days 10000 -in $service_account_csr -CA $ca_cert -CAkey $ca_key -CAcreateserial\
- -sha256 -out $service_account_cert
-rm -f $service_account_csr
-
-echo "Copying api server TLS material to controller VM"
-ssh -i "$priv_key" root@$worker_ip "mkdir -p /var/lib/kubernetes/"
-scp -i $priv_key\
- $ca_cert $ca_key $kubernetes_cert $kubernetes_key $service_account_cert $service_account_key\
- root@$worker_ip:/var/lib/kubernetes
-
-echo "Generating encryption config yaml"
-encryption_key=$(head -c 32 /dev/urandom | base64)
-sed "$script_dir/encryption-config.yaml" -e "s|ENCRYPTION_KEY|$encryption_key|g"\
- | ssh -i "$priv_key" root@$worker_ip "cat > /var/lib/kubernetes/encryption-config.yaml"
-
-echo "Generating service file"
-sed "$script_dir/kubelet.service" -e "s|worker_ip|$worker_ip|g"\
- | ssh -i "$priv_key" root@$worker_ip "cat > /etc/systemd/system/kubelet.service"
-
-echo "Starting kubelet service"
-ssh -i "$priv_key" root@$worker_ip "systemctl daemon-reload && systemctl enable kubelet && systemctl start kubelet"
-
-echo "Verifying kubelet is running"
-http_code=$(curl -so /dev/null -w "%{http_code}" --cacert $ca_cert https://$worker_ip:6443/version)
-
-if [[ "$http_code" != "200" ]]; then
-  echo "ERROR: Unable to verify kubelet installation"
-  exit 1
+if [[ ! -z "$runc_download" ]]; then
+  echo "Downloading runc binary"
+  $script_dir/../../scripts/download-obj --url="$runc_download" --dest="$runc_binary_actual"
+  chmod +x $runc_binary_actual
+else
+  echo "No URL provided - skipping download and using provided runc binary"
 fi
+echo "Copying binary to controller"
+scp -i $priv_key $runc_binary_actual root@$worker_ip:/usr/local/bin/
 
-echo "No errors detected with kubelet installation"
+if [[ ! -z "$cni_plugins_download" ]]; then
+  echo "Downloading cni_plugins binary"
+  $script_dir/../../scripts/download-obj --url="$cni_plugins_download" --dest="$cni_plugins_binary_actual"
+else
+  echo "No URL provided - skipping download and using provided cni plugins binary"
+fi
+echo "Copying binary to controller"
+ssh -i $priv_key root@$worker_ip "mkdir -p /opt/cni/bin"
+cat $cni_plugins_binary_actual | ssh -i $priv_key root@$worker_ip "tar zxvf - --no-same-owner -C /opt/cni/bin/"
+
+echo "Done copying binaries"

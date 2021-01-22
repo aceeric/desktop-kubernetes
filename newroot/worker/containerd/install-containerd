@@ -1,0 +1,93 @@
+#!/usr/bin/env bash
+
+set -e
+
+long_opts=priv-key:,worker-ip:,containerd-download:,containerd-binary:
+script_name=$(basename "$0")
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+priv_key=
+worker_ip=
+containerd_download=
+containerd_binary=
+
+function opt_val() {
+  opt="$1"
+  if [[ "$opt" == =* ]]; then
+    echo "${opt:1}"
+  else
+    echo "$opt"
+  fi
+}
+
+function parse_args() {
+  if [[ "$#" -eq 0 ]]; then
+    echo "no args provided"
+    exit 1
+  fi
+  local parsed
+  parsed=$(getopt --options "" --longoptions $long_opts -n $script_name -- "$@")
+  eval set -- "$parsed"
+  while true; do
+    case "$1" in
+      --priv-key)
+        priv_key=$(opt_val "$2")
+        shift 2
+        ;;
+      --worker-ip)
+        worker_ip=$(opt_val "$2")
+        shift 2
+        ;;
+      --containerd-download)
+        containerd_download=$(opt_val "$2")
+        shift 2
+        ;;
+      --containerd-binary)
+        containerd_binary=$(opt_val "$2")
+        shift 2
+        ;;
+      --)
+        shift
+        break
+        ;;
+    esac
+  done
+}
+
+parse_args "$@"
+# todo validate args
+
+containerd_binary_actual="$($script_dir/../../scripts/make-download-path\
+ --download-url=$containerd_download --download-path=$containerd_binary)"
+
+# debug
+echo "priv_key=$priv_key"
+echo "worker_ip=$worker_ip"
+echo "containerd_download=$containerd_download"
+echo "containerd_binary=$containerd_binary"
+echo "containerd_binary_actual=$containerd_binary_actual"
+
+if [[ ! -z "$containerd_download" ]]; then
+  echo "Downloading containerd binary"
+  $script_dir/../../scripts/download-obj --url="$containerd_download" --dest="$containerd_binary_actual"
+else
+  echo "No URL provided - skipping download and using provided containerd binary"
+fi
+echo "Copying binary to worker"
+cat $containerd_binary_actual | ssh -i $priv_key root@$worker_ip\
+ "tar zxvf - --strip-components 1 --no-same-owner -C /bin/ bin"
+
+echo "Copying containerd service and toml files to worker VM"
+scp -i $priv_key $script_dir/containerd.service root@$worker_ip:/etc/systemd/system/
+
+ssh -i "$priv_key" root@$worker_ip "mkdir -p /etc/containerd"
+scp -i $priv_key $script_dir/containerd-config.toml root@$worker_ip:/etc/containerd
+
+echo "Starting containerd service"
+ssh -i "$priv_key" root@$worker_ip "systemctl daemon-reload && systemctl enable containerd && systemctl start containerd"
+
+echo "Verifying containerd is running"
+ssh -i "$priv_key" root@$controller_ip "systemctl is-active --quiet containerd"
+
+echo "No errors detected with containerd installation"
+

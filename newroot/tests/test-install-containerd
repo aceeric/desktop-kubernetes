@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+$proj_root/worker/containerd/install-containerd\
+ --priv-key=$proj_root/kickstart/id_ed25519\
+ --worker-ip=192.168.0.74\
+ --containerd-download=\
+ --containerd-binary=$proj_root/binaries/containerd-1.4.3-linux-amd64.tar.gz
+
+#$proj_root/worker/containerd/install-containerd\\
+# --priv-key=$proj_root/kickstart/id_ed25519\
+# --worker-ip=192.168.0.74\
+# --containerd-download=https://github.com/containerd/containerd/releases/download/v1.4.3/containerd-1.4.3-linux-amd64.tar.gz\
+# --containerd-binary=$proj_root/binaries

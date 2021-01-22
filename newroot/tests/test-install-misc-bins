@@ -10,9 +10,6 @@ $proj_root/worker/misc/install-misc-bins\
  --runc-binary=$proj_root/binaries/runc\
  --cni-plugins-download=\
  --cni-plugins-binary=$proj_root/binaries/cni-plugins-linux-amd64-v0.9.0.tgz\
- --kubernetes-key=$proj_root/tls/kubernetes-key.pem\
- --ca-cert=$proj_root/tls/ca.pem\
- --ca-key=$proj_root/tls/ca-key.pem
 
 #$proj_root/worker/misc/install-misc-bins\\
 # --priv-key=$proj_root/kickstart/id_ed25519\
@@ -23,6 +20,3 @@ $proj_root/worker/misc/install-misc-bins\
 # --runc-binary=$proj_root/binaries/runc\
 # --cni-plugins-download=https://github.com/containernetworking/plugins/releases/download/v0.9.0/cni-plugins-linux-amd64-$TAG.tgz\
 # --cni-plugins-binary=$proj_root/binaries\
-# --kubernetes-key=$proj_root/tls/kubernetes-key.pem\
-# --ca-cert=$proj_root/tls/ca.pem\
-# --ca-key=$proj_root/tls/ca-key.pem

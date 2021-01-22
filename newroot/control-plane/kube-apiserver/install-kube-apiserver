@@ -107,7 +107,6 @@ fi
 
 echo "Copying binary to controller"
 scp -i $priv_key $kube_apiserver_binary_actual root@$controller_ip:/usr/local/bin/
-exit
 
 echo "Generating TLS material for kube-apiserver"
 service_account_cert=$script_dir/../tls/service-account.pem

@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+"$script_dir"/worker/kubelet/gen-worker-tls\
+  --worker-ip=192.168.0.74\
+  --worker-hostname=ham\
+  --ca-cert=/home/eace/k8sbyhand/newroot/tls/ca.pem\
+  --ca-key=/home/eace/k8sbyhand/newroot/tls/ca-key.pem
