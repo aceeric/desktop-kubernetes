@@ -18,6 +18,14 @@ kubectl -n kube-system get --ignore-not-found Service            kube-dns
 source ./deploy.sh -i 10.32.0.10 -s > ./coredns.yaml &&
 sed -i 's|image: coredns|image: docker.io/coredns|' coredns.yaml
 
+# TO DELETE
+kubectl -n kube-system delete ServiceAccount     coredns && \
+kubectl -n kube-system delete ClusterRole        system:coredns && \
+kubectl -n kube-system delete ClusterRoleBinding system:coredns && \
+kubectl -n kube-system delete ConfigMap          coredns && \
+kubectl -n kube-system delete Deployment         coredns && \
+kubectl -n kube-system delete Service            kube-dns
+
 
 
 kubectl apply -f coredns.yaml

@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
 
+TODO FIXME
+echo THIS DOES NOT WORK
+exit 1
 proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 $proj_root/scripts/configure-worker\
+ --controller-ip=192.168.0.81\
  --worker-hostname=ham\
  --priv-key=$proj_root/kickstart/id_ed25519\
  --kubernetes-cert=$proj_root/tls/kubernetes.pem\

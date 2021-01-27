@@ -12,8 +12,6 @@ script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 # - install-vbox-guest-additions.service - the systemctl service definition to perform unattended guest additions install
 # - install-vbox-guest-additions.sh      - called by the service to actually install guest additions
 #
-# Tested with genisoimage 1.1.11
-#
 # Note: volume ID 'OEMDRV' in the genisoimage command below is important:
 # https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/installation_guide/sect-kickstart-howto
 # snip: "To load your Kickstart file automatically without having to specify the inst.ks= boot option,

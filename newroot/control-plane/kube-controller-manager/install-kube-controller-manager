@@ -118,6 +118,7 @@ openssl x509 -req -days 10000 -in $script_dir/kube-controller-manager.csr -CA $c
 rm -f $script_dir/kube-controller-manager.csr
 
 echo "Generating a kubeconfig file for the kube-controller-manager service"
+rm -f $script_dir/kube-controller-manager.kubeconfig
 kubectl config set-cluster kubernetes \
 --certificate-authority=$ca_cert \
 --embed-certs=true \

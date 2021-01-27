@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+$proj_root/toplevel-scripts/provision-workers\
+ --worker=ham,4096,2\
+ --controller-ip=192.168.0.81\
+ --template-vmname=bingo\
+ --vboxdir=/sdb1/virtualbox\
+ --priv-key=$proj_root/kickstart/id_ed25519\
+ --admin-kubeconfig=$proj_root/admin/admin.kubeconfig\
+ --crictl-download=\
+ --crictl-binary=$proj_root/binaries/crictl-v1.19.0-linux-amd64.tar.gz\
+ --runc-download=\
+ --runc-binary=$proj_root/binaries/runc\
+ --cni-plugins-download=\
+ --cni-plugins-binary=$proj_root/binaries/cni-plugins-linux-amd64-v0.9.0.tgz\
+ --containerd-download=\
+ --containerd-binary=$proj_root/binaries/containerd-1.4.3-linux-amd64.tar.gz\
+ --kubelet-download=\
+ --kubelet-binary=$proj_root/binaries/kubelet\
+ --ca-cert=$proj_root/tls/ca.pem\
+ --ca-key=$proj_root/tls/ca-key.pem\
+ --deploy-script-download=\
+ --deploy-script=$proj_root/binaries/deploy.sh\
+ --coredns-yaml-sed-download=\
+ --coredns-yaml-sed=$proj_root/binaries/coredns.yaml.sed\
+ --kube-router-yaml-download=\
+ --kube-router-yaml=$proj_root/binaries/generic-kuberouter-all-features.yaml

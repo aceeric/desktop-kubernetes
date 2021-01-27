@@ -1,0 +1,94 @@
+SAVE THIS
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: coredns
+  namespace: kube-system
+data:
+  Corefile: |
+    .:53 {
+        log
+        errors
+        health
+        kubernetes cluster.local in-addr.arpa ip6.arpa {
+          pods insecure
+          upstream
+          fallthrough in-addr.arpa ip6.arpa
+        }
+        prometheus :9153
+        forward . /etc/resolv.conf
+        cache 30
+        loop
+        reload
+        loadbalance
+    }
+
+
+
+
+incorporate /home/eace/IdeaProjects/kuvboxctl/control-plane/system-kube-apiserver-to-kubelet.yaml
+into control plane initializeation
+
+
+kubectl --kubeconfig /home/eace/IdeaProjects/kuvboxctl/newroot/admin/admin.kubeconfig apply \
+ -f /home/eace/IdeaProjects/kuvboxctl/control-plane/system-kube-apiserver-to-kubelet.yaml
+
+requires gen-admin-kubeconfig first
+
+
+
+
+KUBECONFIG=/home/eace/IdeaProjects/kuvboxctl/newroot/admin/admin.kubeconfig
+
+lok at this for guest using host dns
+https://superuser.com/questions/641933/how-to-get-virtualbox-vms-to-use-hosts-dns
+
+but DNS appears to work in the guest as is
+
+
+
+once added ham to controller /etc/hosts then coredns started doing stuff
+
+dial tcp 10.32.0.1:443: connect: no route to host
+
+
+systemctl stop kubelet
+systemctl stop containerd
+iptables --flush
+iptables -tnat --flush
+systemctl start kubelet
+systemctl start containerd
+
+
+
+Nameserver limits were exceeded, some nameservers have been omitted, the applied nameserver line is: 75.75.75.75 75.75.76.76 2001:558:feed::1
+
+
+on controller tried
+firewall-cmd --permanent --add-port=443/tcp
+firewall-cmd --reload
+NO CHANGE
+
+REMEMBER THIS IS ADDED TO CONFIGURE WORKER
+[root@doc ~]# cat /etc/hosts
+127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+192.168.0.?? ham
+192.168.0.81 doc
+
+[root@ham ~]# cat /etc/hosts
+127.0.0.1   localhost localhost.localdomain localhost4 localhost4.localdomain4
+::1         localhost localhost.localdomain localhost6 localhost6.localdomain6
+192.168.0.?? ham
+192.168.0.81 doc
+[root@ham ~]# exit
+
+try editing system:coredns clusterrole like KTHW
+ - NOPE
+
+
+https://stackoverflow.com/questions/64089524/kubernetes-nodeport-service-can-be-accessed-only-on-node-where-pod-is-deployed
+
+CENTOS 8 !!!!!!!!!!!!!!
+https://jieliau.medium.com/how-to-install-docker-and-kubernetes-cluster-on-redhat-8-centos-8-f774fc071e82
+

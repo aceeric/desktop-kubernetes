@@ -118,6 +118,7 @@ openssl x509 -req -days 10000 -in $script_dir/kube-scheduler.csr -CA $ca_cert -C
 rm -f $script_dir/kube-scheduler.csr
 
 echo "Generating a kubeconfig file for the kube-scheduler service"
+rm -f $script_dir/kube-scheduler.kubeconfig
 kubectl config set-cluster kubernetes \
 --certificate-authority=$ca_cert \
 --embed-certs=true \

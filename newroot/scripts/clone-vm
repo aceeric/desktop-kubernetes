@@ -84,7 +84,7 @@ VBoxManage modifyvm $clone_vmname\
 echo "Starting cloned VM to set the hostname"
 VBoxManage startvm $clone_vmname
 
-echo "Getting IP from cloned VM $clone_vmname"
+echo "Getting IP address from cloned VM $clone_vmname"
 ip=$("$script_dir"/get-vm-ip $clone_vmname)
 
 # set the hostname = the VM name
@@ -95,5 +95,8 @@ ssh -o "StrictHostKeyChecking no" -i $kickstart_dir/id_ed25519 root@$ip "hostnam
 
 # wait for the VM  to be stopped
 "$script_dir"/wait-vm $clone_vmname --stopped
+
+# virtual box needs a moment
+sleep 5s
 
 echo "Done cloning '$template_vmname' to '$clone_vmname'"

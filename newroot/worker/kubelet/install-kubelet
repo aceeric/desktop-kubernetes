@@ -4,7 +4,7 @@ set -e
 
 long_opts=priv-key:,controller-ip:,worker-ip:,worker-hostname:,kubelet-download:,kubelet-binary:,ca-cert:
 script_name=$(basename "$0")
-script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
 priv_key=
 controller_ip=
@@ -72,7 +72,7 @@ function parse_args() {
 parse_args "$@"
 # todo validate args
 
-kubelet_binary_actual="$($script_dir/../../scripts/make-download-path\
+kubelet_binary_actual="$($proj_root/scripts/make-download-path\
  --download-url=$kubelet_download --download-path=$kubelet_binary)"
 
 # debug
@@ -88,7 +88,7 @@ echo "ca_key=$ca_key"
 
 if [[ ! -z "$kubelet_download" ]]; then
   echo "Downloading kubelet binary"
-  $script_dir/../../scripts/download-obj --url="$kubelet_download" --dest="$kubelet_binary_actual"
+  $proj_root/scripts/download-obj --url="$kubelet_download" --dest="$kubelet_binary_actual"
   chmod +x $kubelet_binary_actual
 else
   echo "No URL provided - skipping download and using provided binary"
@@ -97,42 +97,43 @@ fi
 echo "Copying binary to worker"
 scp -i $priv_key $kubelet_binary_actual root@$worker_ip:/usr/local/bin/
 
-# TODO name the kubeconfig file with the worker hostname in it
+# TODO name the kubeconfig file with the worker hostname in it?
 echo "Generating a kubeconfig file for the kubelet"
+rm -f $proj_root/worker/kubelet/worker.kubeconfig
 kubectl config set-cluster kubernetes \
 --certificate-authority=$ca_cert \
 --embed-certs=true \
 --server=https://$controller_ip:6443 \
---kubeconfig=$script_dir/worker.kubeconfig
+--kubeconfig=$proj_root/worker/kubelet/worker.kubeconfig
 
 kubectl config set-credentials system:node:$worker_hostname \
---client-certificate=$script_dir/worker.pem \
---client-key=$script_dir/worker-key.pem \
+--client-certificate=$proj_root/worker/tls/worker.pem \
+--client-key=$proj_root/worker/tls/worker-key.pem \
 --embed-certs=true \
---kubeconfig=$script_dir/worker.kubeconfig
+--kubeconfig=$proj_root/worker/kubelet/worker.kubeconfig
 
 kubectl config set-context default \
 --cluster=kubernetes \
 --user=system:node:$worker_hostname \
---kubeconfig=$script_dir/worker.kubeconfig
+--kubeconfig=$proj_root/worker/kubelet/worker.kubeconfig
 
-kubectl config use-context default --kubeconfig=$script_dir/worker.kubeconfig
+kubectl config use-context default --kubeconfig=$proj_root/worker/kubelet/worker.kubeconfig
 
 echo "Copying kubeconfig file to worker VM"
 ssh -i $priv_key root@$worker_ip "mkdir -p /var/lib/kubelet/kubeconfig /var/lib/kubernetes"
-scp -i $priv_key $script_dir/worker.pem root@$worker_ip:/var/lib/kubelet/
-scp -i $priv_key $script_dir/worker-key.pem root@$worker_ip:/var/lib/kubelet/
-scp -i $priv_key $script_dir/worker.kubeconfig root@$worker_ip:/var/lib/kubelet/kubeconfig
+scp -i $priv_key $proj_root/worker/tls/worker.pem root@$worker_ip:/var/lib/kubelet/
+scp -i $priv_key $proj_root/worker/tls/worker-key.pem root@$worker_ip:/var/lib/kubelet/
+scp -i $priv_key $proj_root/worker/kubelet/worker.kubeconfig root@$worker_ip:/var/lib/kubelet/kubeconfig
 scp -i $priv_key $ca_cert root@$worker_ip:/var/lib/kubernetes/
 
 echo "Copying kubelet service and config files to worker VM"
-scp -i $priv_key $script_dir/kubelet-config.yaml root@$worker_ip:/var/lib/kubelet/
-scp -i $priv_key $script_dir/kubelet.service root@$worker_ip:/etc/systemd/system/
+scp -i $priv_key $proj_root/worker/kubelet/kubelet-config.yaml root@$worker_ip:/var/lib/kubelet/
+scp -i $priv_key $proj_root/worker/kubelet/kubelet.service root@$worker_ip:/etc/systemd/system/
 
 echo "Starting kubelet service"
 ssh -i "$priv_key" root@$worker_ip "systemctl daemon-reload && systemctl enable kubelet && systemctl start kubelet"
 
 echo "Verifying kubelet is running"
-ssh -i "$priv_key" root@$controller_ip "systemctl is-active --quiet kubelet"
+ssh -i "$priv_key" root@$worker_ip "systemctl is-active --quiet kubelet"
 
 echo "No errors detected with kubelet installation"

@@ -1,0 +1,241 @@
+#!/usr/bin/env bash
+
+set -e
+
+long_opts=worker:,controller-ip:,template-vmname:,vboxdir:,\
+priv-key:,admin-kubeconfig:,crictl-download:,crictl-binary:,runc-download:,runc-binary:,\
+cni-plugins-download:,cni-plugins-binary:,containerd-download:,containerd-binary:,\
+kubelet-download:,kubelet-binary:,ca-cert:,ca-key:,\
+deploy-script-download:,deploy-script:,coredns-yaml-sed-download:,coredns-yaml-sed:,\
+kube-router-yaml-download:,kube-router-yaml:
+script_name=$(basename "$0")
+proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+worker=
+controller_ip=
+template_vmname=
+vboxdir=
+priv_key=
+admin_kubeconfig=
+crictl_download=
+crictl_binary=
+runc_download=
+runc_binary=
+cni_plugins_download=
+cni_plugins_binary=
+containerd_download=
+containerd_binary=
+kubelet_download=
+kubelet_binary=
+ca_cert=
+ca_key=
+deploy_script_download=
+deploy_script=
+coredns_yaml_sed_download=
+coredns_yaml_sed=
+kube_router_yaml_download=
+kube_router_yaml=
+
+# internal
+workers=()
+
+function opt_val() {
+  opt="$1"
+  if [[ "$opt" == =* ]]; then
+    echo "${opt:1}"
+  else
+    echo "$opt"
+  fi
+}
+
+function parse_args() {
+  if [[ "$#" -eq 0 ]]; then
+    echo "no args provided"
+    exit 1
+  fi
+  local parsed
+  parsed=$(getopt --options "" --longoptions $long_opts -n $script_name -- "$@")
+  eval set -- "$parsed"
+  while true; do
+    case "$1" in
+      --worker)
+        worker=$(opt_val "$2")
+        workers+=("$worker")
+        shift 2
+        ;;
+      --controller-ip)
+        controller_ip=$(opt_val "$2")
+        shift 2
+        ;;
+      --template-vmname)
+        template_vmname=$(opt_val "$2")
+        shift 2
+        ;;
+      --vboxdir)
+        vboxdir=$(opt_val "$2")
+        shift 2
+        ;;
+      --priv-key)
+        priv_key=$(opt_val "$2")
+        shift 2
+        ;;
+      --admin-kubeconfig)
+        admin_kubeconfig=$(opt_val "$2")
+        shift 2
+        ;;
+      --crictl-download)
+        crictl_download=$(opt_val "$2")
+        shift 2
+        ;;
+      --crictl-binary)
+        crictl_binary=$(opt_val "$2")
+        shift 2
+        ;;
+      --runc-download)
+        runc_download=$(opt_val "$2")
+        shift 2
+        ;;
+      --runc-binary)
+        runc_binary=$(opt_val "$2")
+        shift 2
+        ;;
+      --cni-plugins-download)
+        cni_plugins_download=$(opt_val "$2")
+        shift 2
+        ;;
+      --cni-plugins-binary)
+        cni_plugins_binary=$(opt_val "$2")
+        shift 2
+        ;;
+      --containerd-download)
+        containerd_download=$(opt_val "$2")
+        shift 2
+        ;;
+      --containerd-binary)
+        containerd_binary=$(opt_val "$2")
+        shift 2
+        ;;
+      --kubelet-download)
+        kubelet_download=$(opt_val "$2")
+        shift 2
+        ;;
+      --kubelet-binary)
+        kubelet_binary=$(opt_val "$2")
+        shift 2
+        ;;
+      --ca-cert)
+        ca_cert=$(opt_val "$2")
+        shift 2
+        ;;
+      --ca-key)
+        ca_key=$(opt_val "$2")
+        shift 2
+        ;;
+      --deploy-script-download)
+        deploy_script_download=$(opt_val "$2")
+        shift 2
+        ;;
+      --deploy-script)
+        deploy_script=$(opt_val "$2")
+        shift 2
+        ;;
+      --coredns-yaml-sed-download)
+        coredns_yaml_sed_download=$(opt_val "$2")
+        shift 2
+        ;;
+      --coredns-yaml-sed)
+        coredns_yaml_sed=$(opt_val "$2")
+        shift 2
+        ;;
+      --kube-router-yaml-download)
+        kube_router_yaml_download=$(opt_val "$2")
+        shift 2
+        ;;
+      --kube-router-yaml)
+        kube_router_yaml=$(opt_val "$2")
+        shift 2
+        ;;
+      --)
+        shift
+        break
+        ;;
+    esac
+  done
+}
+
+parse_args "$@"
+# todo validate args
+
+# debug
+echo "worker=$worker"
+echo "controller_ip=$controller_ip"
+echo "template_vmname=$template_vmname"
+echo "vboxdir=$vboxdir"
+echo "priv_key=$priv_key"
+echo "admin_kubeconfig=$admin_kubeconfig"
+echo "crictl_download=$crictl_download"
+echo "crictl_binary=$crictl_binary"
+echo "runc_download=$runc_download"
+echo "runc_binary=$runc_binary"
+echo "cni_plugins_download=$cni_plugins_download"
+echo "cni_plugins_binary=$cni_plugins_binary"
+echo "containerd_download=$containerd_download"
+echo "containerd_binary=$containerd_binary"
+echo "kubelet_download=$kubelet_download"
+echo "kubelet_binary=$kubelet_binary"
+echo "ca_cert=$ca_cert"
+echo "ca_key=$ca_key"
+echo "deploy_script_download=$deploy_script_download"
+echo "deploy_script=$deploy_script"
+echo "coredns_yaml_sed_download=$coredns_yaml_sed_download"
+echo "coredns_yaml_sed=$coredns_yaml_sed"
+echo "kube_router_yaml_download=$kube_router_yaml_download"
+echo "kube_router_yaml=$kube_router_yaml"
+
+for worker in ${workers[@]}; do
+  IFS=',' read -ra wrkr <<< "$workers"
+  clone_vmname=${wrkr[0]}
+  clone_ram=${wrkr[1]}
+  clone_cpu=${wrkr[2]}
+
+  echo "clone_vmname=$clone_vmname"
+  echo "clone_ram=$clone_ram"
+  echo "clone_cpu=$clone_cpu"
+
+  $proj_root/toplevel-scripts/provision-worker\
+   --controller-ip=$controller_ip\
+   --template-vmname=$template_vmname\
+   --clone-vmname=$clone_vmname\
+   --clone-ram=$clone_ram\
+   --clone-cpu=$clone_cpu\
+   --vboxdir=$vboxdir\
+   --priv-key=$priv_key\
+   --admin-kubeconfig=$admin_kubeconfig\
+   --crictl-download=$crictl_download\
+   --crictl-binary=$crictl_binary\
+   --runc-download=$runc_download\
+   --runc-binary=$runc_binary\
+   --cni-plugins-download=$cni_plugins_download\
+   --cni-plugins-binary=$cni_plugins_binary\
+   --containerd-download=$containerd_download\
+   --containerd-binary=$containerd_binary\
+   --kubelet-download=$kubelet_download\
+   --kubelet-binary=$kubelet_binary\
+   --ca-cert=$ca_cert\
+   --ca-key=$ca_key
+done
+
+$proj_root/worker/kube-router/install-kube-router\
+ --priv-key=$priv_key\
+ --controller-ip=$controller_ip\
+ --worker-ip=$worker_ip\
+ --kube-router-yaml-download=$kube_router_yaml_download\
+ --kube-router-yaml=$kube_router_yaml\
+ --admin-kubeconfig=$admin_kubeconfig
+
+$proj_root/dns/coredns/install-coredns\
+ --deploy-script-download=$deploy_script_download\
+ --deploy-script=$deploy_script\
+ --coredns-yaml-sed-download=$coredns_yaml_sed_download\
+ --coredns-yaml-sed=$coredns_yaml_sed\
+ --admin-kubeconfig=$admin_kubeconfig

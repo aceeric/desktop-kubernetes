@@ -1,0 +1,103 @@
+#!/usr/bin/env bash
+
+set -e
+
+long_opts=priv-key:,controller-ip:,worker-ip:,kube-router-yaml-download:,kube-router-yaml:,admin-kubeconfig:
+script_name=$(basename "$0")
+proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+
+priv_key=
+controller_ip=
+worker_ip=
+kube_router_yaml_download=
+kube_router_yaml=
+admin_kubeconfig=
+
+function opt_val() {
+  opt="$1"
+  if [[ "$opt" == =* ]]; then
+    echo "${opt:1}"
+  else
+    echo "$opt"
+  fi
+}
+
+function parse_args() {
+  if [[ "$#" -eq 0 ]]; then
+    echo "no args provided"
+    exit 1
+  fi
+  local parsed
+  parsed=$(getopt --options "" --longoptions $long_opts -n $script_name -- "$@")
+  eval set -- "$parsed"
+  while true; do
+    case "$1" in
+	    --priv-key)
+        priv_key=$(opt_val "$2")
+        shift 2
+        ;;
+	    --controller-ip)
+        controller_ip=$(opt_val "$2")
+        shift 2
+        ;;
+	    --worker-ip)
+        worker_ip=$(opt_val "$2")
+        shift 2
+        ;;
+      --kube-router-yaml-download)
+        kube_router_yaml_download=$(opt_val "$2")
+        shift 2
+        ;;
+      --kube-router-yaml)
+        kube_router_yaml=$(opt_val "$2")
+        shift 2
+        ;;
+      --admin-kubeconfig)
+        admin_kubeconfig=$(opt_val "$2")
+        shift 2
+        ;;
+      --)
+        shift
+        break
+        ;;
+    esac
+  done
+}
+
+parse_args "$@"
+# todo validate args
+
+kube_router_yaml_download_actual="$($proj_root/scripts/make-download-path\
+ --download-url=$kube_router_yaml_download --download-path=$kube_router_yaml)"
+
+# debug
+echo "priv_key=$priv_key"
+echo "controller_ip=$controller_ip"
+echo "worker_ip=$worker_ip"
+echo "kube_router_yaml_download=$kube_router_yaml_download"
+echo "kube_router_yaml=$kube_router_yaml"
+echo "kube_router_yaml_actual=$kube_router_yaml_actual"
+echo "admin_kubeconfig=$admin_kubeconfig"
+
+if [[ ! -z "$kube_router_yaml_download" ]]; then
+  echo "Downloading kube-router yaml"
+  $proj_root/scripts/download-obj --url="$kube_router_yaml_download" --dest="$kube_router_yaml_download_actual"
+else
+  echo "No URL provided - skipping download and using provided yaml"
+fi
+
+sed\
+ -e 's|"%CLUSTERCIDR%"|10.200.0.0/16|g'\
+ -e 's|%APISERVER%|https://'$controller_ip':6443|g'\
+ $kube_router_yaml_download_actual | kubectl --kubeconfig $admin_kubeconfig apply -f -
+
+echo "TODO validate kube-router installation"
+
+
+# TODO HERE>>>>>>>>>>>>>>
+#$ kubectl --kubeconfig /home/eace/IdeaProjects/kuvboxctl/newroot/admin/admin.kubeconfig logs -n kube-system kube-router-h9gjf
+#Error from server: Get "https://ham:10250/containerLogs/kube-system/kube-router-h9gjf/kube-router": dial tcp: lookup ham on 75.75.75.75:53: no such host
+#eace@ubuntu-desktop:~/IdeaProjects/kuvboxctl/newroot$
+#
+#
+#IS IT POSSIBLE THE DNS ADDON IS REQUIRED TOO!?

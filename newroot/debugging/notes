@@ -1,0 +1,10 @@
+
+# https://kubernetes.io/docs/tasks/administer-cluster/dns-debugging-resolution/
+# Are DNS endpoints exposed
+kubectl get endpoints kube-dns --namespace=kube-system
+
+NAME       ENDPOINTS   AGE
+kube-dns               8m48s
+
+
+NO ENDPOINTS!!!!!!!

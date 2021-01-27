@@ -24,6 +24,7 @@ note:
 kubelet does not support   --allow-privileged=true \
 apiserver already has it
 
+JAN-22 HAVE THIS!
 STEPS 6:32 PM
 1) add to kube-controller-manager in cluster CONTROLLER
 --allocate-node-cidrs=true \              # ALREADY THERE
@@ -39,6 +40,7 @@ systemctl disable kube-proxy
 TERM
 kubectl delete ds -n kube-system --all
 
+JAN-22 HAVE THIS!
 WORKER
 edit kubelet /etc/systemd/system/kubelet.server
 add --cni-conf-dir=/etc/cni/net.d \

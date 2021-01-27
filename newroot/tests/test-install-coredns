@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+$proj_root/dns/coredns/install-coredns\
+ --deploy-script-download=\
+ --deploy-script=$proj_root/binaries/deploy.sh\
+ --coredns-yaml-sed-download=\
+ --coredns-yaml-sed=$proj_root/binaries/coredns.yaml.sed\
+ --admin-kubeconfig=$proj_root/admin/admin.kubeconfig
+
+#proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+#$proj_root/dns/coredns/install-coredns\
+# --deploy-script-download=https://github.com/coredns/deployment/raw/coredns-1.14.0/kubernetes/deploy.sh\
+# --deploy-script=$proj_root/binaries\
+# --coredns-yaml-sed-download=https://github.com/coredns/deployment/raw/coredns-1.14.0/kubernetes/coredns.yaml.sed\
+# --coredns-yaml-sed=$proj_root/binaries\
+# --admin-kubeconfig=$proj_root/admin/admin.kubeconfig

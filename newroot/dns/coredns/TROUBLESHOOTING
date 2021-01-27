@@ -1,0 +1,60 @@
+
+TUE 26JUN
+
+added doc/ham to etc/hosts on both
+403 already enabled on controller (some other troubleshooting?)
+enabled 403 on worker
+added to corefile
+         pods insecure
+         upstream <<<<<<<<<<<<<<<<< broke it so took  out
+
+https://storage.googleapis.com/kubernetes-the-hard-way/coredns-1.7.0.yaml
+
+added to clusterrole
+- apiGroups:
+  - ""
+  resources:
+  - nodes
+  verbs:
+  - get
+
+remove from coredns CMAP
+    forward . /etc/resolv.conf {
+      max_concurrent 1000
+    }
+
+restart coredns pod
+
+EVEN TRIED kubectl apply -f https://storage.googleapis.com/kubernetes-the-hard-way/coredns.yaml
+
+NOPE!
+
+ON worker and controller!
+
+systemctl stop firewalld && systemctl disable firewalld
+
+IMMEDIATELY:
+
+kubectl exec -ti $POD_NAME -- nslookup kubernetes
+Server:    10.32.0.10
+Address 1: 10.32.0.10 kube-dns.kube-system.svc.cluster.local
+
+Name:      kubernetes
+Address 1: 10.32.0.1 kubernetes.default.svc.cluster.local
+eace@ubuntu-desktop:~/IdeaProjects/kuvboxctl/newroot$
+
+CONCLUSION:
+1) what specific firewall rule is causing this?
+   TODO> turn on monitoring to see what is being blocked
+2) is there something magic about hightower's coredns yaml??
+
+
+
+
+
+
+
+
+
+
+

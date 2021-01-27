@@ -87,7 +87,7 @@ echo "Starting containerd service"
 ssh -i "$priv_key" root@$worker_ip "systemctl daemon-reload && systemctl enable containerd && systemctl start containerd"
 
 echo "Verifying containerd is running"
-ssh -i "$priv_key" root@$controller_ip "systemctl is-active --quiet containerd"
+ssh -i "$priv_key" root@$worker_ip "systemctl is-active --quiet containerd"
 
 echo "No errors detected with containerd installation"
 
