@@ -57,7 +57,6 @@ function parse_args() {
 }
 
 parse_args "$@"
-# todo validate args
 
 # debug
 #echo "worker_ip=$worker_ip"
@@ -66,14 +65,13 @@ parse_args "$@"
 #echo "ca_key=$ca_key"
 
 # generate key
-tls_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/../tls" && pwd)"
-openssl genrsa -out "$proj_root/worker/tls/worker-key.pem" 2048
+openssl genrsa -out $proj_root/worker/tls/worker-key.pem 2048
 
 # generate a CSR conf with the worker IP address embedded
-tmp_dir="$(mktemp -d)"
+tmp_dir=$(mktemp -d)
 
 # note the worker hostname and IP are in this CSR
-cat <<EOF > "$tmp_dir/worker-csr.conf"
+cat <<EOF > $tmp_dir/worker-csr.conf
 [ req ]
 default_bits = 2048
 prompt = no
@@ -101,12 +99,12 @@ subjectAltName=@alt_names
 EOF
 
 # create a CSR using the conf from above
-openssl req -new -key "$proj_root/worker/tls/worker-key.pem"\
- -out "$tmp_dir/worker.csr" -config "$tmp_dir/worker-csr.conf"
+openssl req -new -key $proj_root/worker/tls/worker-key.pem\
+ -out $tmp_dir/worker.csr -config $tmp_dir/worker-csr.conf
 
 # gen certificate using the ca cert and key provided to the script, and the csr from above
-openssl x509 -req -in "$tmp_dir/worker.csr" -CA "$ca_cert" -CAkey "$ca_key" -CAcreateserial\
- -out "$proj_root/worker/tls/worker.pem" -days 10000 -extensions v3_ext -extfile "$tmp_dir/worker-csr.conf"
+openssl x509 -req -in $tmp_dir/worker.csr -CA $ca_cert -CAkey $ca_key -CAcreateserial\
+ -out $proj_root/worker/tls/worker.pem -days 10000 -extensions v3_ext -extfile $tmp_dir/worker-csr.conf
 
 # cleanup
-rm -rf $tmp_dir $script_dir/ca.srl
+rm -rf $tmp_dir $proj_root/scripts/gen-worker-tls/ca.srl

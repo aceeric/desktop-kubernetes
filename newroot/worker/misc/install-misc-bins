@@ -5,7 +5,7 @@ set -e
 long_opts=priv-key:,worker-ip:,crictl-download:,crictl-binary:,runc-download:,runc-binary:,\
 cni-plugins-download:,cni-plugins-binary:
 script_name=$(basename "$0")
-script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 priv_key=
 worker_ip=
@@ -76,33 +76,32 @@ function parse_args() {
 }
 
 parse_args "$@"
-# todo validate args
 
-crictl_binary_actual="$($script_dir/../../scripts/make-download-path\
- --download-url=$crictl_download --download-path=$crictl_binary)"
-runc_binary_actual="$($script_dir/../../scripts/make-download-path\
- --download-url=$runc_download --download-path=$runc_binary)"
-cni_plugins_binary_actual="$($script_dir/../../scripts/make-download-path\
- --download-url=$cni_plugins_download --download-path=$cni_plugins_binary)"
+crictl_binary_actual=$($proj_root/scripts/make-download-path\
+ --download-url=$crictl_download --download-path=$crictl_binary)
+runc_binary_actual=$($proj_root/scripts/make-download-path\
+ --download-url=$runc_download --download-path=$runc_binary)
+cni_plugins_binary_actual=$($proj_root/scripts/make-download-path\
+ --download-url=$cni_plugins_download --download-path=$cni_plugins_binary)
 
 # debug
-echo "priv_key=$priv_key"
-echo "worker_ip=$worker_ip"
-echo "crictl_download=$crictl_download"
-echo "crictl_binary=$crictl_binary"
-echo "crictl_binary_actual=$crictl_binary_actual"
-echo "runc_download=$runc_download"
-echo "runc_binary=$runc_binary"
-echo "runc_binary_actual=$runc_binary_actual"
-echo "cni_plugins_download=$cni_plugins_download"
-echo "cni_plugins_binary=$cni_plugins_binary"
-echo "cni_plugins_binary_actual=$cni_plugins_binary_actual"
+#echo "priv_key=$priv_key"
+#echo "worker_ip=$worker_ip"
+#echo "crictl_download=$crictl_download"
+#echo "crictl_binary=$crictl_binary"
+#echo "crictl_binary_actual=$crictl_binary_actual"
+#echo "runc_download=$runc_download"
+#echo "runc_binary=$runc_binary"
+#echo "runc_binary_actual=$runc_binary_actual"
+#echo "cni_plugins_download=$cni_plugins_download"
+#echo "cni_plugins_binary=$cni_plugins_binary"
+#echo "cni_plugins_binary_actual=$cni_plugins_binary_actual"
 
 echo "Copying misc kubernetes binaries"
 
 if [[ ! -z "$crictl_download" ]]; then
   echo "Downloading crictl binary"
-  $script_dir/../../scripts/download-obj --url="$crictl_download" --dest="$crictl_binary_actual"
+  $proj_root/scripts/download-obj --url="$crictl_download" --dest="$crictl_binary_actual"
 else
   echo "No URL provided - skipping download and using provided crictl binary"
 fi
@@ -112,7 +111,7 @@ cat $crictl_binary_actual | ssh -i $priv_key root@$worker_ip\
 
 if [[ ! -z "$runc_download" ]]; then
   echo "Downloading runc binary"
-  $script_dir/../../scripts/download-obj --url="$runc_download" --dest="$runc_binary_actual"
+  $proj_root/scripts/download-obj --url="$runc_download" --dest="$runc_binary_actual"
   chmod +x $runc_binary_actual
 else
   echo "No URL provided - skipping download and using provided runc binary"
@@ -122,7 +121,7 @@ scp -i $priv_key $runc_binary_actual root@$worker_ip:/usr/local/bin/
 
 if [[ ! -z "$cni_plugins_download" ]]; then
   echo "Downloading cni_plugins binary"
-  $script_dir/../../scripts/download-obj --url="$cni_plugins_download" --dest="$cni_plugins_binary_actual"
+  $proj_root/scripts/download-obj --url="$cni_plugins_download" --dest="$cni_plugins_binary_actual"
 else
   echo "No URL provided - skipping download and using provided cni plugins binary"
 fi

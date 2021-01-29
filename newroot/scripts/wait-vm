@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
-# Waits for a VM to be either stopped or started based on the passed option of '--stopped'
+# Waits (forever) for a VM to be either stopped or started based on the passed option of '--stopped'
 # or '--started'. Usage:
+#
 #   wait-vm MYVMNAME [ --started | --stopped ]
 
 vm=
@@ -37,7 +38,6 @@ fi
 
 state=(stop start)
 echo "waiting for VM '$vm' to ${state[$expected]}"
-# just wait forever
 while true; do
   actual=$(vboxmanage list runningvms | grep '"'"$vm"'"' | wc -l)
   if [[ $expected -eq $actual ]]; then

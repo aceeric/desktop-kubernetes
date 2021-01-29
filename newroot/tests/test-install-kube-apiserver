@@ -1,24 +1,24 @@
 #!/usr/bin/env bash
 
-script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/../control-plane/kube-apiserver" && pwd)"
-"$script_dir"/install-kube-apiserver\
- --priv-key=/home/eace/k8sbyhand/newroot/kickstart/id_ed25519\
+proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+$proj_root/control-plane/kube-apiserver/install-kube-apiserver\
+ --priv-key=$proj_root/kickstart/id_ed25519\
  --controller-ip=192.168.0.81\
  --controller-hostname=doc\
- --kube-apiserver-binary=/home/eace/k8sbyhand/newroot/binaries/kube-apiserver\
- --kubernetes-cert=/home/eace/k8sbyhand/newroot/tls/kubernetes.pem\
- --kubernetes-key=/home/eace/k8sbyhand/newroot/tls/kubernetes-key.pem\
- --ca-cert=/home/eace/k8sbyhand/newroot/tls/ca.pem\
- --ca-key=/home/eace/k8sbyhand/newroot/tls/ca-key.pem
+ --kube-apiserver-binary=$proj_root/binaries/kube-apiserver\
+ --kubernetes-cert=$proj_root/tls/kubernetes.pem\
+ --kubernetes-key=$proj_root/tls/kubernetes-key.pem\
+ --ca-cert=$proj_root/tls/ca.pem\
+ --ca-key=$proj_root/tls/ca-key.pem
 
-#script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/../control-plane/kube-apiserver" && pwd)"
-#"$script_dir"/install-kube-apiserver\
-# --priv-key=/home/eace/k8sbyhand/newroot/kickstart/id_ed25519\
+#$proj_root/control-plane/kube-apiserver/install-kube-apiserver\
+# --priv-key=$proj_root/kickstart/id_ed25519\
 # --controller-ip=192.168.0.ZZZ\
 # --controller-hostname=doc\
 # --kube-apiserver-download=https://storage.googleapis.com/kubernetes-release/release/v1.20.1/bin/linux/amd64/kube-apiserver\
-# --kube-apiserver-binary=/home/eace/k8sbyhand/newroot/binaries\
-# --kubernetes-cert=/home/eace/k8sbyhand/newroot/tls/kubernetes.pem\
-# --kubernetes-key=/home/eace/k8sbyhand/newroot/tls/kubernetes-key.pem\
-# --ca-cert=/home/eace/k8sbyhand/newroot/tls/ca.pem\
-# --ca-key=/home/eace/k8sbyhand/newroot/tls/ca-key.pem
+# --kube-apiserver-binary=$proj_root/binaries\
+# --kubernetes-cert=$proj_root/tls/kubernetes.pem\
+# --kubernetes-key=$proj_root/tls/kubernetes-key.pem\
+# --ca-cert=$proj_root/tls/ca.pem\
+# --ca-key=$proj_root/tls/ca-key.pem

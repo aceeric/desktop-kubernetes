@@ -1,5 +1,19 @@
 #!/usr/bin/env bash
 
+#
+# a coding helper that reads a stdin list of script variable decls and generates long option parsing - and other
+# lines of code - needed by a script to parse options. Assumes variable my_frobozz_val is passed as long opt
+# --my-frobozz-val. E.g.:
+#
+# cat <<EOF | scripts/make-parse-args-code
+# my_var_1=
+# some_other_var=
+# ting_tang=
+# walla_walla=
+# bing_bang=
+# EOF
+#
+
 debug=("# debug")
 long_opts="long_opts="
 comma=""

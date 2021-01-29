@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 
-# Usage
+#
+# Makes a download path
+#
+# Usage:
+#
 # download url            download path  default path  output
 # ----------------------  -------------  ------------  ------------
 # https:/foo.com/bar.zip                 /tmp          /tmp/bar.zip
@@ -8,14 +12,13 @@
 # https:/foo.com/bar.zip  /tmp           (ignored)     /tmp/bar.zip
 # https:/foo.com/bar.zip  /tmp/baz.zip   (ignored)     /tmp/baz.zip
 #                         /tmp/baz.zip   (ignored)     /tmp/baz.zip
-# anything else is an error
-# note - doesn't check for valid paths - caller is responsible to ensure directories exist
+#
+# Anything else is an error. Doesn't check for valid paths - caller is responsible to ensure directories exist
 
 set -e
 
 long_opts=download-url:,download-path:,default-path:
 script_name=$(basename "$0")
-script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 download_url=
 download_path=
@@ -61,7 +64,6 @@ function parse_args() {
 }
 
 parse_args "$@"
-# todo validate args
 
 # debug
 #echo "download_url=$download_url"

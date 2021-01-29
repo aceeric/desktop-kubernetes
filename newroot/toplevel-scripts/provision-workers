@@ -164,33 +164,36 @@ function parse_args() {
 }
 
 parse_args "$@"
-# todo validate args
+if [[ "${#workers[@]}" -eq 0 ]]; then
+  echo "Need at least one --worker arg"
+  exit 1
+fi
 
 # debug
-echo "worker=$worker"
-echo "controller_ip=$controller_ip"
-echo "template_vmname=$template_vmname"
-echo "vboxdir=$vboxdir"
-echo "priv_key=$priv_key"
-echo "admin_kubeconfig=$admin_kubeconfig"
-echo "crictl_download=$crictl_download"
-echo "crictl_binary=$crictl_binary"
-echo "runc_download=$runc_download"
-echo "runc_binary=$runc_binary"
-echo "cni_plugins_download=$cni_plugins_download"
-echo "cni_plugins_binary=$cni_plugins_binary"
-echo "containerd_download=$containerd_download"
-echo "containerd_binary=$containerd_binary"
-echo "kubelet_download=$kubelet_download"
-echo "kubelet_binary=$kubelet_binary"
-echo "ca_cert=$ca_cert"
-echo "ca_key=$ca_key"
-echo "deploy_script_download=$deploy_script_download"
-echo "deploy_script=$deploy_script"
-echo "coredns_yaml_sed_download=$coredns_yaml_sed_download"
-echo "coredns_yaml_sed=$coredns_yaml_sed"
-echo "kube_router_yaml_download=$kube_router_yaml_download"
-echo "kube_router_yaml=$kube_router_yaml"
+#echo "worker=$worker"
+#echo "controller_ip=$controller_ip"
+#echo "template_vmname=$template_vmname"
+#echo "vboxdir=$vboxdir"
+#echo "priv_key=$priv_key"
+#echo "admin_kubeconfig=$admin_kubeconfig"
+#echo "crictl_download=$crictl_download"
+#echo "crictl_binary=$crictl_binary"
+#echo "runc_download=$runc_download"
+#echo "runc_binary=$runc_binary"
+#echo "cni_plugins_download=$cni_plugins_download"
+#echo "cni_plugins_binary=$cni_plugins_binary"
+#echo "containerd_download=$containerd_download"
+#echo "containerd_binary=$containerd_binary"
+#echo "kubelet_download=$kubelet_download"
+#echo "kubelet_binary=$kubelet_binary"
+#echo "ca_cert=$ca_cert"
+#echo "ca_key=$ca_key"
+#echo "deploy_script_download=$deploy_script_download"
+#echo "deploy_script=$deploy_script"
+#echo "coredns_yaml_sed_download=$coredns_yaml_sed_download"
+#echo "coredns_yaml_sed=$coredns_yaml_sed"
+#echo "kube_router_yaml_download=$kube_router_yaml_download"
+#echo "kube_router_yaml=$kube_router_yaml"
 
 for worker in ${workers[@]}; do
   IFS=',' read -ra wrkr <<< "$workers"
@@ -198,9 +201,10 @@ for worker in ${workers[@]}; do
   clone_ram=${wrkr[1]}
   clone_cpu=${wrkr[2]}
 
-  echo "clone_vmname=$clone_vmname"
-  echo "clone_ram=$clone_ram"
-  echo "clone_cpu=$clone_cpu"
+  # debug
+#  echo "clone_vmname=$clone_vmname"
+#  echo "clone_ram=$clone_ram"
+#  echo "clone_cpu=$clone_cpu"
 
   $proj_root/toplevel-scripts/provision-worker\
    --controller-ip=$controller_ip\
@@ -234,6 +238,7 @@ $proj_root/worker/kube-router/install-kube-router\
  --admin-kubeconfig=$admin_kubeconfig
 
 $proj_root/dns/coredns/install-coredns\
+ --replicas=${#workers[@]}\
  --deploy-script-download=$deploy_script_download\
  --deploy-script=$deploy_script\
  --coredns-yaml-sed-download=$coredns_yaml_sed_download\

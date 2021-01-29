@@ -1,13 +1,16 @@
 #!/usr/bin/env bash
 
-# Creates a Centos VM, and installs the OS using Kickstart
+# Creates a CentOS VM from a CentOS ISO, and installs the OS using Kickstart. Intent is - this
+# VM will be the template VM from which the cluster VMs will subsequently be cloned
+
+done
 # todo args: cpu / mem / storage
 
 set -e
 
 long_opts=template-vmname:,centos-iso-path:,kickstart-iso-path:,host-network-interface:,vboxdir:
 script_name=$(basename "$0")
-script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 template_vmname=
 centos_iso_path=
@@ -63,7 +66,6 @@ function parse_args() {
 }
 
 parse_args "$@"
-# todo validate args
 
 # debug
 #echo "template_vmname=$template_vmname"
@@ -71,6 +73,8 @@ parse_args "$@"
 #echo "kickstart_iso_path=$kickstart_iso_path"
 #echo "host_network_interface=$host_network_interface"
 #echo "vboxdir=$vboxdir"
+
+echo "Creating VM"
 
 VBoxManage createvm\
  --name $template_vmname\
@@ -110,21 +114,18 @@ VBoxManage storageattach $template_vmname --storagectl IDE --port 1 --device 1 -
 # set boot from DVD
 VBoxManage modifyvm $template_vmname --boot1 dvd --boot2 disk --boot3 none --boot4 none
 
-# start the VM which starts the unattended OS install
 echo "Starting VM to begin kickstart installation"
 VBoxManage startvm $template_vmname
 
-# wait for the VM to start - that means it's performing the installation
-"$script_dir"/wait-vm $template_vmname --started
+echo "Waiting for VM to start"
+$proj_root/scripts/wait-vm $template_vmname --started
 
-# wait for the VM to stop - that means the installation is complete because the kickstart file is
-# configured to shutdown on completion
-"$script_dir"/wait-vm $template_vmname --stopped
+echo "Waiting for kickstart to complete and VM to stop"
+$proj_root/scripts/wait-vm $template_vmname --stopped
 
-# or the detach calls below fail...
+# for virtual box or the detach calls below fail
 sleep 5s
 
-# detach Centos installation ISO and kickstart ISO
-echo "Detaching ISO files"
+echo "Detaching ISO files from VM"
 VBoxManage storageattach $template_vmname --storagectl IDE --port 1 --device 0 --medium none
 VBoxManage storageattach $template_vmname --storagectl IDE --port 1 --device 1 --medium none

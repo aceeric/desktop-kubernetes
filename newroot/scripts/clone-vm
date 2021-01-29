@@ -1,12 +1,15 @@
 #!/usr/bin/env bash
 
-# clones the passed template VM into the a new VM with the passed characteristics (VM name, mem, etc.)
+# Creates a clone VM from the passed template VM. The cloned VM will have the passed
+# characteristics (VM name, mem, etc.)
+
 set -e
 
-long_opts=template-vmname:,clone-vmname:,clone-ram:,clone-cpus:,vboxdir:
+long_opts=priv-key:,template-vmname:,clone-vmname:,clone-ram:,clone-cpus:,vboxdir:
 script_name=$(basename "$0")
-script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
+priv_key=
 template_vmname=
 clone_vmname=
 clone_ram=
@@ -32,6 +35,10 @@ function parse_args() {
   eval set -- "$parsed"
   while true; do
     case "$1" in
+      --priv-key)
+        priv_key=$(opt_val "$2")
+        shift 2
+        ;;
 	    --template-vmname)
         template_vmname=$(opt_val "$2")
         shift 2
@@ -61,9 +68,9 @@ function parse_args() {
 }
 
 parse_args "$@"
-# todo validate args
 
 # debug
+#echo "priv_key=$priv_key"
 #echo "template_vmname=$template_vmname"
 #echo "clone_vmname=$clone_vmname"
 #echo "clone_ram=$clone_ram"
@@ -77,26 +84,25 @@ VBoxManage clonevm $template_vmname\
  --name=$clone_vmname\
  --register
 
+echo "Setting VM characteristics"
 VBoxManage modifyvm $clone_vmname\
  --cpus $clone_cpus\
  --memory $clone_ram\
 
-echo "Starting cloned VM to set the hostname"
+echo "Starting cloned VM"
 VBoxManage startvm $clone_vmname
 
-echo "Getting IP address from cloned VM $clone_vmname"
-ip=$("$script_dir"/get-vm-ip $clone_vmname)
+echo "Getting IP address from cloned VM"
+clone_ip=$($proj_root/scripts/get-vm-ip $clone_vmname)
 
-# set the hostname = the VM name
-# run the SSH cmd in the background (on the desktop) or SSH will hang when the machine is powered off
-echo "Changing the hostname for VM $clone_vmname"
-kickstart_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/../kickstart" && pwd)"
-ssh -o "StrictHostKeyChecking no" -i $kickstart_dir/id_ed25519 root@$ip "hostnamectl set-hostname $clone_vmname && poweroff -f" &
+echo "Changing the hostname for cloned VM"
+ssh -o "StrictHostKeyChecking no" -i $priv_key root@$clone_ip "hostnamectl set-hostname $clone_vmname"
 
-# wait for the VM  to be stopped
-"$script_dir"/wait-vm $clone_vmname --stopped
+echo "Shutting down cloned VM"
+VBoxManage controlvm $clone_vmname acpipowerbutton
+$proj_root/scripts/wait-vm $clone_vmname --stopped
 
-# virtual box needs a moment
+# virtual box needs a moment or subsequent vboxmanage commands seem to intermittently error
 sleep 5s
 
 echo "Done cloning '$template_vmname' to '$clone_vmname'"

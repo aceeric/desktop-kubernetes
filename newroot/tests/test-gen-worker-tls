@@ -4,5 +4,5 @@ proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 $proj_root/scripts/gen-worker-tls\
   --worker-ip=192.168.0.??\
   --worker-hostname=ham\
-  --ca-cert=/home/eace/k8sbyhand/newroot/tls/ca.pem\
-  --ca-key=/home/eace/k8sbyhand/newroot/tls/ca-key.pem
+  --ca-cert=$proj_root/tls/ca.pem\
+  --ca-key=$proj_root/tls/ca-key.pem

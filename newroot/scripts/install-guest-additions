@@ -11,7 +11,7 @@ set -e
 
 long_opts=template-vmname:,guest-additions-path:
 script_name=$(basename "$0")
-script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 template_vmname=
 guest_additions_path=
@@ -52,7 +52,6 @@ function parse_args() {
 }
 
 parse_args "$@"
-# todo validate args
 
 # debug
 #echo "template_vmname=$template_vmname"
@@ -63,18 +62,16 @@ VBoxManage storageattach $template_vmname --storagectl IDE --port 0 --device 0 -
  --medium $guest_additions_path
 VBoxManage modifyvm $template_vmname --boot1 disk --boot2 none --boot3 none --boot4 none
 
-# this startup will install guest additions. If successful it will be possible to get the IP
-# address from the VM (functionality provided by the guest additions)
+# If successful it will be possible to get the IP address from the VM
 echo "Starting VM to begin guest additions installation"
 VBoxManage startvm $template_vmname
 
-# wait for the VM to start - that means it is performing the installation
-"$script_dir"/wait-vm $template_vmname --started
+echo "Waiting for the VM to start and install guest additions"
+$proj_root/scripts/wait-vm $template_vmname --started
 
-# wait for the VM to stop - the guest additions install script performs a shutdown when it is done
-"$script_dir"/wait-vm $template_vmname --stopped
-
-# detach guest additions ISO
-echo "Detaching guest additions ISO"
+echo "Wait for the VM to stop - the guest additions install script performs a shutdown when it is done"
+$proj_root/scripts/wait-vm $template_vmname --stopped
 sleep 5s
+
+echo "Detaching guest additions ISO"
 VBoxManage storageattach $template_vmname --storagectl IDE --port 0 --device 0 --medium none

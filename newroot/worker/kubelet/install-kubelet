@@ -70,7 +70,6 @@ function parse_args() {
 }
 
 parse_args "$@"
-# todo validate args
 
 kubelet_binary_actual="$($proj_root/scripts/make-download-path\
  --download-url=$kubelet_download --download-path=$kubelet_binary)"

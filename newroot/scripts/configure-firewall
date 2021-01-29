@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# Firewall rules per:
+# https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/#check-required-ports
+
 vmip="$1"
 priv_key="$2"
 
@@ -14,10 +17,12 @@ if [[ "$3" == "--controller" ]]; then
 EOF
 fi
 
+# 53/UDP required for DNS add-on. Determined by enabling firewalld and logging denied connections
 if [[ "$3" == "--worker" ]]; then
   ssh -i "$priv_key" root@$vmip << EOF
     firewall-cmd --permanent --add-port=10250/tcp
     firewall-cmd --permanent --add-port=30000-32767/tcp
+    firewall-cmd --permanent --add-port=53/udp
     systemctl restart firewalld
 EOF
 fi

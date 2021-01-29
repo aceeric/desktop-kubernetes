@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/../scripts" && pwd)"
-"$script_dir"/install-guest-additions\
+proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+$proj_root/scripts/install-guest-additions\
  --template-vmname=bingo\
- --guest-additions-path=/home/eace/k8sbyhand/newroot/media/VBoxGuestAdditions_6.1.14.iso
+ --guest-additions-path=$proj_root/media/VBoxGuestAdditions_6.1.14.iso

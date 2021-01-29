@@ -1,24 +1,24 @@
 #!/usr/bin/env bash
 
-script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/../scripts" && pwd)"
+proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 echo "expect /tmp/frobozz.gz -- 0"
-"$script_dir"/make-download-path --download-url=https:/foo.com/baz.gz  --download-path=/tmp/frobozz.gz; echo $?
+$proj_root/scripts/make-download-path --download-url=https:/foo.com/baz.gz --download-path=/tmp/frobozz.gz; echo $?
 
 echo "expect /tmp/baz.gz -- 0"
-"$script_dir"/make-download-path --download-url=https:/foo.com/baz.gz  --download-path=/tmp; echo $?
+$proj_root/scripts/make-download-path --download-url=https:/foo.com/baz.gz --download-path=/tmp; echo $?
 
 echo "expect /tmp/frobozz.gz -- 0"
-"$script_dir"/make-download-path --download-url=https:/foo.com/baz.gz  --default-path=/tmp/frobozz.gz; echo $?
+$proj_root/scripts/make-download-path --download-url=https:/foo.com/baz.gz --default-path=/tmp/frobozz.gz; echo $?
 
 echo "expect /tmp/baz.gz -- 0"
-"$script_dir"/make-download-path --download-url=https:/foo.com/baz.gz  --default-path=/tmp; echo $?
+$proj_root/scripts/make-download-path --download-url=https:/foo.com/baz.gz --default-path=/tmp; echo $?
 
 echo "expect /tmp/bar.gz -- 0"
-"$script_dir"/make-download-path --download-path=/tmp/bar.gz; echo $?
+$proj_root/scripts/make-download-path --download-path=/tmp/bar.gz; echo $?
 
 echo "expect 1"
-"$script_dir"/make-download-path --download-path=/tmp; echo $?
+$proj_root/scripts/make-download-path --download-path=/tmp; echo $?
 
 echo "expect 1"
-"$script_dir"/make-download-path --download-url=https:/foo.com/baz.gz; echo $?
+$proj_root/scripts/make-download-path --download-url=https:/foo.com/baz.gz; echo $?

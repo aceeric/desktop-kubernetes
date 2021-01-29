@@ -7,7 +7,7 @@ set -e
 
 long_opts=controller-ip:,ca-cert:,ca-key:
 script_name=$(basename "$0")
-script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 controller_ip=
 ca_cert=
@@ -53,7 +53,6 @@ function parse_args() {
 }
 
 parse_args "$@"
-# todo validate args
 
 # debug
 #echo "controller_ip=$controller_ip"
@@ -61,13 +60,12 @@ parse_args "$@"
 #echo "ca_key=$ca_key"
 
 # generate key
-tls_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/../tls" && pwd)"
-openssl genrsa -out "$tls_dir/kubernetes-key.pem" 2048
+openssl genrsa -out $proj_root/tls/kubernetes-key.pem 2048
 
 # generate a CSR conf with the controller IP address embedded
-tmp_dir="$(mktemp -d)"
+tmp_dir=$(mktemp -d)
 
-cat <<EOF > "$tmp_dir/kubernetes-csr.conf"
+cat <<EOF > $tmp_dir/kubernetes-csr.conf
 [ req ]
 default_bits = 2048
 prompt = no
@@ -100,12 +98,12 @@ subjectAltName=@alt_names
 EOF
 
 # create a CSR using the conf from above
-openssl req -new -key "$tls_dir/kubernetes-key.pem"\
- -out "$tmp_dir/kubernetes.csr" -config "$tmp_dir/kubernetes-csr.conf"
+openssl req -new -key $proj_root/tls/kubernetes-key.pem\
+ -out $tmp_dir/kubernetes.csr -config $tmp_dir/kubernetes-csr.conf
 
 # gen certificate using the ca cert and key provided to the script, and the csr from above
-openssl x509 -req -in "$tmp_dir/kubernetes.csr" -CA "$ca_cert" -CAkey "$ca_key"\
- -CAcreateserial -out "$tls_dir/kubernetes.pem" -days 10000 -extensions v3_ext -extfile "$tmp_dir/kubernetes-csr.conf"
+openssl x509 -req -in $tmp_dir/kubernetes.csr -CA $ca_cert -CAkey $ca_key\
+ -CAcreateserial -out $proj_root/tls/kubernetes.pem -days 10000 -extensions v3_ext -extfile $tmp_dir/kubernetes-csr.conf
 
 # cleanup
-rm -rf $tmp_dir $tls_dir/ca.srl
+rm -rf $tmp_dir $proj_root/tls/ca.srl

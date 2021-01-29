@@ -4,7 +4,7 @@
 
 set -e
 
-long_opts=controller-ip:,worker-hostname:,priv-key:,admin-kubeconfig:,crictl-download:,crictl-binary:,\
+long_opts=controller-ip:,controller-hostname:,worker-hostname:,priv-key:,admin-kubeconfig:,crictl-download:,crictl-binary:,\
 runc-download:,runc-binary:,cni-plugins-download:,cni-plugins-binary:,containerd-download:,containerd-binary:,\
 kubelet-download:,kubelet-binary:,ca-cert:,ca-key:
 script_name=$(basename "$0")
@@ -16,6 +16,7 @@ controller_ip=
 # and change the hostname to match, then gen all the worker components wired up to that host name (which then
 # becomes a kubernetes node name)
 worker_hostname=
+controller_hostname=
 priv_key=
 admin_kubeconfig=
 crictl_download=
@@ -60,6 +61,10 @@ function parse_args() {
         ;;
       --worker-hostname)
         worker_hostname=$(opt_val "$2")
+        shift 2
+        ;;
+      --controller-hostname)
+        controller_hostname=$(opt_val "$2")
         shift 2
         ;;
       --priv-key)
@@ -127,11 +132,11 @@ function parse_args() {
 }
 
 parse_args "$@"
-# todo validate args
 
 # debug
 echo "controller_ip=$controller_ip"
 echo "worker_hostname=$worker_hostname"
+echo "controller_hostname=$controller_hostname"
 echo "priv_key=$priv_key"
 echo "admin_kubeconfig=$admin_kubeconfig"
 echo "crictl_download=$crictl_download"
@@ -156,7 +161,7 @@ fi
 echo "Getting IP address from running VM"
 worker_ip=$($proj_root/scripts/get-vm-ip $worker_hostname)
 
-echo "Configuring etc/hosts on controller and worker"
+echo "Configuring /etc/hosts on controller and worker"
 ssh -i $priv_key root@$controller_ip "echo $worker_ip $worker_hostname >> /etc/hosts"
 ssh -i $priv_key root@$worker_ip "echo $controller_ip $controller_hostname >> /etc/hosts"
 

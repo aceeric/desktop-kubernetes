@@ -4,7 +4,7 @@ set -e
 
 long_opts=template-vmname:,centos-iso-path:,guest-additions-path:,host-network-interface:,vboxdir:
 script_name=$(basename "$0")
-script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 template_vmname=
 centos_iso_path=
@@ -64,7 +64,6 @@ function parse_args() {
 }
 
 parse_args "$@"
-# todo validate args
 
 # debug
 #echo "template_vmname=$template_vmname"
@@ -73,21 +72,21 @@ parse_args "$@"
 #echo "host_network_interface=$host_network_interface"
 #echo "vboxdir=$vboxdir"
 
-# generate SSH keys. The public key will be copied to the VM by the kickstart script
-"$script_dir"/gen-ssh-keyfiles
+echo "Generate SSH keys -- the public key will be copied to the VM by the kickstart script"
+$proj_root/scripts/gen-ssh-keyfiles
 
-# generate kickstart ISO
-"$script_dir"/gen-kickstart-iso
+echo "Generate kickstart ISO"
+$proj_root/scripts/gen-kickstart-iso
 
-# create VM
-kickstart_iso_path="$(realpath $script_dir/../media/kickstart.iso)"
-"$script_dir"/create-vm --template-vmname="$template_vmname"\
-  --centos-iso-path="$centos_iso_path"\
-  --kickstart-iso-path="$kickstart_iso_path"\
-  --host-network-interface="$host_network_interface"\
-  --vboxdir="$vboxdir"
+echo "Create VM"
+kickstart_iso_path=$(realpath $proj_root/media/kickstart.iso)
+$proj_root/scripts/create-vm --template-vmname=$template_vmname\
+  --centos-iso-path=$centos_iso_path\
+  --kickstart-iso-path=$kickstart_iso_path\
+  --host-network-interface=$host_network_interface\
+  --vboxdir=$vboxdir
 
-# install guest additions
-"$script_dir"/install-guest-additions\
- --template-vmname="$template_vmname"\
- --guest-additions-path="$guest_additions_path"
+echo "Install guest additions"
+$proj_root/scripts/install-guest-additions\
+ --template-vmname=$template_vmname\
+ --guest-additions-path=$guest_additions_path

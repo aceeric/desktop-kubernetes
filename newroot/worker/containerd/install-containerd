@@ -4,7 +4,7 @@ set -e
 
 long_opts=priv-key:,worker-ip:,containerd-download:,containerd-binary:
 script_name=$(basename "$0")
-script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 priv_key=
 worker_ip=
@@ -55,33 +55,33 @@ function parse_args() {
 }
 
 parse_args "$@"
-# todo validate args
 
-containerd_binary_actual="$($script_dir/../../scripts/make-download-path\
- --download-url=$containerd_download --download-path=$containerd_binary)"
+containerd_binary_actual=$($proj_root/scripts/make-download-path\
+ --download-url=$containerd_download --download-path=$containerd_binary)
 
 # debug
-echo "priv_key=$priv_key"
-echo "worker_ip=$worker_ip"
-echo "containerd_download=$containerd_download"
-echo "containerd_binary=$containerd_binary"
-echo "containerd_binary_actual=$containerd_binary_actual"
+#echo "priv_key=$priv_key"
+#echo "worker_ip=$worker_ip"
+#echo "containerd_download=$containerd_download"
+#echo "containerd_binary=$containerd_binary"
+#echo "containerd_binary_actual=$containerd_binary_actual"
 
 if [[ ! -z "$containerd_download" ]]; then
   echo "Downloading containerd binary"
-  $script_dir/../../scripts/download-obj --url="$containerd_download" --dest="$containerd_binary_actual"
+  $proj_root/scripts/download-obj --url="$containerd_download" --dest="$containerd_binary_actual"
 else
   echo "No URL provided - skipping download and using provided containerd binary"
 fi
+
 echo "Copying binary to worker"
 cat $containerd_binary_actual | ssh -i $priv_key root@$worker_ip\
  "tar zxvf - --strip-components 1 --no-same-owner -C /bin/ bin"
 
 echo "Copying containerd service and toml files to worker VM"
-scp -i $priv_key $script_dir/containerd.service root@$worker_ip:/etc/systemd/system/
+scp -i $priv_key $proj_root/worker/containerd/containerd.service root@$worker_ip:/etc/systemd/system/
 
 ssh -i "$priv_key" root@$worker_ip "mkdir -p /etc/containerd"
-scp -i $priv_key $script_dir/containerd-config.toml root@$worker_ip:/etc/containerd
+scp -i $priv_key $proj_root/worker/containerd/containerd-config.toml root@$worker_ip:/etc/containerd
 
 echo "Starting containerd service"
 ssh -i "$priv_key" root@$worker_ip "systemctl daemon-reload && systemctl enable containerd && systemctl start containerd"

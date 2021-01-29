@@ -1,26 +1,28 @@
 #!/usr/bin/env bash
 
-set -e
-script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
 #
 # Creates an ISO from the 'kickstart' directory and writes the ISO into the project 'media'
-# directory. Expected contents of the kickstart directory:
+# directory. Expected contents of the kickstart directory (in order for it to be successfully used
+# to install CentOS and configure it as needed)
 #
-# - ks.cfg                               - kickstart script - refs the files below in the %post section
-# - id_ed25519.pub                       - to initialize ssh in the guest VM
-# - install-vbox-guest-additions.service - the systemctl service definition to perform unattended guest additions install
+# - ks.cfg                               - kickstart script - the %post section refs the other directory files
+# - id_ed25519.pub                       - to initialize ssh in the guest VM so other scripts can ssh into the VM
+# - install-vbox-guest-additions.service - the systemctl service file to perform unattended guest additions install
 # - install-vbox-guest-additions.sh      - called by the service to actually install guest additions
 #
 # Note: volume ID 'OEMDRV' in the genisoimage command below is important:
-# https://access.redhat.com/documentation/en-us/red_hat_enterprise_linux/7/html/installation_guide/sect-kickstart-howto
-# snip: "To load your Kickstart file automatically without having to specify the inst.ks= boot option,
-# name the file ks.cfg and place it on a storage volume labeled OEMDRV."
+# https://docs.centos.org/en-US/8-docs/advanced-install/assembly_making-kickstart-files-available-to-the-installation-program/
+#
+# snip: "A specially named Kickstart file can be present in the root of a specially named volume on the system
+# to be installed. This lets you bypass the need for another system, and makes the installation program
+# load the file automatically."
 #
 # The -J option supports long filenames. Docs recommend -R with -J
+#
 
-kickstart_iso="$(realpath $script_dir/../media/kickstart.iso)"
-kickstart_src_dir="$(realpath $script_dir/../kickstart)"
+set -e
 
-rm -f "$kickstart_iso"
-genisoimage -J -R -volid OEMDRV -o "$kickstart_iso" "$kickstart_src_dir"
+proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+rm -f $proj_root/media/kickstart.iso
+genisoimage -J -R -volid OEMDRV -o $proj_root/media/kickstart.iso $proj_root/kickstart

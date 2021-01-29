@@ -1,23 +1,22 @@
 #!/usr/bin/env bash
 
-script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/../control-plane/etcd" && pwd)"
-"$script_dir"/install-etcd\
- --priv-key=/home/eace/k8sbyhand/newroot/kickstart/id_ed25519\
+proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+$proj_root/scripts/install-etcd\
+ --priv-key=$proj_root/kickstart/id_ed25519\
  --controller-ip=192.168.0.81\
  --controller-hostname=doc\
- --etcd-gzip=/home/eace/k8sbyhand/newroot/binaries/etcd-v3.4.14-linux-amd64.tar.gz\
- --kubernetes-cert=/home/eace/k8sbyhand/newroot/tls/kubernetes.pem\
- --kubernetes-key=/home/eace/k8sbyhand/newroot/tls/kubernetes-key.pem\
- --ca-cert=/home/eace/k8sbyhand/newroot/tls/ca.pem
+ --etcd-gzip=$proj_root/binaries/etcd-v3.4.14-linux-amd64.tar.gz\
+ --kubernetes-cert=$proj_root/tls/kubernetes.pem\
+ --kubernetes-key=$proj_root/tls/kubernetes-key.pem\
+ --ca-cert=$proj_root/tls/ca.pem
 
-#script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/../control-plane/etcd" && pwd)"
-#"$script_dir"/install-etcd\
-# --priv-key=/home/eace/k8sbyhand/newroot/kickstart/id_ed25519\
+#$proj_root/scripts/install-etcd\
+# --priv-key=$proj_root/kickstart/id_ed25519\
 # --controller-ip=192.168.0.ZZZ\
 # --controller-hostname=doc\
 # --etcd-download=https://github.com/etcd-io/etcd/releases/download/v3.4.14/etcd-v3.4.14-linux-amd64.tar.gz\
-# --etcd-gzip=/home/eace/k8sbyhand/newroot/binaries\
-# --kubernetes-cert=/home/eace/k8sbyhand/newroot/tls/kubernetes.pem\
-# --kubernetes-key=/home/eace/k8sbyhand/newroot/tls/kubernetes-key.pem\
-# --ca-cert=/home/eace/k8sbyhand/newroot/tls/ca.pem
+# --etcd-gzip=$proj_root/binaries\
+# --kubernetes-cert=$proj_root/tls/kubernetes.pem\
+# --kubernetes-key=$proj_root/tls/kubernetes-key.pem\
+# --ca-cert=$proj_root/tls/ca.pem
 

@@ -65,7 +65,6 @@ function parse_args() {
 }
 
 parse_args "$@"
-# todo validate args
 
 kube_router_yaml_download_actual="$($proj_root/scripts/make-download-path\
  --download-url=$kube_router_yaml_download --download-path=$kube_router_yaml)"
@@ -91,13 +90,4 @@ sed\
  -e 's|%APISERVER%|https://'$controller_ip':6443|g'\
  $kube_router_yaml_download_actual | kubectl --kubeconfig $admin_kubeconfig apply -f -
 
-echo "TODO validate kube-router installation"
-
-
-# TODO HERE>>>>>>>>>>>>>>
-#$ kubectl --kubeconfig /home/eace/IdeaProjects/kuvboxctl/newroot/admin/admin.kubeconfig logs -n kube-system kube-router-h9gjf
-#Error from server: Get "https://ham:10250/containerLogs/kube-system/kube-router-h9gjf/kube-router": dial tcp: lookup ham on 75.75.75.75:53: no such host
-#eace@ubuntu-desktop:~/IdeaProjects/kuvboxctl/newroot$
-#
-#
-#IS IT POSSIBLE THE DNS ADDON IS REQUIRED TOO!?
+# TODO validate kube-router installation

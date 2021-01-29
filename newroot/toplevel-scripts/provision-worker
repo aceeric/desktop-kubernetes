@@ -138,7 +138,6 @@ function parse_args() {
 }
 
 parse_args "$@"
-# todo validate args
 
 # debug
 echo "controller_ip=$controller_ip"
@@ -163,13 +162,13 @@ echo "ca_cert=$ca_cert"
 echo "ca_key=$ca_key"
 
 $proj_root/scripts/clone-vm\
+ --priv-key=$priv_key\
  --template-vmname=$template_vmname\
  --clone-vmname=$clone_vmname\
  --clone-ram=$clone_ram\
  --clone-cpu=$clone_cpu\
  --vboxdir=$vboxdir
 
-# TODO DOES THIS SCRIPT NEED TO INIT ETC HOSTS WITH WORKER AND CONTROLLER?!?!?
 $proj_root/scripts/configure-worker\
  --controller-ip=$controller_ip\
  --worker-hostname=$clone_vmname\
