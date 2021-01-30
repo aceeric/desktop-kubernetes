@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+
+set -e
+
+#
+# Tests creation of a template VM, which creates a new VM and then installs guest additions into that
+# VM. The resulting VM should be suitable to clone into the controller VM and worker VMs for the Kubernetes
+# cluster
+#
+
+proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+if [[ "$1" != "download" ]]; then
+  $proj_root/scripts/create-template-vm\
+   --template-vmname=bingo\
+   --centos-iso-path=$proj_root/media/CentOS-8.3.2011-x86_64-dvd1.iso\
+   --guest-additions-path=$proj_root/media/VBoxGuestAdditions_6.1.14.iso\
+   --host-network-interface=enp0s31f6\
+   --vboxdir=/sdb1/virtualbox
+  exit
+fi
+
+$proj_root/scripts/create-template-vm\
+ --template-vmname=bingo\
+ --centos-iso-download=http://mirror.umd.edu/centos/8.3.2011/isos/x86_64/CentOS-8.3.2011-x86_64-dvd1.iso\
+ --centos-iso-path=$proj_root/media\
+ --guest-additions-download=http://download.virtualbox.org/virtualbox/6.1.14/VBoxGuestAdditions_6.1.14.iso\
+ --guest-additions-path=$proj_root/media\
+ --host-network-interface=enp0s31f6\
+ --vboxdir=/sdb1/virtualbox

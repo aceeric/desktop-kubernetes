@@ -2,23 +2,19 @@
 
 proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-$proj_root/scripts/install-kube-scheduler\
+$proj_root/control-plane/kube-scheduler/install-kube-scheduler\
  --priv-key=$proj_root/kickstart/id_ed25519\
- --controller-ip=192.168.0.81\
+ --controller-ip=192.168.0.104\
  --controller-hostname=doc\
  --kube-scheduler-binary=$proj_root/binaries/kube-scheduler\
- --kubernetes-cert=$proj_root/tls/kubernetes.pem\
- --kubernetes-key=$proj_root/tls/kubernetes-key.pem\
  --ca-cert=$proj_root/tls/ca.pem\
  --ca-key=$proj_root/tls/ca-key.pem
 
-#$proj_root/scripts/install-kube-scheduler\
+#$proj_root/control-plane/kube-scheduler/install-kube-scheduler\
 # --priv-key=$proj_root/kickstart/id_ed25519\
 # --controller-ip=192.168.0.ZZZ\
 # --controller-hostname=doc\
 # --kube-scheduler-download=https://storage.googleapis.com/kubernetes-release/release/v1.20.1/bin/linux/amd64/kube-scheduler\
 # --kube-scheduler-binary=$proj_root/binaries\
-# --kubernetes-cert=$proj_root/tls/kubernetes.pem\
-# --kubernetes-key=$proj_root/tls/kubernetes-key.pem\
 # --ca-cert=$proj_root/tls/ca.pem\
 # --ca-key=$proj_root/tls/ca-key.pem

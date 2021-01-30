@@ -4,7 +4,7 @@ set -e
 
 long_opts=priv-key:,controller-ip:,controller-hostname:,etcd-download:,etcd-gzip:,kubernetes-cert:,kubernetes-key:,ca-cert:
 script_name=$(basename "$0")
-proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
 priv_key=
 controller_ip=
@@ -105,7 +105,7 @@ ssh -i $priv_key root@$controller_ip "mkdir -p /etc/etcd /var/lib/etcd && chmod 
 scp -i $priv_key $kubernetes_cert $kubernetes_key $ca_cert root@$controller_ip:/etc/etcd
 
 echo "Generating service file"
-sed $proj_root/control-place/etcd/etcd.service\
+sed $proj_root/control-plane/etcd/etcd.service\
  -e "s|ETCD_NAME|$controller_hostname|g" -e "s|INTERNAL_IP|$controller_ip|g"\
  | ssh -i $priv_key root@$controller_ip "cat > /etc/systemd/system/etcd.service"
 

@@ -5,7 +5,7 @@ set -e
 long_opts=priv-key:,worker-ip:,crictl-download:,crictl-binary:,runc-download:,runc-binary:,\
 cni-plugins-download:,cni-plugins-binary:
 script_name=$(basename "$0")
-proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
 priv_key=
 worker_ip=

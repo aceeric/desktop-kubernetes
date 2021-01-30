@@ -1,6 +1,3 @@
-#TEST CHANGE TO v1 apiVersion: kubescheduler.config.k8s.io/v1alpha1
-# v1 NO, try v1beta1 apiVersion: kubescheduler.config.k8s.io/v1
-# v1beta1 worked!
 apiVersion: kubescheduler.config.k8s.io/v1beta1
 kind: KubeSchedulerConfiguration
 clientConnection:

@@ -6,7 +6,7 @@
 
 set -e
 
-long_opts=controller-hostname:,controller-ram:,controller-cpus:,vboxdir:,priv-key:,\
+long_opts=controller-hostname:,vboxdir:,priv-key:,\
 etcd-download:,etcd-gzip:,kube-apiserver-download:,kube-apiserver-binary:,\
 kube-controller-manager-download:,kube-controller-manager-binary:,\
 kube-scheduler-download:,kube-scheduler-binary:,ca-cert:,ca-key:
@@ -15,8 +15,6 @@ proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 # api
 controller_hostname=
-controller_ram=
-controller_cpus=
 vboxdir=
 priv_key=
 etcd_download=
@@ -54,14 +52,6 @@ function parse_args() {
     case "$1" in
       --controller-hostname)
         controller_hostname=$(opt_val "$2")
-        shift 2
-        ;;
-      --controller-ram)
-        controller_ram=$(opt_val "$2")
-        shift 2
-        ;;
-      --controller-cpus)
-        controller_cpus=$(opt_val "$2")
         shift 2
         ;;
       --vboxdir)
@@ -124,8 +114,6 @@ parse_args "$@"
 
 # debug
 #echo "controller_hostname=$controller_hostname"
-#echo "controller_ram=$controller_ram"
-#echo "controller_cpus=$controller_cpus"
 #echo "vboxdir=$vboxdir"
 #echo "priv_key=$priv_key"
 #echo "etcd_download=$etcd_download"
@@ -150,9 +138,6 @@ controller_ip=$($proj_root/scripts/get-vm-ip $controller_hostname)
 
 echo "Configuring firewall rules"
 $proj_root/scripts/configure-firewall $controller_ip $priv_key --controller
-
-echo "Generating cluster TLS material into tls directory on this machine"
-$proj_root/scripts/gen-root-ca
 
 # creates $proj_root/tls/kubernetes.pem and kubernetes-key.pem
 $proj_root/scripts/gen-cluster-tls\
@@ -205,14 +190,12 @@ $proj_root/control-plane/kube-scheduler/install-kube-scheduler\
  --controller-hostname=$controller_hostname\
  --kube-scheduler-download=$kube_scheduler_download\
  --kube-scheduler-binary=$kube_scheduler_binary\
- --kubernetes-cert=$kubernetes_cert\
- --kubernetes-key=$kubernetes_key\
  --ca-cert=$ca_cert\
  --ca-key=$ca_key
 
 # todo may need to retry for some period to allow time for everything to come up
 
-healthy_count=$(kubectl --kubeconfig=$kube_controller_manager_dir/kube-controller-manager.kubeconfig\
+healthy_count=$(kubectl --kubeconfig=$proj_root/control-plane/kube-controller-manager/kube-controller-manager.kubeconfig\
  get componentstatuses --no-headers | awk '{print $2}' | grep Healthy | wc -l)
 
 if [[ "$healthy_count" -ne 3 ]]; then

@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+set -e
+
+#
+# Tests downloading the CentOS ISO
+#
+
+proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+tmp_dir=$(mktemp -d)
+
+echo "Downloading to $tmp_dir"
+
+if ! $proj_root/scripts/download-obj\
+ --url=http://mirror.umd.edu/centos/8.3.2011/isos/x86_64/CentOS-8.3.2011-x86_64-dvd1.iso\
+ --dest=$tmp_dir; then
+   echo "download failed - ISO does not exist at specified URL?"
+   rm -rf $tmp_dir
+fi
+
+echo "success -- to clean up: rm -rf $tmp_dir"

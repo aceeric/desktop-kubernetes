@@ -2,7 +2,7 @@
 
 proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 $proj_root/scripts/gen-worker-tls\
-  --worker-ip=192.168.0.??\
+  --worker-ip=192.168.0.222\
   --worker-hostname=ham\
   --ca-cert=$proj_root/tls/ca.pem\
   --ca-key=$proj_root/tls/ca-key.pem

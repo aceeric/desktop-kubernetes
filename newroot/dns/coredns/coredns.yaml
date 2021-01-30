@@ -47,16 +47,18 @@ metadata:
 data:
   Corefile: |
     .:53 {
+        log
         errors
-        health {
-          lameduck 5s
-        }
+        health
         ready
         kubernetes cluster.local in-addr.arpa ip6.arpa {
           pods insecure
           fallthrough in-addr.arpa ip6.arpa
         }
         prometheus :9153
+        forward . 8.8.8.8 8.8.4.4 {
+          tls_servername dns.google
+        }
         cache 30
         loop
         reload
@@ -72,9 +74,7 @@ metadata:
     k8s-app: kube-dns
     kubernetes.io/name: "CoreDNS"
 spec:
-  # replicas: not specified here:
-  # 1. Default is 1.
-  # 2. Will be tuned in real time if DNS horizontal auto-scaling is turned on.
+  replicas: 1
   strategy:
     type: RollingUpdate
     rollingUpdate:

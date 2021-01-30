@@ -1,13 +1,33 @@
 #!/usr/bin/env bash
 
+#
+# Provisions two workers. Requires that the controller VM be successfully configured and running. Needs the
+# controller VM name in arg one (expects the VBox VM name to be identical to the OS hostname). Best way to run
+# this is immediately after running 'tests/test-provision-controller'. Then the CA, and cluster certs will
+# be initialized on the filesystem and consistent for use by the worker configuration scripts.
+#
+
+set -e
+
+controller_vmname="$1"
+
+if [[ -z ""$controller_vmname"" ]]; then
+  echo "need a controller VM name in arg one"
+  exit 1
+fi
+
 proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+controller_ip=$($proj_root/scripts/get-vm-ip $controller_vmname)
+
 $proj_root/toplevel-scripts/provision-workers\
  --worker=ham,4096,2\
- --controller-ip=192.168.0.81\
+ --worker=monk,8192,3\
+ --controller-ip=$controller_ip\
+ --controller-hostname=$controller_vmname\
  --template-vmname=bingo\
  --vboxdir=/sdb1/virtualbox\
  --priv-key=$proj_root/kickstart/id_ed25519\
- --admin-kubeconfig=$proj_root/admin/admin.kubeconfig\
  --crictl-download=\
  --crictl-binary=$proj_root/binaries/crictl-v1.19.0-linux-amd64.tar.gz\
  --runc-download=\
@@ -20,9 +40,5 @@ $proj_root/toplevel-scripts/provision-workers\
  --kubelet-binary=$proj_root/binaries/kubelet\
  --ca-cert=$proj_root/tls/ca.pem\
  --ca-key=$proj_root/tls/ca-key.pem\
- --deploy-script-download=\
- --deploy-script=$proj_root/binaries/deploy.sh\
- --coredns-yaml-sed-download=\
- --coredns-yaml-sed=$proj_root/binaries/coredns.yaml.sed\
  --kube-router-yaml-download=\
  --kube-router-yaml=$proj_root/binaries/generic-kuberouter-all-features.yaml

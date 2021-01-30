@@ -37,7 +37,6 @@ if ! vboxmanage showvminfo "$vm" &>/dev/null; then
 fi
 
 state=(stop start)
-echo "waiting for VM '$vm' to ${state[$expected]}"
 while true; do
   actual=$(vboxmanage list runningvms | grep '"'"$vm"'"' | wc -l)
   if [[ $expected -eq $actual ]]; then

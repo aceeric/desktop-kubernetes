@@ -107,7 +107,7 @@ WORKS BUT
 net net - disabled kube proxy and used kube router full
 don't know if this was actually required
 
-1) THIS IS IMPORTANT:https://github.com/cloudnativelabs/kube-router/blob/master/docs/generic.md
+1) THIS IS IMPORTANT: https://github.com/cloudnativelabs/kube-router/blob/master/docs/generic.md
 2) --allow-privileged note above
 3) don't run kube proxy
 4) didn't do any special firewall rules?

@@ -4,7 +4,7 @@ set -e
 
 long_opts=priv-key:,controller-ip:,controller-hostname:,kube-apiserver-download:,kube-apiserver-binary:,kubernetes-cert:,kubernetes-key:,ca-cert:,ca-key:
 script_name=$(basename "$0")
-proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
 priv_key=
 controller_ip=
@@ -139,7 +139,14 @@ ssh -i $priv_key root@$controller_ip\
  "systemctl daemon-reload && systemctl enable kube-apiserver && systemctl start kube-apiserver"
 
 echo "Verifying kube-apiserver is running"
-http_code=$(curl -so /dev/null -w "%{http_code}" --cacert $ca_cert https://$controller_ip:6443/version)
+set +e
+for i in {1..10}; do
+  http_code=$(curl -so /dev/null -w "%{http_code}" --cacert $ca_cert https://$controller_ip:6443/version)
+  if [[ "$http_code" == "200" ]]; then
+    break
+  fi
+  sleep 1s
+done
 
 if [[ "$http_code" != "200" ]]; then
   echo "ERROR: Unable to verify kube-apiserver installation"

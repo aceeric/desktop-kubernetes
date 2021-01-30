@@ -134,23 +134,23 @@ function parse_args() {
 parse_args "$@"
 
 # debug
-echo "controller_ip=$controller_ip"
-echo "worker_hostname=$worker_hostname"
-echo "controller_hostname=$controller_hostname"
-echo "priv_key=$priv_key"
-echo "admin_kubeconfig=$admin_kubeconfig"
-echo "crictl_download=$crictl_download"
-echo "crictl_binary=$crictl_binary"
-echo "runc_download=$runc_download"
-echo "runc_binary=$runc_binary"
-echo "cni_plugins_download=$cni_plugins_download"
-echo "cni_plugins_binary=$cni_plugins_binary"
-echo "containerd_download=$containerd_download"
-echo "containerd_binary=$containerd_binary"
-echo "kubelet_download=$kubelet_download"
-echo "kubelet_binary=$kubelet_binary"
-echo "ca_cert=$ca_cert"
-echo "ca_key=$ca_key"
+#echo "controller_ip=$controller_ip"
+#echo "worker_hostname=$worker_hostname"
+#echo "controller_hostname=$controller_hostname"
+#echo "priv_key=$priv_key"
+#echo "admin_kubeconfig=$admin_kubeconfig"
+#echo "crictl_download=$crictl_download"
+#echo "crictl_binary=$crictl_binary"
+#echo "runc_download=$runc_download"
+#echo "runc_binary=$runc_binary"
+#echo "cni_plugins_download=$cni_plugins_download"
+#echo "cni_plugins_binary=$cni_plugins_binary"
+#echo "containerd_download=$containerd_download"
+#echo "containerd_binary=$containerd_binary"
+#echo "kubelet_download=$kubelet_download"
+#echo "kubelet_binary=$kubelet_binary"
+#echo "ca_cert=$ca_cert"
+#echo "ca_key=$ca_key"
 
 run_count=$(VBoxManage list runningvms | awk '{print $1}' | grep -e'"'$worker_hostname'"' | wc -l)
 if [[ $run_count -eq 0 ]]; then
@@ -224,7 +224,14 @@ $proj_root/worker/kubelet/install-kubelet\
  --kubelet-binary=$kubelet_binary\
  --ca-cert=$ca_cert
 
-ready_count=$(kubectl --kubeconfig $admin_kubeconfig get nodes 2>/dev/null | grep $worker_hostname | grep Ready | wc -l)
+set +e
+for i in {1..15}; do
+  ready_count=$(kubectl --kubeconfig $admin_kubeconfig get nodes 2>/dev/null | grep $worker_hostname | grep Ready | wc -l)
+  if [[ "$ready_count" -eq 1 ]]; then
+    break
+  fi
+  sleep 1s
+done
 
 if [[ "$ready_count" -ne 1 ]]; then
   echo "Unable to verify that the worker node was successfully configured"

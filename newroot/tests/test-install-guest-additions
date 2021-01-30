@@ -1,5 +1,10 @@
 #!/usr/bin/env bash
 
+#
+# Tests installing guest additions into a VM that was just created by running the
+# 'test-create-vm' test script
+#
+
 proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 $proj_root/scripts/install-guest-additions\

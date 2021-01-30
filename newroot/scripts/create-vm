@@ -1,10 +1,17 @@
 #!/usr/bin/env bash
 
-# Creates a CentOS VM from a CentOS ISO, and installs the OS using Kickstart. Intent is - this
-# VM will be the template VM from which the cluster VMs will subsequently be cloned
-
-done
+#
+# Creates a CentOS VM from a CentOS ISO, and installs the OS using Kickstart from a Kickstart ISO.
+# Intent is - this VM will be the template VM from which the cluster VMs will subsequently be cloned.
+# Expects ISO files on the file system. Since the template VM will be configured with Vbox bridge networking,
+# expects a host network interface that can be configured into the Vbox bridge network for the VM. Upon
+# completion of this script, it should be possible to start the VM, get the IP address using the
+# 'get-vm-ip' script, and then SSH into the VM like so:
+#
+# ssh -i kickstart/id_ed25519 root@$(scripts/get-vm-ip myvmname)
+#
 # todo args: cpu / mem / storage
+#
 
 set -e
 

@@ -64,8 +64,7 @@ FAIL!!
 WORKER
 
 https://serverfault.com/questions/842749/firewalld-logging-denied-packets-enabled-not-logging
-firewall-cmd --set-log-denied all
-systemctl restart firewalld
+firewall-cmd --set-log-denied all && systemctl restart firewalld
 
 Create a file named /etc/rsyslog.d/custom_iptables.conf and add the following statements to it:
 
@@ -123,3 +122,14 @@ SUCCESS!!!!!
 
 *** only two controller variables: 443 and RBAC. need to regen entire cluster to test
 
+
+
+
+https://kubernetes.io/docs/tasks/administer-cluster/dns-debugging-resolution/
+kubectl apply -f debugging/dnsutils.yaml
+kubectl exec -i -t dnsutils -- nslookup kubernetes.default
+kubectl exec -ti dnsutils -- cat /etc/resolv.conf
+kubectl exec -i -t dnsutils -- nslookup kubernetes.default
+kubectl get pods --namespace=kube-system -l k8s-app=kube-dns
+kubectl get svc --namespace=kube-system
+kubectl get endpoints kube-dns --namespace=kube-system

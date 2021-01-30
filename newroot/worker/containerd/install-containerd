@@ -4,7 +4,7 @@ set -e
 
 long_opts=priv-key:,worker-ip:,containerd-download:,containerd-binary:
 script_name=$(basename "$0")
-proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
 priv_key=
 worker_ip=
@@ -87,7 +87,11 @@ echo "Starting containerd service"
 ssh -i "$priv_key" root@$worker_ip "systemctl daemon-reload && systemctl enable containerd && systemctl start containerd"
 
 echo "Verifying containerd is running"
-ssh -i "$priv_key" root@$worker_ip "systemctl is-active --quiet containerd"
+set +e
+for i in {1..10}; do
+  ssh -i "$priv_key" root@$worker_ip "systemctl is-active --quiet containerd" && break
+  sleep 1s
+done
 
 echo "No errors detected with containerd installation"
 

@@ -1,19 +1,16 @@
 #!/usr/bin/env bash
 
-# todo check no unused args (e.g. kubernetes_cert/key)
 set -e
 
-long_opts=priv-key:,controller-ip:,controller-hostname:,kube-scheduler-download:,kube-scheduler-binary:,kubernetes-cert:,kubernetes-key:,ca-cert:,ca-key:
+long_opts=priv-key:,controller-ip:,controller-hostname:,kube-scheduler-download:,kube-scheduler-binary:,ca-cert:,ca-key:
 script_name=$(basename "$0")
-proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
 priv_key=
 controller_ip=
 controller_hostname=
 kube_scheduler_download=
 kube_scheduler_binary=
-kubernetes_cert=
-kubernetes_key=
 ca_cert=
 ca_key=
 
@@ -56,14 +53,6 @@ function parse_args() {
         kube_scheduler_binary=$(opt_val "$2")
         shift 2
         ;;
-      --kubernetes-cert)
-        kubernetes_cert=$(opt_val "$2")
-        shift 2
-        ;;
-      --kubernetes-key)
-        kubernetes_key=$(opt_val "$2")
-        shift 2
-        ;;
       --ca-cert)
         ca_cert=$(opt_val "$2")
         shift 2
@@ -92,8 +81,6 @@ kube_scheduler_binary_actual=$($proj_root/scripts/make-download-path\
 #echo "kube_scheduler_download=$kube_scheduler_download"
 #echo "kube_scheduler_binary=$kube_scheduler_binary"
 #echo "kube_scheduler_binary_actual=$kube_scheduler_binary_actual"
-#echo "kubernetes_cert=$kubernetes_cert"
-#echo "kubernetes_key=$kubernetes_key"
 #echo "ca_cert=$ca_cert"
 #echo "ca_key=$ca_key"
 
@@ -158,6 +145,10 @@ ssh -i "$priv_key" root@$controller_ip\
  "systemctl daemon-reload && systemctl enable kube-scheduler && systemctl start kube-scheduler"
 
 echo "Verifying kube-scheduler is running"
-ssh -i "$priv_key" root@$controller_ip "systemctl is-active --quiet kube-scheduler"
+set +e
+for i in {1..10}; do
+  ssh -i "$priv_key" root@$controller_ip "systemctl is-active --quiet kube-scheduler" && break
+  sleep 1s
+done
 
 echo "No errors detected with kube-scheduler installation"

@@ -2,21 +2,20 @@
 
 set -e
 
-long_opts=worker:,controller-ip:,template-vmname:,vboxdir:,\
-priv-key:,admin-kubeconfig:,crictl-download:,crictl-binary:,runc-download:,runc-binary:,\
+long_opts=worker:,controller-ip:,controller-hostname:,template-vmname:,vboxdir:,\
+priv-key:,crictl-download:,crictl-binary:,runc-download:,runc-binary:,\
 cni-plugins-download:,cni-plugins-binary:,containerd-download:,containerd-binary:,\
 kubelet-download:,kubelet-binary:,ca-cert:,ca-key:,\
-deploy-script-download:,deploy-script:,coredns-yaml-sed-download:,coredns-yaml-sed:,\
 kube-router-yaml-download:,kube-router-yaml:
 script_name=$(basename "$0")
 proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 worker=
 controller_ip=
+controller_hostname=
 template_vmname=
 vboxdir=
 priv_key=
-admin_kubeconfig=
 crictl_download=
 crictl_binary=
 runc_download=
@@ -29,10 +28,6 @@ kubelet_download=
 kubelet_binary=
 ca_cert=
 ca_key=
-deploy_script_download=
-deploy_script=
-coredns_yaml_sed_download=
-coredns_yaml_sed=
 kube_router_yaml_download=
 kube_router_yaml=
 
@@ -67,6 +62,10 @@ function parse_args() {
         controller_ip=$(opt_val "$2")
         shift 2
         ;;
+      --controller-hostname)
+        controller_hostname=$(opt_val "$2")
+        shift 2
+        ;;
       --template-vmname)
         template_vmname=$(opt_val "$2")
         shift 2
@@ -77,10 +76,6 @@ function parse_args() {
         ;;
       --priv-key)
         priv_key=$(opt_val "$2")
-        shift 2
-        ;;
-      --admin-kubeconfig)
-        admin_kubeconfig=$(opt_val "$2")
         shift 2
         ;;
       --crictl-download)
@@ -131,22 +126,6 @@ function parse_args() {
         ca_key=$(opt_val "$2")
         shift 2
         ;;
-      --deploy-script-download)
-        deploy_script_download=$(opt_val "$2")
-        shift 2
-        ;;
-      --deploy-script)
-        deploy_script=$(opt_val "$2")
-        shift 2
-        ;;
-      --coredns-yaml-sed-download)
-        coredns_yaml_sed_download=$(opt_val "$2")
-        shift 2
-        ;;
-      --coredns-yaml-sed)
-        coredns_yaml_sed=$(opt_val "$2")
-        shift 2
-        ;;
       --kube-router-yaml-download)
         kube_router_yaml_download=$(opt_val "$2")
         shift 2
@@ -171,11 +150,12 @@ fi
 
 # debug
 #echo "worker=$worker"
+#echo "workers=${workers[@]}"
 #echo "controller_ip=$controller_ip"
+#echo "controller_hostname=$controller_hostname"
 #echo "template_vmname=$template_vmname"
 #echo "vboxdir=$vboxdir"
 #echo "priv_key=$priv_key"
-#echo "admin_kubeconfig=$admin_kubeconfig"
 #echo "crictl_download=$crictl_download"
 #echo "crictl_binary=$crictl_binary"
 #echo "runc_download=$runc_download"
@@ -188,26 +168,27 @@ fi
 #echo "kubelet_binary=$kubelet_binary"
 #echo "ca_cert=$ca_cert"
 #echo "ca_key=$ca_key"
-#echo "deploy_script_download=$deploy_script_download"
-#echo "deploy_script=$deploy_script"
-#echo "coredns_yaml_sed_download=$coredns_yaml_sed_download"
-#echo "coredns_yaml_sed=$coredns_yaml_sed"
 #echo "kube_router_yaml_download=$kube_router_yaml_download"
 #echo "kube_router_yaml=$kube_router_yaml"
 
-for worker in ${workers[@]}; do
-  IFS=',' read -ra wrkr <<< "$workers"
+admin_kubeconfig=$proj_root/admin/admin.kubeconfig
+if [[ ! -f $admin_kubeconfig ]]; then
+  echo "no admin kubeconfig at: $admin_kubeconfig - need to run 'provision-controller' before this"
+  exit 1
+fi
+
+# expect each worker in the form 'hostname,ram,cpu' e.g.: 'worker1,4096,2'
+for worker in "${workers[@]}"; do
+  IFS=',' read -ra wrkr <<< "$worker"
   clone_vmname=${wrkr[0]}
   clone_ram=${wrkr[1]}
   clone_cpu=${wrkr[2]}
 
-  # debug
-#  echo "clone_vmname=$clone_vmname"
-#  echo "clone_ram=$clone_ram"
-#  echo "clone_cpu=$clone_cpu"
+  echo "provisioning worker $clone_vmname"
 
   $proj_root/toplevel-scripts/provision-worker\
    --controller-ip=$controller_ip\
+   --controller-hostname=$controller_hostname\
    --template-vmname=$template_vmname\
    --clone-vmname=$clone_vmname\
    --clone-ram=$clone_ram\
@@ -239,8 +220,9 @@ $proj_root/worker/kube-router/install-kube-router\
 
 $proj_root/dns/coredns/install-coredns\
  --replicas=${#workers[@]}\
- --deploy-script-download=$deploy_script_download\
- --deploy-script=$deploy_script\
- --coredns-yaml-sed-download=$coredns_yaml_sed_download\
- --coredns-yaml-sed=$coredns_yaml_sed\
  --admin-kubeconfig=$admin_kubeconfig
+
+echo "finished provisioning workers. To interact with the cluster:"
+echo "    export KUBECONFIG=$admin_kubeconfig"
+echo "then:"
+echo "    kubectl get po -A"

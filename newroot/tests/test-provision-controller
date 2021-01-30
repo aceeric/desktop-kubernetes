@@ -1,10 +1,13 @@
 #!/usr/bin/env bash
 
 proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-$proj_root/scripts/configure-controller\
- --controller-hostname=doc\
- --vboxdir=/sdb1/virtualbox\
+$proj_root/toplevel-scripts/provision-controller\
  --priv-key=$proj_root/kickstart/id_ed25519\
+ --template-vmname=bingo\
+ --vboxdir=/sdb1/virtualbox\
+ --controller-hostname=doc\
+ --controller-ram=4096\
+ --controller-cpu=2\
  --etcd-download=\
  --etcd-gzip=$proj_root/binaries/etcd-v3.4.14-linux-amd64.tar.gz\
  --kube-apiserver-download=\
@@ -14,4 +17,4 @@ $proj_root/scripts/configure-controller\
  --kube-scheduler-download=\
  --kube-scheduler-binary=$proj_root/binaries/kube-scheduler\
  --ca-cert=$proj_root/tls/ca.pem\
- --ca-key=$proj_root/tls/ca-key.pem
+ --ca-key=$proj_root/tls/ca-key.pem\

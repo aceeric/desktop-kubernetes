@@ -1,8 +1,0 @@
-#!/usr/bin/env bash
-
-scripts/do-provision\
- --template-vmname=bingo\
- --centos-iso-path=$proj_root/media/CentOS-8.2.2004-x86_64-dvd1.iso\
- --guest-additions-path=$proj_root/media/VBoxGuestAdditions_6.1.14.iso\
- --host-network-interface=enp0s31f6\
- --vboxdir=/sdb1/virtualbox

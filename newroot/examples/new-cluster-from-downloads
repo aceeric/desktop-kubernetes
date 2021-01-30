@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+
+set -e
+
+if [[ "$#" -ne 1 ]]; then
+  echo "requires exactly one arg: template VM name"
+  exit 1
+fi
+
+proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+template_vmname="$1"
+
+# Checks installed versions of tools used by this project against tested versions. Comment out
+# if variances will not cause problems
+$proj_root/scripts/verify-prereqs
+
+# generates $proj_root/tls/ca.pem and ca-key.pem
+echo "generating root CA into tls directory on this machine"
+$proj_root/scripts/gen-root-ca
+
+echo "provisioning a controller node 'doc'"
+$proj_root/toplevel-scripts/provision-controller\
+ --priv-key=$proj_root/kickstart/id_ed25519\
+ --template-vmname=$template_vmname\
+ --vboxdir=/sdb1/virtualbox\
+ --controller-hostname=doc\
+ --controller-ram=4096\
+ --controller-cpu=2\
+ --etcd-download=\
+ --etcd-gzip=$proj_root/binaries/etcd-v3.4.14-linux-amd64.tar.gz\
+ --kube-apiserver-download=\
+ --kube-apiserver-binary=$proj_root/binaries/kube-apiserver\
+ --kube-controller-manager-download=\
+ --kube-controller-manager-binary=$proj_root/binaries/kube-controller-manager\
+ --kube-scheduler-download=\
+ --kube-scheduler-binary=$proj_root/binaries/kube-scheduler\
+ --ca-cert=$proj_root/tls/ca.pem\
+ --ca-key=$proj_root/tls/ca-key.pem\
+
+echo "provisioning worker nodes 'ham' and 'monk'"
+controller_ip=$($proj_root/scripts/get-vm-ip doc)
+$proj_root/toplevel-scripts/provision-workers\
+ --worker=ham,4096,2\
+ --worker=monk,8192,3\
+ --controller-ip=$controller_ip\
+ --controller-hostname=doc\
+ --template-vmname=bingo\
+ --vboxdir=/sdb1/virtualbox\
+ --priv-key=$proj_root/kickstart/id_ed25519\
+ --crictl-download=\
+ --crictl-binary=$proj_root/binaries/crictl-v1.19.0-linux-amd64.tar.gz\
+ --runc-download=\
+ --runc-binary=$proj_root/binaries/runc\
+ --cni-plugins-download=\
+ --cni-plugins-binary=$proj_root/binaries/cni-plugins-linux-amd64-v0.9.0.tgz\
+ --containerd-download=\
+ --containerd-binary=$proj_root/binaries/containerd-1.4.3-linux-amd64.tar.gz\
+ --kubelet-download=\
+ --kubelet-binary=$proj_root/binaries/kubelet\
+ --kube-router-yaml-download=\
+ --kube-router-yaml=$proj_root/binaries/generic-kuberouter-all-features.yaml\
+ --ca-cert=$proj_root/tls/ca.pem\
+ --ca-key=$proj_root/tls/ca-key.pem\

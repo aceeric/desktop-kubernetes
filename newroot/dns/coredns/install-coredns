@@ -1,16 +1,17 @@
 #!/usr/bin/env bash
 
+#
+# Applies the coredns.yaml to the cluster. The yaml is generated from upstreams as documented in the README
+# todo handle replicas
+#
+
 set -e
 
-long_opts=replicas:,deploy-script-download:,deploy-script:,coredns-yaml-sed-download:,coredns-yaml-sed:,admin-kubeconfig:
+long_opts=replicas:,admin-kubeconfig:
 script_name=$(basename "$0")
 proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
 replicas=
-deploy_script_download=
-deploy_script=
-coredns_yaml_sed_download=
-coredns_yaml_sed=
 admin_kubeconfig=
 
 function opt_val() {
@@ -36,22 +37,6 @@ function parse_args() {
         replicas=$(opt_val "$2")
         shift 2
         ;;
-      --deploy-script-download)
-        deploy_script_download=$(opt_val "$2")
-        shift 2
-        ;;
-      --deploy-script)
-        deploy_script=$(opt_val "$2")
-        shift 2
-        ;;
-      --coredns-yaml-sed-download)
-        coredns_yaml_sed_download=$(opt_val "$2")
-        shift 2
-        ;;
-      --coredns-yaml-sed)
-        coredns_yaml_sed=$(opt_val "$2")
-        shift 2
-        ;;
       --admin-kubeconfig)
         admin_kubeconfig=$(opt_val "$2")
         shift 2
@@ -66,41 +51,11 @@ function parse_args() {
 
 parse_args "$@"
 
-deploy_script_actual="$($proj_root/scripts/make-download-path\
- --download-url=$deploy_script_download --download-path=$deploy_script)"
-coredns_yaml_sed_actual="$($proj_root/scripts/make-download-path\
- --download-url=$coredns_yaml_sed_download --download-path=$coredns_yaml_sed)"
-
 # debug
 #echo "replicas=$replicas"
-#echo "deploy_script_download=$deploy_script_download"
-#echo "deploy_script=$deploy_script"
-#echo "deploy_script_actual=$deploy_script_actual"
-#echo "coredns_yaml_sed_download=$coredns_yaml_sed_download"
-#echo "coredns_yaml_sed=$coredns_yaml_sed"
-#echo "coredns_yaml_sed_actual=$coredns_yaml_sed_actual"
 #echo "admin_kubeconfig=$admin_kubeconfig"
 
-# whether downloaded - or passed as existing files - the expectation is these are un-modified sources
-if [[ ! -z "$deploy_script_download" ]]; then
-  $proj_root/scripts/download-obj --url="$deploy_script_download" --dest="$deploy_script_actual"
-  chmod +x $deploy_script_actual
-fi
-if [[ ! -z "$coredns_yaml_sed_download" ]]; then
-  $proj_root/scripts/download-obj --url="$coredns_yaml_sed_download" --dest="$coredns_yaml_sed_actual"
-fi
-
-echo "Generating coredns.yaml from sources and applying to the cluster"
-# $deploy_script_actual is 'deploy.sh' and that script looks for coredns.yaml.sed in the same
-# directory that is is running in
-source $deploy_script_actual -i 10.32.0.10 -s\
- | sed -e "s|image: coredns|image: docker.io/coredns|"\
-       -e "s|# replicas: not specified here:|replicas: $replicas|"\
-       -e "/forward.*\/etc\/resolv.conf/,+2 d"\
-       -e "s|fallthrough in-addr.arpa ip6.arpa|pods insecure\n          fallthrough in-addr.arpa ip6.arpa|"\
- >| $proj_root/dns/coredns/coredns.yaml
-
+echo "applying coredns.yaml to the cluster"
 kubectl --kubeconfig $admin_kubeconfig apply -f $proj_root/dns/coredns/coredns.yaml
 
 # TODO verify it is running
-# TODO in order to test all the tweaks need to regen controller too! - unclear if hightower RBACs are important...

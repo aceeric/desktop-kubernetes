@@ -6,6 +6,15 @@
 vmip="$1"
 priv_key="$2"
 
+# todo what combination of firewall rules will allow coredns to work on CentOS?
+#  note UDP/9153 when kubectl get svc --namespace=kube-system ...?
+# https://medium.com/platformer-blog/kubernetes-on-centos-7-with-firewalld-e7b53c1316af
+# says --add-port=8472/udp and --add-masquerade --permanent on controller AND worker...
+# but does not match kubernetes docs
+
+ssh -i "$priv_key" root@$vmip "systemctl stop firewalld && systemctl disable firewalld"
+exit 0
+
 if [[ "$3" == "--controller" ]]; then
   ssh -i "$priv_key" root@$vmip << EOF
     firewall-cmd --permanent --add-port=6443/tcp
@@ -17,12 +26,14 @@ if [[ "$3" == "--controller" ]]; then
 EOF
 fi
 
-# 53/UDP required for DNS add-on. Determined by enabling firewalld and logging denied connections
+# UDP ports are experimental and don't work - CoreDNS nslookup fails
 if [[ "$3" == "--worker" ]]; then
   ssh -i "$priv_key" root@$vmip << EOF
     firewall-cmd --permanent --add-port=10250/tcp
     firewall-cmd --permanent --add-port=30000-32767/tcp
     firewall-cmd --permanent --add-port=53/udp
+    firewall-cmd --permanent --add-port=5353/udp
+    firewall-cmd --permanent --add-port=138/udp
     systemctl restart firewalld
 EOF
 fi

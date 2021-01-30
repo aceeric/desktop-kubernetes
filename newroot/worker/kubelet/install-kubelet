@@ -75,15 +75,15 @@ kubelet_binary_actual="$($proj_root/scripts/make-download-path\
  --download-url=$kubelet_download --download-path=$kubelet_binary)"
 
 # debug
-echo "priv_key=$priv_key"
-echo "controller_ip=$controller_ip"
-echo "worker_ip=$worker_ip"
-echo "worker_hostname=$worker_hostname"
-echo "kubelet_download=$kubelet_download"
-echo "kubelet_binary=$kubelet_binary"
-echo "kubelet_binary_actual=$kubelet_binary_actual"
-echo "ca_cert=$ca_cert"
-echo "ca_key=$ca_key"
+#echo "priv_key=$priv_key"
+#echo "controller_ip=$controller_ip"
+#echo "worker_ip=$worker_ip"
+#echo "worker_hostname=$worker_hostname"
+#echo "kubelet_download=$kubelet_download"
+#echo "kubelet_binary=$kubelet_binary"
+#echo "kubelet_binary_actual=$kubelet_binary_actual"
+#echo "ca_cert=$ca_cert"
+#echo "ca_key=$ca_key"
 
 if [[ ! -z "$kubelet_download" ]]; then
   echo "Downloading kubelet binary"
@@ -133,6 +133,10 @@ echo "Starting kubelet service"
 ssh -i "$priv_key" root@$worker_ip "systemctl daemon-reload && systemctl enable kubelet && systemctl start kubelet"
 
 echo "Verifying kubelet is running"
-ssh -i "$priv_key" root@$worker_ip "systemctl is-active --quiet kubelet"
+set +e
+for i in {1..10}; do
+  ssh -i "$priv_key" root@$worker_ip "systemctl is-active --quiet kubelet" && break
+  sleep 1s
+done
 
 echo "No errors detected with kubelet installation"

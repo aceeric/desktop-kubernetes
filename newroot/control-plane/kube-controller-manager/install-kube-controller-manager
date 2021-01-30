@@ -6,7 +6,7 @@ set -e
 long_opts=priv-key:,controller-ip:,controller-hostname:,\
 kube-controller-manager-download:,kube-controller-manager-binary:,kubernetes-cert:,kubernetes-key:,ca-cert:,ca-key:
 script_name=$(basename "$0")
-proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
 priv_key=
 controller_ip=
@@ -119,8 +119,9 @@ controller_mgr_service=$proj_root/control-plane/kube-controller-manager/kube-con
 echo "Generating TLS material for kube-controller-manager"
 openssl req -newkey rsa:2048 -nodes -keyout $controller_mgr_key\
  -subj "/CN=system:kube-controller-manager" -out $controller_mgr_csr
+
 openssl x509 -req -days 10000 -in $controller_mgr_csr -CA $ca_cert -CAkey $ca_key\
- -CAcreateserial -sha256 -out $controller_mgr_pem
+ -CAcreateserial -sha256 -out $controller_mgr_cert
 # cleanup
 rm -f $controller_mgr_csr
 
@@ -157,11 +158,10 @@ ssh -i "$priv_key" root@$controller_ip\
 exit
 
 echo "Verifying kube-controller-manager is running"
-http_code=$(curl -so /dev/null -w "%{http_code}" http://$controller_ip:10252/metrics)
-
-if [[ "$http_code" != "200" ]]; then
-  echo "ERROR: Unable to verify kube-controller-manager installation"
-  exit 1
-fi
+set +e
+for i in {1..10}; do
+  ssh -i "$priv_key" root@$controller_ip "systemctl is-active --quiet kube-controller-manager" && break
+  sleep 1s
+done
 
 echo "No errors detected with kube-controller-manager installation"
