@@ -36,7 +36,6 @@ if ! vboxmanage showvminfo "$vm" &>/dev/null; then
   exit 1
 fi
 
-state=(stop start)
 while true; do
   actual=$(vboxmanage list runningvms | grep '"'"$vm"'"' | wc -l)
   if [[ $expected -eq $actual ]]; then
