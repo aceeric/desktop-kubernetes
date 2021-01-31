@@ -135,14 +135,14 @@ function usage() {
 
       Wires the VirtualBox bridge network to interface "enp0s31f6", uses the "/sdb1/virtualbox" directory
       for all VM files, and downloads all the upstreams during the install, placing them on the filesystem
-      as it goes so they will be available for the next time.
+      so they will be available for the next time. Creates a template to clone the nodes from.
 
-          ** You have to use the "--from-scratch" option at least once **
-          ** because all the upstreams are git-ignored                 **
+      *** You must use "--from-scratch" at least once because all the upstreams are git-ignored  ***
 
       new-cluster --host-network-interface=enp0s31f6 --vboxdir=/sdb1/virtualbox
 
-      Same as the first example, except gets all the upstreams from the filesystem.
+      Same as the first example, except 1) gets all the upstreams from the filesystem, and 2) uses the
+      template VM created by the prior invocation.
     '
 }
 
@@ -224,7 +224,7 @@ elif ! check_files $create_template; then
   exit 1
 fi
 
-# if not installing from scratch, clear out the download URLs: the scripts will use the filesystem refs instead
+# if not installing from scratch, clear the download URLs: the scripts will use the filesystem refs instead
 
 if [[ $from_scratch -eq 0 ]]; then
   centos_iso_download=
@@ -259,7 +259,7 @@ if [[ $from_scratch -eq 1 ]] || [[ $create_template -eq 1 ]] ; then
    --vboxdir=$vboxdir
 fi
 
-# generates $proj_root/tls/ca.pem and ca-key.pem used throughout to configure TLS
+# gen-root-ca generates $proj_root/tls/ca.pem and ca-key.pem used throughout to configure TLS
 
 echo "generating root CA into the 'tls' directory on this machine"
 $proj_root/scripts/gen-root-ca
