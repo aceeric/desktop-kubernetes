@@ -220,7 +220,7 @@ fi
 
 if [[ $from_scratch -eq 1 ]] && ! check_urls 1; then
   exit 1
-elif ! check_files $create_template; then
+elif [[ $create_template -eq 1 ]] && ! check_files $create_template; then
   exit 1
 fi
 

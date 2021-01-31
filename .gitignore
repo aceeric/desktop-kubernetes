@@ -8,3 +8,9 @@
 *.iso
 id_ed25519*
 *.kubeconfig
+binaries/generic-kuberouter-all-features.yaml
+binaries/kube-apiserver
+binaries/kube-controller-manager
+binaries/kube-scheduler
+binaries/kubelet
+binaries/runc
