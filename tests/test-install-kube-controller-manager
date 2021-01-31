@@ -8,8 +8,6 @@ $proj_root/control-plane/kube-controller-manager/install-kube-controller-manager
  --controller-ip=$ip\
  --controller-hostname="$1"\
  --kube-controller-manager-binary=$proj_root/binaries/kube-controller-manager\
- --kubernetes-cert=$proj_root/tls/kubernetes.pem\
- --kubernetes-key=$proj_root/tls/kubernetes-key.pem\
  --ca-cert=$proj_root/tls/ca.pem\
  --ca-key=$proj_root/tls/ca-key.pem
 
@@ -19,7 +17,5 @@ $proj_root/control-plane/kube-controller-manager/install-kube-controller-manager
 # --controller-hostname="$1"\
 # --kube-controller-manager-download=https://storage.googleapis.com/kubernetes-release/release/v1.20.1/bin/linux/amd64/kube-controller-manager\
 # --kube-controller-manager-binary=$proj_root/binaries\
-# --kubernetes-cert=$proj_root/tls/kubernetes.pem\
-# --kubernetes-key=$proj_root/tls/kubernetes-key.pem\
 # --ca-cert=$proj_root/tls/ca.pem\
 # --ca-key=$proj_root/tls/ca-key.pem

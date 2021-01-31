@@ -104,7 +104,7 @@ guest_additions_actual=$($proj_root/scripts/make-download-path\
 
 if [[ ! -z "$centos_iso_download" ]]; then
   if [[ -f $centos_iso_actual ]]; then
-    echo "centOS ISO already exists on disk"
+    echo "CentOS ISO already exists on disk"
     exit 1
   fi
   echo "downloading CentOS ISO"

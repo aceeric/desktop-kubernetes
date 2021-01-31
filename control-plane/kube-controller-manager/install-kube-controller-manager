@@ -1,10 +1,9 @@
 #!/usr/bin/env bash
 
-# todo remove kubernetes_cert/key
 set -e
 
 long_opts=priv-key:,controller-ip:,controller-hostname:,\
-kube-controller-manager-download:,kube-controller-manager-binary:,kubernetes-cert:,kubernetes-key:,ca-cert:,ca-key:
+kube-controller-manager-download:,kube-controller-manager-binary:,ca-cert:,ca-key:
 script_name=$(basename "$0")
 proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
@@ -13,8 +12,6 @@ controller_ip=
 controller_hostname=
 kube_controller_manager_download=
 kube_controller_manager_binary=
-kubernetes_cert=
-kubernetes_key=
 ca_cert=
 ca_key=
 
@@ -57,14 +54,6 @@ function parse_args() {
         kube_controller_manager_binary=$(opt_val "$2")
         shift 2
         ;;
-      --kubernetes-cert)
-        kubernetes_cert=$(opt_val "$2")
-        shift 2
-        ;;
-      --kubernetes-key)
-        kubernetes_key=$(opt_val "$2")
-        shift 2
-        ;;
       --ca-cert)
         ca_cert=$(opt_val "$2")
         shift 2
@@ -93,20 +82,18 @@ kube_controller_manager_binary_actual=$($proj_root/scripts/make-download-path\
 #echo "kube_controller_manager_download=$kube_controller_manager_download"
 #echo "kube_controller_manager_binary=$kube_controller_manager_binary"
 #echo "kube_controller_manager_binary_actual=$kube_controller_manager_binary_actual"
-#echo "kubernetes_cert=$kubernetes_cert"
-#echo "kubernetes_key=$kubernetes_key"
 #echo "ca_cert=$ca_cert"
 #echo "ca_key=$ca_key"
 
 if [[ ! -z "$kube_controller_manager_download" ]]; then
-  echo "Downloading kube-controller_manager binary"
+  echo "downloading kube-controller_manager binary"
   $proj_root/scripts/download-obj --url="$kube_controller_manager_download" --dest="$kube_controller_manager_binary_actual"
   chmod +x $kube_controller_manager_binary_actual
 else
-  echo "No URL provided - skipping download and using provided binary"
+  echo "no URL provided - skipping download and using provided binary"
 fi
 
-echo "Copying kube-controller-manager binary to controller VM"
+echo "copying kube-controller-manager binary to controller VM"
 scp -i $priv_key $kube_controller_manager_binary_actual root@$controller_ip:/usr/local/bin/
 
 # gen some path refs to make the commands below a little less busy looking
@@ -116,7 +103,7 @@ controller_mgr_csr=$proj_root/control-plane/kube-controller-manager/kube-control
 controller_mgr_kubeconfig=$proj_root/control-plane/kube-controller-manager/kube-controller-manager.kubeconfig
 controller_mgr_service=$proj_root/control-plane/kube-controller-manager/kube-controller-manager.service
 
-echo "Generating TLS material for kube-controller-manager"
+echo "generating TLS material for kube-controller-manager"
 openssl req -newkey rsa:2048 -nodes -keyout $controller_mgr_key\
  -subj "/CN=system:kube-controller-manager" -out $controller_mgr_csr
 
@@ -125,7 +112,7 @@ openssl x509 -req -days 10000 -in $controller_mgr_csr -CA $ca_cert -CAkey $ca_ke
 # cleanup
 rm -f $controller_mgr_csr
 
-echo "Generating a kubeconfig file for the kube-controller-manager service"
+echo "generating a kubeconfig file for the kube-controller-manager service"
 rm -f $controller_mgr_kubeconfig
 kubectl config set-cluster kubernetes \
 --certificate-authority=$ca_cert \
@@ -146,22 +133,22 @@ kubectl config set-context default \
 
 kubectl config use-context default --kubeconfig=$controller_mgr_kubeconfig
 
-echo "Copying kubeconfig file to controller VM"
+echo "copying kubeconfig file to controller VM"
 scp -i $priv_key $controller_mgr_kubeconfig root@$controller_ip:/var/lib/kubernetes/
 
-echo "Copying kube-controller-manager service file to controller VM"
+echo "copying kube-controller-manager service file to controller VM"
 scp -i $priv_key $controller_mgr_service root@$controller_ip:/etc/systemd/system/
 
-echo "Starting kube-controller-manager service"
+echo "starting kube-controller-manager service"
 ssh -i "$priv_key" root@$controller_ip\
  "systemctl daemon-reload && systemctl enable kube-controller-manager && systemctl start kube-controller-manager"
 exit
 
-echo "Verifying kube-controller-manager is running"
+echo "verifying kube-controller-manager is running"
 set +e
 for i in {1..10}; do
   ssh -i "$priv_key" root@$controller_ip "systemctl is-active --quiet kube-controller-manager" && break
   sleep 1s
 done
 
-echo "No errors detected with kube-controller-manager installation"
+echo "no errors detected with kube-controller-manager installation"

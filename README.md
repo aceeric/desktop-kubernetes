@@ -22,8 +22,9 @@ This project is derivative of **Kelsey Hightower's** [Kubernetes The Hard Way](h
 
 The `new-cluster` script in the repo root is what you run.
 
-> Before running the first time, you need to do two things: 1) Run `ifconfig` and get the name of your primary network interface. 2) Decide where on the filesystem you want to store the VirtualBox VM Files. Each VM will take up about 6 gigs, and there will be four VMs: the template, and the three nodes. So you will need about 24 gigabytes. I also recommend you run once with just the `--check-compatibility` option to check the versions of the utilities used by the scripts (curl, etc.) against the tested versions. E.g.: `./new-cluster --check-compatibility`. I'm sure there will be differences and you have to decide whether the differences are material. (Most probably aren't.)
+> Before running the first time, you need to do three things: 1) Run `ifconfig` and get the name of your primary network interface. 2) Determine where on the filesystem you store VirtualBox VM files. Each VM will be about 6 gigs, and there will be four VMs: one template, and three nodes. So you need 24 gigabytes. 3) Check the CentOS mirror in the `new-cluster` script and make sure it makes sense for your geography.
 >
+> I also recommend you run once with just the `--check-compatibility` option to check the versions of the utilities used by the scripts (curl, etc.) against the tested versions. E.g.: `./new-cluster --check-compatibility`. I'm sure there will be differences and you have to decide whether the differences are material. Most probably aren't.
 
 To create a cluster for the first time, you run the script as shown below (using your unique values for the network interface name and VirtualBox directory). This is just an example:
 
@@ -34,7 +35,7 @@ $ ./new-cluster --host-network-interface=enp0s31f6 --from-scratch\
 
 The `--from-scratch` option is important. It tells the script to `curl` all the upstream objects, such as the CentOS ISO, the Virtual Box Guest Additions ISO, and the Kubernetes binaries and other manifests. I've coded the script with specific versions of everything in the interests of repeatability.
 
-> Please Note: all URLs are perishable. Just in the time that I was developing this project, the CentOS version and URL changed slightly so - don't be surprised if you have to tweak the URLs. The script will test each URL before it begins provisioning the cluster and will tell you which ones it couldn't access. Then you will have to modofy the `new-cluster` script accordingly.
+> Please Note: URLs are perishable. Just in the time that I was developing this project, the CentOS version and URL changed slightly so - don't be surprised if you have to tweak the URLs. The script will test each URL before it begins provisioning the cluster and will tell you which ones it couldn't access. Then you will have to modify the `new-cluster` script accordingly.
 
 Once the cluster comes up, the script will display a message telling you how to set your `KUBECONFIG` in order to access the cluster. It will also display a message showing how to SSH into each node.
 
@@ -54,7 +55,7 @@ Once the cluster comes up, the script will display a message telling you how to 
 | CoreOS?                        | Consider [Fedora CoreOS](https://getfedora.org/en/coreos?stream=stable) as a VM OS |
 ## Versions
 
-This project has been testing with the following tools, components and versions. The Kubernetes component versions and CentOS and VirtualBox Guest Addition versions are hard-coded into the `new-cluster` script. So any changes only need to be made one time in that script.
+This project has been testing with the following tools, components and versions. The Kubernetes component versions and CentOS and VirtualBox Guest Addition versions are hard-coded into the `new-cluster` script. So any changes only need to be made one time in that script. *If you decide to use later (or earlier) Kubernetes components, be aware that the supported options can change between versions which may require additional script changes.*
 
 | Where    | Component                                      | Version            |
 | -------- | ---------------------------------------------- | ------------------ |

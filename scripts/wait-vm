@@ -17,7 +17,7 @@ for var in "$@"; do
 done
 
 if [[ -z "$vm" ]]; then
-  echo "No VM name supplied"
+  echo "no VM name supplied"
   exit 1
 fi
 
@@ -32,7 +32,7 @@ else
 fi
 
 if ! vboxmanage showvminfo "$vm" &>/dev/null; then
-  echo "No VM found matching name: $vm"
+  echo "no VM found matching name: $vm"
   exit 1
 fi
 

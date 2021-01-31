@@ -86,14 +86,14 @@ kubelet_binary_actual="$($proj_root/scripts/make-download-path\
 #echo "ca_key=$ca_key"
 
 if [[ ! -z "$kubelet_download" ]]; then
-  echo "Downloading kubelet binary"
+  echo "downloading kubelet binary"
   $proj_root/scripts/download-obj --url="$kubelet_download" --dest="$kubelet_binary_actual"
   chmod +x $kubelet_binary_actual
 else
-  echo "No URL provided - skipping download and using provided binary"
+  echo "no URL provided - skipping download and using provided binary"
 fi
 
-echo "Copying binary to worker"
+echo "copying binary to worker"
 scp -i $priv_key $kubelet_binary_actual root@$worker_ip:/usr/local/bin/
 
 # TODO name the kubeconfig file with the worker hostname in it?

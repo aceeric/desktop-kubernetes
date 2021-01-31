@@ -79,7 +79,7 @@ parse_args "$@"
 #echo "host_network_interface=$host_network_interface"
 #echo "vboxdir=$vboxdir"
 
-echo "Creating VM"
+echo "creating VM"
 
 VBoxManage createvm\
  --name $template_vmname\
@@ -119,18 +119,18 @@ VBoxManage storageattach $template_vmname --storagectl IDE --port 1 --device 1 -
 # set boot from DVD
 VBoxManage modifyvm $template_vmname --boot1 dvd --boot2 disk --boot3 none --boot4 none
 
-echo "Starting VM to begin kickstart installation"
+echo "starting VM to begin kickstart installation"
 VBoxManage startvm $template_vmname
 
-echo "Waiting for VM to start"
+echo "waiting for VM to start"
 $proj_root/scripts/wait-vm $template_vmname --started
 
-echo "Waiting for kickstart to complete and VM to stop"
+echo "waiting for kickstart to complete and VM to stop"
 $proj_root/scripts/wait-vm $template_vmname --stopped
 
 # for virtual box or the detach calls below fail
 sleep 5s
 
-echo "Detaching ISO files from VM"
+echo "detaching ISO files from VM"
 VBoxManage storageattach $template_vmname --storagectl IDE --port 1 --device 0 --medium none
 VBoxManage storageattach $template_vmname --storagectl IDE --port 1 --device 1 --medium none

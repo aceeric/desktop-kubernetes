@@ -129,14 +129,14 @@ parse_args "$@"
 
 run_count=$(VBoxManage list runningvms | awk '{print $1}' | grep -e'"'$controller_hostname'"' | wc -l)
 if [[ $run_count -eq 0 ]]; then
-  echo "Starting controller VM"
+  echo "starting controller VM"
   VBoxManage startvm $controller_hostname
 fi
 
-echo "Getting controller IP address from running VM"
+echo "getting controller IP address from running VM"
 controller_ip=$($proj_root/scripts/get-vm-ip $controller_hostname)
 
-echo "Configuring firewall rules"
+echo "configuring firewall rules"
 $proj_root/scripts/configure-firewall $controller_ip $priv_key --controller
 
 # creates $proj_root/tls/kubernetes.pem and kubernetes-key.pem
@@ -148,7 +148,7 @@ $proj_root/scripts/gen-cluster-tls\
 kubernetes_cert=$proj_root/tls/kubernetes.pem
 kubernetes_key=$proj_root/tls/kubernetes-key.pem
 
-echo "Installing etcd into controller"
+echo "installing etcd into controller"
 $proj_root/control-plane/etcd/install-etcd\
  --priv-key=$priv_key\
  --controller-ip=$controller_ip\
@@ -159,7 +159,7 @@ $proj_root/control-plane/etcd/install-etcd\
  --kubernetes-key=$kubernetes_key\
  --ca-cert=$ca_cert
 
-echo "Installing kube-apiserver into controller"
+echo "installing kube-apiserver into controller"
 $proj_root/control-plane/kube-apiserver/install-kube-apiserver\
  --priv-key=$priv_key\
  --controller-ip=$controller_ip\
@@ -171,19 +171,17 @@ $proj_root/control-plane/kube-apiserver/install-kube-apiserver\
  --ca-cert=$ca_cert\
  --ca-key=$ca_key
 
-echo "Installing kube-controller-manager into controller"
+echo "installing kube-controller-manager into controller"
 $proj_root/control-plane/kube-controller-manager/install-kube-controller-manager\
  --priv-key=$priv_key\
  --controller-ip=$controller_ip\
  --controller-hostname=$controller_hostname\
  --kube-controller-manager-download=$kube_controller_manager_download\
  --kube-controller-manager-binary=$kube_controller_manager_binary\
- --kubernetes-cert=$kubernetes_cert\
- --kubernetes-key=$kubernetes_key\
  --ca-cert=$ca_cert\
  --ca-key=$ca_key
 
-echo "Installing kube-scheduler into controller"
+echo "installing kube-scheduler into controller"
 $proj_root/control-plane/kube-scheduler/install-kube-scheduler\
  --priv-key=$priv_key\
  --controller-ip=$controller_ip\
@@ -199,8 +197,8 @@ healthy_count=$(kubectl --kubeconfig=$proj_root/control-plane/kube-controller-ma
  get componentstatuses --no-headers | awk '{print $2}' | grep Healthy | wc -l)
 
 if [[ "$healthy_count" -ne 3 ]]; then
-  echo "Unable to verify that controller was successfully configured"
+  echo "unable to verify that controller was successfully configured"
   exit 1
 fi
 
-echo "No errors detected with controller installation"
+echo "no errors detected with controller installation"

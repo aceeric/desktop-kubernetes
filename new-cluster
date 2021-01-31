@@ -220,7 +220,7 @@ fi
 
 if [[ $from_scratch -eq 1 ]] && ! check_urls 1; then
   exit 1
-elif [[ $create_template -eq 1 ]] && ! check_files $create_template; then
+elif [[ $from_scratch -eq 0 ]] && ! check_files $create_template; then
   exit 1
 fi
 
@@ -242,7 +242,7 @@ if [[ $from_scratch -eq 0 ]]; then
 fi
 
 # if running from scratch, always create a template VM to clone the nodes from. This step also generates
-# the SSH keys into the 'kickstart' directory that are used all over the place to interact with the node VMS
+# the SSH keys into the 'kickstart' directory that are used all over the place to interact with the node VMs
 # via ssh/scp as they are being bootstrapped, and that you will use to SSH into the VMs after the cluster
 # is provisioned
 

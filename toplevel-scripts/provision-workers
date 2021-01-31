@@ -144,7 +144,7 @@ function parse_args() {
 
 parse_args "$@"
 if [[ "${#workers[@]}" -eq 0 ]]; then
-  echo "Need at least one --worker arg"
+  echo "need at least one --worker arg"
   exit 1
 fi
 
@@ -224,6 +224,7 @@ $proj_root/dns/coredns/install-coredns\
 ham_ip=$($proj_root/scripts/get-vm-ip ham)
 monk_ip=$($proj_root/scripts/get-vm-ip monk)
 
+echo
 echo "finished provisioning workers. To interact with the cluster:"
 echo "    export KUBECONFIG=$admin_kubeconfig"
 echo "then:"

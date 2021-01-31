@@ -62,15 +62,15 @@ VBoxManage storageattach $template_vmname --storagectl IDE --port 0 --device 0 -
 VBoxManage modifyvm $template_vmname --boot1 disk --boot2 none --boot3 none --boot4 none
 
 # If successful it will be possible to get the IP address from the VM
-echo "Starting VM to begin guest additions installation"
+echo "starting VM to begin guest additions installation"
 VBoxManage startvm $template_vmname
 
-echo "Waiting for the VM to start and install guest additions"
+echo "waiting for the VM to start and install guest additions"
 $proj_root/scripts/wait-vm $template_vmname --started
 
-echo "Wait for the VM to stop - the guest additions install script performs a shutdown when it is done"
+echo "waiting for the VM to stop - the guest additions install script performs a shutdown when it is done"
 $proj_root/scripts/wait-vm $template_vmname --stopped
 sleep 5s
 
-echo "Detaching guest additions ISO"
+echo "detaching guest additions ISO"
 VBoxManage storageattach $template_vmname --storagectl IDE --port 0 --device 0 --medium none

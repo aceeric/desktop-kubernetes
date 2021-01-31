@@ -90,31 +90,31 @@ etcd_gzip_actual=$($proj_root/scripts/make-download-path --download-url=$etcd_do
 #echo "ca_cert=$ca_cert"
 
 if [[ ! -z "$etcd_download" ]]; then
-  echo "Downloading etcd gzip"
+  echo "downloading etcd gzip"
   $proj_root/scripts/download-obj --url="$etcd_download" --dest=$etcd_gzip_actual
 else
-  echo "No URL provided - skipping download and using provided gzip file"
+  echo "no URL provided - skipping download and using provided gzip file"
 fi
 
-echo "Extracting binaries to controller"
+echo "extracting binaries to controller"
 cat "$etcd_gzip_actual" | ssh -i $priv_key root@$controller_ip \
  "tar zxvf - --no-same-owner --strip-components 1 -C /usr/local/bin/ etcd-v3.4.14-linux-amd64/etcd etcd-v3.4.14-linux-amd64/etcdctl"
 
-echo "Copying TLS material"
+echo "copying TLS material"
 ssh -i $priv_key root@$controller_ip "mkdir -p /etc/etcd /var/lib/etcd && chmod 700 /var/lib/etcd"
 scp -i $priv_key $kubernetes_cert $kubernetes_key $ca_cert root@$controller_ip:/etc/etcd
 
-echo "Generating service file"
+echo "generating service file"
 sed $proj_root/control-plane/etcd/etcd.service\
  -e "s|ETCD_NAME|$controller_hostname|g" -e "s|INTERNAL_IP|$controller_ip|g"\
  | ssh -i $priv_key root@$controller_ip "cat > /etc/systemd/system/etcd.service"
 
-echo "Starting etcd service"
+echo "starting etcd service"
 ssh -i $priv_key root@$controller_ip "systemctl daemon-reload && systemctl enable etcd && systemctl start etcd"
 
-echo "Verifying etcd is running"
+echo "verifying etcd is running"
 
 ssh -i $priv_key root@$controller_ip\
  "etcdctl --cert=/etc/etcd/kubernetes.pem --key=/etc/etcd/kubernetes-key.pem --cacert=/etc/etcd/ca.pem member list"
 
-echo "No errors detected with etcd installation"
+echo "no errors detected with etcd installation"

@@ -97,17 +97,17 @@ kube_apiserver_binary_actual=$($proj_root/scripts/make-download-path\
 #echo "ca_key=$ca_key"
 
 if [[ ! -z "$kube_apiserver_download" ]]; then
-  echo "Downloading kube-apiserver binary"
+  echo "downloading kube-apiserver binary"
   $proj_root/scripts/download-obj --url="$kube_apiserver_download" --dest="$kube_apiserver_binary_actual"
   chmod +x $kube_apiserver_binary_actual
 else
-  echo "No URL provided - skipping download and using provided binary"
+  echo "no URL provided - skipping download and using provided binary"
 fi
 
-echo "Copying binary to controller"
+echo "copying binary to controller"
 scp -i $priv_key $kube_apiserver_binary_actual root@$controller_ip:/usr/local/bin/
 
-echo "Generating TLS material for kube-apiserver"
+echo "generating TLS material for kube-apiserver"
 
 # gen some path refs to make the openssl commands below a little less busy looking
 service_account_cert=$proj_root/tls/service-account.pem
@@ -119,26 +119,26 @@ openssl x509 -req -days 10000 -in $service_account_csr -CA $ca_cert -CAkey $ca_k
  -sha256 -out $service_account_cert
 rm -f $service_account_csr
 
-echo "Copying api server TLS material to controller VM"
+echo "copying api server TLS material to controller VM"
 ssh -i $priv_key root@$controller_ip "mkdir -p /var/lib/kubernetes/"
 scp -i $priv_key\
  $ca_cert $ca_key $kubernetes_cert $kubernetes_key $service_account_cert $service_account_key\
  root@$controller_ip:/var/lib/kubernetes
 
-echo "Generating encryption config yaml"
+echo "generating encryption config yaml"
 encryption_key=$(head -c 32 /dev/urandom | base64)
 sed $proj_root/control-plane/kube-apiserver/encryption-config.yaml -e "s|ENCRYPTION_KEY|$encryption_key|g"\
  | ssh -i $priv_key root@$controller_ip "cat > /var/lib/kubernetes/encryption-config.yaml"
 
-echo "Generating service file"
+echo "generating service file"
 sed $proj_root/control-plane/kube-apiserver/kube-apiserver.service -e "s|CONTROLLER_IP|$controller_ip|g"\
  | ssh -i $priv_key root@$controller_ip "cat > /etc/systemd/system/kube-apiserver.service"
 
-echo "Starting kube-apiserver service"
+echo "starting kube-apiserver service"
 ssh -i $priv_key root@$controller_ip\
  "systemctl daemon-reload && systemctl enable kube-apiserver && systemctl start kube-apiserver"
 
-echo "Verifying kube-apiserver is running"
+echo "verifying kube-apiserver is running"
 set +e
 for i in {1..10}; do
   http_code=$(curl -so /dev/null -w "%{http_code}" --cacert $ca_cert https://$controller_ip:6443/version)
@@ -153,4 +153,4 @@ if [[ "$http_code" != "200" ]]; then
   exit 1
 fi
 
-echo "No errors detected with kube-apiserver installation"
+echo "no errors detected with kube-apiserver installation"
