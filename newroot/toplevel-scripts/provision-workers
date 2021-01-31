@@ -213,7 +213,6 @@ done
 $proj_root/worker/kube-router/install-kube-router\
  --priv-key=$priv_key\
  --controller-ip=$controller_ip\
- --worker-ip=$worker_ip\
  --kube-router-yaml-download=$kube_router_yaml_download\
  --kube-router-yaml=$kube_router_yaml\
  --admin-kubeconfig=$admin_kubeconfig
@@ -222,7 +221,16 @@ $proj_root/dns/coredns/install-coredns\
  --replicas=${#workers[@]}\
  --admin-kubeconfig=$admin_kubeconfig
 
+ham_ip=$($proj_root/scripts/get-vm-ip ham)
+monk_ip=$($proj_root/scripts/get-vm-ip monk)
+
 echo "finished provisioning workers. To interact with the cluster:"
 echo "    export KUBECONFIG=$admin_kubeconfig"
 echo "then:"
 echo "    kubectl get po -A"
+echo
+echo "To access each cluster node via ssh:"
+echo
+echo "controller: ssh -i $priv_key root@$controller_ip"
+echo "worker one: ssh -i $priv_key root@$ham_ip"
+echo "worker two: ssh -i $priv_key root@$monk_ip"

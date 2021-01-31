@@ -2,13 +2,12 @@
 
 set -e
 
-long_opts=priv-key:,controller-ip:,worker-ip:,kube-router-yaml-download:,kube-router-yaml:,admin-kubeconfig:
+long_opts=priv-key:,controller-ip:,kube-router-yaml-download:,kube-router-yaml:,admin-kubeconfig:
 script_name=$(basename "$0")
 proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
 priv_key=
 controller_ip=
-worker_ip=
 kube_router_yaml_download=
 kube_router_yaml=
 admin_kubeconfig=
@@ -40,10 +39,6 @@ function parse_args() {
         controller_ip=$(opt_val "$2")
         shift 2
         ;;
-	    --worker-ip)
-        worker_ip=$(opt_val "$2")
-        shift 2
-        ;;
       --kube-router-yaml-download)
         kube_router_yaml_download=$(opt_val "$2")
         shift 2
@@ -72,10 +67,9 @@ kube_router_yaml_download_actual="$($proj_root/scripts/make-download-path\
 # debug
 #echo "priv_key=$priv_key"
 #echo "controller_ip=$controller_ip"
-#echo "worker_ip=$worker_ip"
 #echo "kube_router_yaml_download=$kube_router_yaml_download"
 #echo "kube_router_yaml=$kube_router_yaml"
-#echo "kube_router_yaml_actual=$kube_router_yaml_actual"
+#echo "kube_router_yaml_download_actual=$kube_router_yaml_download_actual"
 #echo "admin_kubeconfig=$admin_kubeconfig"
 
 if [[ ! -z "$kube_router_yaml_download" ]]; then

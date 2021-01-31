@@ -1,20 +1,22 @@
 #!/usr/bin/env bash
 
 proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+controller_ip=$($proj_root/scripts/get-vm-ip "$1")
+worker_ip=$($proj_root/scripts/get-vm-ip "$2")
+
 $proj_root/worker/kubelet/install-kubelet\
  --priv-key=$proj_root/kickstart/id_ed25519\
- --controller-ip=192.168.0.81\
- --worker-ip=192.168.0.88\
+ --controller-ip=$controller_ip\
+ --worker-ip=$worker_ip\
  --worker-hostname=ham\
  --kubelet-download=\
  --kubelet-binary=$proj_root/binaries/kubelet\
  --ca-cert=$proj_root/tls/ca.pem
 
-#proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 #$proj_root/worker/kubelet/install-kubelet\
 # --priv-key=$proj_root/kickstart/id_ed25519\
-# --controller-ip=192.168.0.??\
-# --worker-ip=192.168.0.??\
+# --controller-ip=$controller_ip\
+# --worker-ip=$worker_ip\
 # --worker-hostname=ham\
 # --kubelet-download=https://storage.googleapis.com/kubernetes-release/release/v1.20.1/bin/linux/amd64/kubelet\
 # --kubelet-binary=$proj_root/binaries\

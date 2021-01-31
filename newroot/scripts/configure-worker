@@ -186,9 +186,9 @@ ssh -i $priv_key root@$worker_ip << EOF
   sysctl --system
 EOF
 
-# TODO make name name worker cert and key with node name embedded? Affects kubelet-config.yaml
-#      and kubelet.service and install-kubelet...
 echo "Generating TLS certs for the worker"
+
+# todo move gen-worker-tls outside and only do it once for all workers?
 
 $proj_root/scripts/gen-worker-tls\
   --worker-ip=$worker_ip\

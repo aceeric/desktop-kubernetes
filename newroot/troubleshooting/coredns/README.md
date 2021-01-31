@@ -20,9 +20,9 @@ spec:
 EOF
 ```
 
-kubectl exec -i -t dnsutils -- nslookup kubernetes.default
+kubectl exec -it dnsutils -- nslookup kubernetes.default
 kubectl exec -ti dnsutils -- cat /etc/resolv.confn
-kubectl exec -i -t dnsutils -- nslookup kubernetes.default
+kubectl exec -it dnsutils -- nslookup kubernetes.default
 kubectl get pods --namespace=kube-system -l k8s-app=kube-dns
 kubectl get svc --namespace=kube-system
 kubectl get endpoints kube-dns --namespace=kube-system

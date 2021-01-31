@@ -5,8 +5,9 @@ tested_openssl_version="1.1.1f"
 tested_genisoimage_version="1.1.11"
 tested_vboxmanage_version="6.1.14"
 tested_ssh_version="OpenSSH_8.2p1"
-tested_host_os_version="Ubuntu 20.04.1 LTS"
+tested_host_os_version="Ubuntu 20.04.2 LTS"
 tested_kubectl_version="v1.18.0"
+tested_curl_version="7.68.0"
 
 if which openssl &>/dev/null; then
   openssl_version=$(openssl version | awk '{print $2}')
@@ -50,6 +51,13 @@ else
   kubectl_version="not found"
 fi
 
+if which curl &>/dev/null; then
+  curl_version=$(curl --version |  head -n1 | awk '{print $2}')
+  [[ $curl_version == "$tested_curl_version" ]] && curl_ok=Yes || { curl_ok=No; mismatch=1; }
+else
+  curl_version="not found"
+fi
+
 cat <<EOF | column -t -s "|"
 component|tested|found|matches?
 ---------|------|-----|--------
@@ -59,6 +67,7 @@ genisoimage|$tested_genisoimage_version|$genisoimage_version|$genisoimage_ok
 virtual box|$tested_vboxmanage_version|$vboxmanage_version|$vboxmanage_ok
 host operating system|$tested_host_os_version|$host_os_version|$os_ok
 kubectl (client only)|$tested_kubectl_version|$kubectl_version|$kubectl_ok
+curl|$tested_curl_version|$curl_version|$curl_ok
 EOF
 
 if [[ $mismatch -ne 0 ]]; then
