@@ -2,7 +2,7 @@
 
 set -e
 
-long_opts=help,host-network-interface:,vboxdir:,check-compatibility,from-scratch,create-template
+long_opts=help,host-network-interface:,vboxdir:,check-compatibility,from-scratch,create-template,up:,down:
 script_name=$(basename "$0")
 proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
@@ -12,6 +12,8 @@ vboxdir=
 from_scratch=0
 create_template=0
 check_compatibility=0
+up=
+down=
 
 # internal
 downloading_msg=""
@@ -107,6 +109,8 @@ function usage() {
 
     Usage: new-cluster [--host-network-interface=<interface>] [--vboxdir=</some/path>]
            [--check-compatibility] [--from-scratch] [--create-template]
+           [--help] [--up=<nodelist>] [--down=<nodelist>]
+
 
     Options:
 
@@ -129,6 +133,10 @@ function usage() {
                                  nodes from before bringing up the cluster. (This step by far takes the longest.)
                                  If not specified, expects to find an existing VM to clone from. Note - if
                                  the --from-scratch option is specified, a template is always created.
+      --up                       Optional. Takes a comma-separated list of VM names, and starts them all.
+      --down                     Optional. Opposite of --up. Note - this is very low-tech at present: Order
+                                 the args with the workers first and the controller last.
+      --help                     Optional. Displays this help and exits.
     Examples:
 
       new-cluster --host-network-interface=enp0s31f6 --vboxdir=/sdb1/virtualbox --from-scratch
@@ -143,6 +151,10 @@ function usage() {
 
       Same as the first example, except 1) gets all the upstreams from the filesystem, and 2) uses the
       template VM created by the prior invocation.
+
+      new-cluster --up=doc,ham,monk
+
+      Starts the VMs for the default three-node cluster created by the script.
     '
 }
 
@@ -190,6 +202,14 @@ function parse_args() {
         create_template=1
         shift
         ;;
+      --up)
+        up=$(opt_val "$2")
+        shift 2
+        ;;
+      --down)
+        down=$(opt_val "$2")
+        shift 2
+        ;;
       --)
         shift
         break
@@ -206,6 +226,22 @@ if [[ $check_compatibility -eq 1 ]]; then
   echo "Checking version compatibility"
   $proj_root/scripts/verify-prereqs
   exit 0
+fi
+
+if [[ ! -z "$up" ]]; then
+  IFS=',' read -ra vms <<< "$up"
+  for vm in "${vms[@]}"; do
+    VBoxManage startvm $vm
+  done
+  exit
+elif [[ ! -z "$down" ]]; then
+  IFS=',' read -ra vms <<< "$down"
+  for vm in "${vms[@]}"; do
+    echo "shutting down $vm"
+    VBoxManage controlvm $vm acpipowerbutton
+    $proj_root/scripts/wait-vm $vm --stopped
+  done
+  exit
 fi
 
 if [[ -z "$host_network_interface" ]] || [[ -z "$vboxdir" ]]; then

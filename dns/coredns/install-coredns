@@ -7,10 +7,11 @@
 
 set -e
 
-long_opts=replicas:,admin-kubeconfig:
+long_opts=controller-ip:,replicas:,admin-kubeconfig:
 script_name=$(basename "$0")
 proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
+controller_ip=
 replicas=
 admin_kubeconfig=
 
@@ -33,6 +34,10 @@ function parse_args() {
   eval set -- "$parsed"
   while true; do
     case "$1" in
+      --controller-ip)
+        controller_ip=$(opt_val "$2")
+        shift 2
+        ;;
       --replicas)
         replicas=$(opt_val "$2")
         shift 2
@@ -52,8 +57,13 @@ function parse_args() {
 parse_args "$@"
 
 # debug
+#echo "controller_ip=$controller_ip"
 #echo "replicas=$replicas"
 #echo "admin_kubeconfig=$admin_kubeconfig"
+
+# test
+#sed -e "s|CONTROLLER_IP|$controller_ip|" $proj_root/dns/coredns/coredns.yaml\
+# | kubectl --kubeconfig $admin_kubeconfig apply -f -
 
 echo "applying coredns.yaml to the cluster"
 kubectl --kubeconfig $admin_kubeconfig apply -f $proj_root/dns/coredns/coredns.yaml

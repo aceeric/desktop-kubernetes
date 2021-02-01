@@ -218,6 +218,7 @@ $proj_root/worker/kube-router/install-kube-router\
  --admin-kubeconfig=$admin_kubeconfig
 
 $proj_root/dns/coredns/install-coredns\
+ --controller-ip=$controller_ip\
  --replicas=${#workers[@]}\
  --admin-kubeconfig=$admin_kubeconfig
 

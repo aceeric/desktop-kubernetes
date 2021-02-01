@@ -1,10 +1,17 @@
 #!/usr/bin/env bash
 
+if [[ -z "$1" ]]; then
+  echo "need controller IP address in arg 1"
+  exit 1
+fi
+
 proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 $proj_root/dns/coredns/install-coredns\
+ --controller-ip="$1"\
  --replicas=1\
  --admin-kubeconfig=$proj_root/admin/admin.kubeconfig
 
 #$proj_root/dns/coredns/install-coredns\
+# --controller-ip="$1"\
 # --replicas=1\
 # --admin-kubeconfig=$proj_root/admin/admin.kubeconfig
