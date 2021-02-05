@@ -63,11 +63,11 @@ This project has been testing with the following tools, components and versions.
 | host     | openssl                                        | 1.1.1f             |
 | host     | openssh                                        | OpenSSH_8.2p1      |
 | host     | genisoimage (used to create the Kickstart ISO) | 1.1.11             |
-| host     | Virtual Box / VBoxManage                       | 6.1.14             |
+| host     | Virtual Box / VBoxManage                       | 6.1.18r142142      |
 | host     | kubectl (client only)                          | v1.18.0            |
 | host     | curl                                           | 7.68.0             |
 | guest VM | Centos ISO                                     | 8.3.2011-x86_64    |
-| guest VM | Virtual Box Guest Additions ISO                | 6.1.14             |
+| guest VM | Virtual Box Guest Additions ISO                | 6.1.18             |
 | k8s      | etcd                                           | v3.4.14            |
 | k8s      | kube-apiserver                                 | v1.20.1            |
 | k8s      | kube-controller-manager                        | v1.20.1            |

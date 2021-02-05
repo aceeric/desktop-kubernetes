@@ -26,8 +26,8 @@ downloading_msg=""
 
 centos_iso_download=http://mirror.umd.edu/centos/8.3.2011/isos/x86_64/CentOS-8.3.2011-x86_64-dvd1.iso
 centos_iso_path=$proj_root/media/CentOS-8.3.2011-x86_64-dvd1.iso
-guest_additions_download=http://download.virtualbox.org/virtualbox/6.1.14/VBoxGuestAdditions_6.1.14.iso
-guest_additions_path=$proj_root/media/VBoxGuestAdditions_6.1.14.iso
+guest_additions_download=http://download.virtualbox.org/virtualbox/6.1.18/VBoxGuestAdditions_6.1.18.iso
+guest_additions_path=$proj_root/media/VBoxGuestAdditions_6.1.18.iso
 etcd_download=https://github.com/etcd-io/etcd/releases/download/v3.4.14/etcd-v3.4.14-linux-amd64.tar.gz
 etcd_gzip=$proj_root/binaries/etcd-v3.4.14-linux-amd64.tar.gz
 kube_apiserver_download=https://storage.googleapis.com/kubernetes-release/release/v1.20.1/bin/linux/amd64/kube-apiserver
