@@ -222,17 +222,11 @@ $proj_root/dns/coredns/install-coredns\
  --replicas=${#workers[@]}\
  --admin-kubeconfig=$admin_kubeconfig
 
-ham_ip=$($proj_root/scripts/get-vm-ip ham)
-monk_ip=$($proj_root/scripts/get-vm-ip monk)
-
 echo
 echo "finished provisioning workers. To interact with the cluster:"
 echo "    export KUBECONFIG=$admin_kubeconfig"
 echo "then:"
 echo "    kubectl get po -A"
 echo
-echo "To access each cluster node via ssh:"
-echo
-echo "controller: ssh -i $priv_key root@$controller_ip"
-echo "worker one: ssh -i $priv_key root@$ham_ip"
-echo "worker two: ssh -i $priv_key root@$monk_ip"
+
+$proj_root/scripts/show-ssh $priv_key
