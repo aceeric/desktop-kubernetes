@@ -5,8 +5,7 @@ set -e
 long_opts=worker:,controller-ip:,controller-hostname:,template-vmname:,vboxdir:,\
 priv-key:,crictl-download:,crictl-binary:,runc-download:,runc-binary:,\
 cni-plugins-download:,cni-plugins-binary:,containerd-download:,containerd-binary:,\
-kubelet-download:,kubelet-binary:,ca-cert:,ca-key:,\
-kube-router-yaml-download:,kube-router-yaml:
+kubelet-download:,kubelet-binary:,ca-cert:,ca-key:
 script_name=$(basename "$0")
 proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
@@ -28,8 +27,6 @@ kubelet_download=
 kubelet_binary=
 ca_cert=
 ca_key=
-kube_router_yaml_download=
-kube_router_yaml=
 
 # internal
 workers=()
@@ -126,14 +123,6 @@ function parse_args() {
         ca_key=$(opt_val "$2")
         shift 2
         ;;
-      --kube-router-yaml-download)
-        kube_router_yaml_download=$(opt_val "$2")
-        shift 2
-        ;;
-      --kube-router-yaml)
-        kube_router_yaml=$(opt_val "$2")
-        shift 2
-        ;;
       --)
         shift
         break
@@ -168,8 +157,6 @@ fi
 #echo "kubelet_binary=$kubelet_binary"
 #echo "ca_cert=$ca_cert"
 #echo "ca_key=$ca_key"
-#echo "kube_router_yaml_download=$kube_router_yaml_download"
-#echo "kube_router_yaml=$kube_router_yaml"
 
 admin_kubeconfig=$proj_root/admin/admin.kubeconfig
 if [[ ! -f $admin_kubeconfig ]]; then
@@ -177,12 +164,13 @@ if [[ ! -f $admin_kubeconfig ]]; then
   exit 1
 fi
 
-# expect each worker in the form 'hostname,ram,cpu' e.g.: 'worker1,4096,2'
+# expect each worker in the form 'hostname,ram,cpu,pod-cidr' e.g.: 'worker1,4096,2,10.200.1.0/24'
 for worker in "${workers[@]}"; do
   IFS=',' read -ra wrkr <<< "$worker"
   clone_vmname=${wrkr[0]}
   clone_ram=${wrkr[1]}
   clone_cpu=${wrkr[2]}
+  pod_cidr=${wrkr[3]}
 
   echo "provisioning worker $clone_vmname"
 
@@ -193,6 +181,7 @@ for worker in "${workers[@]}"; do
    --clone-vmname=$clone_vmname\
    --clone-ram=$clone_ram\
    --clone-cpu=$clone_cpu\
+   --pod-cidr=$pod_cidr\
    --vboxdir=$vboxdir\
    --priv-key=$priv_key\
    --admin-kubeconfig=$admin_kubeconfig\
@@ -209,24 +198,3 @@ for worker in "${workers[@]}"; do
    --ca-cert=$ca_cert\
    --ca-key=$ca_key
 done
-
-$proj_root/worker/kube-router/install-kube-router\
- --priv-key=$priv_key\
- --controller-ip=$controller_ip\
- --kube-router-yaml-download=$kube_router_yaml_download\
- --kube-router-yaml=$kube_router_yaml\
- --admin-kubeconfig=$admin_kubeconfig
-
-$proj_root/dns/coredns/install-coredns\
- --controller-ip=$controller_ip\
- --replicas=${#workers[@]}\
- --admin-kubeconfig=$admin_kubeconfig
-
-echo
-echo "finished provisioning workers. To interact with the cluster:"
-echo "    export KUBECONFIG=$admin_kubeconfig"
-echo "then:"
-echo "    kubectl get po -A"
-echo
-
-$proj_root/scripts/show-ssh $priv_key

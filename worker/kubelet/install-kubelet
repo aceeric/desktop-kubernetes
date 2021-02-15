@@ -2,7 +2,7 @@
 
 set -e
 
-long_opts=priv-key:,controller-ip:,worker-ip:,worker-hostname:,kubelet-download:,kubelet-binary:,ca-cert:
+long_opts=priv-key:,controller-ip:,worker-ip:,worker-hostname:,kubelet-download:,kubelet-binary:,pod-cidr:,ca-cert:
 script_name=$(basename "$0")
 proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
@@ -12,6 +12,7 @@ worker_ip=
 worker_hostname=
 kubelet_download=
 kubelet_binary=
+pod_cidr=
 ca_cert=
 
 function opt_val() {
@@ -57,6 +58,10 @@ function parse_args() {
         kubelet_binary=$(opt_val "$2")
         shift 2
         ;;
+      --pod-cidr)
+        pod_cidr=$(opt_val "$2")
+        shift 2
+        ;;
       --ca-cert)
         ca_cert=$(opt_val "$2")
         shift 2
@@ -82,6 +87,7 @@ kubelet_binary_actual="$($proj_root/scripts/make-download-path\
 #echo "kubelet_download=$kubelet_download"
 #echo "kubelet_binary=$kubelet_binary"
 #echo "kubelet_binary_actual=$kubelet_binary_actual"
+#echo "pod_cidr=$pod_cidr"
 #echo "ca_cert=$ca_cert"
 #echo "ca_key=$ca_key"
 
@@ -126,7 +132,8 @@ scp -i $priv_key $proj_root/worker/kubelet/worker.kubeconfig root@$worker_ip:/va
 scp -i $priv_key $ca_cert root@$worker_ip:/var/lib/kubernetes/
 
 echo "Copying kubelet service and config files to worker VM"
-scp -i $priv_key $proj_root/worker/kubelet/kubelet-config.yaml root@$worker_ip:/var/lib/kubelet/
+sed $proj_root/worker/kubelet/kubelet-config.yaml\
+ -e "s|PODCIDR|$pod_cidr|g" | ssh -i $priv_key root@$worker_ip "cat > /var/lib/kubelet/kubelet-config.yaml"
 scp -i $priv_key $proj_root/worker/kubelet/kubelet.service root@$worker_ip:/etc/systemd/system/
 
 echo "Starting kubelet service"

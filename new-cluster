@@ -2,7 +2,7 @@
 
 set -e
 
-long_opts=help,host-network-interface:,vboxdir:,check-compatibility,from-scratch,create-template,up:,down:
+long_opts=help,host-network-interface:,vboxdir:,check-compatibility,from-scratch,create-template,up:,down:,delete:
 script_name=$(basename "$0")
 proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
@@ -14,6 +14,7 @@ create_template=0
 check_compatibility=0
 up=
 down=
+delete=
 
 # internal
 downloading_msg=""
@@ -109,7 +110,7 @@ function usage() {
 
     Usage: new-cluster [--host-network-interface=<interface>] [--vboxdir=</some/path>]
            [--check-compatibility] [--from-scratch] [--create-template]
-           [--help] [--up=<nodelist>] [--down=<nodelist>]
+           [--help] [--up=<nodelist>] [--down=<nodelist>] [--delete=<nodelist>]
 
 
     Options:
@@ -136,6 +137,7 @@ function usage() {
       --up                       Optional. Takes a comma-separated list of VM names, and starts them all.
       --down                     Optional. Opposite of --up. Note - this is very low-tech at present: Order
                                  the args with the workers first and the controller last.
+      --delete                   Optional. Removes VMs along with associated files from the --vboxdir directory.
       --help                     Optional. Displays this help and exits.
     Examples:
 
@@ -210,6 +212,10 @@ function parse_args() {
         down=$(opt_val "$2")
         shift 2
         ;;
+      --delete)
+        delete=$(opt_val "$2")
+        shift 2
+        ;;
       --)
         shift
         break
@@ -241,6 +247,16 @@ elif [[ ! -z "$down" ]]; then
     echo "shutting down $vm"
     VBoxManage controlvm $vm acpipowerbutton
     $proj_root/scripts/wait-vm $vm --stopped
+  done
+  exit
+elif [[ ! -z "$delete" ]]; then
+  IFS=',' read -ra vms <<< "$delete"
+  for vm in "${vms[@]}"; do
+    echo "shutting down $vm if running"
+    VBoxManage controlvm $vm poweroff &>/dev/null && $proj_root/scripts/wait-vm $vm --stopped || echo "(not running)"
+    echo "removing $vm"
+    sleep 2s
+    VBoxManage unregistervm $vm --delete
   done
   exit
 fi
@@ -325,8 +341,8 @@ echo "${downloading_msg}provisioning worker nodes"
 
 controller_ip=$($proj_root/scripts/get-vm-ip doc)
 $proj_root/toplevel-scripts/provision-workers\
- --worker=ham,4096,2\
- --worker=monk,8192,3\
+ --worker=ham,4096,2,10.200.1.0/24\
+ --worker=monk,8192,3,10.200.2.0/24\
  --controller-ip=$controller_ip\
  --controller-hostname=doc\
  --template-vmname=bingo\
@@ -342,7 +358,61 @@ $proj_root/toplevel-scripts/provision-workers\
  --containerd-binary=$containerd_binary\
  --kubelet-download=$kubelet_download\
  --kubelet-binary=$kubelet_binary\
- --kube-router-yaml-download=$kube_router_yaml_download\
- --kube-router-yaml=$kube_router_yaml\
  --ca-cert=$proj_root/tls/ca.pem\
  --ca-key=$proj_root/tls/ca-key.pem
+
+echo "${downloading_msg}installing pod networking"
+
+# todo - I believe that something about the kube-router configuration is overriding the podCIDR values
+# specified in worker/kubelet/kubelet-config.yaml when the kubelet is installed. The kubelet logs on each node
+# have:
+#   kuberuntime_manager.go:1006] updating runtime config through cri with podcidr 10.200.1.0/24
+#   kubelet_network.go:77] Setting Pod CIDR:  -> 10.200.1.0/24
+#   kuberuntime_manager.go:1006] updating runtime config through cri with podcidr 10.200.0.0/24
+#   kubelet_network.go:77] Setting Pod CIDR: 10.200.1.0/24 -> 10.200.0.0/24
+# The first entry matches kubelet-config.yaml but then it is overridden by the second. The logs on each
+# node seem to indicate a 1-up reassignment of pod cidrs. Then:
+# kubectl get nodes -ocustom-columns='NAME:metadata.name,CIDR:spec.podCIDR'
+#   NAME   CIDR
+#   ham    10.200.0.0/24
+#   monk   10.200.1.0/24
+# where I would have expected .1 and .2 per the explicit configuration. This does not appear to cause
+# a problem but - unclear why it is happening.
+
+admin_kubeconfig=$proj_root/admin/admin.kubeconfig
+
+$proj_root/worker/kube-router/install-kube-router\
+ --controller-ip=$controller_ip\
+ --kube-router-yaml-download=$kube_router_yaml_download\
+ --kube-router-yaml=$kube_router_yaml\
+ --admin-kubeconfig=$admin_kubeconfig
+
+# Wait for kube-router to become fully ready. Otherwise when we install CoreDNS, the CoreDNS pod comes
+# up with an invalid IP address (10.88.something) and then it doesn't function correctly
+
+echo "${downloading_msg}waiting for pod networking"
+
+ready=0
+desired=1
+while [[ $ready -ne $desired ]]; do
+  sleep 1s
+  ready=$(kubectl --kubeconfig $admin_kubeconfig -n kube-system get ds kube-router -ojsonpath='{.status.numberReady}')
+  desired=$(kubectl --kubeconfig $admin_kubeconfig -n kube-system get ds kube-router -ojsonpath='{.status.desiredNumberScheduled}')
+done
+
+echo "${downloading_msg}installing cluster DNS"
+
+$proj_root/dns/coredns/install-coredns\
+ --controller-ip=$controller_ip\
+ --replicas=${#workers[@]}\
+ --admin-kubeconfig=$admin_kubeconfig
+
+echo
+echo "finished provisioning workers. To interact with the cluster:"
+echo "    export KUBECONFIG=$admin_kubeconfig"
+echo "then:"
+echo "    kubectl get po -A"
+echo
+
+priv_key=$proj_root/kickstart/id_ed25519
+$proj_root/scripts/show-ssh $priv_key

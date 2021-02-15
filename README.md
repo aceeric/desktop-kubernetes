@@ -39,13 +39,10 @@ The `--from-scratch` option is important. It tells the script to `curl` all the 
 
 Once the cluster comes up, the script will display a message telling you how to set your `KUBECONFIG` in order to access the cluster. It will also display a message showing how to SSH into each node.
 
-***Note: I'm having an issue with CoreDNS after the cluster comes up the first time. See below in the ToDos.***
-
 ## ToDos
 
 | Task                           | Description                                                  |
 | ------------------------------ | ------------------------------------------------------------ |
-| CoreDNS                        | When the scripts finish provisioning the cluster, CoreDNS does not initially work. I've created a GitHub "question" issue: `https://github.com/coredns/coredns/issues/4436` regarding this. The work-around is to simply cycle the CoreDNS deployment after the cluster comes up: `kubectl -nkube-system scale deploy coredns --replicas=0; kubectl -nkube-system scale deploy coredns --replicas=1`. Then DNS works... |
 | Firewall                       | There are plenty of posts discussing how to configure the firewall settings for Kubernetes. The documented settings do not appear to work with CoreDNS on CentOS 8. (In fact, many posters recommend to disable `firewalld` on CentOS.) So presently, the firewall is disabled but my goal is to run the cluster with the firewall enabled and the correct rules defined |
 | Ubuntu                         | Support Ubuntu Server as the Guest OS - presently only CentOS is supported |
 | Virtual Box Networking         | This version of the script uses VBox bridge networking for each of the VMs. As stated earlier, this provides guest-to-guest, host-to-guest, and guest-to-internet. However - with this networking solution the IP addresses are assigned by the host DHCP software. So Guest Additions are required to introspect the VMs to get their IP addresses. A better solution would be to use a VBox networking model that allows assignment of static IPs to guest VMs. Then the Guest Additions installation step could be omitted |
@@ -53,6 +50,7 @@ Once the cluster comes up, the script will display a message telling you how to 
 | Nodes                          | Consider making the number of controllers configurable, as well as node characteristics such as storage, RAM, and CPU. Right now, only one controller and two workers are supported, their names are hard-coded, etc. |
 | Hands-free install improvement | The current version builds a Kickstart ISO, and mounts the ISO on the VM to do the hands-free CentOS install. Unfortunately, this method does not allow you to change the boot menu timeout on the *initial* startup of the VM. So, unless you intervene, the boot menu takes 60 seconds to time out before the Kickstart installation begins. The alternate way to do this is to break apart the ISO, modify the boot menu timeout, and then re-build the ISO. I may consider this at some future point, although that would not easily lend itself to automation |
 | CoreOS?                        | Consider [Fedora CoreOS](https://getfedora.org/en/coreos?stream=stable) as a VM OS |
+
 ## Versions
 
 This project has been testing with the following tools, components and versions. The Kubernetes component versions and CentOS and VirtualBox Guest Addition versions are hard-coded into the `new-cluster` script. So any changes only need to be made one time in that script. *If you decide to use later (or earlier) Kubernetes components, be aware that the supported options can change between versions which may require additional script changes.*

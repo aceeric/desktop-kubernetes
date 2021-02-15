@@ -2,8 +2,8 @@
 
 set -e
 
-long_opts=controller-ip:,controller-hostname:,template-vmname:,clone-vmname:,clone-ram:,clone-cpu:,vboxdir:,priv-key:,\
-admin-kubeconfig:,crictl-download:,crictl-binary:,runc-download:,runc-binary:,\
+long_opts=controller-ip:,controller-hostname:,template-vmname:,clone-vmname:,clone-ram:,clone-cpu:,pod-cidr:,\
+vboxdir:,priv-key:,admin-kubeconfig:,crictl-download:,crictl-binary:,runc-download:,runc-binary:,\
 cni-plugins-download:,cni-plugins-binary:,containerd-download:,containerd-binary:,\
 kubelet-download:,kubelet-binary:,ca-cert:,ca-key:
 script_name=$(basename "$0")
@@ -15,6 +15,7 @@ template_vmname=
 clone_vmname=
 clone_ram=
 clone_cpu=
+pod_cidr=
 vboxdir=
 priv_key=
 admin_kubeconfig=
@@ -72,6 +73,10 @@ function parse_args() {
         ;;
       --clone-cpu)
         clone_cpu=$(opt_val "$2")
+        shift 2
+        ;;
+      --pod-cidr)
+        pod_cidr=$(opt_val "$2")
         shift 2
         ;;
       --vboxdir)
@@ -151,6 +156,7 @@ parse_args "$@"
 #echo "clone_vmname=$clone_vmname"
 #echo "clone_ram=$clone_ram"
 #echo "clone_cpu=$clone_cpu"
+#echo "pod_cidr=$pod_cidr"
 #echo "vboxdir=$vboxdir"
 #echo "priv_key=$priv_key"
 #echo "admin_kubeconfig=$admin_kubeconfig"
@@ -191,5 +197,6 @@ $proj_root/scripts/configure-worker\
  --containerd-binary=$containerd_binary\
  --kubelet-download=$kubelet_download\
  --kubelet-binary=$kubelet_binary\
+ --pod-cidr=$pod_cidr\
  --ca-cert=$ca_cert\
  --ca-key=$ca_key

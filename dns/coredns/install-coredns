@@ -61,10 +61,6 @@ parse_args "$@"
 #echo "replicas=$replicas"
 #echo "admin_kubeconfig=$admin_kubeconfig"
 
-# test
-#sed -e "s|CONTROLLER_IP|$controller_ip|" $proj_root/dns/coredns/coredns.yaml\
-# | kubectl --kubeconfig $admin_kubeconfig apply -f -
-
 echo "applying coredns.yaml to the cluster"
 kubectl --kubeconfig $admin_kubeconfig apply -f $proj_root/dns/coredns/coredns.yaml
 
