@@ -1,5 +1,9 @@
 #!/usr/bin/env bash
 
+# installs the kube-controller-manager. The service definition configures kube-controller-manager to allocate
+# pod CIDRs to nodes as documented here: https://github.com/cloudnativelabs/kube-router/blob/master/docs/generic.md
+# This integrates with kube-router.
+
 set -e
 
 long_opts=priv-key:,controller-ip:,controller-hostname:,\

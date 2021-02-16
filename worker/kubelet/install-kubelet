@@ -132,6 +132,11 @@ scp -i $priv_key $proj_root/worker/kubelet/worker.kubeconfig root@$worker_ip:/va
 scp -i $priv_key $ca_cert root@$worker_ip:/var/lib/kubernetes/
 
 echo "Copying kubelet service and config files to worker VM"
+
+# todo - since kube-controller-manager is configured to assign a podCIDR to each node, it should not be
+#  necessary here and in fact is overridden (can be seen in the kubelet journalctl logs). So test what happens
+#  if the podCIDR line is completely removed from the kubelet-config.yaml
+
 sed $proj_root/worker/kubelet/kubelet-config.yaml\
  -e "s|PODCIDR|$pod_cidr|g" | ssh -i $priv_key root@$worker_ip "cat > /var/lib/kubelet/kubelet-config.yaml"
 scp -i $priv_key $proj_root/worker/kubelet/kubelet.service root@$worker_ip:/etc/systemd/system/

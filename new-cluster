@@ -363,22 +363,6 @@ $proj_root/toplevel-scripts/provision-workers\
 
 echo "${downloading_msg}installing pod networking"
 
-# todo - I believe that something about the kube-router configuration is overriding the podCIDR values
-# specified in worker/kubelet/kubelet-config.yaml when the kubelet is installed. The kubelet logs on each node
-# have:
-#   kuberuntime_manager.go:1006] updating runtime config through cri with podcidr 10.200.1.0/24
-#   kubelet_network.go:77] Setting Pod CIDR:  -> 10.200.1.0/24
-#   kuberuntime_manager.go:1006] updating runtime config through cri with podcidr 10.200.0.0/24
-#   kubelet_network.go:77] Setting Pod CIDR: 10.200.1.0/24 -> 10.200.0.0/24
-# The first entry matches kubelet-config.yaml but then it is overridden by the second. The logs on each
-# node seem to indicate a 1-up reassignment of pod cidrs. Then:
-# kubectl get nodes -ocustom-columns='NAME:metadata.name,CIDR:spec.podCIDR'
-#   NAME   CIDR
-#   ham    10.200.0.0/24
-#   monk   10.200.1.0/24
-# where I would have expected .1 and .2 per the explicit configuration. This does not appear to cause
-# a problem but - unclear why it is happening.
-
 admin_kubeconfig=$proj_root/admin/admin.kubeconfig
 
 $proj_root/worker/kube-router/install-kube-router\
@@ -388,7 +372,8 @@ $proj_root/worker/kube-router/install-kube-router\
  --admin-kubeconfig=$admin_kubeconfig
 
 # Wait for kube-router to become fully ready. Otherwise when we install CoreDNS, the CoreDNS pod comes
-# up with an invalid IP address (10.88.something) and then it doesn't function correctly
+# up with an invalid IP address (10.88.something) and then it doesn't function correctly. Unclear presently
+# how it actually comes up with that IP because 88 is specified nowhere that I can find
 
 echo "${downloading_msg}waiting for pod networking"
 
@@ -410,8 +395,6 @@ $proj_root/dns/coredns/install-coredns\
 echo
 echo "finished provisioning workers. To interact with the cluster:"
 echo "    export KUBECONFIG=$admin_kubeconfig"
-echo "then:"
-echo "    kubectl get po -A"
 echo
 
 priv_key=$proj_root/kickstart/id_ed25519
