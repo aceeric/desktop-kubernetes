@@ -194,7 +194,8 @@ EOF
 
 echo "Generating TLS certs for the worker"
 
-# todo move gen-worker-tls outside and only do it once for all workers?
+# todo move call to gen-worker-tls to install-kubelet since that's the only place it is used and rename
+# to gen-kubelet-tls
 
 $proj_root/scripts/gen-worker-tls\
   --worker-ip=$worker_ip\

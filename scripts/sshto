@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+set -e
+
+proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+ip=$($proj_root/scripts/get-vm-ip $1)
+ssh -i $proj_root/kickstart/id_ed25519 root@$ip
