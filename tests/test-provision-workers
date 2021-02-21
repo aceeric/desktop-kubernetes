@@ -38,5 +38,6 @@ $proj_root/toplevel-scripts/provision-workers\
  --containerd-binary=$proj_root/binaries/containerd-1.4.3-linux-amd64.tar.gz\
  --kubelet-download=\
  --kubelet-binary=$proj_root/binaries/kubelet\
+ --node-labels=worker\
  --ca-cert=$proj_root/tls/ca.pem\
  --ca-key=$proj_root/tls/ca-key.pem

@@ -6,7 +6,7 @@ set -e
 
 long_opts=controller-ip:,controller-hostname:,worker-hostname:,priv-key:,admin-kubeconfig:,crictl-download:,crictl-binary:,\
 runc-download:,runc-binary:,cni-plugins-download:,cni-plugins-binary:,containerd-download:,containerd-binary:,\
-kubelet-download:,kubelet-binary:,pod-cidr:,ca-cert:,ca-key:
+kubelet-download:,kubelet-binary:,pod-cidr:,node-labels:,ca-cert:,ca-key:
 script_name=$(basename "$0")
 proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
@@ -30,6 +30,7 @@ containerd_binary=
 kubelet_download=
 kubelet_binary=
 pod_cidr=
+node_labels=
 ca_cert=
 ca_key=
 
@@ -119,6 +120,10 @@ function parse_args() {
         pod_cidr=$(opt_val "$2")
         shift 2
         ;;
+      --node-labels)
+        node_labels=$(opt_val "$2")
+        shift 2
+        ;;
       --ca-cert)
         ca_cert=$(opt_val "$2")
         shift 2
@@ -154,6 +159,7 @@ parse_args "$@"
 #echo "kubelet_download=$kubelet_download"
 #echo "kubelet_binary=$kubelet_binary"
 #echo "pod_cidr=$pod_cidr"
+#echo "node_labels=$node_labels"
 #echo "ca_cert=$ca_cert"
 #echo "ca_key=$ca_key"
 
@@ -166,10 +172,10 @@ fi
 echo "Getting IP address from running VM"
 worker_ip=$($proj_root/scripts/get-vm-ip $worker_hostname)
 
-echo "Configuring /etc/hosts on controller and worker"
-ssh -i $priv_key root@$controller_ip "echo $worker_ip $worker_hostname >> /etc/hosts"
-ssh -i $priv_key root@$worker_ip "echo $controller_ip $controller_hostname >> /etc/hosts"
-ssh -i $priv_key root@$worker_ip "echo $worker_ip $worker_hostname >> /etc/hosts"
+#echo "Configuring /etc/hosts on controller and worker"
+#ssh -i $priv_key root@$controller_ip "echo $worker_ip $worker_hostname >> /etc/hosts"
+#ssh -i $priv_key root@$worker_ip "echo $controller_ip $controller_hostname >> /etc/hosts"
+#ssh -i $priv_key root@$worker_ip "echo $worker_ip $worker_hostname >> /etc/hosts"
 
 echo "Making worker configuration changes"
 # The socat binary enables support for the kubectl port-forward command. By default the kubelet
@@ -245,5 +251,12 @@ if [[ "$ready_count" -ne 1 ]]; then
   echo "Unable to verify that the worker node was successfully configured"
   exit 1
 fi
+
+echo "Labeling node"
+
+IFS=',' read -ra labels <<< "$node_labels"
+for label in "${labels[@]}"; do
+  kubectl --kubeconfig $admin_kubeconfig label node $worker_hostname node-role.kubernetes.io/$label=
+done
 
 echo "No errors detected with worker installation"

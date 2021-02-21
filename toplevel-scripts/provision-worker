@@ -5,7 +5,7 @@ set -e
 long_opts=controller-ip:,controller-hostname:,template-vmname:,clone-vmname:,clone-ram:,clone-cpu:,pod-cidr:,\
 vboxdir:,priv-key:,admin-kubeconfig:,crictl-download:,crictl-binary:,runc-download:,runc-binary:,\
 cni-plugins-download:,cni-plugins-binary:,containerd-download:,containerd-binary:,\
-kubelet-download:,kubelet-binary:,ca-cert:,ca-key:
+kubelet-download:,kubelet-binary:,node-labels:,ca-cert:,ca-key:
 script_name=$(basename "$0")
 proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
@@ -29,6 +29,7 @@ containerd_download=
 containerd_binary=
 kubelet_download=
 kubelet_binary=
+node_labels=
 ca_cert=
 ca_key=
 
@@ -131,6 +132,10 @@ function parse_args() {
         kubelet_binary=$(opt_val "$2")
         shift 2
         ;;
+      --node-labels)
+        node_labels=$(opt_val "$2")
+        shift 2
+        ;;
       --ca-cert)
         ca_cert=$(opt_val "$2")
         shift 2
@@ -170,6 +175,7 @@ parse_args "$@"
 #echo "containerd_binary=$containerd_binary"
 #echo "kubelet_download=$kubelet_download"
 #echo "kubelet_binary=$kubelet_binary"
+#echo "node_labels=$node_labels"
 #echo "ca_cert=$ca_cert"
 #echo "ca_key=$ca_key"
 
@@ -198,5 +204,6 @@ $proj_root/scripts/configure-worker\
  --kubelet-download=$kubelet_download\
  --kubelet-binary=$kubelet_binary\
  --pod-cidr=$pod_cidr\
+ --node-labels=$node_labels\
  --ca-cert=$ca_cert\
  --ca-key=$ca_key
