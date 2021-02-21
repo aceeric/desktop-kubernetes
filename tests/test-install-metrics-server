@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+
+proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+ip=$($proj_root/scripts/get-vm-ip "$1")
+$proj_root/monitoring/metrics-server/install-metrics-server\
+ --priv-key=$proj_root/kickstart/id_ed25519\
+ --controller-ip=$ip\
+ --admin-kubeconfig=$proj_root/admin/admin.kubeconfig\
+ --metrics-server-manifest=$proj_root/binaries/metrics-server-components.yaml\
+ --kubernetes-dashboard-manifest=$proj_root/binaries/kubernetes-dashboard-recommended.yaml\
+ --ca-cert=$proj_root/tls/ca.pem\
+ --ca-key=$proj_root/tls/ca-key.pem
+
+#$proj_root/monitoring/metrics-server/install-metrics-server\
+# --priv-key=$proj_root/kickstart/id_ed25519\
+# --controller-ip=$ip\
+# --admin-kubeconfig=$proj_root/admin/admin.kubeconfig\
+# --metrics-server-download=https://github.com/kubernetes-sigs/metrics-server/releases/download/v0.4.2/components.yaml\
+# --metrics-server-manifest=$proj_root/binaries/metrics-server-components.yaml\
+# --kubernetes-dashboard-download=https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0/aio/deploy/recommended.yaml\
+# --kubernetes-dashboard-manifest=$proj_root/binaries/kubernetes-dashboard-recommended.yaml\
+# --ca-cert=$proj_root/tls/ca.pem\
+# --ca-key=$proj_root/tls/ca-key.pem

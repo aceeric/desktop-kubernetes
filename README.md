@@ -1,6 +1,6 @@
 # Desktop Kubernetes
 
-This is a Bash shell project that provisions a desktop Kubernetes cluster using VirtualBox - with each cluster node consisting of a CentOS guest VM. The cluster consists of one controller and two workers.
+This is a Bash shell project that provisions a desktop Kubernetes cluster using VirtualBox - with each cluster node consisting of a CentOS guest VM. The cluster consists of one controller/worker and two dedicated workers.
 
 This has been tested on a Ubuntu 20.04.1 desktop host with 64 gig of RAM and 6 hyper-threaded processors that Ubuntu sees as 12 CPUs.
 
@@ -17,6 +17,7 @@ This project is derivative of **Kelsey Hightower's** [Kubernetes The Hard Way](h
 | Hightower | Uses Cloudflare [cfssl](https://github.com/cloudflare/cfssl) to generate the cluster certs | Uses [openssl](https://www.openssl.org/) since it is almost universally available on Linux. I was interested to see what the scripting would look like using openssl, esp. things like creating CSRs and so on |
 | Hightower | Is nicely terse and compact | Is verbose by virtue of using scripts with lots of options, and separating the component installs into separate scripts, thus requiring a lot of option passing and parsing |
 | Serdar | Leaves provisioning the VMs to you | Automates VM provisioning. I was interested to get some experience with the `VBoxManage` utility and CentOS [Kickstart](https://docs.centos.org/en-US/centos/install-guide/Kickstart2/) for hands-free OS installation. The script creates a template VM, and then clones the template for each of the cluster nodes. I also needed the VirtualBox Guest Additions, and came up with a way to automate that installation. Guest Additions provides the ability to get the IP address from a VM. In VirtualBox bridged networking, the IP is assigned by the desktop's DHCP so Guest Additions helps with the automation. This was an interesting side-effort that resulted in the ability to create a CentOS VM just by running a single script command |
+| Both | Does not include monitoring | Installs [Kubernetes Metrics Server](https://github.com/kubernetes-sigs/metrics-server) and [Kubernetes Dashboard](https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/) |
 
 ## Quick Start
 
@@ -39,10 +40,19 @@ The `--from-scratch` option is important. It tells the script to `curl` all the 
 
 Once the cluster comes up, the script will display a message telling you how to set your `KUBECONFIG` in order to access the cluster. It will also display a message showing how to SSH into each node.
 
+To see a list of all supported options:
+
+```shell
+$ ./new-cluster --help
+```
+
+
+
 ## ToDos
 
 | Task                           | Description                                                  |
 | ------------------------------ | ------------------------------------------------------------ |
+| Sonobuoy                       | See if it is possible for this cluster to pass the Kubernetes certification tests using [Sonobuoy](https://github.com/vmware-tanzu/sonobuoy) |
 | Firewall                       | There are plenty of posts discussing how to configure the firewall settings for Kubernetes. The documented settings do not appear to work with CoreDNS on CentOS 8. (In fact, many posters recommend to disable `firewalld` on CentOS.) So presently, the firewall is disabled but my goal is to run the cluster with the firewall enabled and the correct rules defined |
 | Ubuntu                         | Support Ubuntu Server as the Guest OS - presently only CentOS is supported |
 | Virtual Box Networking         | This version of the script uses VBox bridge networking for each of the VMs. As stated earlier, this provides guest-to-guest, host-to-guest, and guest-to-internet. However - with this networking solution the IP addresses are assigned by the host DHCP software. So Guest Additions are required to introspect the VMs to get their IP addresses. A better solution would be to use a VBox networking model that allows assignment of static IPs to guest VMs. Then the Guest Additions installation step could be omitted |
@@ -50,6 +60,7 @@ Once the cluster comes up, the script will display a message telling you how to 
 | Nodes                          | Consider making the number of controllers configurable, as well as node characteristics such as storage, RAM, and CPU. Right now, only one controller and two workers are supported, their names are hard-coded, etc. |
 | Hands-free install improvement | The current version builds a Kickstart ISO, and mounts the ISO on the VM to do the hands-free CentOS install. Unfortunately, this method does not allow you to change the boot menu timeout on the *initial* startup of the VM. So, unless you intervene, the boot menu takes 60 seconds to time out before the Kickstart installation begins. The alternate way to do this is to break apart the ISO, modify the boot menu timeout, and then re-build the ISO. I may consider this at some future point, although that would not easily lend itself to automation |
 | CoreOS?                        | Consider [Fedora CoreOS](https://getfedora.org/en/coreos?stream=stable) as a VM OS |
+| Monitoring                     | Support Prometheus and Grafana                               |
 
 ## Versions
 
@@ -77,4 +88,6 @@ This project has been testing with the following tools, components and versions.
 | k8s      | containerd                                     | v1.4.3             |
 | k8s      | kube-router                                    | v1.1.1             |
 | k8s      | CoreDNS                                        | 1.8.0              |
+| k8s      | Metrics Server                                 | 0.4.2              |
+| k8s      | Kubernetes Dashboard                           | 2.0.0              |
 

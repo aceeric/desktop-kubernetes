@@ -2,16 +2,16 @@
 
 set -e
 
-priv_key=$1
-
 proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-doc_ip=$($proj_root/scripts/get-vm-ip doc)
-ham_ip=$($proj_root/scripts/get-vm-ip ham)
-monk_ip=$($proj_root/scripts/get-vm-ip monk)
+priv_key=$1
+shift
 
-echo "To access each cluster node via ssh:"
+echo "To access the cluster node(s) via ssh:"
 echo
-echo "controller (doc) : ssh -i $priv_key root@$doc_ip"
-echo "worker one (ham) : ssh -i $priv_key root@$ham_ip"
-echo "worker two (monk): ssh -i $priv_key root@$monk_ip"
+
+for vm in "$@"
+do
+  ip=$($proj_root/scripts/get-vm-ip $vm)
+  echo "$vm: ssh -i $priv_key root@$ip"
+done

@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+
+#
+# Patches the kube-apiserver to support aggregation. Intent is to copy this script to a controller node
+# and run it there.
+#
+
+set -e
+
+# make a backup of the existing service definition
+cp -f /etc/systemd/system/kube-apiserver.service /etc/systemd/system/kube-apiserver.service.orig
+
+# find the line in the service definition after which we will patch in some new options
+
+line=$(grep -n 'ExecStart=/usr/local/bin/kube-apiserver' /etc/systemd/system/kube-apiserver.service | cut -d: -f1)
+
+# keep the first part of the existing service definition
+
+head -n$line /etc/systemd/system/kube-apiserver.service > /etc/systemd/system/kube-apiserver.service.patched
+
+# patch in new options
+
+cat <<EOF >> /etc/systemd/system/kube-apiserver.service.patched
+  --requestheader-client-ca-file=/var/lib/kubernetes/ca.pem\\
+  --requestheader-allowed-names=aggregator\\
+  --requestheader-extra-headers-prefix=X-Remote-Extra-\\
+  --requestheader-group-headers=X-Remote-Group\\
+  --requestheader-username-headers=X-Remote-User\\
+  --proxy-client-cert-file=/var/lib/kubernetes/aggregator.pem\\
+  --proxy-client-key-file=/var/lib/kubernetes/aggregator-key.pem\\
+  --enable-aggregator-routing=true\\
+EOF
+
+# keep the remaining part of the existing service definition
+
+tail -n+$((line+1)) /etc/systemd/system/kube-apiserver.service >> /etc/systemd/system/kube-apiserver.service.patched
+
+# replace the existing service definition with the new patched definition and restart
+
+mv -f /etc/systemd/system/kube-apiserver.service.patched /etc/systemd/system/kube-apiserver.service
+systemctl daemon-reload && systemctl restart kube-apiserver
+
+# allow some time for the service to fully restart
+
+set +e
+for i in {1..10}; do
+  http_code=$(curl -kso /dev/null -w "%{http_code}" --cacert /var/lib/kubernetes/ca.pem https://localhost:6443/version)
+  if [[ "$http_code" == "200" ]]; then
+    break
+  fi
+  sleep 1s
+done
+
+if [[ "$http_code" != "200" ]]; then
+  echo "ERROR: Unable to verify kube-apiserver was successfully patched"
+  exit 1
+fi

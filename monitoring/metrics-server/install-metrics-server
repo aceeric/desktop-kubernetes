@@ -1,0 +1,168 @@
+#!/usr/bin/env bash
+
+#
+# Installs and configures the "Resource metrics pipeline" per:
+# https://kubernetes.io/docs/tasks/debug-application-cluster/resource-usage-monitoring/#resource-metrics-pipeline
+#
+# This install method provides access to the dashboard via kubectl proxy as described in the website docs.
+#
+
+set -e
+
+long_opts=priv-key:,controller-ip:,admin-kubeconfig:,metrics-server-download:,metrics-server-manifest:,\
+kubernetes-dashboard-download:,kubernetes-dashboard-manifest:,ca-cert:,ca-key:
+script_name=$(basename "$0")
+proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+
+priv_key=
+controller_ip=
+admin_kubeconfig=
+metrics_server_download=
+metrics_server_manifest=
+kubernetes_dashboard_download=
+kubernetes_dashboard_manifest=
+ca_cert=
+ca_key=
+
+function opt_val() {
+  opt="$1"
+  if [[ "$opt" == =* ]]; then
+    echo "${opt:1}"
+  else
+    echo "$opt"
+  fi
+}
+
+function parse_args() {
+  if [[ "$#" -eq 0 ]]; then
+    echo "no args provided"
+    exit 1
+  fi
+  local parsed
+  parsed=$(getopt --options "" --longoptions $long_opts -n $script_name -- "$@")
+  eval set -- "$parsed"
+  while true; do
+    case "$1" in
+	    --priv-key)
+        priv_key=$(opt_val "$2")
+        shift 2
+        ;;
+	    --controller-ip)
+        controller_ip=$(opt_val "$2")
+        shift 2
+        ;;
+      --admin-kubeconfig)
+        admin_kubeconfig=$(opt_val "$2")
+        shift 2
+        ;;
+      --metrics-server-download)
+        metrics_server_download=$(opt_val "$2")
+        shift 2
+        ;;
+      --metrics-server-manifest)
+        metrics_server_manifest=$(opt_val "$2")
+        shift 2
+        ;;
+      --kubernetes-dashboard-download)
+        kubernetes_dashboard_download=$(opt_val "$2")
+        shift 2
+        ;;
+      --kubernetes-dashboard-manifest)
+        kubernetes_dashboard_manifest=$(opt_val "$2")
+        shift 2
+        ;;
+      --ca-cert)
+        ca_cert=$(opt_val "$2")
+        shift 2
+        ;;
+      --ca-key)
+        ca_key=$(opt_val "$2")
+        shift 2
+        ;;
+      --)
+        shift
+        break
+        ;;
+    esac
+  done
+}
+
+parse_args "$@"
+
+metrics_server_actual=$($proj_root/scripts/make-download-path\
+ --download-url=$metrics_server_download --download-path=$metrics_server_manifest)
+
+kubernetes_dashboard_actual=$($proj_root/scripts/make-download-path\
+ --download-url=$kubernetes_dashboard_download --download-path=$kubernetes_dashboard_manifest)
+
+# debug
+#echo "priv_key=$priv_key"
+#echo "controller_ip=$controller_ip"
+#echo "admin_kubeconfig=$admin_kubeconfig"
+#echo "metrics_server_download=$metrics_server_download"
+#echo "metrics_server_manifest=$metrics_server_manifest"
+#echo "metrics_server_actual=$metrics_server_actual"
+#echo "kubernetes_dashboard_download=$kubernetes_dashboard_download"
+#echo "kubernetes_dashboard_manifest=$kubernetes_dashboard_manifest"
+#echo "kubernetes_dashboard_actual=$kubernetes_dashboard_actual"
+#echo "ca_cert=$ca_cert"
+#echo "ca_key=$ca_key"
+
+if [[ ! -z "$metrics_server_download" ]]; then
+  echo "Downloading metrics-server yaml"
+  $proj_root/scripts/download-obj --url="$metrics_server_download" --dest="$metrics_server_actual"
+else
+  echo "No URL provided - skipping download and using provided metrics-server yaml"
+fi
+
+if [[ ! -z "$kubernetes_dashboard_download" ]]; then
+  echo "Downloading kubernetes dashboard yaml"
+  $proj_root/scripts/download-obj --url="$kubernetes_dashboard_download" --dest="$kubernetes_dashboard_actual"
+else
+  echo "No URL provided - skipping download and using provided kubernetes dashboard yaml"
+fi
+
+echo "configuring the API server aggregation layer"
+# based on:
+# https://github.com/kubernetes-sigs/metrics-server#requirements
+# https://kubernetes.io/docs/tasks/extend-kubernetes/configure-aggregation-layer/
+
+aggregator_cert=$proj_root/tls/aggregator.pem
+aggregator_key=$proj_root/tls/aggregator-key.pem
+aggregator_csr=$proj_root/tls/aggregator.csr
+
+echo "generating API aggregation TLS material and copying to controller"
+
+openssl req -nodes -newkey rsa:2048 -keyout $aggregator_key -subj "/CN=aggregator/O=k8s/OU=system" -out $aggregator_csr
+openssl x509 -req -days 10000 -in $aggregator_csr -CA $ca_cert -CAkey $ca_key -CAcreateserial\
+ -sha256 -out $aggregator_cert
+rm -f $aggregator_csr
+scp -i $priv_key $proj_root/tls/aggregator*.pem root@$controller_ip:/var/lib/kubernetes
+
+if ! ssh -i $priv_key root@$controller_ip "grep -q aggregator /etc/systemd/system/kube-apiserver.service"; then
+  echo "configuring kube-apiserver aggregation layer"
+  scp -i $priv_key $proj_root/monitoring/metrics-server/patch-kube-apiserver root@$controller_ip:/etc/systemd/system/
+  ssh -i $priv_key root@$controller_ip "/etc/systemd/system/patch-kube-apiserver && rm -f /etc/systemd/system/patch-kube-apiserver"
+fi
+
+echo "installing kubernetes-sigs/metrics-server"
+kubectl --kubeconfig $admin_kubeconfig apply -f $metrics_server_actual
+
+echo "installing kubernetes dashboard"
+kubectl --kubeconfig $admin_kubeconfig apply -f $kubernetes_dashboard_actual
+
+echo "configuring access for kubernetes dashboard"
+
+kubectl --kubeconfig $admin_kubeconfig -n kubernetes-dashboard create serviceaccount dashboard-admin-sa
+kubectl --kubeconfig $admin_kubeconfig create clusterrolebinding dashboard-admin-sa\
+        --clusterrole=cluster-admin --serviceaccount=kubernetes-dashboard:dashboard-admin-sa
+
+secret_name=$(kubectl --kubeconfig $admin_kubeconfig -n kubernetes-dashboard get\
+              serviceaccount dashboard-admin-sa -ojsonpath='{.secrets[0].name}')
+echo
+echo "finished installing monitoring. Use this token to access the dashboard:"
+kubectl --kubeconfig $admin_kubeconfig -n kubernetes-dashboard get secret $secret_name -ojsonpath='{.data.token}' | base64 -d && echo
+echo "Use this command to get the dashboard token:"
+echo "kubectl -n kubernetes-dashboard get secret $secret_name -ojsonpath='{.data.token}' | base64 -d"
+echo "After 'kubectl proxy', use this URL to access the dashboard:"
+echo "http://localhost:8001/api/v1/namespaces/kubernetes-dashboard/services/https:kubernetes-dashboard:/proxy/"

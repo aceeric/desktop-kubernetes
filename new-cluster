@@ -2,7 +2,8 @@
 
 set -e
 
-long_opts=help,host-network-interface:,vboxdir:,check-compatibility,from-scratch,create-template,up:,down:,delete:
+long_opts=help,host-network-interface:,vboxdir:,check-compatibility,from-scratch,create-template,monitoring:,\
+single-node,up:,down:,delete:
 script_name=$(basename "$0")
 proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 priv_key=$proj_root/kickstart/id_ed25519
@@ -11,15 +12,18 @@ admin_kubeconfig=$proj_root/admin/admin.kubeconfig
 # api
 host_network_interface=
 vboxdir=
+check_compatibility=0
 from_scratch=0
 create_template=0
-check_compatibility=0
+monitoring=
+single_node=0
 up=
 down=
 delete=
 
 # internal
 downloading_msg=""
+cluster_vms=(doc)
 
 # These are the various binaries and manifests that are downloaded by the scripts in the project. Two
 # elements are defined for each upstream: the URL to get it from, and the filesystem location. This way,
@@ -51,6 +55,10 @@ kubelet_download=https://storage.googleapis.com/kubernetes-release/release/v1.20
 kubelet_binary=$proj_root/binaries/kubelet
 kube_router_yaml_download=https://raw.githubusercontent.com/cloudnativelabs/kube-router/v1.1.1/daemonset/generic-kuberouter-all-features.yaml
 kube_router_yaml=$proj_root/binaries/generic-kuberouter-all-features.yaml
+metrics_server_download=https://github.com/kubernetes-sigs/metrics-server/releases/download/v0.4.2/components.yaml
+metrics_server_manifest=$proj_root/binaries/metrics-server-components.yaml
+kubernetes_dashboard_download=https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0/aio/deploy/recommended.yaml
+kubernetes_dashboard_manifest=$proj_root/binaries/kubernetes-dashboard-recommended.yaml
 
 #
 # Verifies the existence of all the filesystem objects required to provision a cluster. If arg1 is '1' then that means
@@ -63,6 +71,10 @@ function check_files() {
   if [[ "$1" == 1 ]]; then
     objects+=($centos_iso_path)
     objects+=($guest_additions_path)
+  fi
+  if [[ "$monitoring" == "metrics.k8s.io" ]]; then
+    objects+=($metrics_server_manifest)
+    objects+=($kubernetes_dashboard_manifest)
   fi
   for f in "${objects[@]}"; do
     if ! [[ -f $f ]]; then
@@ -85,6 +97,10 @@ function check_urls() {
   if [[ "$1" == 1 ]]; then
     objects+=($centos_iso_download)
     objects+=($guest_additions_download)
+  fi
+  if [[ "$monitoring" == "metrics.k8s.io" ]]; then
+    objects+=($metrics_server_download)
+    objects+=($kubernetes_dashboard_download)
   fi
   for f in "${objects[@]}"; do
     if ! curl -sL $f -o /dev/null --head --fail; then
@@ -110,13 +126,16 @@ function usage() {
     VM takes a fair bit of time, including the initial 60 seconds for the boot menu to time out and actually
     start the install.
 
-    Usage: new-cluster [--host-network-interface=<interface>] [--vboxdir=</some/path>]
-           [--check-compatibility] [--from-scratch] [--create-template]
-           [--help] [--up=<nodelist>] [--down=<nodelist>] [--delete=<nodelist>]
-
+    Usage: new-cluster [--help] [--host-network-interface=<interface>] [--vboxdir=</some/path>]
+           [--from-scratch] [--create-template] [--monitoring=<type>] [--single-node]
+           [--up=<nodelist>] [--down=<nodelist>] [--delete=<nodelist>] [--check-compatibility]
 
     Options:
 
+      --check-compatibility      Optional. If specified, checks the installed versions of various utils
+                                 used by the project (curl, kubectl, etc) against what the project has been
+                                 tested on - and then exits, taking no further action. You should do this
+                                 at least once. Or just run "verify-prereqs" in the "scripts" directory.
       --host-network-interface   Required. The name of the primary network interface on your machine. The
                                  scripts use this to configure the VirtualBox bridge network for each node
                                  VM.
@@ -124,10 +143,6 @@ function usage() {
                                  the VBoxManage utility to create the VMs, which will in turn create a sub-
                                  directory under this directory for each VM. The directory must exist.
                                  The script will not create it.
-      --check-compatibility      Optional. If specified, checks the installed versions of various utils
-                                 used by the project (curl, kubectl, etc) against what the project has been
-                                 tested on - and then exits, taking no further action. You should do this
-                                 at least once. Or just run "verify-prereqs" in the "scripts" directory.
       --from-scratch             Optional. If specified, then downloads all the necessary items - such as the k8s
                                  binaries, as well as the CentOS ISO and the Guest Additions ISO. Also creates
                                  a template (see --create-template). If not specified, then the script
@@ -136,11 +151,21 @@ function usage() {
                                  nodes from before bringing up the cluster. (This step by far takes the longest.)
                                  If not specified, expects to find an existing VM to clone from. Note - if
                                  the --from-scratch option is specified, a template is always created.
+      --monitoring               Optional. Installs monitoring. Presently, the only allowed value is "metrics.k8s.io",
+                                 e.g.: "--monitoring=metrics.k8s.io". This installs basic monitoring as described in:
+                                 https://kubernetes.io/docs/tasks/debug-application-cluster/resource-usage-monitoring/
+                                 and it also installs kubernetes dashboard, which can be accessed using kubectl
+                                 proxy. A to-do item is to support Prometheus and Grafana.
+      --single-node              Optional. If specified, Creates a single node cluster. The default is to create
+                                 one controller, named "doc", and two workers, named "ham" and "monk". This option
+                                 is useful to quickly test changes since it is faster to provision a single node.
       --up                       Optional. Takes a comma-separated list of VM names, and starts them all.
       --down                     Optional. Opposite of --up. Note - this is very low-tech at present: Order
                                  the args with the workers first and the controller last.
-      --delete                   Optional. Removes VMs along with associated files from the --vboxdir directory.
+      --delete                   Optional. Tears down the cluster: Force stops all VMs and removes associated files
+                                 from the --vboxdir directory.
       --help                     Optional. Displays this help and exits.
+
     Examples:
 
       new-cluster --host-network-interface=enp0s31f6 --vboxdir=/sdb1/virtualbox --from-scratch
@@ -151,10 +176,10 @@ function usage() {
 
       *** You must use "--from-scratch" at least once because all the upstreams are git-ignored  ***
 
-      new-cluster --host-network-interface=enp0s31f6 --vboxdir=/sdb1/virtualbox
+      new-cluster --host-network-interface=enp0s31f6 --vboxdir=/sdb1/virtualbox --single-node
 
-      Same as the first example, except 1) gets all the upstreams from the filesystem, and 2) uses the
-      template VM created by the prior invocation.
+      Same as the first example, except 1) gets all the upstreams from the filesystem, 2) uses the
+      template VM created by a prior invocation, and 3) only creates one node.
 
       new-cluster --up=doc,ham,monk
 
@@ -204,6 +229,18 @@ function parse_args() {
         ;;
       --create-template)
         create_template=1
+        shift
+        ;;
+      --monitoring)
+        monitoring=$(opt_val "$2")
+        if [[ "$monitoring" != "metrics.k8s.io" ]]; then
+          echo "unsupported parameter value for --monitoring option: $monitoring"
+          exit 1
+        fi
+        shift 2
+        ;;
+      --single-node)
+        single_node=1
         shift
         ;;
       --up)
@@ -294,6 +331,8 @@ if [[ $from_scratch -eq 0 ]]; then
   containerd_download=
   kubelet_download=
   kube_router_yaml_download=
+  metrics_server_download=
+  kubernetes_dashboard_download=
 fi
 
 # if running from scratch, always create a template VM to clone the nodes from. This step also generates
@@ -326,8 +365,8 @@ $proj_root/toplevel-scripts/provision-controller\
  --template-vmname=bingo\
  --vboxdir=$vboxdir\
  --controller-hostname=doc\
- --controller-ram=4096\
- --controller-cpu=2\
+ --controller-ram=8192\
+ --controller-cpu=4\
  --etcd-download=$etcd_download\
  --etcd-gzip=$etcd_gzip\
  --kube-apiserver-download=$kube_apiserver_download\
@@ -365,33 +404,36 @@ $proj_root/scripts/configure-worker\
  --ca-cert=$proj_root/tls/ca.pem\
  --ca-key=$proj_root/tls/ca-key.pem
 
-$proj_root/toplevel-scripts/provision-workers\
- --worker=ham,8192,2,10.200.2.0/24\
- --worker=monk,8192,2,10.200.3.0/24\
- --controller-ip=$controller_ip\
- --controller-hostname=doc\
- --template-vmname=bingo\
- --vboxdir=$vboxdir\
- --priv-key=$priv_key\
- --crictl-download=$crictl_download\
- --crictl-binary=$crictl_binary\
- --runc-download=$runc_download\
- --runc-binary=$runc_binary\
- --cni-plugins-download=$cni_plugins_download\
- --cni-plugins-binary=$cni_plugins_binary\
- --containerd-download=$containerd_download\
- --containerd-binary=$containerd_binary\
- --kubelet-download=$kubelet_download\
- --kubelet-binary=$kubelet_binary\
- --node-labels=worker\
- --ca-cert=$proj_root/tls/ca.pem\
- --ca-key=$proj_root/tls/ca-key.pem
+if [[ $single_node -eq 0 ]]; then
+  cluster_vms+=(ham)
+  cluster_vms+=(monk)
+  $proj_root/toplevel-scripts/provision-workers\
+   --worker=ham,8192,2,10.200.2.0/24\
+   --worker=monk,8192,2,10.200.3.0/24\
+   --controller-ip=$controller_ip\
+   --controller-hostname=doc\
+   --template-vmname=bingo\
+   --vboxdir=$vboxdir\
+   --priv-key=$priv_key\
+   --crictl-download=$crictl_download\
+   --crictl-binary=$crictl_binary\
+   --runc-download=$runc_download\
+   --runc-binary=$runc_binary\
+   --cni-plugins-download=$cni_plugins_download\
+   --cni-plugins-binary=$cni_plugins_binary\
+   --containerd-download=$containerd_download\
+   --containerd-binary=$containerd_binary\
+   --kubelet-download=$kubelet_download\
+   --kubelet-binary=$kubelet_binary\
+   --node-labels=worker\
+   --ca-cert=$proj_root/tls/ca.pem\
+   --ca-key=$proj_root/tls/ca-key.pem
+fi
 
 echo "configuring /etc/hosts in VMs"
-$proj_root/scripts/configure-etc-hosts $priv_key doc ham monk
+$proj_root/scripts/configure-etc-hosts $priv_key "${cluster_vms[@]}"
 
 echo "${downloading_msg}installing pod networking"
-
 
 $proj_root/worker/kube-router/install-kube-router\
  --controller-ip=$controller_ip\
@@ -420,9 +462,28 @@ $proj_root/dns/coredns/install-coredns\
  --replicas=${#workers[@]}\
  --admin-kubeconfig=$admin_kubeconfig
 
+if [[ -n "$monitoring" ]]; then
+  echo "${downloading_msg}installing Monitoring"
+  if [[ "$monitoring" == "metrics.k8s.io" ]]; then
+    $proj_root/monitoring/metrics-server/install-metrics-server\
+     --priv-key=$priv_key\
+     --controller-ip=$controller_ip\
+     --admin-kubeconfig=$admin_kubeconfig\
+     --metrics-server-download=$metrics_server_download\
+     --metrics-server-manifest=$metrics_server_manifest\
+     --kubernetes-dashboard-download=$kubernetes_dashboard_download\
+     --kubernetes-dashboard-manifest=$kubernetes_dashboard_manifest\
+     --ca-cert=$proj_root/tls/ca.pem\
+     --ca-key=$proj_root/tls/ca-key.pem
+  else
+    # todo Prometheus/Grafana
+    :
+  fi
+fi
+
 echo
-echo "finished provisioning workers. To interact with the cluster:"
-echo "    export KUBECONFIG=$admin_kubeconfig"
+echo "finished provisioning cluster. To interact with the cluster:"
+echo "  export KUBECONFIG=$admin_kubeconfig"
 echo
 
-$proj_root/scripts/show-ssh $priv_key
+$proj_root/scripts/show-ssh $priv_key "${cluster_vms[@]}"
