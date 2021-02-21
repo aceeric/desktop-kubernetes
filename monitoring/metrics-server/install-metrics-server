@@ -145,20 +145,33 @@ if ! ssh -i $priv_key root@$controller_ip "grep -q aggregator /etc/systemd/syste
   ssh -i $priv_key root@$controller_ip "/etc/systemd/system/patch-kube-apiserver && rm -f /etc/systemd/system/patch-kube-apiserver"
 fi
 
+echo
 echo "installing kubernetes-sigs/metrics-server"
 kubectl --kubeconfig $admin_kubeconfig apply -f $metrics_server_actual
 
+echo
 echo "installing kubernetes dashboard"
 kubectl --kubeconfig $admin_kubeconfig apply -f $kubernetes_dashboard_actual
 
+echo
 echo "configuring access for kubernetes dashboard"
 
 kubectl --kubeconfig $admin_kubeconfig -n kubernetes-dashboard create serviceaccount dashboard-admin-sa
 kubectl --kubeconfig $admin_kubeconfig create clusterrolebinding dashboard-admin-sa\
         --clusterrole=cluster-admin --serviceaccount=kubernetes-dashboard:dashboard-admin-sa
 
-secret_name=$(kubectl --kubeconfig $admin_kubeconfig -n kubernetes-dashboard get\
-              serviceaccount dashboard-admin-sa -ojsonpath='{.secrets[0].name}')
+# I've observed some cases where I couldn't get the secret right away...
+secret_name=
+for i in {1..10}; do
+  secret_name=$(kubectl --kubeconfig $admin_kubeconfig -n kubernetes-dashboard get serviceaccount dashboard-admin-sa\
+   -ojsonpath='{.secrets[0].name}')
+  if [[ -z "$secret_name" ]]; then
+    sleep 1s
+  else
+    break
+  fi
+done
+
 echo
 echo "finished installing monitoring. Use this token to access the dashboard:"
 kubectl --kubeconfig $admin_kubeconfig -n kubernetes-dashboard get secret $secret_name -ojsonpath='{.data.token}' | base64 -d && echo
