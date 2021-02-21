@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+
+# configures /etc/hosts on each VM with the hostname of each VM. Usage:
+#   configure-etc-hosts kickstart/id_ed25519 doc ham monk
+
+set -e
+
+proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+priv_key="$1"
+shift
+etc_hosts=""
+
+for vm in "$@"
+do
+  ip=$($proj_root/scripts/get-vm-ip $vm)
+  etc_hosts="$etc_hosts$ip $vm\n"
+done
+
+# debug
+#echo "priv_key=$priv_key"
+#echo -e "etc_hosts=$etc_hosts"
+
+for vm in "$@"
+do
+  ip=$($proj_root/scripts/get-vm-ip $vm)
+  echo -e "$etc_hosts" | ssh -i $priv_key root@$ip "cat >> /etc/hosts"
+done
