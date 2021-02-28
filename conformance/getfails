@@ -3,7 +3,7 @@ import sys, yaml
 
 show_all = False
 
-if len(sys.argv) == 3 and sys.argv[2] == "--all":
+if len(sys.argv) == 3 and sys.argv[2] == '--all':
     show_all = True
 
 with open(sys.argv[1]) as f:
@@ -12,7 +12,7 @@ with open(sys.argv[1]) as f:
     e2e_suite = test_run[0]
     tests = e2e_suite['items']
     for test in tests[0]['items']:
-        if test['status'] == "failed":
+        if test['status'] == 'failed':
             print('NAME: ' + test['name'])
             if show_all:
                 print('FAILURE: ' + test['details']['failure'])
