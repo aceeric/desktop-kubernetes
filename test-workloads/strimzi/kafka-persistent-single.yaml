@@ -38,4 +38,14 @@ spec:
   entityOperator:
     topicOperator: {}
     userOperator: {}
-
+  kafkaExporter:
+    groupRegex: ".*"
+    topicRegex: ".*"
+    logging: debug
+    enableSaramaLogging: true
+    readinessProbe:
+      initialDelaySeconds: 30
+      timeoutSeconds: 5
+    livenessProbe:
+      initialDelaySeconds: 30
+      timeoutSeconds: 5
