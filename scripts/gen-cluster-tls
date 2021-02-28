@@ -93,7 +93,7 @@ IP.3 = 127.0.0.1
 [ v3_ext ]
 authorityKeyIdentifier=keyid,issuer:always
 basicConstraints=CA:FALSE
-keyUsage=keyEncipherment,dataEncipherment
+keyUsage=keyEncipherment,dataEncipherment,digitalSignature,nonRepudiation
 extendedKeyUsage=serverAuth,clientAuth
 subjectAltName=@alt_names
 EOF
