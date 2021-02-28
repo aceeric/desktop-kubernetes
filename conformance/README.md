@@ -1,19 +1,18 @@
 
 ### Sonobuoy conformance testing
 
-proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 SONOGZIP=https://github.com/vmware-tanzu/sonobuoy/releases/download/v0.20.0/sonobuoy_0.20.0_linux_386.tar.gz
-[[ -f $proj_root/conformance/sonobuoy ]] || curl -sL $SONOGZIP | tar zxvf - -C $proj_root/conformance sonobuoy
+[[ -f conformance/sonobuoy ]] || curl -sL $SONOGZIP | tar zxvf - -C conformance sonobuoy
 
 # smoke test - should run one test successfully
 
-$proj_root/conformance/sonobuoy run\
+conformance/sonobuoy run\
  --sonobuoy-image projects.registry.vmware.com/sonobuoy/sonobuoy:v0.20.0\
  --mode=quick
 
 # run all e2e conformance tests
 
-$proj_root/conformance/sonobuoy run\
+conformance/sonobuoy run\
  --plugin=e2e\
  --sonobuoy-image=projects.registry.vmware.com/sonobuoy/sonobuoy:v0.20.0\
  --mode=certified-conformance\
@@ -25,13 +24,27 @@ watch 'sonobuoy status --json | json_pp'
 
 # watch the logs as the tests run in another console window
 
-$proj_root/conformance/sonobuoy logs -f
+conformance/sonobuoy logs -f
 
 # get the test results upon completion
 
-results=$($proj_root/conformance/sonobuoy retrieve)
-$proj_root/conformance/sonobuoy results $proj_root/conformance/sonobuoy/$results
+results=$(conformance/sonobuoy retrieve)
+conformance/sonobuoy results conformance/$results
+tar -zxvf conformance/$results --strip-components 2 -C conformance plugins/e2e/sonobuoy_results.yaml
 
 # clean up the cluster
 
 sonobuoy delete --wait
+
+# get failures
+
+./getfails sonobuoy_results.yaml
+NAME: [sig-scheduling] SchedulerPredicates [Serial] validates that there is no conflict between pods with same hostPort but different hostIP and protocol [Conformance]
+NAME: [sig-network] Services should have session affinity timeout work for service with type clusterIP [LinuxOnly] [Conformance]
+NAME: [sig-network] Services should have session affinity timeout work for NodePort service [LinuxOnly] [Conformance]
+
+# run only failures
+
+sonobuoy run --e2e-focus "validates that there is no conflict between pods with same hostPort but different hostIP and protocol"
+sonobuoy run --e2e-focus "should have session affinity timeout work for service with type clusterIP"
+sonobuoy run --e2e-focus "should have session affinity timeout work for NodePort service"
