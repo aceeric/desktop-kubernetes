@@ -278,7 +278,7 @@ if [[ ! -z "$up" ]]; then
   for vm in "${vms[@]}"; do
     VBoxManage startvm $vm
   done
-  $proj_root/scripts/show-ssh $priv_key
+  $proj_root/scripts/show-ssh $priv_key "$up"
   exit
 elif [[ ! -z "$down" ]]; then
   IFS=',' read -ra vms <<< "$down"

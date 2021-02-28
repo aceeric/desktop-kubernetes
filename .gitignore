@@ -16,3 +16,4 @@ binaries/kubelet
 binaries/runc
 binaries/kubernetes-dashboard-recommended.yaml
 binaries/metrics-server-components.yaml
+conformance/sonobuoy
