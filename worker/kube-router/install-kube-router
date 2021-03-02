@@ -77,3 +77,17 @@ sed\
  -e 's|"%CLUSTERCIDR%"|10.200.0.0/16|g'\
  -e 's|%APISERVER%|https://'$controller_ip':6443|g'\
  $kube_router_yaml_download_actual | kubectl --kubeconfig $admin_kubeconfig apply -f -
+
+# Wait for kube-router to become fully ready. Otherwise when we install CoreDNS, the CoreDNS pod comes
+# up with an invalid IP address (10.88.something) and then it doesn't function correctly. Unclear presently
+# how it actually comes up with that IP because 88 is specified nowhere that I can find
+
+echo "waiting (indefinitely) for pod networking"
+
+ready=0
+desired=1
+while [[ $ready -ne $desired ]]; do
+  sleep 1s
+  ready=$(kubectl --kubeconfig $admin_kubeconfig -n kube-system get ds kube-router -ojsonpath='{.status.numberReady}')
+  desired=$(kubectl --kubeconfig $admin_kubeconfig -n kube-system get ds kube-router -ojsonpath='{.status.desiredNumberScheduled}')
+done

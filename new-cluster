@@ -278,7 +278,7 @@ if [[ ! -z "$up" ]]; then
   for vm in "${vms[@]}"; do
     VBoxManage startvm $vm
   done
-  $proj_root/scripts/show-ssh $priv_key "$up"
+  $proj_root/scripts/show-ssh $priv_key "${vms[@]}"
   exit
 elif [[ ! -z "$down" ]]; then
   IFS=',' read -ra vms <<< "$down"
@@ -440,20 +440,6 @@ $proj_root/worker/kube-router/install-kube-router\
  --kube-router-yaml-download=$kube_router_yaml_download\
  --kube-router-yaml=$kube_router_yaml\
  --admin-kubeconfig=$admin_kubeconfig
-
-# Wait for kube-router to become fully ready. Otherwise when we install CoreDNS, the CoreDNS pod comes
-# up with an invalid IP address (10.88.something) and then it doesn't function correctly. Unclear presently
-# how it actually comes up with that IP because 88 is specified nowhere that I can find
-
-echo "${downloading_msg}waiting for pod networking"
-
-ready=0
-desired=1
-while [[ $ready -ne $desired ]]; do
-  sleep 1s
-  ready=$(kubectl --kubeconfig $admin_kubeconfig -n kube-system get ds kube-router -ojsonpath='{.status.numberReady}')
-  desired=$(kubectl --kubeconfig $admin_kubeconfig -n kube-system get ds kube-router -ojsonpath='{.status.desiredNumberScheduled}')
-done
 
 echo "${downloading_msg}installing cluster DNS"
 

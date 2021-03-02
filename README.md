@@ -62,6 +62,7 @@ $ ./new-cluster --help
 | Nodes                          | Consider making the number of controllers configurable, as well as node characteristics such as storage, RAM, and CPU. Right now, only one controller and two workers are supported, their names are hard-coded, etc. |
 | Hands-free install improvement | The current version builds a Kickstart ISO, and mounts the ISO on the VM to do the hands-free CentOS install. Unfortunately, this method does not allow you to change the boot menu timeout on the *initial* startup of the VM. So, unless you intervene, the boot menu takes 60 seconds to time out before the Kickstart installation begins. The alternate way to do this is to break apart the ISO, modify the boot menu timeout, and then re-build the ISO. I may consider this at some future point, although that would not easily lend itself to automation |
 | CoreOS?                        | Consider [Fedora CoreOS](https://getfedora.org/en/coreos?stream=stable) as a VM OS |
+| Kube-router metrics            | https://github.com/cloudnativelabs/kube-router/blob/master/docs/metrics.md |
 
 ## Versions
 
