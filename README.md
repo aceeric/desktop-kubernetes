@@ -1,23 +1,22 @@
 # Desktop Kubernetes
 
-This is a Bash shell project that provisions a desktop Kubernetes cluster using VirtualBox - with each cluster node consisting of a CentOS guest VM. The cluster consists of one VM in functioning with a dual role  of control plan node and worker node, and two dedicated worker nodes.
+This is a Bash shell project that provisions a desktop Kubernetes cluster using VirtualBox - with each cluster node consisting of a CentOS 8 guest VM. The cluster consists of one VM in functioning with a dual role  of control plane node and worker node, and two dedicated worker nodes.
 
 This has been tested on a Ubuntu 20.04.1 desktop host with 64 gig of RAM and 6 hyper-threaded processors that Ubuntu sees as 12 CPUs.
 
-This project is derivative of **Kelsey Hightower's** [Kubernetes The Hard Way](https://github.com/kelseyhightower/kubernetes-the-hard-way) and also incorporates elements of a variant of the Hightower repo [Bare Metal Edition](https://github.com/bserdar/kubernetes-the-hard-way) by Burak Serdar. The differences between the upstream projects and this project are:
+This project is derivative of **Kelsey Hightower's** [Kubernetes The Hard Way](https://github.com/kelseyhightower/kubernetes-the-hard-way). The differences between the Hightower project and this project are listed below:
 
-| Upstream | Feature | This project |
-| :-- | :-- | --- |
-| Hightower | Presents a series of manual labs to get hands-on experience with Kubernetes installation as a learning exercise | Is automated - brings up a desktop Kubernetes cluster with one controller and multiple workers with a single Bash shell script invocation (see the *Quick Start*) |
-| Hightower | Uses [Google Cloud Platform](https://cloud.google.com/) to provision the compute resources | Provisions VMs on the desktop using [VirtualBox](https://www.virtualbox.org/) |
-| Hightower | Uses Ubuntu for the cluster node OS | Uses [CentOS 8](https://www.centos.org/download/) |
-| Hightower | Structures the installation and configuration tasks by related activities, e.g. creates all the certs, copies binaries, generates configuration files, etc. | Structures the tasks more around the individual Kubernetes components where possible, because I was interested in delineating the specific dependencies and requirements for each component |
-| Hightower | Hand-generates the node routing | Uses the built-in routing that comes with a VirtualBox bridge network - which is the network type I selected for this project because it provides host-to-guest, guest-to-guest, and guest-to-internet right out of the box |
-| Hightower | Implements Pod networking via the bridge network plugin from [containernetworking](https://github.com/containernetworking) | Per the *Bare Metal* variant, uses the kube-router from [cloudnativelabs](https://github.com/cloudnativelabs) |
-| Hightower | Uses Cloudflare [cfssl](https://github.com/cloudflare/cfssl) to generate the cluster certs | Uses [openssl](https://www.openssl.org/) since it is almost universally available on Linux. I was interested to see what the scripting would look like using openssl, esp. things like creating CSRs and so on |
-| Hightower | Is nicely terse and compact | Is verbose by virtue of using scripts with lots of options, and separating the component installs into separate scripts, thus requiring a lot of option passing and parsing |
-| Serdar | Leaves provisioning the VMs to you | Automates VM provisioning. I was interested to get some experience with the `VBoxManage` utility and CentOS [Kickstart](https://docs.centos.org/en-US/centos/install-guide/Kickstart2/) for hands-free OS installation. The script creates a template VM, and then clones the template for each of the cluster nodes. I also needed the VirtualBox Guest Additions, and came up with a way to automate that installation. Guest Additions provides the ability to get the IP address from a VM. In VirtualBox bridged networking, the IP is assigned by the desktop's DHCP so Guest Additions helps with the automation. This was an interesting side-effort that resulted in the ability to create a CentOS VM just by running a single script command |
-| Both | Does not include monitoring | Installs [Kubernetes Metrics Server](https://github.com/kubernetes-sigs/metrics-server) and [Kubernetes Dashboard](https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/) |
+| Hightower | This project |
+| :-- | --- |
+| Presents a series of manual labs to get hands-on experience with Kubernetes installation as a learning exercise | Is automated - brings up a desktop Kubernetes cluster with one controller and multiple workers with a single Bash shell script invocation (see the *Quick Start*). |
+| Uses [Google Cloud Platform](https://cloud.google.com/) to provision the compute resources | Provisions VMs on the desktop using [VirtualBox](https://www.virtualbox.org/). I was interested to get some experience with the `VBoxManage` utility and CentOS [Kickstart](https://docs.centos.org/en-US/centos/install-guide/Kickstart2/) for hands-free OS installation. The script creates a template VM, and then clones the template for each of the cluster nodes. I also needed the VirtualBox Guest Additions, and came up with a way to automate that installation. Guest Additions provides the ability to get the IP address from a VM. In VirtualBox bridged networking, the IP is assigned by the desktop's DHCP so Guest Additions helps with the automation. This was an interesting side-effort that resulted in the ability to create a CentOS VM just by running a single script command |
+| Uses Ubuntu for the cluster node OS | Uses [CentOS 8](https://www.centos.org/download/) |
+| Structures the installation and configuration tasks by related activities, e.g. creates all the certs, copies binaries, generates configuration files, etc. | Structures the tasks more around the individual Kubernetes components where possible, because I was interested in delineating the specific dependencies and requirements for each component |
+| Hand-generates the node routing | Uses the built-in routing that comes with a VirtualBox bridge network - which is the network type I selected for this project because it provides host-to-guest, guest-to-guest, and guest-to-internet right out of the box |
+| Implements Pod networking via the bridge network plugin from [containernetworking](https://github.com/containernetworking) | Performs a kube-proxyless install of [Cilium](https://docs.cilium.io/en/stable/gettingstarted/k8s-install-default) for cluster networking, and [Hubble](https://cilium.io/blog/2019/11/19/announcing-hubble) for network monitoring |
+| Uses Cloudflare [cfssl](https://github.com/cloudflare/cfssl) to generate the cluster certs | Uses [openssl](https://www.openssl.org/) since it is almost universally available on Linux. I was interested to see what the scripting would look like using openssl, especially for things like creating CSRs and so on |
+| Is nicely terse and compact | Is verbose by virtue of using scripts with lots of options, and separating the component installs into separate scripts, thus requiring a lot of option passing and parsing |
+| Does not include monitoring | Installs [Kubernetes Metrics Server](https://github.com/kubernetes-sigs/metrics-server) and [Kubernetes Dashboard](https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/) |
 
 ## Quick Start
 
@@ -27,14 +26,14 @@ The `new-cluster` script in the repo root is what you run.
 >
 > I also recommend you run once with just the `--check-compatibility` option to check the versions of the utilities used by the scripts (curl, etc.) against the tested versions. E.g.: `./new-cluster --check-compatibility`. I'm sure there will be differences and you have to decide whether the differences are material. Most probably aren't.
 
-To create a cluster for the first time, you run the script as shown below (using your unique values for the network interface name and VirtualBox directory). This is just an example:
+To create a cluster for the first time, run the script as shown below (using your unique values for the network interface name and VirtualBox directory). This is what works on my desktop:
 
 ```shell
 $ ./new-cluster --host-network-interface=enp0s31f6 --from-scratch\
-  --vboxdir=/sdb1/virtualbox
+  --vboxdir=/sdb1/virtualbox --networking=cilium
 ```
 
-The `--from-scratch` option is important. It tells the script to `curl` all the upstream objects, such as the CentOS ISO, the Virtual Box Guest Additions ISO, and the Kubernetes binaries and other manifests. I've coded the script with specific versions of everything in the interests of repeatability.
+The `--from-scratch` option is important. It tells the script to `curl` all the upstream objects, such as the CentOS ISO, the Virtual Box Guest Additions ISO, and the Kubernetes binaries and other manifests. I've coded the script with specific versions of everything in the interests of repeatability. The `--networking` option installs cluster networking. I initially went with `kube-router` but most recently switched to  Cilium.
 
 > Please Note: URLs are perishable. Just in the time that I was developing this project, the CentOS version and URL changed slightly so - don't be surprised if you have to tweak the URLs. The script will test each URL before it begins provisioning the cluster and will tell you which ones it couldn't access. Then you will have to modify the `new-cluster` script accordingly.
 
@@ -62,34 +61,34 @@ $ ./new-cluster --help
 | Nodes                          | Consider making the number of controllers configurable, as well as node characteristics such as storage, RAM, and CPU. Right now, only one controller and two workers are supported, their names are hard-coded, etc. |
 | Hands-free install improvement | The current version builds a Kickstart ISO, and mounts the ISO on the VM to do the hands-free CentOS install. Unfortunately, this method does not allow you to change the boot menu timeout on the *initial* startup of the VM. So, unless you intervene, the boot menu takes 60 seconds to time out before the Kickstart installation begins. The alternate way to do this is to break apart the ISO, modify the boot menu timeout, and then re-build the ISO. I may consider this at some future point, although that would not easily lend itself to automation |
 | CoreOS?                        | Consider [Fedora CoreOS](https://getfedora.org/en/coreos?stream=stable) as a VM OS |
-| Kube-router metrics            | https://github.com/cloudnativelabs/kube-router/blob/master/docs/metrics.md |
 
 ## Versions
 
 This project has been testing with the following tools, components and versions. The Kubernetes component versions and CentOS and VirtualBox Guest Addition versions are hard-coded into the `new-cluster` script. So any changes only need to be made one time in that script. *If you decide to use later (or earlier) Kubernetes components, be aware that the supported options can change between versions which may require additional script changes.*
 
-| Where    | Component                                      | Version            |
-| -------- | ---------------------------------------------- | ------------------ |
-| host     | Linux desktop                                  | Ubuntu 20.04.2 LTS |
-| host     | openssl                                        | 1.1.1f             |
-| host     | openssh                                        | OpenSSH_8.2p1      |
-| host     | genisoimage (used to create the Kickstart ISO) | 1.1.11             |
-| host     | Virtual Box / VBoxManage                       | 6.1.18r142142      |
-| host     | kubectl (client only)                          | v1.18.0            |
-| host     | curl                                           | 7.68.0             |
-| guest VM | Centos ISO                                     | 8.3.2011-x86_64    |
-| guest VM | Virtual Box Guest Additions ISO                | 6.1.18             |
-| k8s      | etcd                                           | v3.4.14            |
-| k8s      | kube-apiserver                                 | v1.20.1            |
-| k8s      | kube-controller-manager                        | v1.20.1            |
-| k8s      | kube-scheduler                                 | v1.20.1            |
-| k8s      | kubelet                                        | v1.20.1            |
-| k8s      | crictl                                         | v1.19.0            |
-| k8s      | runc                                           | v1.0.0-rc92        |
-| k8s      | cni plugins                                    | v0.9.0             |
-| k8s      | containerd                                     | v1.4.3             |
-| k8s      | kube-router                                    | v1.1.1             |
-| k8s      | CoreDNS                                        | 1.8.0              |
-| k8s      | Metrics Server                                 | 0.4.2              |
-| k8s      | Kubernetes Dashboard                           | 2.0.0              |
+| Where    | Component                                       | Version            |
+| -------- | ----------------------------------------------- | ------------------ |
+| host     | Linux desktop                                   | Ubuntu 20.04.2 LTS |
+| host     | openssl                                         | 1.1.1f             |
+| host     | openssh                                         | OpenSSH_8.2p1      |
+| host     | genisoimage (used to create the Kickstart ISO)  | 1.1.11             |
+| host     | Virtual Box / VBoxManage                        | 6.1.18r142142      |
+| host     | kubectl (client only)                           | v1.18.0            |
+| host     | curl                                            | 7.68.0             |
+| guest VM | Centos ISO                                      | 8.3.2011-x86_64    |
+| guest VM | Virtual Box Guest Additions ISO                 | 6.1.18             |
+| k8s      | etcd                                            | v3.4.14            |
+| k8s      | kube-apiserver                                  | v1.20.1            |
+| k8s      | kube-controller-manager                         | v1.20.1            |
+| k8s      | kube-scheduler                                  | v1.20.1            |
+| k8s      | kubelet                                         | v1.20.1            |
+| k8s      | crictl                                          | v1.19.0            |
+| k8s      | runc                                            | v1.0.0-rc92        |
+| k8s      | cni plugins                                     | v0.9.0             |
+| k8s      | containerd                                      | v1.4.3             |
+| k8s      | kube-router                                     | v1.1.1             |
+| k8s      | CoreDNS                                         | 1.8.0              |
+| k8s      | Metrics Server                                  | 0.4.2              |
+| k8s      | Kubernetes Dashboard                            | 2.0.0              |
+| k8s      | Cilium networking and Hubble network monitoring | 1.9.4              |
 

@@ -30,7 +30,7 @@ function parse_args() {
     case "$1" in
       --controller-ip)
         controller_ip=$(opt_val "$2")
-        shif_ 2
+        shift 2
         ;;
       --admin-kubeconfig)
         admin_kubeconfig=$(opt_val "$2")
@@ -58,6 +58,8 @@ echo "waiting (indefinitely) for pod networking"
 
 kubectl --kubeconfig $admin_kubeconfig -nkube-system wait pod -lio.cilium/app=operator --for condition=ready
 kubectl --kubeconfig $admin_kubeconfig -nkube-system wait pod -lk8s-app=cilium --for condition=ready
+
+echo "installing Cilium Hubble"
 
 kubectl --kubeconfig $admin_kubeconfig apply -f $proj_root/networking/cilium/cilium-1.9.4-quick-hubble-install.yaml
 

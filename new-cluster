@@ -193,7 +193,7 @@ function usage() {
       Wires the VirtualBox bridge network to interface "enp0s31f6", uses the "/sdb1/virtualbox" directory
       for all VM files, and downloads all the upstreams during the install, placing them on the filesystem
       so they will be available for the next time. Creates a template to clone the nodes from. Installs
-      cilium networking.
+      cilium networking and Hubble network monitoring
 
       *** You must use "--from-scratch" at least once because all the upstreams are git-ignored  ***
 
@@ -462,8 +462,6 @@ fi
 echo "configuring /etc/hosts in VMs"
 $proj_root/scripts/configure-etc-hosts $priv_key "${cluster_vms[@]}"
 
-# TODO REMOVEME
-exit
 echo "${downloading_msg}installing pod networking"
 
 if [[ "$networking" == "kube-router" ]]; then
@@ -473,8 +471,9 @@ if [[ "$networking" == "kube-router" ]]; then
    --kube-router-yaml=$kube_router_yaml\
    --admin-kubeconfig=$admin_kubeconfig
 elif [[ "$networking" == "cilium" ]]; then
-   exit 1
-   # TODO
+  $proj_root/networking/cilium/install-cilium-networking\
+   --controller-ip=$controller_ip\
+   --admin-kubeconfig=$admin_kubeconfig
 fi
 
 echo "${downloading_msg}installing cluster DNS"
