@@ -67,6 +67,7 @@ kubernetes_dashboard_manifest=$proj_root/binaries/kubernetes-dashboard-recommend
 #hubble_yaml=cilium-1.9.4-quick-hubble-install.yaml
 kube_prometheus_download=https://github.com/prometheus-operator/kube-prometheus/archive/v0.7.0.tar.gz
 kube_prometheus_dir=$proj_root/binaries/kube-prometheus
+
 #
 # Verifies the existence of all the filesystem objects required to provision a cluster. If arg1 is '1' then that means
 # we are creating a template VM. In that case the CentOS and VBox Guest Additions ISOs are included in the check
@@ -213,6 +214,9 @@ function usage() {
     '
 }
 
+#
+# option parsing helper
+#
 function opt_val() {
   opt="$1"
   if [[ "$opt" == =* ]]; then
@@ -222,6 +226,9 @@ function opt_val() {
   fi
 }
 
+#
+# parses command line parameters and sets script variables from them
+#
 function parse_args() {
   if [[ "$#" -eq 0 ]]; then
     usage
@@ -297,7 +304,7 @@ function parse_args() {
   done
 }
 
-# entry point - parses args and performs some basic validations
+# entry point
 
 parse_args "$@"
 

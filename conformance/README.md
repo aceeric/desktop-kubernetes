@@ -31,6 +31,7 @@ conformance/sonobuoy logs -f
 # get the test results upon completion
 
 results=$(conformance/sonobuoy retrieve)
+mv $results conformance
 conformance/sonobuoy results conformance/$results
 tar -zxvf conformance/$results --strip-components 2 -C conformance plugins/e2e/sonobuoy_results.yaml
 

@@ -39,17 +39,11 @@ The `--from-scratch` option is important. It tells the script to `curl` all the 
 
 Once the cluster comes up, the script will display a message telling you how to set your `KUBECONFIG` in order to access the cluster. It will also display a message showing how to SSH into each node. (The `scripts` directory also has a helper script `sshto` that takes a VM name as an arg and SSHs into the VM.)
 
-To see a list of all supported options:
-
-```shell
-$ ./new-cluster --help
-```
-
 ## Command Line Options
 
-The following command-line options are supported for the `new-cluster` utility:
+The following command-line options are supported for the `new-cluster` script:
 
-| Option                       |          | Description                                                  |
+| Option                       | Type     | Description                                                  |
 | ---------------------------- | -------- | ------------------------------------------------------------ |
 | `--check-compatibility`      | Optional | If specified, checks the installed versions of various utils used by the project (curl, kubectl, etc) against what the project has been tested on - and then exits, taking no further action. You should do this at least once. Or just run `verify-prereqs` in the `scripts` directory. |
 | `--host-network-interface`   | Required | The name of the primary network interface on your machine. The scripts use this to configure the VirtualBox bridge network for each node VM. |
@@ -62,15 +56,14 @@ The following command-line options are supported for the `new-cluster` utility:
 | `--up`, `--down`, `--delete` | Optional | Takes a comma-separated list of VM names, and starts (`--up`), stops (`--down`), or deletes (`--delete`) them all. The `--down` option is a graceful shutdown. The `--delete` is a fast shutdown and also removes the Virtual Box VM files from the file system. |
 | `--help`                     | Optional | Displays this help and exits.                                |
 
-
-
 ## ToDos
 
 | Task                           | Description                                                  |
 | ------------------------------ | ------------------------------------------------------------ |
-| Volume Provisioning            | Implement the [Local Static Provisioner](https://github.com/kubernetes-sigs/sig-storage-local-static-provisioner). Currently, persistent volumes have to be hand-managed by generating directories in the VMs, and creating PVs that ref those VMs. |
-| Load Balancer                  | Implement [MetalLB](https://github.com/google/metallb)       |
 | Sonobuoy                       | See if it is possible for this cluster to pass the Kubernetes certification tests using [Sonobuoy](https://github.com/vmware-tanzu/sonobuoy) |
+| Centos minimal                 | Provision with CentOS minimal |
+| Volume Provisioning            | Implement the [Local Static Provisioner](https://github.com/kubernetes-sigs/sig-storage-local-static-provisioner). Currently, persistent volumes have to be hand-managed by generating directories in the VMs, and creating PVs that ref those VMs. |
+| Load Balancer                  | Implement [MetalLB](https://github.com/google/metallb) ? |
 | Firewall                       | There are plenty of posts discussing how to configure the firewall settings for Kubernetes. The documented settings do not appear to work with CoreDNS on CentOS 8. (In fact, many posters recommend to disable `firewalld` on CentOS.) So presently, the firewall is disabled but my goal is to run the cluster with the firewall enabled and the correct rules defined |
 | Ubuntu                         | Support Ubuntu Server as the Guest OS - presently only CentOS is supported |
 | Virtual Box Networking         | This version of the script uses VBox bridge networking for each of the VMs. As stated earlier, this provides guest-to-guest, host-to-guest, and guest-to-internet. However - with this networking solution the IP addresses are assigned by the host DHCP software. So Guest Additions are required to introspect the VMs to get their IP addresses. A better solution would be to use a VBox networking model that allows assignment of static IPs to guest VMs. Then the Guest Additions installation step could be omitted |
@@ -83,31 +76,29 @@ The following command-line options are supported for the `new-cluster` utility:
 
 This project has been testing with the following tools, components and versions. The Kubernetes component versions and CentOS and VirtualBox Guest Addition versions are hard-coded into the `new-cluster` script. So any changes only need to be made one time in that script. *If you decide to use later (or earlier) Kubernetes components, be aware that the supported options can change between versions which may require additional script changes.*
 
-| Where    | Component                                       | Version            |
-| -------- | ----------------------------------------------- | ------------------ |
-| host     | Linux desktop                                   | Ubuntu 20.04.2 LTS |
-| host     | openssl                                         | 1.1.1f             |
-| host     | openssh                                         | OpenSSH_8.2p1      |
-| host     | genisoimage (used to create the Kickstart ISO)  | 1.1.11             |
-| host     | Virtual Box / VBoxManage                        | 6.1.18r142142      |
-| host     | kubectl (client only)                           | v1.18.0            |
-| host     | curl                                            | 7.68.0             |
-| host     | wget                                            | 1.20.3             |
-| guest VM | Centos ISO                                      | 8.3.2011-x86_64    |
-| guest VM | Virtual Box Guest Additions ISO                 | 6.1.18             |
-| k8s      | etcd                                            | v3.4.14            |
-| k8s      | kube-apiserver                                  | v1.20.1            |
-| k8s      | kube-controller-manager                         | v1.20.1            |
-| k8s      | kube-scheduler                                  | v1.20.1            |
-| k8s      | kubelet                                         | v1.20.1            |
-| k8s      | crictl                                          | v1.19.0            |
-| k8s      | runc                                            | v1.0.0-rc92        |
-| k8s      | cni plugins                                     | v0.9.0             |
-| k8s      | containerd                                      | v1.4.3             |
-| k8s      | kube-router                                     | v1.1.1             |
-| k8s      | CoreDNS                                         | 1.8.0              |
-| k8s      | Metrics Server                                  | 0.4.2              |
-| k8s      | Kubernetes Dashboard                            | 2.0.0              |
-| k8s      | Cilium networking and Hubble network monitoring | 1.9.4              |
-| k8s      | kube-prometheus                                 | 0.7.0              |
-
+| Where    | Component                                                       | Version            |
+| -------- | --------------------------------------------------------------- | ------------------ |
+| host     | Linux desktop                                                   | Ubuntu 20.04.2 LTS |
+| host     | openssl                                                         | 1.1.1f             |
+| host     | openssh                                                         | OpenSSH_8.2p1      |
+| host     | genisoimage (used to create the Kickstart ISO)                  | 1.1.11             |
+| host     | Virtual Box / VBoxManage                                        | 6.1.18r142142      |
+| host     | kubectl (client only)                                           | v1.18.0            |
+| host     | curl                                                            | 7.68.0             |
+| guest VM | Centos ISO                                                      | 8.3.2011-x86_64    |
+| guest VM | Virtual Box Guest Additions ISO                                 | 6.1.18             |
+| k8s      | etcd                                                            | v3.4.14            |
+| k8s      | kube-apiserver                                                  | v1.20.1            |
+| k8s      | kube-controller-manager                                         | v1.20.1            |
+| k8s      | kube-scheduler                                                  | v1.20.1            |
+| k8s      | kubelet                                                         | v1.20.1            |
+| k8s      | crictl                                                          | v1.19.0            |
+| k8s      | runc                                                            | v1.0.0-rc92        |
+| k8s      | cni plugins                                                     | v0.9.0             |
+| k8s      | containerd                                                      | v1.4.3             |
+| k8s      | CoreDNS                                                         | 1.8.0              |
+| k8s      | kube-router (if installed)                                      | v1.1.1             |
+| k8s      | Metrics Server  (if installed)                                  | 0.4.2              |
+| k8s      | Kubernetes Dashboard  (if installed)                            | 2.0.0              |
+| k8s      | Cilium networking and Hubble network monitoring  (if installed) | 1.9.4              |
+| k8s      | kube-prometheus (if installed)                                  | 0.7.0              |
