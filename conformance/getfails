@@ -1,4 +1,8 @@
 #!/usr/bin/env python3
+#
+# Usage ./getfails sonobuoy_results.yaml
+#
+
 import sys, yaml
 
 show_all = False

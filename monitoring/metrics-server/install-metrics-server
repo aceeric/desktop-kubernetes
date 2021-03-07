@@ -122,29 +122,6 @@ else
   echo "No URL provided - skipping download and using provided kubernetes dashboard yaml"
 fi
 
-echo "configuring the API server aggregation layer"
-# based on:
-# https://github.com/kubernetes-sigs/metrics-server#requirements
-# https://kubernetes.io/docs/tasks/extend-kubernetes/configure-aggregation-layer/
-
-aggregator_cert=$proj_root/tls/aggregator.pem
-aggregator_key=$proj_root/tls/aggregator-key.pem
-aggregator_csr=$proj_root/tls/aggregator.csr
-
-echo "generating API aggregation TLS material and copying to controller"
-
-openssl req -nodes -newkey rsa:2048 -keyout $aggregator_key -subj "/CN=aggregator/O=k8s/OU=system" -out $aggregator_csr
-openssl x509 -req -days 10000 -in $aggregator_csr -CA $ca_cert -CAkey $ca_key -CAcreateserial\
- -sha256 -out $aggregator_cert
-rm -f $aggregator_csr
-scp -i $priv_key $proj_root/tls/aggregator*.pem root@$controller_ip:/var/lib/kubernetes
-
-if ! ssh -i $priv_key root@$controller_ip "grep -q aggregator /etc/systemd/system/kube-apiserver.service"; then
-  echo "configuring kube-apiserver aggregation layer"
-  scp -i $priv_key $proj_root/monitoring/metrics-server/patch-kube-apiserver root@$controller_ip:/etc/systemd/system/
-  ssh -i $priv_key root@$controller_ip "/etc/systemd/system/patch-kube-apiserver && rm -f /etc/systemd/system/patch-kube-apiserver"
-fi
-
 echo
 echo "installing kubernetes-sigs/metrics-server"
 kubectl --kubeconfig $admin_kubeconfig apply -f $metrics_server_actual
