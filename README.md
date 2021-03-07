@@ -1,6 +1,6 @@
 # Desktop Kubernetes
 
-This is a Bash shell project that provisions a desktop Kubernetes cluster using VirtualBox - with each cluster node consisting of a CentOS 8 guest VM. The cluster consists of one VM in functioning with a dual role  of control plane node and worker node, and two dedicated worker nodes.
+This is a Bash shell project that provisions a desktop Kubernetes cluster using VirtualBox - with each cluster node consisting of a CentOS 8 guest VM. The cluster consists of one VM functioning in a dual role of control plane node and worker node, and two dedicated worker nodes. The cluster is provisioned by running one script - `new-cluster` - with a few command line options. The script makes no changes to your desktop's networking configuration - the only changes it makes to your desktop are the files it downloads, and the VirtualBox VMs it creates.
 
 This has been tested on a Ubuntu 20.04.1 desktop host with 64 gig of RAM and 6 hyper-threaded processors that Ubuntu sees as 12 CPUs.
 
@@ -8,7 +8,7 @@ This project is derivative of **Kelsey Hightower's** [Kubernetes The Hard Way](h
 
 | Hightower | This project |
 | :-- | --- |
-| Presents a series of manual labs to get hands-on experience with Kubernetes installation as a learning exercise | Is automated - brings up a desktop Kubernetes cluster with one controller and multiple workers with a single Bash shell script invocation (see the *Quick Start*). |
+| Presents a series of manual labs to get hands-on experience with Kubernetes installation as a learning exercise | Is automated - brings up a desktop Kubernetes cluster with one controller and multiple workers with a single Bash shell script invocation (see the *Quick Start* further on down). |
 | Uses [Google Cloud Platform](https://cloud.google.com/) to provision the compute resources | Provisions VMs on the desktop using [VirtualBox](https://www.virtualbox.org/). I was interested to get some experience with the `VBoxManage` utility and CentOS [Kickstart](https://docs.centos.org/en-US/centos/install-guide/Kickstart2/) for hands-free OS installation. The script creates a template VM, and then clones the template for each of the cluster nodes. I also needed the VirtualBox Guest Additions, and came up with a way to automate that installation. Guest Additions provides the ability to get the IP address from a VM. In VirtualBox bridged networking, the IP is assigned by the desktop's DHCP so Guest Additions helps with the automation. This was an interesting side-effort that resulted in the ability to create a CentOS VM just by running a single script command |
 | Uses Ubuntu for the cluster node OS | Uses [CentOS 8](https://www.centos.org/download/) |
 | Structures the installation and configuration tasks by related activities, e.g. creates all the certs, copies binaries, generates configuration files, etc. | Structures the tasks more around the individual Kubernetes components where possible, because I was interested in delineating the specific dependencies and requirements for each component |
@@ -16,7 +16,7 @@ This project is derivative of **Kelsey Hightower's** [Kubernetes The Hard Way](h
 | Implements Pod networking via the bridge network plugin from [containernetworking](https://github.com/containernetworking) | Performs a kube-proxyless install of [Cilium](https://docs.cilium.io/en/stable/gettingstarted/k8s-install-default) for cluster networking, and [Hubble](https://cilium.io/blog/2019/11/19/announcing-hubble) for network monitoring |
 | Uses Cloudflare [cfssl](https://github.com/cloudflare/cfssl) to generate the cluster certs | Uses [openssl](https://www.openssl.org/) since it is almost universally available on Linux. I was interested to see what the scripting would look like using openssl, especially for things like creating CSRs and so on |
 | Is nicely terse and compact | Is verbose by virtue of using scripts with lots of options, and separating the component installs into separate scripts, thus requiring a lot of option passing and parsing |
-| Does not include monitoring | Installs [Kubernetes Metrics Server](https://github.com/kubernetes-sigs/metrics-server) and [Kubernetes Dashboard](https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/) |
+| Does not include monitoring | Installs either [Kubernetes Metrics Server](https://github.com/kubernetes-sigs/metrics-server) with the [Kubernetes Dashboard](https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/) - or - [kube-prometheus](https://github.com/prometheus-operator/kube-prometheus) |
 
 ## Quick Start
 
@@ -29,21 +29,38 @@ The `new-cluster` script in the repo root is what you run.
 To create a cluster for the first time, run the script as shown below (using your unique values for the network interface name and VirtualBox directory). This is what works on my desktop:
 
 ```shell
-$ ./new-cluster --host-network-interface=enp0s31f6 --from-scratch\
-  --vboxdir=/sdb1/virtualbox --networking=cilium
+$ ./new-cluster --from-scratch --host-network-interface=enp0s31f6\
+  --vboxdir=/sdb1/virtualbox --networking=cilium --monitoring=kube-prometheus
 ```
 
-The `--from-scratch` option is important. It tells the script to `curl` all the upstream objects, such as the CentOS ISO, the Virtual Box Guest Additions ISO, and the Kubernetes binaries and other manifests. I've coded the script with specific versions of everything in the interests of repeatability. The `--networking` option installs cluster networking. I initially went with `kube-router` but most recently switched to  Cilium.
+The `--from-scratch` option is important. It tells the script to `curl` all the upstream objects, such as the CentOS ISO, the Virtual Box Guest Additions ISO, and the Kubernetes binaries and other manifests. I've coded the script with specific versions of everything in the interests of repeatability. The `--networking` option installs cluster networking. I initially went with `kube-router` but most recently switched to Cilium. The `--monitoring` option installs Kube Prometheus.
 
 > Please Note: URLs are perishable. Just in the time that I was developing this project, the CentOS version and URL changed slightly so - don't be surprised if you have to tweak the URLs. The script will test each URL before it begins provisioning the cluster and will tell you which ones it couldn't access. Then you will have to modify the `new-cluster` script accordingly.
 
-Once the cluster comes up, the script will display a message telling you how to set your `KUBECONFIG` in order to access the cluster. It will also display a message showing how to SSH into each node. (The `scripts` directory has a script `sshto` that takes a VM name as an arg and SSHs into the VM.)
+Once the cluster comes up, the script will display a message telling you how to set your `KUBECONFIG` in order to access the cluster. It will also display a message showing how to SSH into each node. (The `scripts` directory also has a helper script `sshto` that takes a VM name as an arg and SSHs into the VM.)
 
 To see a list of all supported options:
 
 ```shell
 $ ./new-cluster --help
 ```
+
+## Command Line Options
+
+The following command-line options are supported for the `new-cluster` utility:
+
+| Option                       |          | Description                                                  |
+| ---------------------------- | -------- | ------------------------------------------------------------ |
+| `--check-compatibility`      | Optional | If specified, checks the installed versions of various utils used by the project (curl, kubectl, etc) against what the project has been tested on - and then exits, taking no further action. You should do this at least once. Or just run `verify-prereqs` in the `scripts` directory. |
+| `--host-network-interface`   | Required | The name of the primary network interface on your machine. The scripts use this to configure the VirtualBox bridge network for each node VM. |
+| `--vboxdir`                  | Required | The directory where you keep VirtualBox VM files. The script uses the `VBoxManage` utility to create the VMs, which will in turn create a sub-directory under this directory for each VM. The directory must exist. The script will not create it. |
+| `--networking`               | Optional | If specified, installs networking. Current valid values are `kube-router` and `cilium`. E.g.: --networking=cilium |
+| `--from-scratch`             | Optional | If specified, then downloads all the necessary items - such as the k8s binaries, as well as the CentOS ISO and the Guest Additions ISO. Also creates a template (see `--create-template`). If  not specified, then the script expects to find all required objects already on the filesystem. |
+| `--create-template`          | Optional | If specified, first creates a template VM to clone all the cluster nodes from before bringing up the cluster. (This step by far takes the longest.) If not specified, expects to find an existing VM to clone from. Note - if the `--from-scratch` option is specified, a template is always created. |
+| `--monitoring`               | Optional | Installs monitoring. Allowed values are `metrics.k8s.io`, and `kube-prometheus`. The `metrics.k8s.io` value installs the [Resource metrics pipeline](https://kubernetes.io/docs/tasks/debug-application-cluster/resource-usage-monitoring/) and it also installs [Kubernetes Dashboard](https://github.com/kubernetes/dashboard), which can be accessed using `kubectl proxy`. The `kube-prometheus` value installs Prometheus and Grafana using the [kube-prometheus](https://github.com/prometheus-operator/kube-prometheus) stack. This option creates a `NodePort` service on port 30300 so you can access Grafana without port-forwarding. Once the cluster is up, the script will display the IP addresses of each of the nodes, and you can access Grafana on any one of those IP addresses on port 30300. |
+| `--single-node`              | Optional | If specified, Creates a single node cluster. The default is to create one controller, named *doc*, and two workers, named *ham* and *monk*. This option is useful to quickly test changes since it is faster to provision a single node. |
+| `--up`, `--down`, `--delete` | Optional | Takes a comma-separated list of VM names, and starts (`--up`), stops (`--down`), or deletes (`--delete`) them all. The `--down` option is a graceful shutdown. The `--delete` is a fast shutdown and also removes the Virtual Box VM files from the file system. |
+| `--help`                     | Optional | Displays this help and exits.                                |
 
 
 
@@ -52,7 +69,7 @@ $ ./new-cluster --help
 | Task                           | Description                                                  |
 | ------------------------------ | ------------------------------------------------------------ |
 | Volume Provisioning            | Implement the [Local Static Provisioner](https://github.com/kubernetes-sigs/sig-storage-local-static-provisioner). Currently, persistent volumes have to be hand-managed by generating directories in the VMs, and creating PVs that ref those VMs. |
-| Monitoring                     | Support Prometheus and Grafana. Currently, the project configures the [Metrics Server](https://github.com/kubernetes-sigs/metrics-server) and the [Web UI Dashboard](https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/) and requires you to `kubectl proxy` and get a token from a cluster secret to log in to the dashboard. |
+| Load Balancer                  | Implement [MetalLB](https://github.com/google/metallb)       |
 | Sonobuoy                       | See if it is possible for this cluster to pass the Kubernetes certification tests using [Sonobuoy](https://github.com/vmware-tanzu/sonobuoy) |
 | Firewall                       | There are plenty of posts discussing how to configure the firewall settings for Kubernetes. The documented settings do not appear to work with CoreDNS on CentOS 8. (In fact, many posters recommend to disable `firewalld` on CentOS.) So presently, the firewall is disabled but my goal is to run the cluster with the firewall enabled and the correct rules defined |
 | Ubuntu                         | Support Ubuntu Server as the Guest OS - presently only CentOS is supported |
@@ -75,6 +92,7 @@ This project has been testing with the following tools, components and versions.
 | host     | Virtual Box / VBoxManage                        | 6.1.18r142142      |
 | host     | kubectl (client only)                           | v1.18.0            |
 | host     | curl                                            | 7.68.0             |
+| host     | wget                                            | 1.20.3             |
 | guest VM | Centos ISO                                      | 8.3.2011-x86_64    |
 | guest VM | Virtual Box Guest Additions ISO                 | 6.1.18             |
 | k8s      | etcd                                            | v3.4.14            |
@@ -91,4 +109,5 @@ This project has been testing with the following tools, components and versions.
 | k8s      | Metrics Server                                  | 0.4.2              |
 | k8s      | Kubernetes Dashboard                            | 2.0.0              |
 | k8s      | Cilium networking and Hubble network monitoring | 1.9.4              |
+| k8s      | kube-prometheus                                 | 0.7.0              |
 

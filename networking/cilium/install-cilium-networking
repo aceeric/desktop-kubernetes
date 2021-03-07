@@ -54,16 +54,14 @@ sed $proj_root/networking/cilium/cilium-1.9.4-quick-install.yaml -e "s|CONTROLLE
  | kubectl --kubeconfig $admin_kubeconfig apply -f -
 sleep 3s
 
-echo "waiting (indefinitely) for pod networking"
+echo "waiting for pod networking"
 
-kubectl --kubeconfig $admin_kubeconfig -nkube-system wait pod -lio.cilium/app=operator --for condition=ready
-kubectl --kubeconfig $admin_kubeconfig -nkube-system wait pod -lk8s-app=cilium --for condition=ready
+kubectl --kubeconfig $admin_kubeconfig -nkube-system wait pod -lio.cilium/app=operator --for condition=ready --timeout=1m
+kubectl --kubeconfig $admin_kubeconfig -nkube-system wait pod -lk8s-app=cilium --for condition=ready --timeout=1m
 
 echo "installing Cilium Hubble"
 
 kubectl --kubeconfig $admin_kubeconfig apply -f $proj_root/networking/cilium/cilium-1.9.4-quick-hubble-install.yaml
 
-#cilium_pod=$(kubectl --kubeconfig $admin_kubeconfig -nkube-system get pod -lk8s-app=cilium -ojsonpath='{.items[0].metadata.name}')
-
-# TODO
-sleep 3s
+kubectl --kubeconfig $admin_kubeconfig -nkube-system wait pod -lk8s-app=hubble-ui --for condition=ready --timeout=1m
+kubectl --kubeconfig $admin_kubeconfig -nkube-system wait pod -lk8s-app=hubble-relay --for condition=ready --timeout=1m

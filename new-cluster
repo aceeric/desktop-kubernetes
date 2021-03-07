@@ -60,11 +60,13 @@ metrics_server_download=https://github.com/kubernetes-sigs/metrics-server/releas
 metrics_server_manifest=$proj_root/binaries/metrics-server-components.yaml
 kubernetes_dashboard_download=https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0/aio/deploy/recommended.yaml
 kubernetes_dashboard_manifest=$proj_root/binaries/kubernetes-dashboard-recommended.yaml
+# do cilium/hubble differently - see the README with the install script
 #cilium_yaml_download=https://raw.githubusercontent.com/cilium/cilium/1.9.4/install/kubernetes/quick-install.yaml
 #cilium_yaml=cilium-1.9.4-quick-install.yaml
 #hubble_yaml_download=https://raw.githubusercontent.com/cilium/cilium/1.9.4/install/kubernetes/quick-hubble-install.yaml
 #hubble_yaml=cilium-1.9.4-quick-hubble-install.yaml
-
+kube_prometheus_download=https://github.com/prometheus-operator/kube-prometheus/archive/v0.7.0.tar.gz
+kube_prometheus_dir=$proj_root/binaries/kube-prometheus
 #
 # Verifies the existence of all the filesystem objects required to provision a cluster. If arg1 is '1' then that means
 # we are creating a template VM. In that case the CentOS and VBox Guest Additions ISOs are included in the check
@@ -80,6 +82,9 @@ function check_files() {
   if [[ "$monitoring" == "metrics.k8s.io" ]]; then
     objects+=($metrics_server_manifest)
     objects+=($kubernetes_dashboard_manifest)
+  fi
+  if [[ "$monitoring" == "kube-prometheus" ]]; then
+    objects+=($proj_root/binaries/kube-prometheus/setup/0namespace-namespace.yaml)
   fi
   if [[ "$networking" == "kube-router" ]]; then
     objects+=($kube_router_yaml)
@@ -113,6 +118,9 @@ function check_urls() {
     objects+=($metrics_server_download)
     objects+=($kubernetes_dashboard_download)
   fi
+  if [[ "$monitoring" == "kube-prometheus" ]]; then
+    objects+=($kube_prometheus_download)
+  fi
   if [[ "$networking" == "kube-router" ]]; then
     objects+=($kube_router_yaml_download)
   fi
@@ -145,7 +153,7 @@ function usage() {
     start the install.
 
     Usage: new-cluster [--help] [--host-network-interface=<interface>] [--vboxdir=</some/path>]
-           [--networking=<type>] [--from-scratch] [--create-template] [--monitoring=<type>] [--single-node]
+           [--networking=<type>] [--monitoring=<type>] [--from-scratch] [--create-template] [--single-node]
            [--up=<nodelist>] [--down=<nodelist>] [--delete=<nodelist>] [--check-compatibility]
 
     Options:
@@ -171,11 +179,8 @@ function usage() {
                                  nodes from before bringing up the cluster. (This step by far takes the longest.)
                                  If not specified, expects to find an existing VM to clone from. Note - if
                                  the --from-scratch option is specified, a template is always created.
-      --monitoring               Optional. Installs monitoring. Presently, the only allowed value is "metrics.k8s.io",
-                                 e.g.: "--monitoring=metrics.k8s.io". This installs basic monitoring as described in:
-                                 https://kubernetes.io/docs/tasks/debug-application-cluster/resource-usage-monitoring/
-                                 and it also installs kubernetes dashboard, which can be accessed using kubectl
-                                 proxy. A to-do item is to support Prometheus and Grafana.
+      --monitoring               Optional. Installs monitoring. Allowed values are "metrics.k8s.io", and
+                                 "kube-prometheus".
       --single-node              Optional. If specified, Creates a single node cluster. The default is to create
                                  one controller, named "doc", and two workers, named "ham" and "monk". This option
                                  is useful to quickly test changes since it is faster to provision a single node.
@@ -199,8 +204,8 @@ function usage() {
 
       new-cluster --host-network-interface=enp0s31f6 --vboxdir=/sdb1/virtualbox --single-node --networking=cilium
 
-      Same as the first example, except 1) gets all the upstreams from the filesystem, 2) uses the
-      template VM created by a prior invocation, and 3) only creates one node.
+      Like the first example, except 1) gets all the upstreams from the filesystem, 2) uses the template
+      VM created by a prior invocation, and 3) only creates one node.
 
       new-cluster --up=doc,ham,monk
 
@@ -262,7 +267,7 @@ function parse_args() {
         ;;
       --monitoring)
         monitoring=$(opt_val "$2")
-        if [[ "$monitoring" != "metrics.k8s.io" ]]; then
+        if [[ "$monitoring" != "metrics.k8s.io" ]] && [[ "$monitoring" != "kube-prometheus" ]]; then
           echo "unsupported parameter value for --monitoring option: $monitoring"
           exit 1
         fi
@@ -345,6 +350,9 @@ elif [[ $from_scratch -eq 0 ]] && ! check_files $create_template; then
   exit 1
 fi
 
+# create the kube-prometheus directory if it doesn't exist to simplify the .gitignore in the binaries directory
+mkdir -p $proj_root/binaries/kube-prometheus
+
 # if not installing from scratch, clear the download URLs: the scripts will use the filesystem refs instead
 
 if [[ $from_scratch -eq 0 ]]; then
@@ -362,6 +370,7 @@ if [[ $from_scratch -eq 0 ]]; then
   kube_router_yaml_download=
   metrics_server_download=
   kubernetes_dashboard_download=
+  kube_prometheus_download=
 fi
 
 # if running from scratch, always create a template VM to clone the nodes from. This step also generates
@@ -497,8 +506,11 @@ if [[ -n "$monitoring" ]]; then
      --ca-cert=$proj_root/tls/ca.pem\
      --ca-key=$proj_root/tls/ca-key.pem
   else
-    # todo Prometheus/Grafana
-    :
+    $proj_root/monitoring/kube-prometheus/install-kube-prometheus\
+     --controller-ip=$controller_ip\
+     --kube-prometheus-download=$kube_prometheus_download\
+     --kube-prometheus-dir=$kube_prometheus_dir\
+     --admin-kubeconfig=$proj_root/admin/admin.kubeconfig
   fi
 fi
 

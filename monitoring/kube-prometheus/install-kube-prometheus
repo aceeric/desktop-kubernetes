@@ -1,0 +1,103 @@
+#!/usr/bin/env bash
+
+#
+# Installs the kube-prometheus stack for cluster observability.
+# See - https://github.com/prometheus-operator/kube-prometheus
+#
+
+set -e
+
+long_opts=controller-ip:,kube-prometheus-download:,kube-prometheus-dir:,admin-kubeconfig:
+script_name=$(basename "$0")
+proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+
+controller_ip=
+kube_prometheus_download=
+kube_prometheus_dir=
+admin_kubeconfig=
+
+function opt_val() {
+  opt="$1"
+  if [[ "$opt" == =* ]]; then
+    echo "${opt:1}"
+  else
+    echo "$opt"
+  fi
+}
+
+function parse_args() {
+  if [[ "$#" -eq 0 ]]; then
+    echo "no args provided"
+    exit 1
+  fi
+  local parsed
+  parsed=$(getopt --options "" --longoptions $long_opts -n $script_name -- "$@")
+  eval set -- "$parsed"
+  while true; do
+    case "$1" in
+	    --controller-ip)
+        controller_ip=$(opt_val "$2")
+        shift 2
+        ;;
+	    --kube-prometheus-download)
+        kube_prometheus_download=$(opt_val "$2")
+        shift 2
+        ;;
+	    --kube-prometheus-dir)
+        kube_prometheus_dir=$(opt_val "$2")
+        shift 2
+        ;;
+      --admin-kubeconfig)
+        admin_kubeconfig=$(opt_val "$2")
+        shift 2
+        ;;
+      --)
+        shift
+        break
+        ;;
+    esac
+  done
+}
+
+parse_args "$@"
+
+# debug
+#echo "controller_ip=$controller_ip"
+#echo "kube_prometheus_download=$kube_prometheus_download"
+#echo "kube_prometheus_dir=$kube_prometheus_dir"
+#echo "admin_kubeconfig=$admin_kubeconfig"
+
+if [[ ! -z "$kube_prometheus_download" ]]; then
+  echo "Downloading kube-prometheus tarball"
+  curl -L $kube_prometheus_download | tar zxvf - --strip-components 2 -C $kube_prometheus_dir\
+     kube-prometheus-0.7.0/manifests
+else
+  echo "No URL provided - skipping download and using provided directory: $kube_prometheus_dir"
+fi
+
+kubectl --kubeconfig $admin_kubeconfig create -f $kube_prometheus_dir/setup
+until kubectl --kubeconfig $admin_kubeconfig get servicemonitors --all-namespaces ; do date; sleep 1; echo ""; done
+kubectl --kubeconfig $admin_kubeconfig create -f $kube_prometheus_dir
+
+echo "creating NodePort service 'grafana-nodeport' to enble Grafana access without port-forwarding"
+
+cat <<EOF | kubectl --kubeconfig $admin_kubeconfig -n monitoring apply -f -
+apiVersion: v1
+kind: Service
+metadata:
+  name: grafana-nodeport
+  labels:
+    app: grafana
+spec:
+  ports:
+  - name: http
+    nodePort: 30300
+    port: 3000
+    protocol: TCP
+    targetPort: 3000
+  selector:
+    app: grafana
+  type: NodePort
+EOF
+
+echo "To access Grafana, log in with admin/admin to: http://$controller_ip:30300"
