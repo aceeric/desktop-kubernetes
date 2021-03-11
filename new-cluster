@@ -67,6 +67,10 @@ kubernetes_dashboard_manifest=$proj_root/binaries/kubernetes-dashboard-recommend
 #hubble_yaml=cilium-1.9.4-quick-hubble-install.yaml
 kube_prometheus_download=https://github.com/prometheus-operator/kube-prometheus/archive/v0.7.0.tar.gz
 kube_prometheus_dir=$proj_root/binaries/kube-prometheus
+kube_proxy_download=https://storage.googleapis.com/kubernetes-release/release/v1.20.1/bin/linux/amd64/kube-proxy
+kube_proxy_binary=$proj_root/binaries/kube-proxy
+calico_manifest_download=https://docs.projectcalico.org/manifests/calico.yaml
+calico_manifest=$proj_root/binaries/calico.yaml
 
 #
 # Verifies the existence of all the filesystem objects required to provision a cluster. If arg1 is '1' then that means
@@ -89,6 +93,10 @@ function check_files() {
   fi
   if [[ "$networking" == "kube-router" ]]; then
     objects+=($kube_router_yaml)
+  fi
+  if [[ "$networking" == "calico" ]]; then
+    objects+=($kube_proxy_binary)
+    objects+=($calico_manifest)
   fi
 #  if [[ "$networking" == "cilium" ]]; then
 #    objects+=($cilium_yaml_download)
@@ -124,6 +132,10 @@ function check_urls() {
   fi
   if [[ "$networking" == "kube-router" ]]; then
     objects+=($kube_router_yaml_download)
+  fi
+  if [[ "$networking" == "calico" ]]; then
+    objects+=($kube_proxy_download)
+    objects+=($calico_manifest_download)
   fi
 #  if [[ "$networking" == "cilium" ]]; then
 #    objects+=($cilium_yaml)
@@ -171,7 +183,7 @@ function usage() {
                                  directory under this directory for each VM. The directory must exist.
                                  The script will not create it.
       --networking               Optional. If specified, installs networking. Current valid values are
-                                 "kube-router" and "cilium". E.g.: --networking=cilium
+                                 "calico", "kube-router", and "cilium". E.g.: --networking=calico
       --from-scratch             Optional. If specified, then downloads all the necessary items - such as the k8s
                                  binaries, as well as the CentOS ISO and the Guest Additions ISO. Also creates
                                  a template (see --create-template). If not specified, then the script
@@ -194,7 +206,7 @@ function usage() {
 
     Examples:
 
-      new-cluster --host-network-interface=enp0s31f6 --vboxdir=/sdb1/virtualbox --from-scratch --networking=cilium
+      new-cluster --host-network-interface=enp0s31f6 --vboxdir=/sdb1/virtualbox --from-scratch --networking=calico
 
       Wires the VirtualBox bridge network to interface "enp0s31f6", uses the "/sdb1/virtualbox" directory
       for all VM files, and downloads all the upstreams during the install, placing them on the filesystem
@@ -203,7 +215,7 @@ function usage() {
 
       *** You must use "--from-scratch" at least once because all the upstreams are git-ignored  ***
 
-      new-cluster --host-network-interface=enp0s31f6 --vboxdir=/sdb1/virtualbox --single-node --networking=cilium
+      new-cluster --host-network-interface=enp0s31f6 --vboxdir=/sdb1/virtualbox --single-node --networking=calico
 
       Like the first example, except 1) gets all the upstreams from the filesystem, 2) uses the template
       VM created by a prior invocation, and 3) only creates one node.
@@ -253,7 +265,7 @@ function parse_args() {
         ;;
       --networking)
         networking=$(opt_val "$2")
-        if [[ "$networking" != "kube-router" ]] && [[ "$networking" != "cilium" ]]; then
+        if [[ "$networking" != "kube-router" ]] && [[ "$networking" != "cilium" ]] && [[ "$networking" != "calico" ]]; then
           echo "unsupported parameter value for --networking option: $networking"
           exit 1
         fi
@@ -378,6 +390,8 @@ if [[ $from_scratch -eq 0 ]]; then
   metrics_server_download=
   kubernetes_dashboard_download=
   kube_prometheus_download=
+  kube_proxy_download=
+  calico_manifest_download=
 fi
 
 # if running from scratch, always create a template VM to clone the nodes from. This step also generates
@@ -490,6 +504,24 @@ elif [[ "$networking" == "cilium" ]]; then
   $proj_root/networking/cilium/install-cilium-networking\
    --controller-ip=$controller_ip\
    --admin-kubeconfig=$admin_kubeconfig
+elif [[ "$networking" == "calico" ]]; then
+  nodes="${cluster_vms[@]}"
+  nodes=${nodes// /,}
+  $proj_root/networking/kube-proxy/install-kube-proxy\
+   --controller-ip=$controller_ip\
+   --kube-proxy-download=$kube_proxy_download\
+   --kube-proxy-binary=$kube_proxy_binary\
+   --priv-key=$priv_key\
+   --nodes=$nodes\
+   --ca-cert=$proj_root/tls/ca.pem\
+   --ca-key=$proj_root/tls/ca-key.pem
+  $proj_root/networking/calico/install-calico-networking\
+   --calico-manifest-download=$calico_manifest_download\
+   --calico-manifest=$calico_manifest\
+   --priv-key=$priv_key\
+   --admin-kubeconfig=$admin_kubeconfig\
+   --pod-cidr=10.200.0.0/16\
+   --nodes=$nodes
 fi
 
 echo "${downloading_msg}installing cluster DNS"
@@ -512,7 +544,7 @@ if [[ -n "$monitoring" ]]; then
      --kubernetes-dashboard-manifest=$kubernetes_dashboard_manifest\
      --ca-cert=$proj_root/tls/ca.pem\
      --ca-key=$proj_root/tls/ca-key.pem
-  else
+  elif [[ "$monitoring" == "kube-prometheus" ]]; then
     $proj_root/monitoring/kube-prometheus/install-kube-prometheus\
      --controller-ip=$controller_ip\
      --kube-prometheus-download=$kube_prometheus_download\

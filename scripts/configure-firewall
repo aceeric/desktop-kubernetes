@@ -12,6 +12,10 @@ priv_key="$2"
 # says --add-port=8472/udp and --add-masquerade --permanent on controller AND worker...
 # but does not match kubernetes docs
 
+# interesting:
+# https://upcloud.com/community/tutorials/install-kubernetes-cluster-centos-8/
+# https://docs.projectcalico.org/getting-started/kubernetes/requirements
+
 ssh -i "$priv_key" root@$vmip "systemctl stop firewalld && systemctl disable firewalld"
 exit 0
 

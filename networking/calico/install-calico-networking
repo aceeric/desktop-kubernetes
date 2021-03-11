@@ -1,0 +1,116 @@
+#!/usr/bin/env bash
+
+set -e
+
+long_opts=calico-manifest-download:,calico-manifest:,priv-key:,admin-kubeconfig:,pod-cidr:,nodes:
+script_name=$(basename "$0")
+proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+
+calico_manifest_download=
+calico_manifest=
+priv_key=
+admin_kubeconfig=
+pod_cidr=
+nodes=()
+
+function opt_val() {
+  opt="$1"
+  if [[ "$opt" == =* ]]; then
+    echo "${opt:1}"
+  else
+    echo "$opt"
+  fi
+}
+
+function parse_args() {
+  if [[ "$#" -eq 0 ]]; then
+    echo "no args provided"
+    exit 1
+  fi
+  local parsed
+  parsed=$(getopt --options "" --longoptions $long_opts -n $script_name -- "$@")
+  eval set -- "$parsed"
+  while true; do
+    case "$1" in
+      --calico-manifest-download)
+        calico_manifest_download=$(opt_val "$2")
+        shift 2
+        ;;
+      --calico-manifest)
+        calico_manifest=$(opt_val "$2")
+        shift 2
+        ;;
+      --priv-key)
+        priv_key=$(opt_val "$2")
+        shift 2
+        ;;
+      --admin-kubeconfig)
+        admin_kubeconfig=$(opt_val "$2")
+        shift 2
+        ;;
+      --pod-cidr)
+        pod_cidr=$(opt_val "$2")
+        shift 2
+        ;;
+      --nodes)
+        nodes=$(opt_val "$2")
+        IFS=',' read -ra nodes <<< "$nodes"
+        shift 2
+        ;;
+      --)
+        shift
+        break
+        ;;
+    esac
+  done
+}
+
+parse_args "$@"
+
+calico_manifest_actual=$($proj_root/scripts/make-download-path\
+ --download-url=$calico_manifest_download --download-path=$calico_manifest)
+
+# debug
+#echo "calico_manifest_download=$calico_manifest_download"
+#echo "calico_manifest=$calico_manifest"
+#echo "calico_manifest_actual=$calico_manifest_actual"
+#echo "priv_key=$priv_key"
+#echo "admin_kubeconfig=$admin_kubeconfig"
+#echo "pod_cidr=$pod_cidr"
+#echo "nodes=${nodes[@]}"
+
+## per https://docs.projectcalico.org/maintenance/troubleshoot/troubleshooting#configure-networkmanager
+for node in "${nodes[@]}"; do
+  worker_ip=$($proj_root/scripts/get-vm-ip $node)
+  ssh -i $priv_key root@$worker_ip << EOF
+    echo -e "[keyfile]\nunmanaged-devices=interface-name:cali*;interface-name:tunl*;interface-name:vxlan.calico"\
+      >| /etc/NetworkManager/conf.d/calico.conf
+    systemctl daemon-reload && systemctl restart NetworkManager
+EOF
+done
+
+if [[ ! -z "$calico_manifest_download" ]]; then
+  echo "downloading calico manifest"
+  $proj_root/scripts/download-obj --url="$calico_manifest_download" --dest="$calico_manifest_actual"
+else
+  echo "no URL provided - skipping download and using provided manifest"
+fi
+
+echo "deploying calico manifest"
+kubectl --kubeconfig $admin_kubeconfig create -f $calico_manifest_actual
+kubectl -n kube-system set env ds/calico-node CALICO_IPV4POOL_CIDR=$pod_cidr
+
+echo "waiting (indefinitely) for calico daemonset"
+
+desired=0
+ready=1
+while [[ $ready -ne $desired ]]; do
+  sleep 1s
+  calicods=$(kubectl --kubeconfig $admin_kubeconfig -n kube-system get ds/calico-node --no-headers\
+   -ocustom-columns='DESIRED:status.desiredNumberScheduled,READY:status.numberReady')
+  IFS=' ' read -ra cols <<< "$calicods"
+  desired="${cols[0]}"
+  ready="${cols[1]}"
+done
+
+echo "calico installation complete"

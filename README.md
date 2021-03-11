@@ -97,6 +97,7 @@ This project has been testing with the following tools, components and versions.
 | k8s      | cni plugins                                                     | v0.9.0             |
 | k8s      | containerd                                                      | v1.4.3             |
 | k8s      | CoreDNS                                                         | 1.8.0              |
+| k8s      | kube-proxy (if installed)                                       | v1.20.1            |
 | k8s      | kube-router (if installed)                                      | v1.1.1             |
 | k8s      | Metrics Server  (if installed)                                  | 0.4.2              |
 | k8s      | Kubernetes Dashboard  (if installed)                            | 2.0.0              |

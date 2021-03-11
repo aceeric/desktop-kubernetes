@@ -1,0 +1,170 @@
+#!/usr/bin/env bash
+
+set -e
+
+long_opts=controller-ip:,kube-proxy-download:,kube-proxy-binary:,priv-key:,ca-cert:,ca-key:,nodes:
+script_name=$(basename "$0")
+proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+
+controller_ip=
+kube_proxy_download=
+kube_proxy_binary=
+priv_key=
+nodes=()
+ca_cert=
+ca_key=
+
+function opt_val() {
+  opt="$1"
+  if [[ "$opt" == =* ]]; then
+    echo "${opt:1}"
+  else
+    echo "$opt"
+  fi
+}
+
+function parse_args() {
+  if [[ "$#" -eq 0 ]]; then
+    echo "no args provided"
+    exit 1
+  fi
+  local parsed
+  parsed=$(getopt --options "" --longoptions $long_opts -n $script_name -- "$@")
+  eval set -- "$parsed"
+  while true; do
+    case "$1" in
+      --controller-ip)
+        controller_ip=$(opt_val "$2")
+        shift 2
+        ;;
+      --kube-proxy-download)
+        kube_proxy_download=$(opt_val "$2")
+        shift 2
+        ;;
+      --kube-proxy-binary)
+        kube_proxy_binary=$(opt_val "$2")
+        shift 2
+        ;;
+      --priv-key)
+        priv_key=$(opt_val "$2")
+        shift 2
+        ;;
+      --nodes)
+        nodes=$(opt_val "$2")
+        IFS=',' read -ra nodes <<< "$nodes"
+        shift 2
+        ;;
+      --ca-cert)
+        ca_cert=$(opt_val "$2")
+        shift 2
+        ;;
+      --ca-key)
+        ca_key=$(opt_val "$2")
+        shift 2
+        ;;
+      --)
+        shift
+        break
+        ;;
+    esac
+  done
+}
+
+parse_args "$@"
+
+kube_proxy_binary_actual=$($proj_root/scripts/make-download-path\
+ --download-url=$kube_proxy_download --download-path=$kube_proxy_binary)
+
+# debug
+#echo "controller_ip=$controller_ip"
+#echo "kube_proxy_download=$kube_proxy_download"
+#echo "kube_proxy_binary=$kube_proxy_binary"
+#echo "kube_proxy_binary_actual=$kube_proxy_binary_actual"
+#echo "priv_key=$priv_key"
+#echo "nodes=${nodes[@]}"
+#echo "ca_cert=$ca_cert"
+#echo "ca_key=$ca_key"
+
+if [[ ! -z "$kube_proxy_download" ]]; then
+  echo "downloading kube-proxy binary"
+  $proj_root/scripts/download-obj --url="$kube_proxy_download" --dest="$kube_proxy_binary_actual"
+  chmod +x $kube_proxy_binary_actual
+else
+  echo "no URL provided - skipping download and using provided kube-proxy binary"
+fi
+
+# gen kube-proxy certificate
+
+# generate key
+openssl genrsa -out $proj_root/networking/kube-proxy/kube-proxy-key.pem 2048
+
+# generate a CSR conf
+tmp_dir=$(mktemp -d)
+cat <<EOF > $tmp_dir/kube-proxy-csr.conf
+[ req ]
+default_bits = 2048
+prompt = no
+default_md = sha256
+distinguished_name = dn
+
+[ dn ]
+O = system:node-proxier
+CN = system:kube-proxy
+
+[ v3_ext ]
+authorityKeyIdentifier=keyid,issuer:always
+basicConstraints=CA:FALSE
+keyUsage=keyEncipherment,dataEncipherment
+extendedKeyUsage=serverAuth,clientAuth
+EOF
+
+# create a CSR using the conf from above
+openssl req -new -key $proj_root/networking/kube-proxy/kube-proxy-key.pem\
+ -out $tmp_dir/kube-proxy.csr -config $tmp_dir/kube-proxy-csr.conf
+
+# gen certificate using the ca cert and key provided to the script, and the csr from above
+openssl x509 -req -in $tmp_dir/kube-proxy.csr -CA $ca_cert -CAkey $ca_key -CAcreateserial\
+ -out $proj_root/networking/kube-proxy/kube-proxy.pem -days 10000 -extensions v3_ext -extfile $tmp_dir/kube-proxy-csr.conf
+
+# cleanup
+rm -rf $tmp_dir $proj_root/networking/kube-proxy/ca.srl
+
+# gen kube-proxy.kubeconfig
+rm -f $proj_root/networking/kube-proxy/kube-proxy.kubeconfig
+kubectl config set-cluster kubernetes \
+--certificate-authority=$ca_cert \
+--embed-certs=true \
+--server=https://$controller_ip:6443 \
+--kubeconfig=$proj_root/networking/kube-proxy/kube-proxy.kubeconfig
+
+kubectl config set-credentials system:kube-proxy \
+--client-certificate=$proj_root/networking/kube-proxy/kube-proxy.pem \
+--client-key=$proj_root/networking/kube-proxy/kube-proxy-key.pem \
+--embed-certs=true \
+--kubeconfig=$proj_root/networking/kube-proxy/kube-proxy.kubeconfig
+
+kubectl config set-context default \
+--cluster=kubernetes \
+--user=system:kube-proxy \
+--kubeconfig=$proj_root/networking/kube-proxy/kube-proxy.kubeconfig
+
+kubectl config use-context default --kubeconfig=$proj_root/networking/kube-proxy/kube-proxy.kubeconfig
+
+# configure kube-proxy on each node
+for node in "${nodes[@]}"; do
+  worker_ip=$($proj_root/scripts/get-vm-ip $node)
+  echo "configurig kube-proxy for node $node (ip $worker_ip)"
+  ssh -i $priv_key root@$worker_ip "mkdir -p /var/lib/kube-proxy/kubeconfig"
+  scp -i $priv_key $kube_proxy_binary_actual root@$worker_ip:/usr/local/bin/
+  scp -i $priv_key $proj_root/networking/kube-proxy/kube-proxy-config.yaml root@$worker_ip:/var/lib/kube-proxy/
+  scp -i $priv_key $proj_root/networking/kube-proxy/kube-proxy.kubeconfig root@$worker_ip:/var/lib/kube-proxy/kubeconfig/
+  scp -i $priv_key $proj_root/networking/kube-proxy/kube-proxy.service root@$worker_ip:/etc/systemd/system/kube-proxy.service
+  ssh -i $priv_key root@$worker_ip "systemctl daemon-reload && systemctl enable kube-proxy && systemctl start kube-proxy"
+  echo "verifying kube-proxy is running"
+  set +e
+  for i in {1..10}; do
+    ssh -i "$priv_key" root@$worker_ip "systemctl is-active --quiet kube-proxy" && break
+    sleep 1s
+  done
+  echo "no errors detected with kube-proxy installation"
+done
