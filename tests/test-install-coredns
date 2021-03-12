@@ -7,11 +7,5 @@ fi
 
 proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 $proj_root/dns/coredns/install-coredns\
- --controller-ip="$1"\
  --replicas=1\
  --admin-kubeconfig=$proj_root/admin/admin.kubeconfig
-
-#$proj_root/dns/coredns/install-coredns\
-# --controller-ip="$1"\
-# --replicas=1\
-# --admin-kubeconfig=$proj_root/admin/admin.kubeconfig

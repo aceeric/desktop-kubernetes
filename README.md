@@ -13,10 +13,10 @@ This project is derivative of **Kelsey Hightower's** [Kubernetes The Hard Way](h
 | Uses Ubuntu for the cluster node OS | Uses [CentOS 8](https://www.centos.org/download/) |
 | Structures the installation and configuration tasks by related activities, e.g. creates all the certs, copies binaries, generates configuration files, etc. | Structures the tasks more around the individual Kubernetes components where possible, because I was interested in delineating the specific dependencies and requirements for each component |
 | Hand-generates the node routing | Uses the built-in routing that comes with a VirtualBox bridge network - which is the network type I selected for this project because it provides host-to-guest, guest-to-guest, and guest-to-internet right out of the box |
-| Implements Pod networking via the bridge network plugin from [containernetworking](https://github.com/containernetworking) | Performs a kube-proxyless install of [Cilium](https://docs.cilium.io/en/stable/gettingstarted/k8s-install-default) for cluster networking, and [Hubble](https://cilium.io/blog/2019/11/19/announcing-hubble) for network monitoring |
+| Implements Pod networking via the bridge network plugin from [containernetworking](https://github.com/containernetworking) | Supports cluster networking using one of three networking solutions based on a command-line option: [Calico](https://docs.projectcalico.org) + [kube-proxy](https://kubernetes.io/docs/reference/command-line-tools-reference/kube-proxy/), or [kube-router](https://github.com/cloudnativelabs/kube-router), or [Cilium](https://docs.cilium.io/en/stable/gettingstarted/k8s-install-default). |
 | Uses Cloudflare [cfssl](https://github.com/cloudflare/cfssl) to generate the cluster certs | Uses [openssl](https://www.openssl.org/) since it is almost universally available on Linux. I was interested to see what the scripting would look like using openssl, especially for things like creating CSRs and so on |
 | Is nicely terse and compact | Is verbose by virtue of using scripts with lots of options, and separating the component installs into separate scripts, thus requiring a lot of option passing and parsing |
-| Does not include monitoring | Installs either [Kubernetes Metrics Server](https://github.com/kubernetes-sigs/metrics-server) with the [Kubernetes Dashboard](https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/) - or - [kube-prometheus](https://github.com/prometheus-operator/kube-prometheus) |
+| Does not include monitoring | Installs either [Kubernetes Metrics Server](https://github.com/kubernetes-sigs/metrics-server) with the [Kubernetes Dashboard](https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/) - or - the [kube-prometheus](https://github.com/prometheus-operator/kube-prometheus) stack |
 
 ## Quick Start
 
@@ -30,10 +30,10 @@ To create a cluster for the first time, run the script as shown below (using you
 
 ```shell
 $ ./new-cluster --from-scratch --host-network-interface=enp0s31f6\
-  --vboxdir=/sdb1/virtualbox --networking=cilium --monitoring=kube-prometheus
+  --vboxdir=/sdb1/virtualbox --networking=calico --monitoring=kube-prometheus
 ```
 
-The `--from-scratch` option is important. It tells the script to `curl` all the upstream objects, such as the CentOS ISO, the Virtual Box Guest Additions ISO, and the Kubernetes binaries and other manifests. I've coded the script with specific versions of everything in the interests of repeatability. The `--networking` option installs cluster networking. I initially went with `kube-router` but most recently switched to Cilium. The `--monitoring` option installs Kube Prometheus.
+The `--from-scratch` option is important. It tells the script to `curl` all the upstream objects, such as the CentOS ISO, the Virtual Box Guest Additions ISO, and the Kubernetes binaries and other manifests. I've coded the script with specific versions of everything in the interests of repeatability. The `--networking` option installs cluster networking - in this case Calico and kube-proxy. The `--monitoring` option installs Kube Prometheus. (This option also creates a NodePort service on port 30300 which you can access directly using any one of the VM IPs to access the Grafana dashboard using credentials admin/admin.)
 
 > Please Note: URLs are perishable. Just in the time that I was developing this project, the CentOS version and URL changed slightly so - don't be surprised if you have to tweak the URLs. The script will test each URL before it begins provisioning the cluster and will tell you which ones it couldn't access. Then you will have to modify the `new-cluster` script accordingly.
 
@@ -45,14 +45,14 @@ The following command-line options are supported for the `new-cluster` script:
 
 | Option                       | Type     | Description                                                  |
 | ---------------------------- | -------- | ------------------------------------------------------------ |
-| `--check-compatibility`      | Optional | If specified, checks the installed versions of various utils used by the project (curl, kubectl, etc) against what the project has been tested on - and then exits, taking no further action. You should do this at least once. Or just run `verify-prereqs` in the `scripts` directory. |
+| `--check-compatibility`      | Optional | If specified, checks the installed versions of various desktop tools used by the project (curl, kubectl, etc) against what the project has been tested on - and then exits, taking no further action. You should do this at least once. Or just run `verify-prereqs` in the `scripts` directory. Note - there will likely be differences between your desktop and what I tested with - you will have to determine whether the differences are relevant. |
 | `--host-network-interface`   | Required | The name of the primary network interface on your machine. The scripts use this to configure the VirtualBox bridge network for each node VM. |
 | `--vboxdir`                  | Required | The directory where you keep VirtualBox VM files. The script uses the `VBoxManage` utility to create the VMs, which will in turn create a sub-directory under this directory for each VM. The directory must exist. The script will not create it. |
-| `--networking`               | Optional | If specified, installs networking. Current valid values are `kube-router` and `cilium`. E.g.: --networking=cilium |
-| `--from-scratch`             | Optional | If specified, then downloads all the necessary items - such as the k8s binaries, as well as the CentOS ISO and the Guest Additions ISO. Also creates a template (see `--create-template`). If  not specified, then the script expects to find all required objects already on the filesystem. |
+| `--networking`               | Optional | If specified, installs networking. Current valid values are `calico` (which also installs kube-proxy), `kube-router` and `cilium`. E.g.: `--networking=calico` |
+| `--from-scratch`             | Optional | If specified, then downloads all the necessary items - such as the k8s binaries, as well as the CentOS ISO and the Guest Additions ISO. Also creates a template (see `--create-template`). If  not specified, then the script expects to find all required objects already on the filesystem. Since all these upstreams are git-ignored, you have to run with this option the first time |
 | `--create-template`          | Optional | If specified, first creates a template VM to clone all the cluster nodes from before bringing up the cluster. (This step by far takes the longest.) If not specified, expects to find an existing VM to clone from. Note - if the `--from-scratch` option is specified, a template is always created. |
-| `--monitoring`               | Optional | Installs monitoring. Allowed values are `metrics.k8s.io`, and `kube-prometheus`. The `metrics.k8s.io` value installs the [Resource metrics pipeline](https://kubernetes.io/docs/tasks/debug-application-cluster/resource-usage-monitoring/) and it also installs [Kubernetes Dashboard](https://github.com/kubernetes/dashboard), which can be accessed using `kubectl proxy`. The `kube-prometheus` value installs Prometheus and Grafana using the [kube-prometheus](https://github.com/prometheus-operator/kube-prometheus) stack. This option creates a `NodePort` service on port 30300 so you can access Grafana without port-forwarding. Once the cluster is up, the script will display the IP addresses of each of the nodes, and you can access Grafana on any one of those IP addresses on port 30300. |
-| `--single-node`              | Optional | If specified, Creates a single node cluster. The default is to create one controller, named *doc*, and two workers, named *ham* and *monk*. This option is useful to quickly test changes since it is faster to provision a single node. |
+| `--monitoring`               | Optional | Installs monitoring. Allowed values are `metrics.k8s.io`, and `kube-prometheus`. The `metrics.k8s.io` value installs the [Resource metrics pipeline](https://kubernetes.io/docs/tasks/debug-application-cluster/resource-usage-monitoring/) and it also installs [Kubernetes Dashboard](https://github.com/kubernetes/dashboard), which can be accessed using `kubectl proxy`. The `kube-prometheus` value installs Prometheus and Grafana using the [kube-prometheus](https://github.com/prometheus-operator/kube-prometheus) stack. This option creates a `NodePort` service on port 30300 so you can access Grafana without port-forwarding. Once the cluster is up, the script will display the IP addresses of each of the nodes, and you can access Grafana on any one of those IP addresses on port 30300. (Remember to allow cookies for this site.) |
+| `--single-node`              | Optional | If specified, Creates a single node cluster. The default is to create three nodes: one controller, named *doc*, and two workers, named *ham* and *monk*. This option is useful to quickly test changes since it is faster to provision a single node. |
 | `--up`, `--down`, `--delete` | Optional | Takes a comma-separated list of VM names, and starts (`--up`), stops (`--down`), or deletes (`--delete`) them all. The `--down` option is a graceful shutdown. The `--delete` is a fast shutdown and also removes the Virtual Box VM files from the file system. |
 | `--help`                     | Optional | Displays this help and exits.                                |
 
@@ -76,30 +76,31 @@ The following command-line options are supported for the `new-cluster` script:
 
 This project has been testing with the following tools, components and versions. The Kubernetes component versions and CentOS and VirtualBox Guest Addition versions are hard-coded into the `new-cluster` script. So any changes only need to be made one time in that script. *If you decide to use later (or earlier) Kubernetes components, be aware that the supported options can change between versions which may require additional script changes.*
 
-| Where    | Component                                                       | Version            |
-| -------- | --------------------------------------------------------------- | ------------------ |
-| host     | Linux desktop                                                   | Ubuntu 20.04.2 LTS |
-| host     | openssl                                                         | 1.1.1f             |
-| host     | openssh                                                         | OpenSSH_8.2p1      |
-| host     | genisoimage (used to create the Kickstart ISO)                  | 1.1.11             |
-| host     | Virtual Box / VBoxManage                                        | 6.1.18r142142      |
-| host     | kubectl (client only)                                           | v1.18.0            |
-| host     | curl                                                            | 7.68.0             |
-| guest VM | Centos ISO                                                      | 8.3.2011-x86_64    |
-| guest VM | Virtual Box Guest Additions ISO                                 | 6.1.18             |
-| k8s      | etcd                                                            | v3.4.14            |
-| k8s      | kube-apiserver                                                  | v1.20.1            |
-| k8s      | kube-controller-manager                                         | v1.20.1            |
-| k8s      | kube-scheduler                                                  | v1.20.1            |
-| k8s      | kubelet                                                         | v1.20.1            |
-| k8s      | crictl                                                          | v1.19.0            |
-| k8s      | runc                                                            | v1.0.0-rc92        |
-| k8s      | cni plugins                                                     | v0.9.0             |
-| k8s      | containerd                                                      | v1.4.3             |
-| k8s      | CoreDNS                                                         | 1.8.0              |
-| k8s      | kube-proxy (if installed)                                       | v1.20.1            |
-| k8s      | kube-router (if installed)                                      | v1.1.1             |
-| k8s      | Metrics Server  (if installed)                                  | 0.4.2              |
-| k8s      | Kubernetes Dashboard  (if installed)                            | 2.0.0              |
-| k8s      | Cilium networking and Hubble network monitoring  (if installed) | 1.9.4              |
-| k8s      | kube-prometheus (if installed)                                  | 0.7.0              |
+| Where    | Component                                                    | Version            |
+| -------- | ------------------------------------------------------------ | ------------------ |
+| host     | Linux desktop                                                | Ubuntu 20.04.2 LTS |
+| host     | openssl                                                      | 1.1.1f             |
+| host     | openssh                                                      | OpenSSH_8.2p1      |
+| host     | genisoimage (used to create the Kickstart ISO)               | 1.1.11             |
+| host     | Virtual Box / VBoxManage                                     | 6.1.18r142142      |
+| host     | kubectl (client only)                                        | v1.18.0            |
+| host     | curl                                                         | 7.68.0             |
+| guest VM | Centos ISO                                                   | 8.3.2011-x86_64    |
+| guest VM | Virtual Box Guest Additions ISO                              | 6.1.18             |
+| k8s      | etcd                                                         | v3.4.14            |
+| k8s      | kube-apiserver                                               | v1.20.1            |
+| k8s      | kube-controller-manager                                      | v1.20.1            |
+| k8s      | kube-scheduler                                               | v1.20.1            |
+| k8s      | kubelet                                                      | v1.20.1            |
+| k8s      | crictl                                                       | v1.19.0            |
+| k8s      | runc                                                         | v1.0.0-rc92        |
+| k8s      | cni plugins                                                  | v0.9.0             |
+| k8s      | containerd                                                   | v1.4.3             |
+| k8s      | CoreDNS                                                      | 1.8.0              |
+| k8s      | kube-proxy (if installed)                                    | v1.20.1            |
+| k8s      | kube-router (if installed)                                   | v1.1.1             |
+| k8s      | Metrics Server (if installed)                                | 0.4.2              |
+| k8s      | Kubernetes Dashboard (if installed)                          | 2.0.0              |
+| k8s      | Calico networking (if installed)                             | 3.18.0             |
+| k8s      | Cilium networking and Hubble network monitoring (if installed) | 1.9.4              |
+| k8s      | kube-prometheus (if installed)                               | 0.7.0              |

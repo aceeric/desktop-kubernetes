@@ -506,6 +506,7 @@ elif [[ "$networking" == "cilium" ]]; then
    --admin-kubeconfig=$admin_kubeconfig
 elif [[ "$networking" == "calico" ]]; then
   nodes="${cluster_vms[@]}"
+  # convert to comma-delimited, e.g.: "doc,ham,monk":
   nodes=${nodes// /,}
   $proj_root/networking/kube-proxy/install-kube-proxy\
    --controller-ip=$controller_ip\
@@ -527,7 +528,6 @@ fi
 echo "${downloading_msg}installing cluster DNS"
 
 $proj_root/dns/coredns/install-coredns\
- --controller-ip=$controller_ip\
  --replicas=${#workers[@]}\
  --admin-kubeconfig=$admin_kubeconfig
 

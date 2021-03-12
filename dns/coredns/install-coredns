@@ -7,11 +7,10 @@
 
 set -e
 
-long_opts=controller-ip:,replicas:,admin-kubeconfig:
+long_opts=replicas:,admin-kubeconfig:
 script_name=$(basename "$0")
 proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
-controller_ip=
 replicas=
 admin_kubeconfig=
 
@@ -34,10 +33,6 @@ function parse_args() {
   eval set -- "$parsed"
   while true; do
     case "$1" in
-      --controller-ip)
-        controller_ip=$(opt_val "$2")
-        shift 2
-        ;;
       --replicas)
         replicas=$(opt_val "$2")
         shift 2
@@ -57,11 +52,12 @@ function parse_args() {
 parse_args "$@"
 
 # debug
-#echo "controller_ip=$controller_ip"
 #echo "replicas=$replicas"
 #echo "admin_kubeconfig=$admin_kubeconfig"
 
 echo "applying coredns.yaml to the cluster"
 kubectl --kubeconfig $admin_kubeconfig apply -f $proj_root/dns/coredns/coredns.yaml
 
-# TODO verify it is running
+kubectl --kubeconfig $admin_kubeconfig -n kube-system wait pod/coredns-75c4c67f76-fkmv9 --for condition=Ready
+
+echo "no errors detected with CoreDNS installation"
