@@ -172,11 +172,6 @@ fi
 echo "Getting IP address from running VM"
 worker_ip=$($proj_root/scripts/get-vm-ip $worker_hostname)
 
-#echo "Configuring /etc/hosts on controller and worker"
-#ssh -i $priv_key root@$controller_ip "echo $worker_ip $worker_hostname >> /etc/hosts"
-#ssh -i $priv_key root@$worker_ip "echo $controller_ip $controller_hostname >> /etc/hosts"
-#ssh -i $priv_key root@$worker_ip "echo $worker_ip $worker_hostname >> /etc/hosts"
-
 echo "Making worker configuration changes"
 # The socat binary enables support for the kubectl port-forward command. By default the kubelet
 # will fail to start if swap is enabled so disable swap

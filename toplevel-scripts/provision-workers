@@ -170,13 +170,14 @@ if [[ ! -f $admin_kubeconfig ]]; then
   exit 1
 fi
 
-# expect each worker in the form 'hostname,ram,cpu,pod-cidr' e.g.: 'worker1,4096,2,10.200.1.0/24'
+# expect each worker in the form 'hostname,ram,cpu,disk,pod-cidr' e.g.: 'worker1,4096,2,20000,10.200.1.0/24'
 for worker in "${workers[@]}"; do
   IFS=',' read -ra wrkr <<< "$worker"
   clone_vmname=${wrkr[0]}
   clone_ram=${wrkr[1]}
   clone_cpu=${wrkr[2]}
-  pod_cidr=${wrkr[3]}
+  clone_disk=${wrkr[3]}
+  pod_cidr=${wrkr[4]}
 
   echo "provisioning worker $clone_vmname"
 
@@ -187,6 +188,7 @@ for worker in "${workers[@]}"; do
    --clone-vmname=$clone_vmname\
    --clone-ram=$clone_ram\
    --clone-cpu=$clone_cpu\
+   --clone-disk=$clone_disk\
    --pod-cidr=$pod_cidr\
    --vboxdir=$vboxdir\
    --priv-key=$priv_key\

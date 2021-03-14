@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 
 # Creates a clone VM from the passed template VM. The cloned VM will have the passed
-# characteristics (VM name, mem, etc.)
+# characteristics (VM name, mem, disk size). Unless shutdown=false, the VM will be shut down after it
+# is created. The host name of the VM will be set to the same value as the VM name.
 
 set -e
 
-long_opts=priv-key:,template-vmname:,clone-vmname:,clone-ram:,clone-cpus:,vboxdir:
+long_opts=priv-key:,template-vmname:,clone-vmname:,clone-ram:,clone-cpus:,clone-disk:,vboxdir:,shutdown:
 script_name=$(basename "$0")
 proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
@@ -14,7 +15,9 @@ template_vmname=
 clone_vmname=
 clone_ram=
 clone_cpus=
+clone_disk=
 vboxdir=
+shutdown=true
 
 function opt_val() {
   opt="$1"
@@ -55,8 +58,16 @@ function parse_args() {
         clone_cpus=$(opt_val "$2")
         shift 2
         ;;
+      --clone-disk)
+        clone_disk=$(opt_val "$2")
+        shift 2
+        ;;
       --vboxdir)
         vboxdir=$(opt_val "$2")
+        shift 2
+        ;;
+      --shutdown)
+        shutdown=$(opt_val "$2")
         shift 2
         ;;
       --)
@@ -75,6 +86,7 @@ parse_args "$@"
 #echo "clone_vmname=$clone_vmname"
 #echo "clone_ram=$clone_ram"
 #echo "clone_cpus=$clone_cpus"
+#echo "clone_disk=$clone_disk"
 #echo "vboxdir=$vboxdir"
 
 echo "cloning VM \"$clone_vmname\" from template VM \"$template_vmname\""
@@ -87,7 +99,9 @@ VBoxManage clonevm $template_vmname\
 echo "setting VM characteristics"
 VBoxManage modifyvm $clone_vmname\
  --cpus $clone_cpus\
- --memory $clone_ram\
+ --memory $clone_ram
+
+#VBoxManage modifymedium disk $vboxdir/$clone_vmname/$clone_vmname.vdi --resize $clone_disk
 
 echo "starting cloned VM"
 VBoxManage startvm $clone_vmname
@@ -98,11 +112,12 @@ clone_ip=$($proj_root/scripts/get-vm-ip $clone_vmname)
 echo "changing the hostname for cloned VM"
 ssh -o "StrictHostKeyChecking no" -i $priv_key root@$clone_ip "hostnamectl set-hostname $clone_vmname"
 
-echo "shutting down cloned VM"
-VBoxManage controlvm $clone_vmname acpipowerbutton
-$proj_root/scripts/wait-vm $clone_vmname --stopped
-
-# virtual box needs a moment or subsequent vboxmanage commands seem to intermittently error
-sleep 5s
+if [[ $shutdown == true ]]; then
+  echo "shutting down cloned VM"
+  VBoxManage controlvm $clone_vmname acpipowerbutton
+  $proj_root/scripts/wait-vm $clone_vmname --stopped
+  # virtual box needs a moment or subsequent vboxmanage commands seem to intermittently error
+  sleep 5s
+fi
 
 echo "done cloning \"$clone_vmname\""

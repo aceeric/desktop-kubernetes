@@ -8,6 +8,7 @@ $proj_root/toplevel-scripts/provision-controller\
  --controller-hostname=doc\
  --controller-ram=4096\
  --controller-cpu=2\
+ --controller-disk=20000\
  --etcd-download=\
  --etcd-gzip=$proj_root/binaries/etcd-v3.4.14-linux-amd64.tar.gz\
  --kube-apiserver-download=\

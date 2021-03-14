@@ -12,4 +12,6 @@ $proj_root/scripts/clone-vm\
  --clone-vmname=$vmname\
  --clone-ram=4096\
  --clone-cpu=2\
- --vboxdir=/sdb1/virtualbox
+ --clone-disk=30000\
+ --vboxdir=/sdb1/virtualbox\
+ --shutdown=false

@@ -2,8 +2,8 @@
 
 set -e
 
-long_opts=priv-key:,template-vmname:,vboxdir:,controller-hostname:,controller-ram:,\
-controller-cpu:,vboxdir:,etcd-download:,etcd-gzip:,kube-apiserver-download:,kube-apiserver-binary:,\
+long_opts=priv-key:,template-vmname:,vboxdir:,controller-hostname:,controller-ram:,controller-cpu:,controller-disk:,\
+vboxdir:,etcd-download:,etcd-gzip:,kube-apiserver-download:,kube-apiserver-binary:,\
 kube-controller-manager-download:,kube-controller-manager-binary:,kube-scheduler-download:,kube-scheduler-binary:,\
 ca-cert:,ca-key:
 script_name=$(basename "$0")
@@ -15,6 +15,7 @@ vboxdir=
 controller_hostname=
 controller_ram=
 controller_cpu=
+controller_disk=
 etcd_download=
 etcd_gzip=
 kube_apiserver_download=
@@ -67,6 +68,10 @@ function parse_args() {
         ;;
       --controller-cpu)
         controller_cpu=$(opt_val "$2")
+        shift 2
+        ;;
+      --controller-disk)
+        controller_disk=$(opt_val "$2")
         shift 2
         ;;
       --etcd-download)
@@ -126,6 +131,7 @@ parse_args "$@"
 #echo "controller_hostname=$controller_hostname"
 #echo "controller_ram=$controller_ram"
 #echo "controller_cpu=$controller_cpu"
+#echo "controller_disk=$controller_disk"
 #echo "etcd_download=$etcd_download"
 #echo "etcd_gzip=$etcd_gzip"
 #echo "kube_apiserver_download=$kube_apiserver_download"
@@ -143,6 +149,7 @@ $proj_root/scripts/clone-vm\
  --clone-vmname=$controller_hostname\
  --clone-ram=$controller_ram\
  --clone-cpu=$controller_cpu\
+ --clone-disk=$controller_disk\
  --vboxdir=$vboxdir
 
 $proj_root/scripts/configure-controller\
@@ -160,9 +167,8 @@ $proj_root/scripts/configure-controller\
  --ca-cert=$ca_cert\
  --ca-key=$ca_key
 
-# generate an admin kubeconfig which is used for configuring workers, and also during the CoreDNS and
-# kube-router install steps in provision-workers. Also used here to kubeapply the RBACs for kubelet
-# authorization
+# generate an admin kubeconfig which is used for any configuration step that is accomplished using the
+# kubectl command
 
 controller_ip=$($proj_root/scripts/get-vm-ip $controller_hostname)
 $proj_root/admin/gen-admin-kubeconfig --controller-ip=$controller_ip --ca-cert=$ca_cert --ca-key=$ca_key
