@@ -1,0 +1,115 @@
+#!/usr/bin/env bash
+
+set -e
+
+long_opts=priv-key:,admin-kubeconfig:,openebs-operator-lite-manifest-download:,openebs-operator-lite-manifest:,\
+openebs-sc-manifest-download:,openebs-sc-manifest:,nodes:
+script_name=$(basename "$0")
+proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
+
+priv_key=
+admin_kubeconfig=
+openebs_operator_lite_manifest_download=
+openebs_operator_lite_manifest=
+openebs_sc_manifest_download=
+openebs_sc_manifest=
+nodes=()
+
+function opt_val() {
+  opt="$1"
+  if [[ "$opt" == =* ]]; then
+    echo "${opt:1}"
+  else
+    echo "$opt"
+  fi
+}
+
+function parse_args() {
+  if [[ "$#" -eq 0 ]]; then
+    echo "no args provided"
+    exit 1
+  fi
+  local parsed
+  parsed=$(getopt --options "" --longoptions $long_opts -n $script_name -- "$@")
+  eval set -- "$parsed"
+  while true; do
+    case "$1" in
+      --priv-key)
+        priv_key=$(opt_val "$2")
+        shift 2
+        ;;
+      --admin-kubeconfig)
+        admin_kubeconfig=$(opt_val "$2")
+        shift 2
+        ;;
+	    --openebs-operator-lite-manifest-download)
+        openebs_operator_lite_manifest_download=$(opt_val "$2")
+        shift 2
+        ;;
+      --openebs-operator-lite-manifest)
+        openebs_operator_lite_manifest=$(opt_val "$2")
+        shift 2
+        ;;
+      --openebs-sc-manifest-download)
+        openebs_sc_manifest_download=$(opt_val "$2")
+        shift 2
+        ;;
+      --openebs-sc-manifest)
+        openebs_sc_manifest=$(opt_val "$2")
+        shift 2
+        ;;
+      --nodes)
+        nodes=$(opt_val "$2")
+        IFS=',' read -ra nodes <<< "$nodes"
+        shift 2
+        ;;
+      --)
+        shift
+        break
+        ;;
+    esac
+  done
+}
+
+parse_args "$@"
+
+openebs_operator_lite_manifest_actual=$($proj_root/scripts/make-download-path\
+ --download-url=$openebs_operator_lite_manifest_download --download-path=$openebs_operator_lite_manifest)
+
+openebs_sc_manifest_actual=$($proj_root/scripts/make-download-path\
+ --download-url=$openebs_sc_manifest_download --download-path=$openebs_sc_manifest)
+
+# debug
+echo "priv_key=$priv_key"
+echo "admin_kubeconfig=$admin_kubeconfig"
+echo "openebs_operator_lite_manifest_download=$openebs_operator_lite_manifest_download"
+echo "openebs_operator_lite_manifest=$openebs_operator_lite_manifest"
+echo "openebs_operator_lite_manifest_actual=$openebs_operator_lite_manifest_actual"
+echo "openebs_sc_manifest_download=$openebs_sc_manifest_download"
+echo "openebs_sc_manifest=$openebs_sc_manifest"
+echo "openebs_sc_manifest_actual=$openebs_sc_manifest_actual"
+echo "nodes=${nodes[@]}"
+
+echo "configuring filesystem in each host"
+for node in "${nodes[@]}"; do
+  echo "node=$node"
+  ip=$($proj_root/scripts/get-vm-ip $node)
+  echo "ip=$ip"
+  ssh -i $priv_key root@$ip "mkdir -p /var/local-hostpath"
+done
+
+echo "deploying the openebs operator lite"
+kubectl --kubeconfig $admin_kubeconfig apply -f $openebs_operator_lite_manifest_actual
+kubectl --kubeconfig $admin_kubeconfig -n openebs wait po -lopenebs.io/version --for condition=ready --timeout=1m
+
+echo "creating openebs storage classes"
+kubectl --kubeconfig $admin_kubeconfig apply -f $openebs_sc_manifest_actual
+count=$(kc kubectl --kubeconfig $admin_kubeconfig get sc -ocustom-columns=provisioner:provisioner\
+        --no-headers | grep 'openebs.io/local' | wc -l)
+
+if [[ $count -ne 2 ]]; then
+  echo "error - openebs storage classes did not deploy"
+  exit 1
+fi
+
+echo "no errors detected with openebs storage classes"

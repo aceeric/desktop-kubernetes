@@ -13,9 +13,9 @@ conformance/sonobuoy run\
  --mode=quick
 
 #### run all e2e conformance tests
+--plugin=e2e\
 
 conformance/sonobuoy run\
- --plugin=e2e\
  --sonobuoy-image=projects.registry.vmware.com/sonobuoy/sonobuoy:v0.20.0\
  --mode=certified-conformance\
  --timeout=30000
@@ -30,10 +30,10 @@ conformance/sonobuoy logs -f
 
 ####  get the test results upon completion
 
-results=$(conformance/sonobuoy retrieve)
-mv $results conformance
-conformance/sonobuoy results conformance/$results
-tar -zxvf conformance/$results --strip-components 2 -C conformance plugins/e2e/sonobuoy_results.yaml
+results=$(conformance/sonobuoy retrieve) &&\
+ mv $results conformance &&\
+ conformance/sonobuoy results conformance/$results &&\
+ tar -zxvf conformance/$results --strip-components 2 -C conformance plugins/e2e/sonobuoy_results.yaml
 
 #### clean up the cluster
 
@@ -51,3 +51,8 @@ NAME: [sig-network] Services should have session affinity timeout work for NodeP
 sonobuoy run --e2e-focus "validates that there is no conflict between pods with same hostPort but different hostIP and protocol"
 sonobuoy run --e2e-focus "should have session affinity timeout work for service with type clusterIP"
 sonobuoy run --e2e-focus "should have session affinity timeout work for NodePort service"
+
+####  failure with kube-router + calico
+
+"[k8s.io] [sig-node] NoExecuteTaintManager Multiple Pods [Serial] evicts pods with minTolerationSeconds [Disruptive] [Conformance]"
+sonobuoy run --e2e-focus "evicts pods with minTolerationSeconds"

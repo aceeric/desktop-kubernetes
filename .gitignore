@@ -19,3 +19,4 @@ binaries/kubernetes-dashboard-recommended.yaml
 binaries/metrics-server-components.yaml
 conformance/sonobuoy
 sonobuoy_results.yaml
+IGNOREME

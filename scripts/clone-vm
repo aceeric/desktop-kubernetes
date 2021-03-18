@@ -2,7 +2,8 @@
 
 # Creates a clone VM from the passed template VM. The cloned VM will have the passed
 # characteristics (VM name, mem, disk size). Unless shutdown=false, the VM will be shut down after it
-# is created. The host name of the VM will be set to the same value as the VM name.
+# is created. The host name of the VM will be set to the same value as the VM name. The clone_disk arg
+# is interpreted as megabytes. The clone_ram arg is interpreted as kilobytes.
 
 set -e
 
@@ -88,6 +89,7 @@ parse_args "$@"
 #echo "clone_cpus=$clone_cpus"
 #echo "clone_disk=$clone_disk"
 #echo "vboxdir=$vboxdir"
+#echo "shutdown=$shutdown"
 
 echo "cloning VM \"$clone_vmname\" from template VM \"$template_vmname\""
 VBoxManage clonevm $template_vmname\
@@ -101,7 +103,16 @@ VBoxManage modifyvm $clone_vmname\
  --cpus $clone_cpus\
  --memory $clone_ram
 
-#VBoxManage modifymedium disk $vboxdir/$clone_vmname/$clone_vmname.vdi --resize $clone_disk
+if [[ -n "$clone_disk" ]]; then
+  cursize=$(vboxmanage showmediuminfo disk $vboxdir/$clone_vmname/$clone_vmname.vdi | grep Capacity: | awk '{print $2}')
+  if [[ $clone_disk -le $cursize ]]; then
+    echo "value for --clone_disk is less than or equal to the current VM size - ignoring disk resize"
+    unset clone_disk
+  else
+    echo "resizing virtualbox disk"
+    VBoxManage modifymedium disk $vboxdir/$clone_vmname/$clone_vmname.vdi --resize $clone_disk
+  fi
+fi
 
 echo "starting cloned VM"
 VBoxManage startvm $clone_vmname
@@ -111,6 +122,12 @@ clone_ip=$($proj_root/scripts/get-vm-ip $clone_vmname)
 
 echo "changing the hostname for cloned VM"
 ssh -o "StrictHostKeyChecking no" -i $priv_key root@$clone_ip "hostnamectl set-hostname $clone_vmname"
+
+if [[ -n "$clone_disk" ]]; then
+  echo "resizing linux disk"
+  scp -i $priv_key $proj_root/scripts/resize-disk root@$clone_ip:/root/
+  ssh -i $priv_key root@$clone_ip "chmod +x /root/resize-disk && /root/resize-disk"
+fi
 
 if [[ $shutdown == true ]]; then
   echo "shutting down cloned VM"

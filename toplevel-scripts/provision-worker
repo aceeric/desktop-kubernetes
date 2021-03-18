@@ -185,13 +185,13 @@ parse_args "$@"
 #echo "ca_cert=$ca_cert"
 #echo "ca_key=$ca_key"
 
+# --clone-disk=$clone_disk\
 $proj_root/scripts/clone-vm\
  --priv-key=$priv_key\
  --template-vmname=$template_vmname\
  --clone-vmname=$clone_vmname\
  --clone-ram=$clone_ram\
  --clone-cpu=$clone_cpu\
- --clone-disk=$clone_disk\
  --vboxdir=$vboxdir
 
 $proj_root/scripts/configure-worker\

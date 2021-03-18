@@ -10,8 +10,8 @@ $proj_root/scripts/clone-vm\
  --priv-key=$proj_root/kickstart/id_ed25519\
  --template-vmname=bingo\
  --clone-vmname=$vmname\
- --clone-ram=4096\
- --clone-cpu=2\
+ --clone-ram=2048\
+ --clone-cpu=1\
  --clone-disk=30000\
  --vboxdir=/sdb1/virtualbox\
  --shutdown=false
