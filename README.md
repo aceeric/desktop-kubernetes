@@ -43,27 +43,35 @@ Once the cluster comes up, the script will display a message telling you how to 
 
 The following command-line options are supported for the `new-cluster` script:
 
-| Option                       | Type     | Description                                                  |
-| ---------------------------- | -------- | ------------------------------------------------------------ |
-| `--check-compatibility`      | Optional | If specified, checks the installed versions of various desktop tools used by the project (curl, kubectl, etc) against what the project has been tested on - and then exits, taking no further action. You should do this at least once. Or just run `verify-prereqs` in the `scripts` directory. Note - there will likely be differences between your desktop and what I tested with - you will have to determine whether the differences are relevant. |
-| `--host-network-interface`   | Required | The name of the primary network interface on your machine. The scripts use this to configure the VirtualBox bridge network for each node VM. |
-| `--vboxdir`                  | Required | The directory where you keep VirtualBox VM files. The script uses the `VBoxManage` utility to create the VMs, which will in turn create a sub-directory under this directory for each VM. The directory must exist. The script will not create it. |
-| `--networking`               | Optional | If specified, installs networking. Current valid values are `calico` (which also installs kube-proxy), `kube-router` and `cilium`. E.g.: `--networking=calico` |
-| `--from-scratch`             | Optional | If specified, then downloads all the necessary items - such as the k8s binaries, as well as the CentOS ISO and the Guest Additions ISO. Also creates a template (see `--create-template`). If  not specified, then the script expects to find all required objects already on the filesystem. Since all these upstreams are git-ignored, you have to run with this option the first time |
-| `--create-template`          | Optional | If specified, first creates a template VM to clone all the cluster nodes from before bringing up the cluster. (This step by far takes the longest.) If not specified, expects to find an existing VM to clone from. Note - if the `--from-scratch` option is specified, a template is always created. |
-| `--monitoring`               | Optional | Installs monitoring. Allowed values are `metrics.k8s.io`, and `kube-prometheus`. The `metrics.k8s.io` value installs the [Resource metrics pipeline](https://kubernetes.io/docs/tasks/debug-application-cluster/resource-usage-monitoring/) and it also installs [Kubernetes Dashboard](https://github.com/kubernetes/dashboard), which can be accessed using `kubectl proxy`. The `kube-prometheus` value installs Prometheus and Grafana using the [kube-prometheus](https://github.com/prometheus-operator/kube-prometheus) stack. This option creates a `NodePort` service on port 30300 so you can access Grafana without port-forwarding. Once the cluster is up, the script will display the IP addresses of each of the nodes, and you can access Grafana on any one of those IP addresses on port 30300. (Remember to allow cookies for this site.) |
-| `--single-node`              | Optional | If specified, Creates a single node cluster. The default is to create three nodes: one controller, named *doc*, and two workers, named *ham* and *monk*. This option is useful to quickly test changes since it is faster to provision a single node. |
-| `--up`, `--down`, `--delete` | Optional | Takes a comma-separated list of VM names, and starts (`--up`), stops (`--down`), or deletes (`--delete`) them all. The `--down` option is a graceful shutdown. The `--delete` is a fast shutdown and also removes the Virtual Box VM files from the file system. |
-| `--help`                     | Optional | Displays this help and exits.                                |
+### Cluster creation options
+
+| Option | Type | Description  |
+| - | - | - |
+| `--host-network-interface` | Required | The name of the primary network interface on your machine. The scripts use this to configure the VirtualBox bridge network for each node VM. |
+| `--vboxdir`                | Required | The directory where you keep your VirtualBox VM files. The script uses the `VBoxManage` utility to create the VMs, which will in turn create a sub-directory under this directory for each VM. The directory must exist. The script will not create it. |
+| `--networking`             | Optional | Installs networking. Current valid values are `calico` (which also installs kube-proxy), `kube-router` and `cilium`. E.g.: `--networking=calico` |
+| `--from-scratch`           | Optional | Downloads all the necessary items - such as the k8s binaries, as well as the CentOS ISO and the Guest Additions ISO. Also creates a template (see `--create-template`). If  not specified, then the script expects to find all required objects already on the filesystem. Since all these upstreams are git-ignored, you have to run with this option the first time |
+| `--create-template`        | Optional | First creates a template VM to clone all the cluster nodes from before bringing up the cluster. (This step by far takes the longest.) If not specified, expects to find an existing VM to clone from. Note - if the `--from-scratch` option is specified, a template is always created. |
+| `--monitoring`             | Optional | Installs monitoring. Allowed values are `metrics.k8s.io`, and `kube-prometheus`. The `metrics.k8s.io` value installs the [Resource metrics pipeline](https://kubernetes.io/docs/tasks/debug-application-cluster/resource-usage-monitoring/) and it also installs [Kubernetes Dashboard](https://github.com/kubernetes/dashboard), which can be accessed using `kubectl proxy`. The `kube-prometheus` value installs Prometheus and Grafana using the [kube-prometheus](https://github.com/prometheus-operator/kube-prometheus) stack. This option creates a `NodePort` service on port 30300 so you can access Grafana without port-forwarding. Once the cluster is up, the script will display the IP addresses of each of the nodes, and you can access Grafana on any one of those IP addresses on port 30300. (Remember to allow cookies for this site.) |
+| `--storage`                | Optional | Installs dynamic storage provisioning to support running workloads that use Persistent Volumes and Persistent Volume Claims. Currently, the only supported value is `openebs`, which installs the [OpenEBS](https://docs.openebs.io/docs/next/uglocalpv-hostpath.html) *Local HostPath* provisioner. This provisioner runs as a DaemonSet in the cluster and provides dynamic provisioning of HostPath volumes. This is a light-weight provisioner that supports desktop testing. OpenEBS creates directories inside the cluster VMs for each PV. For this feature to be reasonably stable, you have to be cognizant of the amount of storage in the VMs you provision as compared the the storage consumed by the workloads you're testing. See the [openEBS install script](features/storage/openebs/install-openebs) for details. |
+| `--single-node`            | Optional | Creates a single node cluster. The default is to create three nodes: one control plan node, named *doc*, and two workers, named *ham* and *monk*. This option is useful to quickly test changes since it is faster to provision a single node. |
+
+### Other options
+
+| Option | Description |
+| - | - |
+| `--check-compatibility`      | Checks the installed versions of various desktop tools used by the project (curl, kubectl, etc) against what the project has been tested on - and then exits, taking no further action. You should do this at least once. Or just run `verify-prereqs` in the `scripts` directory. Note - there will likely be differences between your desktop and what I tested with - you will have to determine whether the differences are relevant. |
+| `--up`, `--down`, `--delete` | Takes a comma-separated list of VM names, and starts (`--up`), stops (`--down`), or deletes (`--delete`) them all. The `--down` option is a graceful shutdown. The `--delete` is a fast shutdown and also removes the Virtual Box VM files from the file system. |
+| `--help`                     | Displays this help and exits. |
+
 
 ## ToDos
 
 | Task                           | Description                                                  |
 | ------------------------------ | ------------------------------------------------------------ |
-| Sonobuoy                       | See if it is possible for this cluster to pass the Kubernetes certification tests using [Sonobuoy](https://github.com/vmware-tanzu/sonobuoy) |
-| Centos minimal                 | Provision with CentOS minimal |
-| Volume Provisioning            | Implement the [Local Static Provisioner](https://github.com/kubernetes-sigs/sig-storage-local-static-provisioner). Currently, persistent volumes have to be hand-managed by generating directories in the VMs, and creating PVs that ref those VMs. |
-| Load Balancer                  | Implement [MetalLB](https://github.com/google/metallb) ? |
+| Sonobuoy                       | See if it is possible for this cluster to pass the Kubernetes certification tests using [Sonobuoy](https://github.com/vmware-tanzu/sonobuoy). Currently, with kube-router and calico, one test case is failing. |
+| Centos minimal                 | Provision with CentOS minimal                                |
+| Load Balancer                  | Implement [MetalLB](https://github.com/google/metallb) ?     |
 | Firewall                       | There are plenty of posts discussing how to configure the firewall settings for Kubernetes. The documented settings do not appear to work with CoreDNS on CentOS 8. (In fact, many posters recommend to disable `firewalld` on CentOS.) So presently, the firewall is disabled but my goal is to run the cluster with the firewall enabled and the correct rules defined |
 | Ubuntu                         | Support Ubuntu Server as the Guest OS - presently only CentOS is supported |
 | Virtual Box Networking         | This version of the script uses VBox bridge networking for each of the VMs. As stated earlier, this provides guest-to-guest, host-to-guest, and guest-to-internet. However - with this networking solution the IP addresses are assigned by the host DHCP software. So Guest Additions are required to introspect the VMs to get their IP addresses. A better solution would be to use a VBox networking model that allows assignment of static IPs to guest VMs. Then the Guest Additions installation step could be omitted |
@@ -71,10 +79,13 @@ The following command-line options are supported for the `new-cluster` script:
 | Nodes                          | Consider making the number of controllers configurable, as well as node characteristics such as storage, RAM, and CPU. Right now, only one controller and two workers are supported, their names are hard-coded, etc. |
 | Hands-free install improvement | The current version builds a Kickstart ISO, and mounts the ISO on the VM to do the hands-free CentOS install. Unfortunately, this method does not allow you to change the boot menu timeout on the *initial* startup of the VM. So, unless you intervene, the boot menu takes 60 seconds to time out before the Kickstart installation begins. The alternate way to do this is to break apart the ISO, modify the boot menu timeout, and then re-build the ISO. I may consider this at some future point, although that would not easily lend itself to automation |
 | CoreOS?                        | Consider [Fedora CoreOS](https://getfedora.org/en/coreos?stream=stable) as a VM OS |
+| Other VM provisioning          | Experiment with other VM provisioning tooling (Terraform? Vagrant?) |
 
 ## Versions
 
-This project has been testing with the following tools, components and versions. The Kubernetes component versions and CentOS and VirtualBox Guest Addition versions are hard-coded into the `new-cluster` script. So any changes only need to be made one time in that script. *If you decide to use later (or earlier) Kubernetes components, be aware that the supported options can change between versions which may require additional script changes.*
+This project has been testing with the following tools, components and versions. The Kubernetes component versions and CentOS and VirtualBox Guest Addition versions are hard-coded into the `new-cluster` script where possible. (Some manifests, like OpenEBS for example, don't have versioned URLs...)
+
+For explicitly versioned components, changes only need to be made one time in the `new-cluster` script. *If you decide to use later (or earlier) Kubernetes components, be aware that the supported options can change between versions which may require additional script changes.*
 
 | Where    | Component                                                    | Version            |
 | -------- | ------------------------------------------------------------ | ------------------ |
@@ -103,4 +114,5 @@ This project has been testing with the following tools, components and versions.
 | k8s      | Kubernetes Dashboard (if installed)                          | 2.0.0              |
 | k8s      | Calico networking (if installed)                             | 3.18.0             |
 | k8s      | Cilium networking and Hubble network monitoring (if installed) | 1.9.4              |
-| k8s      | kube-prometheus (if installed)                               | 0.7.0              |
+| k8s      | kube-prometheus stack (if installed)                         | 0.7.0              |
+| k8s      | OpenEBS (if installed)                                       | 2.7.0              |

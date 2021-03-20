@@ -80,36 +80,44 @@ openebs_sc_manifest_actual=$($proj_root/scripts/make-download-path\
  --download-url=$openebs_sc_manifest_download --download-path=$openebs_sc_manifest)
 
 # debug
-echo "priv_key=$priv_key"
-echo "admin_kubeconfig=$admin_kubeconfig"
-echo "openebs_operator_lite_manifest_download=$openebs_operator_lite_manifest_download"
-echo "openebs_operator_lite_manifest=$openebs_operator_lite_manifest"
-echo "openebs_operator_lite_manifest_actual=$openebs_operator_lite_manifest_actual"
-echo "openebs_sc_manifest_download=$openebs_sc_manifest_download"
-echo "openebs_sc_manifest=$openebs_sc_manifest"
-echo "openebs_sc_manifest_actual=$openebs_sc_manifest_actual"
-echo "nodes=${nodes[@]}"
+#echo "priv_key=$priv_key"
+#echo "admin_kubeconfig=$admin_kubeconfig"
+#echo "openebs_operator_lite_manifest_download=$openebs_operator_lite_manifest_download"
+#echo "openebs_operator_lite_manifest=$openebs_operator_lite_manifest"
+#echo "openebs_operator_lite_manifest_actual=$openebs_operator_lite_manifest_actual"
+#echo "openebs_sc_manifest_download=$openebs_sc_manifest_download"
+#echo "openebs_sc_manifest=$openebs_sc_manifest"
+#echo "openebs_sc_manifest_actual=$openebs_sc_manifest_actual"
+#echo "nodes=${nodes[@]}"
 
-echo "configuring filesystem in each host"
-for node in "${nodes[@]}"; do
-  echo "node=$node"
-  ip=$($proj_root/scripts/get-vm-ip $node)
-  echo "ip=$ip"
-  ssh -i $priv_key root@$ip "mkdir -p /var/local-hostpath"
-done
+echo "installing the OpenEBS operator lite, and associated storage classses"
 
-echo "deploying the openebs operator lite"
+if [[ ! -z "$openebs_operator_lite_manifest_download" ]]; then
+  echo "downloading OpenEBS operator lite manifest"
+  $proj_root/scripts/download-obj --url="$openebs_operator_lite_manifest_download" --dest="$openebs_operator_lite_manifest_actual"
+else
+  echo "no URL provided - skipping download and using provided operator manifest"
+fi
+
+if [[ ! -z "$openebs_sc_manifest_download" ]]; then
+  echo "downloading OpenEBS storage class manifest"
+  $proj_root/scripts/download-obj --url="$openebs_sc_manifest_download" --dest="$openebs_sc_manifest_actual"
+else
+  echo "no URL provided - skipping download and using provided storeg class manifest"
+fi
+
+echo "deploying the openEBS operator lite"
 kubectl --kubeconfig $admin_kubeconfig apply -f $openebs_operator_lite_manifest_actual
 kubectl --kubeconfig $admin_kubeconfig -n openebs wait po -lopenebs.io/version --for condition=ready --timeout=1m
 
-echo "creating openebs storage classes"
+echo "creating openEBS storage classes"
 kubectl --kubeconfig $admin_kubeconfig apply -f $openebs_sc_manifest_actual
-count=$(kc kubectl --kubeconfig $admin_kubeconfig get sc -ocustom-columns=provisioner:provisioner\
+count=$(kubectl --kubeconfig $admin_kubeconfig get sc -ocustom-columns=provisioner:provisioner\
         --no-headers | grep 'openebs.io/local' | wc -l)
 
 if [[ $count -ne 2 ]]; then
-  echo "error - openebs storage classes did not deploy"
+  echo "error - openEBS storage classes did not deploy"
   exit 1
 fi
 
-echo "no errors detected with openebs storage classes"
+echo "no errors detected with openEBS installation"

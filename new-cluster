@@ -2,8 +2,8 @@
 
 set -e
 
-long_opts=help,host-network-interface:,vboxdir:,check-compatibility,from-scratch,create-template,networking:,monitoring:,\
-single-node,up:,down:,delete:
+long_opts=help,host-network-interface:,vboxdir:,check-compatibility,from-scratch,create-template,networking:,\
+monitoring:,storage:,single-node,up:,down:,delete:
 script_name=$(basename "$0")
 proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 priv_key=$proj_root/kickstart/id_ed25519
@@ -17,13 +17,13 @@ from_scratch=0
 create_template=0
 networking=
 monitoring=
+storage=
 single_node=0
 up=
 down=
 delete=
 
 # internal
-downloading_msg=""
 cluster_vms=(doc)
 
 # These are the various binaries and manifests that are downloaded by the scripts in the project. Two
@@ -71,6 +71,10 @@ kube_proxy_download=https://storage.googleapis.com/kubernetes-release/release/v1
 kube_proxy_binary=$proj_root/binaries/kube-proxy
 calico_manifest_download=https://docs.projectcalico.org/manifests/calico.yaml
 calico_manifest=$proj_root/binaries/calico.yaml
+openebs_operator_lite_manifest_download=https://openebs.github.io/charts/openebs-operator-lite.yaml
+openebs_operator_lite_manifest=$proj_root/binaries/openebs-operator-lite.yaml
+openebs_sc_manifest_download=https://openebs.github.io/charts/openebs-lite-sc.yaml
+openebs_sc_manifest=$proj_root/binaries/openebs-lite-sc.yaml
 
 #
 # Verifies the existence of all the filesystem objects required to provision a cluster. If arg1 is '1' then that means
@@ -97,6 +101,10 @@ function check_files() {
   if [[ "$networking" == "calico" ]]; then
     objects+=($kube_proxy_binary)
     objects+=($calico_manifest)
+  fi
+  if [[ "$storage" == "openebs" ]]; then
+    objects+=($openebs_operator_lite_manifest)
+    objects+=($openebs_sc_manifest)
   fi
 #  if [[ "$networking" == "cilium" ]]; then
 #    objects+=($cilium_yaml_download)
@@ -137,6 +145,10 @@ function check_urls() {
     objects+=($kube_proxy_download)
     objects+=($calico_manifest_download)
   fi
+  if [[ "$storage" == "openebs" ]]; then
+    objects+=($openebs_operator_lite_manifest_download)
+    objects+=($openebs_sc_manifest_download)
+  fi
 #  if [[ "$networking" == "cilium" ]]; then
 #    objects+=($cilium_yaml)
 #    objects+=($hubble_yaml)
@@ -154,6 +166,8 @@ function usage() {
   while IFS= read -r line; do
     echo "${line:4}"
   done <<< '
+    new-cluster
+    -----------
     Creates a Kubernetes cluster on the desktop using VirtualBox and CentOS kickstart for hands-free
     CentOS installation. The cluster consists of three nodes: one controller and two workers. The nodes
     are configured with VirtualBox bridge networking, which supports host-to-guest, guest-to-guest,
@@ -165,44 +179,55 @@ function usage() {
     VM takes a fair bit of time, including the initial 60 seconds for the boot menu to time out and actually
     start the install.
 
-    Usage: new-cluster [--help] [--host-network-interface=<interface>] [--vboxdir=</some/path>]
-           [--networking=<type>] [--monitoring=<type>] [--from-scratch] [--create-template] [--single-node]
-           [--up=<nodelist>] [--down=<nodelist>] [--delete=<nodelist>] [--check-compatibility]
+    Usage: new-cluster [--host-network-interface=<interface>] [--vboxdir=</some/path>] [--networking=<type>]
+           [--monitoring=<type>] [--from-scratch] [--create-template] [--single-node] [--storage=<type>]
+           [--help] [--check-compatibility] [--up=<nodelist>] [--down=<nodelist>] [--delete=<nodelist>]
 
     Options:
 
-      --check-compatibility      Optional. If specified, checks the installed versions of various utils
-                                 used by the project (curl, kubectl, etc) against what the project has been
-                                 tested on - and then exits, taking no further action. You should do this
-                                 at least once. Or just run "verify-prereqs" in the "scripts" directory.
-      --host-network-interface   Required. The name of the primary network interface on your machine. The
-                                 scripts use this to configure the VirtualBox bridge network for each node
-                                 VM.
-      --vboxdir                  Required. The directory where you keep VirtualBox VM files. The script uses
-                                 the VBoxManage utility to create the VMs, which will in turn create a sub-
-                                 directory under this directory for each VM. The directory must exist.
-                                 The script will not create it.
-      --networking               Optional. If specified, installs networking. Current valid values are
-                                 "calico", "kube-router", and "cilium". E.g.: --networking=calico
-      --from-scratch             Optional. If specified, then downloads all the necessary items - such as the k8s
-                                 binaries, as well as the CentOS ISO and the Guest Additions ISO. Also creates
-                                 a template (see --create-template). If not specified, then the script
-                                 expects to find all required objects on the filesystem.
-      --create-template          Optional. If specified, first creates a template VM to clone all the cluster
-                                 nodes from before bringing up the cluster. (This step by far takes the longest.)
-                                 If not specified, expects to find an existing VM to clone from. Note - if
-                                 the --from-scratch option is specified, a template is always created.
+      Cluster creation options:
+
+      --host-network-interface   Required. The name of the primary network interface on your machine. The scripts
+                                 use this to configure the VirtualBox bridge network for each node VM.
+      --vboxdir                  Required. The directory where you keep your VirtualBox VM files. The script uses
+                                 the VBoxManage utility to create the VMs, which will in turn create a sub-directory
+                                 under this directory for each VM. The directory must exist. The script will not
+                                 create it.
+      --networking               Optional. Installs networking. Current valid values are "calico", "kube-router",
+                                 and "cilium". E.g.: --networking=calico. (Calico also installs kube-proxy. The
+                                 other networking configurations are kube-proxyless.)
       --monitoring               Optional. Installs monitoring. Allowed values are "metrics.k8s.io", and
                                  "kube-prometheus".
-      --single-node              Optional. If specified, Creates a single node cluster. The default is to create
-                                 one controller, named "doc", and two workers, named "ham" and "monk". This option
+      --from-scratch             Optional. Downloads all the necessary items - such as the k8s binaries, as well
+                                 as the CentOS ISO and the Guest Additions ISO. Also creates a template VM (see
+                                 --create-template). If not specified, then the script expects to find all required
+                                 objects on the filesystem. See the new-cluster script itself for a list of all
+                                 binaries and manifests required to provision the cluster. All downloaded
+                                 objects are placed in subdirectories of this repo - in either the "media"
+                                 directory, or the "binaries" directory.
+      --create-template          Optional. First creates a template VM from which to clone all the cluster nodes.
+                                 (This step by far takes the longest.) Then brings up the cluster by cloning the
+                                 template for each node. If not specified, expects to find an existing VM to clone
+                                 from. Note: if the --from-scratch option is specified, a template is always created.
+      --single-node              Optional. Creates a single node cluster. The default is to create one control
+                                 plane node, named "doc", and two workers, named "ham" and "monk". This option
                                  is useful to quickly test changes since it is faster to provision a single node.
-      --up                       Optional. Takes a comma-separated list of VM names, and starts them all.
-      --down                     Optional. Opposite of --up. Note - this is very low-tech at present: Order
-                                 the args with the workers first and the controller last.
-      --delete                   Optional. Tears down the cluster: Force stops all VMs and removes associated files
-                                 from the --vboxdir directory.
-      --help                     Optional. Displays this help and exits.
+      --storage                  Optional. Installs a dynamic storage provisioner. This supports testing workloads
+                                 that use PVs and PVCs. Presently, the only supported value is "openebs". E.g.:
+                                 --storage=openebs
+
+      Other options:
+
+      --check-compatibility      Checks the installed versions of various utils used by the project (curl, kubectl,
+                                 etc) against what the project has been tested on - and then exits, taking no
+                                 further action. You should do this at least once, or just run "verify-prereqs"
+                                 in the "scripts" directory.
+      --up                       Takes a comma-separated list of VM names, and starts them all.
+      --down                     Opposite of --up. Note - this is very low-tech at present: Order the args with the
+                                 workers first and the controller last.
+      --delete                   Tears down the cluster: Force stops all VMs and removes associated files from
+                                 the directory specified in the --vboxdir option.
+      --help                     Displays this help and exits.
 
     Examples:
 
@@ -213,7 +238,9 @@ function usage() {
       so they will be available for the next time. Creates a template to clone the nodes from. Installs
       calico networking
 
-      *** You must use "--from-scratch" at least once because all the upstreams are git-ignored  ***
+          *******************************************************************************************
+          ** You must use "--from-scratch" at least once because all the upstreams are git-ignored **
+          *******************************************************************************************
 
       new-cluster --host-network-interface=enp0s31f6 --vboxdir=/sdb1/virtualbox --single-node --networking=calico
 
@@ -277,7 +304,6 @@ function parse_args() {
         ;;
       --from-scratch)
         from_scratch=1
-        downloading_msg="downloading upstreams and "
         shift
         ;;
       --create-template)
@@ -288,6 +314,14 @@ function parse_args() {
         monitoring=$(opt_val "$2")
         if [[ "$monitoring" != "metrics.k8s.io" ]] && [[ "$monitoring" != "kube-prometheus" ]]; then
           echo "unsupported parameter value for --monitoring option: $monitoring"
+          exit 1
+        fi
+        shift 2
+        ;;
+      --storage)
+        storage=$(opt_val "$2")
+        if [[ "$storage" != "openebs" ]]; then
+          echo "unsupported parameter value for --storage option: $storage"
           exit 1
         fi
         shift 2
@@ -392,6 +426,8 @@ if [[ $from_scratch -eq 0 ]]; then
   kube_prometheus_download=
   kube_proxy_download=
   calico_manifest_download=
+  openebs_operator_lite_manifest_download=
+  openebs_sc_manifest_download=
 fi
 
 # if running from scratch, always create a template VM to clone the nodes from. This step also generates
@@ -400,7 +436,7 @@ fi
 # is provisioned
 
 if [[ $from_scratch -eq 1 ]] || [[ $create_template -eq 1 ]] ; then
-  echo "${downloading_msg}creating a template VM"
+  echo "creating a template VM"
 
   $proj_root/scripts/create-template-vm\
    --template-vmname=bingo\
@@ -417,7 +453,7 @@ fi
 echo "generating root CA into the 'tls' directory on this machine"
 $proj_root/scripts/gen-root-ca
 
-echo "${downloading_msg}provisioning a controller node"
+echo "provisioning a controller node"
 
 $proj_root/toplevel-scripts/provision-controller\
  --priv-key=$priv_key\
@@ -438,7 +474,7 @@ $proj_root/toplevel-scripts/provision-controller\
  --ca-cert=$proj_root/tls/ca.pem\
  --ca-key=$proj_root/tls/ca-key.pem
 
-echo "${downloading_msg}provisioning worker nodes"
+echo "provisioning worker nodes"
 
 controller_ip=$($proj_root/scripts/get-vm-ip doc)
 
@@ -493,7 +529,7 @@ fi
 echo "configuring /etc/hosts in VMs"
 $proj_root/scripts/configure-etc-hosts $priv_key "${cluster_vms[@]}"
 
-echo "${downloading_msg}installing pod networking"
+echo "installing pod networking"
 
 if [[ "$networking" == "kube-router" ]]; then
   $proj_root/networking/kube-router/install-kube-router\
@@ -526,14 +562,14 @@ elif [[ "$networking" == "calico" ]]; then
    --nodes=$nodes
 fi
 
-echo "${downloading_msg}installing cluster DNS"
+echo "installing cluster DNS"
 
 $proj_root/dns/coredns/install-coredns\
  --replicas=${#workers[@]}\
  --admin-kubeconfig=$admin_kubeconfig
 
 if [[ -n "$monitoring" ]]; then
-  echo "${downloading_msg}installing Monitoring"
+  echo "installing Monitoring"
   if [[ "$monitoring" == "metrics.k8s.io" ]]; then
     $proj_root/monitoring/metrics-server/install-metrics-server\
      --priv-key=$priv_key\
@@ -551,6 +587,22 @@ if [[ -n "$monitoring" ]]; then
      --kube-prometheus-download=$kube_prometheus_download\
      --kube-prometheus-dir=$kube_prometheus_dir\
      --admin-kubeconfig=$proj_root/admin/admin.kubeconfig
+  fi
+fi
+
+if [[ -n "$storage" ]]; then
+  echo "installing a storage provisioner"
+  if [[ "$storage" == "openebs" ]]; then
+    nodes="${cluster_vms[@]}"
+    nodes=${nodes// /,}
+    $proj_root/features/storage/openebs/install-openebs\
+     --priv-key=$priv_key\
+     --admin-kubeconfig=$admin_kubeconfig\
+     --openebs-operator-lite-manifest-download=$openebs_operator_lite_manifest_download\
+     --openebs-operator-lite-manifest=$openebs_operator_lite_manifest\
+     --openebs-sc-manifest-download=$openebs_sc_manifest_download\
+     --openebs-sc-manifest=$openebs_sc_manifest\
+     --nodes=$nodes
   fi
 fi
 
