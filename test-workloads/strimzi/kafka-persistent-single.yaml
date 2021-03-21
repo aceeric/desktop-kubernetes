@@ -23,17 +23,17 @@ spec:
       inter.broker.protocol.version: "2.7"
     storage:
       type: persistent-claim
-      size: 5Gi
-      selector:
-        pv: kafka-pv
+      size: 2Gi
+      #selector:
+      #  pv: kafka-pv
       deleteClaim: true
   zookeeper:
     replicas: 1
     storage:
       type: persistent-claim
-      size: 5Gi
-      selector:
-        pv: zookeeper-pv
+      size: 2Gi
+      #selector:
+      #  pv: zookeeper-pv
       deleteClaim: true
   entityOperator:
     topicOperator: {}

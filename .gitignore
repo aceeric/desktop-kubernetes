@@ -19,3 +19,4 @@ binaries/kubernetes-dashboard-recommended.yaml
 binaries/metrics-server-components.yaml
 conformance/sonobuoy
 sonobuoy_results.yaml
+test-workloads/strimzi/strimzi.io-install-latest.yaml

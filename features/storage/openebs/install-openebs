@@ -120,4 +120,7 @@ if [[ $count -ne 2 ]]; then
   exit 1
 fi
 
+echo "Making openebs-hostpath the default storage class for the cluster"
+kubectl --kubeconfig $admin_kubeconfig annotate sc openebs-hostpath storageclass.kubernetes.io/is-default-class="true"
+
 echo "no errors detected with openEBS installation"

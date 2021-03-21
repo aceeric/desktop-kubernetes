@@ -1,23 +1,12 @@
 ### Strimzi Kafka
 
-A simple Strimzi Kafka deployment. This example uses static local persistent volumes for Kakfa and Zookeeper.
+A simple Strimzi Kafka deployment with persistent storage for Kafka and Zookeeper. Requires the Kubernetes
+cluster to have been provisioned with the `--storage` option: in this case, the OpenEBS local HostPath provisioner.
+See the help for the `--storage` option of the `new-cluster` script for info on OpenEBS.
 
 #### Steps
 
-Create a directory in the monk node for the Kafka volume storage, and a directory in the ham node for Zookeeper volume storage:
-```shell
-$ ip=$(scripts/get-vm-ip monk) && ssh -i kickstart/id_ed25519 root@$ip mkdir -p /pv/pv1
-$ ip=$(scripts/get-vm-ip ham) && ssh -i kickstart/id_ed25519 root@$ip mkdir -p /pv/pv1
-```
-
-Create two PVs, each of which maps to one of the nodes referenced above:
-```shell
-$ kubectl apply -f\
-  test-workloads/strimzi/default-storage-class.yaml\
-  test-workloads/strimzi/pvs.yaml
-```
-
-Get `strimzi.io-install-latest.yaml`:
+Get `strimzi.io-install-latest.yaml` (in this case, 0.22.0):
 ```shell
 curl -L https://strimzi.io/install/latest?namespace=kafka -o test-workloads/strimzi/strimzi.io-install-latest.yaml
 ```
@@ -25,22 +14,31 @@ curl -L https://strimzi.io/install/latest?namespace=kafka -o test-workloads/stri
 Deploy the Strimzi Cluster Operator and CRDs and wait for the Strimzi Operator pod to be ready:
 ```shell
 $ kubectl create ns kafka &&\
-  kubectl -n kafka apply -f test-workloads/strimzi/strimzi.io-install-latest.yaml &&\
+  kubectl -n kafka create -f test-workloads/strimzi/strimzi.io-install-latest.yaml &&\
   kubectl -n kafka wait pod -lname=strimzi-cluster-operator --for=condition=ready 
 pod/strimzi-cluster-operator-68c6747bc6-w8gkr condition met
 ```
 
 Deploy the Kafka CR to create the single-node Kafka/Zookeeper cluster:
 ```shell
-$ kubectl apply -f test-workloads/strimzi/kafka-persistent-single.yaml
+$ kubectl -n kafka apply -f test-workloads/strimzi/kafka-persistent-single.yaml
 ```
 
-Wait for all the pods to reach the running state:
+Wait for all the pods to reach the running state, and for the PVCs to be created and bound, and the PVs to be created.
 ```shell
-$ watch kubectl get po -nkafka
-NAME                                          READY   STATUS    RESTARTS   AGE
-my-cluster-entity-operator-5fd974964d-2qvzp   3/3     Running   0          13m
-my-cluster-kafka-0                            1/1     Running   0          13m
-my-cluster-zookeeper-0                        1/1     Running   0          14m
-strimzi-cluster-operator-68c6747bc6-w8gkr     1/1     Running   0          22m
+$ watch kubectl -n kafka get po,pv,pvc
+NAME                                              READY   STATUS    RESTARTS   AGE
+pod/my-cluster-entity-operator-549cd74978-vpgg7   3/3     Running   0          2m59s
+pod/my-cluster-kafka-0                            1/1     Running   0          3m25s
+pod/my-cluster-kafka-exporter-898b887bf-jkdj9     1/1     Running   0          2m39s
+pod/my-cluster-zookeeper-0                        1/1     Running   0          4m4s
+pod/strimzi-cluster-operator-799b7d7596-p7cvb     1/1     Running   0          11m
+
+NAME                                CAPACITY   ACCESS MODES   RECLAIM POLICY   STATUS   CLAIM                               STORAGECLASS       REASON   AGE
+persistentvolume/pvc-12461d97-...   2Gi        RWO            Delete           Bound    kafka/data-my-cluster-zookeeper-0   openebs-hostpath            4m
+persistentvolume/pvc-72996c16-...   2Gi        RWO            Delete           Bound    kafka/data-my-cluster-kafka-0       openebs-hostpath            3m24s
+
+NAME                                                STATUS   VOLUME             CAPACITY   ACCESS MODES   STORAGECLASS       AGE
+persistentvolumeclaim/data-my-cluster-kafka-0       Bound    pvc-72996c16-...   2Gi        RWO            openebs-hostpath   3m25s
+persistentvolumeclaim/data-my-cluster-zookeeper-0   Bound    pvc-12461d97-...   2Gi        RWO            openebs-hostpath   4m4s
 ```
