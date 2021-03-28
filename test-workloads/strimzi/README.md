@@ -19,7 +19,7 @@ $ kubectl create ns kafka &&\
 pod/strimzi-cluster-operator-68c6747bc6-w8gkr condition met
 ```
 
-Deploy the Kafka CR to create the single-node Kafka/Zookeeper cluster:
+Deploy the Kafka CR to create the single-node Kafka/Zookeeper cluster. This example also configures an external listener so we can connect to Kafka from outside the cluster:
 ```shell
 $ kubectl -n kafka apply -f test-workloads/strimzi/kafka-persistent-single.yaml
 ```
