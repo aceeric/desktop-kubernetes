@@ -612,3 +612,4 @@ echo "  export KUBECONFIG=$admin_kubeconfig"
 echo
 
 $proj_root/scripts/show-ssh $priv_key "${cluster_vms[@]}"
+

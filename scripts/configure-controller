@@ -191,10 +191,15 @@ $proj_root/control-plane/kube-scheduler/install-kube-scheduler\
  --ca-cert=$ca_cert\
  --ca-key=$ca_key
 
-# todo may need to retry for some period to allow time for everything to come up
-
-healthy_count=$(kubectl --kubeconfig=$proj_root/control-plane/kube-controller-manager/kube-controller-manager.kubeconfig\
- get componentstatuses --no-headers 2>/dev/null | awk '{print $2}' | grep Healthy | wc -l)
+healthy_count=0
+for i in {1..10}; do
+  healthy_count=$(kubectl --kubeconfig=$proj_root/control-plane/kube-controller-manager/kube-controller-manager.kubeconfig\
+    get componentstatuses --no-headers 2>/dev/null | awk '{print $2}' | grep Healthy | wc -l)
+  if [[ "$healthy_count" -eq 3 ]]; then
+    break
+  fi
+  sleep 1s
+done
 
 if [[ "$healthy_count" -ne 3 ]]; then
   echo "unable to verify that controller was successfully configured"
@@ -202,3 +207,4 @@ if [[ "$healthy_count" -ne 3 ]]; then
 fi
 
 echo "no errors detected with controller installation"
+
