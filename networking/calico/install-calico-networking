@@ -98,7 +98,7 @@ fi
 
 echo "deploying calico manifest"
 kubectl --kubeconfig $admin_kubeconfig create -f $calico_manifest_actual
-kubectl -n kube-system set env ds/calico-node CALICO_IPV4POOL_CIDR=$pod_cidr
+kubectl --kubeconfig $admin_kubeconfig -n kube-system set env ds/calico-node CALICO_IPV4POOL_CIDR=$pod_cidr
 
 echo "waiting (indefinitely) for calico daemonset"
 

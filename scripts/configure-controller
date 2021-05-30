@@ -194,7 +194,7 @@ $proj_root/control-plane/kube-scheduler/install-kube-scheduler\
 # todo may need to retry for some period to allow time for everything to come up
 
 healthy_count=$(kubectl --kubeconfig=$proj_root/control-plane/kube-controller-manager/kube-controller-manager.kubeconfig\
- get componentstatuses --no-headers | awk '{print $2}' | grep Healthy | wc -l)
+ get componentstatuses --no-headers 2>/dev/null | awk '{print $2}' | grep Healthy | wc -l)
 
 if [[ "$healthy_count" -ne 3 ]]; then
   echo "unable to verify that controller was successfully configured"
