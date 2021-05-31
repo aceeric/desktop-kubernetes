@@ -108,7 +108,7 @@ fi
 
 echo "deploying the openEBS operator lite"
 kubectl --kubeconfig $admin_kubeconfig apply -f $openebs_operator_lite_manifest_actual
-kubectl --kubeconfig $admin_kubeconfig -n openebs wait po -lopenebs.io/version --for condition=ready --timeout=1m
+kubectl --kubeconfig $admin_kubeconfig -n openebs wait po -lopenebs.io/version --for condition=ready --timeout=10m
 
 echo "creating openEBS storage classes"
 kubectl --kubeconfig $admin_kubeconfig apply -f $openebs_sc_manifest_actual
