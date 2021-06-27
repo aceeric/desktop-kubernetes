@@ -108,7 +108,7 @@ if [[ ! -z "$centos_iso_download" ]]; then
     $proj_root/scripts/download-obj --url="$centos_iso_download" --dest="$centos_iso_actual"
   fi
 else
-  echo "no URL provided - skipping download and using provided CentOS ISO"
+  echo "skipping download and using provided CentOS ISO"
 fi
 
 if [[ ! -z "$guest_additions_download" ]]; then
@@ -117,7 +117,7 @@ if [[ ! -z "$guest_additions_download" ]]; then
     $proj_root/scripts/download-obj --url="$guest_additions_download" --dest="$guest_additions_actual"
   fi
 else
-  echo "no URL provided - skipping download and using provided Guest Additions ISO"
+  echo "skipping download and using provided Guest Additions ISO"
 fi
 
 echo "generating SSH keys -- the public key will be copied to the VM by the kickstart script"
