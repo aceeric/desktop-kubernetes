@@ -94,12 +94,13 @@ VBoxManage modifyvm $template_vmname\
  --vram 128\
  --graphicscontroller vmsvga\
  --boot1 dvd\
- --nic1 bridged\
- --nictype1 82540EM\
+ --nic1 nat\
  --cableconnected1 on\
- --nicpromisc1 deny\
  --macaddress1 auto\
- --bridgeadapter1 $host_network_interface
+ --nic2 hostonly\
+ --cableconnected2 on\
+ --macaddress2 auto\
+ --hostonlyadapter1 dtk8shostonly\
 
 # create and attach a hard drive
 VBoxManage createhd --filename $vboxdir/$template_vmname/$template_vmname.vdi --size 20000 --format VDI

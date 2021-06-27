@@ -1,0 +1,27 @@
+#!/usr/bin/env bash
+
+#
+# Creates a new host-only network. Virtual box doesn't provide the ability to specify the name when
+# creating a network so echo the newly created network name for the caller to pick up.
+#
+
+set -e
+
+proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+# the new host-only network name created by VirtualBox that will be returned to the caller
+netname=
+
+# the progress line goes to stderr and the cmd output goes to stdout but mask stderr so all the caller sees is
+# the net name created by vbox
+output=$(VBoxManage hostonlyif create 2>/dev/null)
+
+# parse the created network name
+regex="Interface '([0-9a-z]+)' was successfully created"
+[[ $output =~ $regex ]] && netname="${BASH_REMATCH[1]}"
+
+# set the explicit network address
+VBoxManage hostonlyif ipconfig vboxnet1 --ip 200.200.200.1 --netmask 255.255.255.0
+
+# return newly created network name to caller
+echo $netname
