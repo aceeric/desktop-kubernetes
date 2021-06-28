@@ -12,17 +12,22 @@
 set -e
 
 long_opts=template-vmname:,centos-iso-download:,centos-iso-path:,\
-guest-additions-download:,guest-additions-path:,host-network-interface:,vboxdir:
+guest-additions-download:,guest-additions-path:,host-network-interface:,--host-only,vboxdir:
 script_name=$(basename "$0")
 proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
+# api
 template_vmname=
 centos_iso_download=
 centos_iso_path=
 guest_additions_download=
 guest_additions_path=
 host_network_interface=
+host_only=0
 vboxdir=
+
+#internal
+host_only_network_name=
 
 function opt_val() {
   opt="$1"
@@ -71,6 +76,10 @@ function parse_args() {
         host_network_interface=$(opt_val "$2")
         shift 2
         ;;
+      --host-only)
+        host_only=1
+        shift
+        ;;
       --vboxdir)
         vboxdir=$(opt_val "$2")
         shift 2
@@ -100,6 +109,7 @@ guest_additions_actual=$($proj_root/scripts/make-download-path\
 #echo "guest_additions_path=$guest_additions_path"
 #echo "guest_additions_actual=$guest_additions_actual"
 #echo "host_network_interface=$host_network_interface"
+#echo "host_only=$host_only"
 #echo "vboxdir=$vboxdir"
 
 if [[ ! -z "$centos_iso_download" ]]; then
@@ -127,11 +137,16 @@ echo "generating kickstart ISO"
 $proj_root/scripts/gen-kickstart-iso
 kickstart_iso_path=$proj_root/media/kickstart.iso
 
+if [[ "$host_only" -eq 1]]; then
+  host_only_network_name=$($proj_root/scripts/create-hostonly-network)
+fi
+
 echo "creating VM"
 $proj_root/scripts/create-vm --template-vmname=$template_vmname\
   --centos-iso-path=$centos_iso_actual\
   --kickstart-iso-path=$kickstart_iso_path\
   --host-network-interface=$host_network_interface\
+  --host-only-network-name=$host_only_network_name\
   --vboxdir=$vboxdir
 
 echo "installing guest additions"

@@ -170,7 +170,8 @@ if [[ ! -f $admin_kubeconfig ]]; then
   exit 1
 fi
 
-# expect each worker in the form 'hostname,ram,cpu,disk,pod-cidr' e.g.: 'worker1,4096,2,20000,10.200.1.0/24'
+# expect each worker in the form 'hostname,ram,cpu,disk,pod-cidr,host-only-octet' e.g.:
+# 'worker1,4096,2,20000,10.200.1.0/24,202'. Note - host-only-octet can be empty if bridged networking
 for worker in "${workers[@]}"; do
   IFS=',' read -ra wrkr <<< "$worker"
   clone_vmname=${wrkr[0]}
@@ -178,6 +179,7 @@ for worker in "${workers[@]}"; do
   clone_cpu=${wrkr[2]}
   clone_disk=${wrkr[3]}
   pod_cidr=${wrkr[4]}
+  host_only_octet=${wrkr[5]}
 
   echo "provisioning worker $clone_vmname"
 
@@ -190,6 +192,7 @@ for worker in "${workers[@]}"; do
    --clone-cpu=$clone_cpu\
    --clone-disk=$clone_disk\
    --pod-cidr=$pod_cidr\
+   --host-only-octet=$host_only_octet\
    --vboxdir=$vboxdir\
    --priv-key=$priv_key\
    --admin-kubeconfig=$admin_kubeconfig\

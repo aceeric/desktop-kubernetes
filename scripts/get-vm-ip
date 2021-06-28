@@ -10,7 +10,7 @@ vm="$1"
 while true; do
   ip=$(VBoxManage guestproperty get "$vm" "/VirtualBox/GuestInfo/Net/0/V4/IP" 2>/dev/null)
   if [[ $? -ne 0 ]] || [[ "$ip" == "No value set!" ]]; then
-    sleep 5s
+    sleep 2s
   else
     break
   fi

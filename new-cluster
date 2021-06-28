@@ -2,7 +2,7 @@
 
 set -e
 
-long_opts=help,host-network-interface:,vboxdir:,check-compatibility,from-scratch,create-template,networking:,\
+long_opts=help,host-network-interface:,host-only,vboxdir:,check-compatibility,from-scratch,create-template,networking:,\
 monitoring:,storage:,single-node,up:,down:,delete:
 script_name=$(basename "$0")
 proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -11,6 +11,7 @@ admin_kubeconfig=$proj_root/admin/admin.kubeconfig
 
 # api
 host_network_interface=
+host_only=0
 vboxdir=
 check_compatibility=0
 from_scratch=0
@@ -25,6 +26,9 @@ delete=
 
 # internal
 cluster_vms=(doc)
+controller_octet=
+worker1_octet=
+worker2_octet=
 
 # These are the various binaries and manifests that are downloaded by the scripts in the project. Two
 # elements are defined for each upstream: the URL to get it from, and the filesystem location. This way,
@@ -179,20 +183,26 @@ function usage() {
     VM takes a fair bit of time, including the initial 60 seconds for the boot menu to time out and actually
     start the install.
 
-    Usage: new-cluster [--host-network-interface=<interface>] [--vboxdir=</some/path>] [--networking=<type>]
-           [--monitoring=<type>] [--from-scratch] [--create-template] [--single-node] [--storage=<type>]
-           [--help] [--check-compatibility] [--up=<nodelist>] [--down=<nodelist>] [--delete=<nodelist>]
+    Usage: new-cluster [--host-network-interface=<interface>] [--host-only] [--vboxdir=</some/path>]
+           [--networking=<type>] [--monitoring=<type>] [--from-scratch] [--create-template] [--single-node]
+           [--storage=<type>] [--help] [--check-compatibility]
+           [--up=<nodelist>] [--down=<nodelist>] [--delete=<nodelist>]
 
     Options:
 
       Cluster creation options:
 
-      --host-network-interface   Required. The name of the primary network interface on your machine. The scripts
-                                 use this to configure the VirtualBox bridge network for each node VM.
       --vboxdir                  Required. The directory where you keep your VirtualBox VM files. The script uses
                                  the VBoxManage utility to create the VMs, which will in turn create a sub-directory
                                  under this directory for each VM. The directory must exist. The script will not
                                  create it.
+      --host-network-interface   Specify this, or --host-only. If this, then the value is the name of the primary
+                                 network interface on your machine. The scripts use this to configure the VirtualBox
+                                 bridge network for each node VM.
+      --host-only                Specify this, or --host-network-interface. If this, then no value parameter is
+                                 needed. This option configures NAT + Host-Only networking mode. The scripts will
+                                 create a new host-only network and configure the cluster to use it for intra-cluster
+                                 networking, and will configure NAT for the cluster to access the internet.
       --networking               Optional. Installs networking. Current valid values are "calico", "kube-router",
                                  and "cilium". E.g.: --networking=calico. (Calico also installs kube-proxy. The
                                  other networking configurations are kube-proxyless.)
@@ -285,6 +295,10 @@ function parse_args() {
       --host-network-interface)
         host_network_interface=$(opt_val "$2")
         shift 2
+        ;;
+      --host-only)
+        host_only=1
+        shift
         ;;
       --vboxdir)
         vboxdir=$(opt_val "$2")
@@ -387,8 +401,13 @@ elif [[ ! -z "$delete" ]]; then
   exit
 fi
 
-if [[ -z "$host_network_interface" ]] || [[ -z "$vboxdir" ]]; then
-  echo "--host-network-interface and --vboxdir are required options"
+elif [[ -z "$host_network_interface" ]] && [[ $host_only -eq 0 ]]; then
+  echo "specify either --host-only-network-name or --host-only"
+  exit 1
+fi
+
+if [[ -z "$vboxdir" ]]; then
+  echo "--vboxdir is a required option"
   exit 1
 fi
 
@@ -430,10 +449,19 @@ if [[ $from_scratch -eq 0 ]]; then
   openebs_sc_manifest_download=
 fi
 
+# because of how these are passed to called scripts, the workers have a different format
+if [[ $host_only -eq 1 ]]; then
+  controller_octet=200
+  worker1_octet=,201
+  worker2_octet=,202
+fi
+
 # if running from scratch, always create a template VM to clone the nodes from. This step also generates
 # the SSH keys into the 'kickstart' directory that are used all over the place to interact with the node VMs
 # via ssh/scp as they are being bootstrapped, and that you will use to SSH into the VMs after the cluster
-# is provisioned
+# is provisioned. If using host-only networking, this step will also create a host-only VirtualBox network
+# which will be used to initialize the template. This host-only network name will be copied into every VM
+# cloned from the template. So every cloned VM will be on the same host-only network.
 
 if [[ $from_scratch -eq 1 ]] || [[ $create_template -eq 1 ]] ; then
   echo "creating a template VM"
@@ -445,6 +473,7 @@ if [[ $from_scratch -eq 1 ]] || [[ $create_template -eq 1 ]] ; then
    --guest-additions-download=$guest_additions_download\
    --guest-additions-path=$guest_additions_path\
    --host-network-interface=$host_network_interface\
+   --host-only\
    --vboxdir=$vboxdir
 fi
 
@@ -458,6 +487,7 @@ echo "provisioning a controller node"
 $proj_root/toplevel-scripts/provision-controller\
  --priv-key=$priv_key\
  --template-vmname=bingo\
+ --host-only-octet=$controller_octet\
  --vboxdir=$vboxdir\
  --controller-hostname=doc\
  --controller-ram=8192\
@@ -504,8 +534,8 @@ if [[ $single_node -eq 0 ]]; then
   cluster_vms+=(ham)
   cluster_vms+=(monk)
   $proj_root/toplevel-scripts/provision-workers\
-   --worker=ham,8192,2,20000,10.200.2.0/24\
-   --worker=monk,8192,2,20000,10.200.3.0/24\
+   --worker=ham,8192,2,20000,10.200.2.0/24$worker1_octet\
+   --worker=monk,8192,2,20000,10.200.3.0/24$worker2_octet\
    --controller-ip=$controller_ip\
    --controller-hostname=doc\
    --template-vmname=bingo\

@@ -7,7 +7,8 @@
 
 set -e
 
-long_opts=priv-key:,template-vmname:,clone-vmname:,clone-ram:,clone-cpus:,clone-disk:,vboxdir:,shutdown:
+long_opts=priv-key:,template-vmname:,clone-vmname:,clone-ram:,clone-cpus:,clone-disk:,host-only-octet:,\
+vboxdir:,shutdown:
 script_name=$(basename "$0")
 proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
@@ -17,6 +18,7 @@ clone_vmname=
 clone_ram=
 clone_cpus=
 clone_disk=
+host_only_octet=
 vboxdir=
 shutdown=true
 
@@ -63,6 +65,10 @@ function parse_args() {
         clone_disk=$(opt_val "$2")
         shift 2
         ;;
+      --host-only-octet)
+        host_only_octet=$(opt_val "$2")
+        shift 2
+        ;;
       --vboxdir)
         vboxdir=$(opt_val "$2")
         shift 2
@@ -97,6 +103,10 @@ VBoxManage clonevm $template_vmname\
  --mode=machine\
  --name=$clone_vmname\
  --register
+
+if [[ ! -z $host_only_octet ]]; then
+  $proj_root/scripts/configure-hostonly-networking $template_vmname $host_only_octet
+fi
 
 echo "setting VM characteristics"
 VBoxManage modifyvm $clone_vmname\
