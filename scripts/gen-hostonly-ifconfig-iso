@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+
+#
+# Creates an ISO from the 'hostonly-netcfg' directory and writes the ISO into the project 'media'
+# directory. This creates an ISO with a file that the desktop-kubernetes service installed by kickstart will
+# use to configure host-only networking. the label that is assigned to the ISO is important - it is checked
+# by the desktop-kubernetes.sh script that is run by the desktop-kubernetes systemd unit.
+#
+# This script is a clone of gen-kickstart-iso. See that script for additional info.
+#
+# Usage gen-hostonly-ifconfig-iso <octet> where octet is the right-most octet of the IP address to configure
+# the adaptor with. E.g.:
+#
+# gen-hostonly-ifconfig-iso 202
+#
+# The example above would configure the adaptor with IP4 address 200.200.200.202
+#
+
+if [[ "$#" -ne 1 ]]; then
+  echo "need an octet in arg 1"
+  exit 1
+fi
+
+set -e
+
+proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
+# creaet a config file with the octet patched in
+
+sed -e "s/OCTET/$1/"\
+  $proj_root/hostonly-netcfg/template-ifconfig-enps08 >| $proj_root/hostonly-netcfg/ifconfig-enps08
+
+rm -f $proj_root/media/ifconfigenps08.iso
+genisoimage -J -R -volid CFGENPS08 -o $proj_root/media/ifconfigenps08.iso $proj_root/hostonly-netcfg

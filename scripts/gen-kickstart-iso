@@ -7,7 +7,7 @@
 #
 # - ks.cfg                               - kickstart script - the %post section refs the other directory files
 # - id_ed25519.pub                       - to initialize ssh in the guest VM so other scripts can ssh into the VM
-# - install-vbox-guest-additions.service - the systemctl service file to perform unattended guest additions install
+# - desktop-kubernetes.service           - the systemctl unit to perform unattended guest additions install
 # - install-vbox-guest-additions.sh      - called by the service to actually install guest additions
 #
 # Note: volume ID 'OEMDRV' in the genisoimage command below is important:

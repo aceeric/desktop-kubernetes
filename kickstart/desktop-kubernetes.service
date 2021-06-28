@@ -5,7 +5,7 @@ After=default.target
 [Service]
 Type=simple
 RemainAfterExit=yes
-ExecStart=/usr/bin/bash /root/install-vbox-guest-additions.sh
+ExecStart=/usr/bin/bash /root/desktop-kubernetes.sh
 TimeoutStartSec=0
 
 [Install]

@@ -13,4 +13,5 @@ $proj_root/scripts/create-vm\
  --centos-iso-path=$proj_root/media/CentOS-8.3.2011-x86_64-dvd1.iso\
  --kickstart-iso-path=$proj_root/media/kickstart.iso\
  --host-network-interface=enp0s31f6\
+ --host-only-network-name=vboxnet1\
  --vboxdir=/sdb1/virtualbox
