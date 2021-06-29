@@ -47,7 +47,8 @@ The following command-line options are supported for the `new-cluster` script:
 
 | Option | Type | Description  |
 | - | - | - |
-| `--host-network-interface` | Required | The name of the primary network interface on your machine. The scripts use this to configure the VirtualBox bridge network for each node VM. |
+| `--host-network-interface` | Required | Specify this, or --host-only. If this, then the value is the name of the primary network interface on your machine. The scripts use this to configure the VirtualBox bridge network for each node VM. |
+| `--host-only`              | Required | Specify this, or --host-network-interface. If this, then no value parameter is needed. This option configures NAT + Host-Only networking mode. The scripts will create a new host-only network and configure the cluster to use it for intra-cluster networking, and will configure NAT for the cluster to access the internet. |
 | `--vboxdir`                | Required | The directory where you keep your VirtualBox VM files. The script uses the `VBoxManage` utility to create the VMs, which will in turn create a sub-directory under this directory for each VM. The directory must exist. The script will not create it. |
 | `--networking`             | Optional | Installs Pod networking. Current valid values are `calico` (which also installs kube-proxy), `kube-router` and `cilium`. E.g.: `--networking=calico` |
 | `--from-scratch`           | Optional | Downloads all the necessary items - such as the k8s binaries, as well as the CentOS ISO and the Guest Additions ISO. Also creates a template (see `--create-template`). If  not specified, then the script expects to find all required objects already on the filesystem. Since all these upstreams are git-ignored, you have to run with this option the first time |

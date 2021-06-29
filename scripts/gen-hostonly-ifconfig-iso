@@ -28,7 +28,7 @@ proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 # creaet a config file with the octet patched in
 
 sed -e "s/OCTET/$1/"\
-  $proj_root/hostonly-netcfg/template-ifconfig-enps08 >| $proj_root/hostonly-netcfg/ifconfig-enps08
+  $proj_root/hostonly-netcfg/template-ifconfig-enp0s8 >| $proj_root/hostonly-netcfg/ifconfig-enp0s8
 
-rm -f $proj_root/media/ifconfigenps08.iso
-genisoimage -J -R -volid CFGENPS08 -o $proj_root/media/ifconfigenps08.iso $proj_root/hostonly-netcfg
+rm -f $proj_root/media/ifconfigenp0s8.iso
+genisoimage -J -R -volid CFGENP0S8 -o $proj_root/media/ifconfigenp0s8.iso $proj_root/hostonly-netcfg

@@ -14,7 +14,7 @@ if [[ ! -z "$kdvl" ]] && [[ "$kdvl" == "$unam" ]]; then
   modcnt=$(lsmod | grep vboxguest | wc -l)
   if [[ $modcnt -ne 0 ]]; then
     # guest additions install complete - the service will continue to run on every startup
-    # if the enp0s8 config CD is mounted and no file /etc/sysconfig/network-scripts/ifconfig-enps08 exists
+    # if the enp0s8 config CD is mounted and no file /etc/sysconfig/network-scripts/ifconfig-enp0s8 exists
     # then copy that file from the CD to the directory and shutdown. This is how we configure the network in
     # each VM in the cluster with a different IPv4 address for host-only networking. If bridge networking, then
     # the CD is not mounted by the caller.
@@ -22,10 +22,11 @@ if [[ ! -z "$kdvl" ]] && [[ "$kdvl" == "$unam" ]]; then
       exit 0
     fi
     touch /root/did-network-setup
-    if [[ blkid | grep LABEL="CFGENPS08" ]] && [[ ! -f /etc/sysconfig/network-scripts/ifconfig-enps08 ]]; then
+    # TODO CHANGE TO ENP0S8 !!!!!
+    if [[ $(blkid | grep 'LABEL="CFGENP0S8"') -eq 0 ]] && [[ ! -f /etc/sysconfig/network-scripts/ifconfig-enp0s8 ]]; then
       echo "copying host-only network config file"
       mount -r /dev/cdrom /mnt/cdrom &&\
-      cp /mnt/cdrom/ifconfig-enps08 /etc/sysconfig/network-scripts/ifconfig-enps08 &&\
+      cp /mnt/cdrom/ifconfig-enp0s8 /etc/sysconfig/network-scripts/ifconfig-enp0s8 &&\
       umount /mnt/cdrom &&\
       rm -rf /mnt/cdrom
       echo "host-only network config file copied - shutting down"

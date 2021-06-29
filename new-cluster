@@ -401,22 +401,16 @@ elif [[ ! -z "$delete" ]]; then
   exit
 fi
 
-elif [[ -z "$host_network_interface" ]] && [[ $host_only -eq 0 ]]; then
+if [[ -z "$host_network_interface" ]] && [[ $host_only -eq 0 ]]; then
   echo "specify either --host-only-network-name or --host-only"
   exit 1
-fi
-
-if [[ -z "$vboxdir" ]]; then
+elif [[ -z "$vboxdir" ]]; then
   echo "--vboxdir is a required option"
   exit 1
-fi
-
-if [[ ! -d $vboxdir ]]; then
+elif [[ ! -d $vboxdir ]]; then
   echo "directory for virtualbox VMs does not exist: $vboxdir"
   exit 1
-fi
-
-if [[ $from_scratch -eq 1 ]] && ! check_urls 1; then
+elif [[ $from_scratch -eq 1 ]] && ! check_urls 1; then
   exit 1
 elif [[ $from_scratch -eq 0 ]] && ! check_files $create_template; then
   exit 1
