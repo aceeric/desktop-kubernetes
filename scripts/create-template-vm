@@ -12,7 +12,7 @@
 set -e
 
 long_opts=template-vmname:,centos-iso-download:,centos-iso-path:,\
-guest-additions-download:,guest-additions-path:,host-network-interface:,--host-only,vboxdir:
+guest-additions-download:,guest-additions-path:,host-network-interface:,host-only,vboxdir:
 script_name=$(basename "$0")
 proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
@@ -137,8 +137,10 @@ echo "generating kickstart ISO"
 $proj_root/scripts/gen-kickstart-iso
 kickstart_iso_path=$proj_root/media/kickstart.iso
 
-if [[ "$host_only" -eq 1]]; then
+if [[ "$host_only" -eq 1 ]]; then
+  echo "creating new host-only network"
   host_only_network_name=$($proj_root/scripts/create-hostonly-network)
+  echo "host-only network created $host_only_network_name"
 fi
 
 echo "creating VM"
@@ -149,7 +151,23 @@ $proj_root/scripts/create-vm --template-vmname=$template_vmname\
   --host-only-network-name=$host_only_network_name\
   --vboxdir=$vboxdir
 
+
+
+
+echo "---------------- HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE ----------------"
+echo "STOP HERE AND EXAMINE TEMPLATE VM BEFORE GUEST ADDITIONS"
+echo "ENSURE HOST-ONLY NETWORK IS CONFIGURED CORRECTLY"
+exit 1
+
+
+
+
+
+
+
 echo "installing guest additions"
 $proj_root/scripts/install-guest-additions\
  --template-vmname=$template_vmname\
  --guest-additions-path=$guest_additions_actual
+
+echo "guest additions installation completed - template VM fully provisioned"

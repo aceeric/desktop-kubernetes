@@ -117,6 +117,7 @@ VBoxManage modifyvm $template_vmname\
 # host network interface then that means bridged networking is desired beacuse bridged networking requires the
 # host's interface name. If the caller passes the name of the host-only network, then that means host only.
 if [[ ! -z "$host_network_interface" ]]; then
+  echo "configuring template VM for bridge networking with host network interface: $host_network_interface"
   VBoxManage modifyvm $template_vmname\
    --nic1 bridged\
    --nictype1 82540EM\
@@ -125,6 +126,7 @@ if [[ ! -z "$host_network_interface" ]]; then
    --macaddress1 auto\
    --bridgeadapter1 $host_network_interface
 elif [[ ! -z "$host_only_network_name" ]]; then
+  echo "configuring template VM for host-only networking with host-only network name: $host_only_network_name"
   VBoxManage modifyvm $template_vmname\
    --nic1 nat\
    --nictype1 82540EM\

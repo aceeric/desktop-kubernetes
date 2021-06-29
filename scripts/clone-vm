@@ -128,7 +128,7 @@ fi
 # I started the template, it would pick up an IP address property and the clone would have the same property
 # value (the clone would appear to have the same IP address as the template for some period of time until VirtualBox
 # assigned a new one.) So this is a work-around. After clearing the IP address property - a subsequent call to
-# 'guestproperty get' blocks until VirtualBox gets around the assigning it a new IP address.
+# 'guestproperty get' blocks until VirtualBox gets around to assigning it a new IP address.
 
 echo "starting cloned VM"
 VBoxManage startvm $clone_vmname
