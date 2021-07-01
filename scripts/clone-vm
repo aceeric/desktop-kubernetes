@@ -124,11 +124,13 @@ if [[ -n "$clone_disk" ]]; then
   fi
 fi
 
-# this script block clears the IP address guest property after the cloned VM starts. What I experienced was - if
+# this script section clears the IP address guest property after the cloned VM starts. What I experienced was - if
 # I started the template, it would pick up an IP address property and the clone would have the same property
 # value (the clone would appear to have the same IP address as the template for some period of time until VirtualBox
 # assigned a new one.) So this is a work-around. After clearing the IP address property - a subsequent call to
-# 'guestproperty get' blocks until VirtualBox gets around to assigning it a new IP address.
+# 'guestproperty get' blocks until VirtualBox gets around to assigning it a new IP address. Since the project
+# can configure bridged networking with one adaptor or host-only+NAT w/ 2, the script clears two addresses and
+# ignores any errors.
 
 echo "starting cloned VM"
 VBoxManage startvm $clone_vmname
@@ -152,7 +154,7 @@ if [[ $shutdown == true ]]; then
   echo "shutting down cloned VM"
   VBoxManage controlvm $clone_vmname acpipowerbutton
   $proj_root/scripts/wait-vm $clone_vmname --stopped
-  # virtual box needs a moment or subsequent vboxmanage commands seem to intermittently error
+  # virtual box needs a moment or subsequent vboxmanage commands will intermittently error
   sleep 5s
 fi
 
