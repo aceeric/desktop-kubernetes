@@ -26,6 +26,7 @@ delete=
 
 # internal
 cluster_vms=(doc)
+host_only_opt=
 controller_octet=
 worker1_octet=
 worker2_octet=
@@ -448,6 +449,7 @@ fi
 
 # because of how these are passed to called scripts, the workers have a different format
 if [[ $host_only -eq 1 ]]; then
+  host_only_opt="--host-only"
   controller_octet=200
   worker1_octet=,201
   worker2_octet=,202
@@ -473,7 +475,7 @@ if [[ $from_scratch -eq 1 ]] || [[ $create_template -eq 1 ]] ; then
    --guest-additions-download=$guest_additions_download\
    --guest-additions-path=$guest_additions_path\
    --host-network-interface=$host_network_interface\
-   --host-only=\
+   $host_only_opt\
    --vboxdir=$vboxdir
 fi
 
