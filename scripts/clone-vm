@@ -105,7 +105,7 @@ VBoxManage clonevm $template_vmname\
  --register
 
 if [[ ! -z $host_only_octet ]]; then
-  $proj_root/scripts/configure-hostonly-networking $template_vmname $host_only_octet
+  $proj_root/scripts/configure-hostonly-networking $clone_vmname $host_only_octet
 fi
 
 echo "setting VM characteristics"
@@ -133,7 +133,8 @@ fi
 echo "starting cloned VM"
 VBoxManage startvm $clone_vmname
 $proj_root/scripts/wait-vm $clone_vmname --started
-VBoxManage guestproperty delete $clone_vmname "/VirtualBox/GuestInfo/Net/0/V4/IP"
+VBoxManage guestproperty delete $clone_vmname "/VirtualBox/GuestInfo/Net/0/V4/IP" || :
+VBoxManage guestproperty delete $clone_vmname "/VirtualBox/GuestInfo/Net/1/V4/IP" || :
 
 echo "waiting for VM IP assignment"
 clone_ip=$($proj_root/scripts/get-vm-ip $clone_vmname)

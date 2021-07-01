@@ -151,20 +151,6 @@ $proj_root/scripts/create-vm --template-vmname=$template_vmname\
   --host-only-network-name=$host_only_network_name\
   --vboxdir=$vboxdir
 
-
-
-
-echo "---------------- HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE HERE ----------------"
-echo "STOP HERE AND EXAMINE TEMPLATE VM BEFORE GUEST ADDITIONS"
-echo "ENSURE HOST-ONLY NETWORK IS CONFIGURED CORRECTLY"
-exit 1
-
-
-
-
-
-
-
 echo "installing guest additions"
 $proj_root/scripts/install-guest-additions\
  --template-vmname=$template_vmname\

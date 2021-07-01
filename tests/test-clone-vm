@@ -5,6 +5,10 @@ if [[ -z "$vmname" ]]; then
   echo "need a VM name in arg 1"
   exit 1
 fi
+
+# if no octet arg provided, then will be passed to clone-vm as empty which is suitable for bridged networking
+octet="$2"
+
 proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 $proj_root/scripts/clone-vm\
  --priv-key=$proj_root/kickstart/id_ed25519\
@@ -12,6 +16,6 @@ $proj_root/scripts/clone-vm\
  --clone-vmname=$vmname\
  --clone-ram=2048\
  --clone-cpu=1\
- --clone-disk=30000\
+ --host-only-octet=$octet\
  --vboxdir=/sdb1/virtualbox\
  --shutdown=false

@@ -8,10 +8,12 @@
 #
 # This script is a clone of gen-kickstart-iso. See that script for additional info.
 #
-# Usage gen-hostonly-ifconfig-iso <octet> where octet is the right-most octet of the IP address to configure
-# the adaptor with. E.g.:
+# Usage:
+#   gen-hostonly-ifcfg-iso <octet>
+
+# ...where octet is the right-most octet of the IP address to configure the adaptor with. E.g.:
 #
-# gen-hostonly-ifconfig-iso 202
+# gen-hostonly-ifcfg-iso 202
 #
 # The example above would configure the adaptor with IP4 address 200.200.200.202
 #
@@ -25,10 +27,10 @@ set -e
 
 proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
-# creaet a config file with the octet patched in
+# create a config file with the octet patched in
 
 sed -e "s/OCTET/$1/"\
-  $proj_root/hostonly-netcfg/template-ifconfig-enp0s8 >| $proj_root/hostonly-netcfg/ifconfig-enp0s8
+  $proj_root/hostonly-netcfg/template-ifcfg-enp0s8 >| $proj_root/hostonly-netcfg/ifcfg-enp0s8
 
-rm -f $proj_root/media/ifconfigenp0s8.iso
-genisoimage -J -R -volid CFGENP0S8 -o $proj_root/media/ifconfigenp0s8.iso $proj_root/hostonly-netcfg
+rm -f $proj_root/media/ifcfg-enp0s8.iso
+genisoimage -J -R -volid CFGENP0S8 -o $proj_root/media/ifcfg-enp0s8.iso $proj_root/hostonly-netcfg
