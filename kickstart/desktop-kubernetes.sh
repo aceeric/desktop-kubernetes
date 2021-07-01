@@ -14,24 +14,27 @@ if [[ ! -z "$kdvl" ]] && [[ "$kdvl" == "$unam" ]]; then
   modcnt=$(lsmod | grep vboxguest | wc -l)
   if [[ $modcnt -ne 0 ]]; then
     # guest additions install complete - the service will continue to run on every startup
-    # if the enp0s8 config CD is mounted and no file /etc/sysconfig/network-scripts/ifconfig-enp0s8 exists
-    # then copy that file from the CD to the directory and shutdown. This is how we configure the network in
-    # each VM in the cluster with a different IPv4 address for host-only networking. If bridge networking, then
-    # the CD is not mounted by the caller.
+
     if [[ -f /root/did-network-setup ]]; then
       exit 0
     fi
-    touch /root/did-network-setup
-    # TODO CHANGE TO ENP0S8 !!!!!
-    if [[ $(blkid | grep 'LABEL="CFGENP0S8"') -eq 0 ]] && [[ ! -f /etc/sysconfig/network-scripts/ifconfig-enp0s8 ]]; then
+
+    # If host-only networking, the project mounts an config ISO to configure enp0s8 (the only-only interface.) If
+    # bridge networking, the config CD is not mounted. Label CFGENP0S8 is assigned by scripts/gen-hostonly-ifcfg-iso.
+    # If mounted, then copy the enp0s8 config file from the CD to the config directory and shutdown. This is how we
+    # configure the network in each VM in the cluster with a different IPv4 address for host-only networking. If bridge
+    # networking, then the CD is not mounted by the caller and so this if-code is never entered. And - we never
+    # mount the ISO in the template VM - only when we clone the template.
+    if blkid | grep 'LABEL="CFGENP0S8"'; then
+      touch /root/did-network-setup-begin
       echo "copying host-only network config file"
-      mount -r /dev/cdrom /mnt/cdrom &&\
-      cp /mnt/cdrom/ifconfig-enp0s8 /etc/sysconfig/network-scripts/ifconfig-enp0s8 &&\
-      umount /mnt/cdrom &&\
-      rm -rf /mnt/cdrom
+      mkdir -p /mnt/cdrom &&\
+        mount -r /dev/cdrom /mnt/cdrom &&\
+        yes | /bin/cp /mnt/cdrom/ifcfg-enp0s8 /etc/sysconfig/network-scripts/ifcfg-enp0s8 &&\
+        umount /mnt/cdrom &&\
+        rm -rf /mnt/cdrom
       echo "host-only network config file copied - shutting down"
-      # other scripts may be waiting for this VM to come up using loops and sleeps so don't outrun them
-      sleep 5s
+      touch /root/did-network-setup-success
       shutdown now
     fi
     exit 0

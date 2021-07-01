@@ -20,8 +20,8 @@ output=$(VBoxManage hostonlyif create 2>/dev/null)
 regex="Interface '([0-9a-z]+)' was successfully created"
 [[ $output =~ $regex ]] && netname="${BASH_REMATCH[1]}"
 
-# set the explicit network address
-VBoxManage hostonlyif ipconfig vboxnet1 --ip 200.200.200.1 --netmask 255.255.255.0
+# set the static network address
+VBoxManage hostonlyif ipconfig $netname --ip 200.200.200.1 --netmask 255.255.255.0
 
 # return newly created network name to caller
 echo $netname

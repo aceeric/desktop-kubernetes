@@ -24,28 +24,32 @@ proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 vmname="$1"
 octet="$2"
 
-# create ifconfig ISO with IP Address from passed octet
-echo "creating ifconfigenp0s8.iso with octet $octet"
-$proj_root/scripts/gen-hostonly-ifconfig-iso $octet
+# create ifcfg ISO with IP Address from passed octet
+echo "creating ifcfg-enp0s8.iso with octet $octet"
+$proj_root/scripts/gen-hostonly-ifcfg-iso $octet
 
 # mount ISO to VM
-echo "attaching ifconfigenp0s8 ISO to VM $vmname"
+echo "attaching ifcfg-enp0s8 ISO to VM $vmname"
 VBoxManage storageattach $vmname --storagectl IDE --port 0 --device 0 --type dvddrive\
- --medium $proj_root/media/ifconfigenp0s8.iso
+ --medium $proj_root/media/ifcfg-enp0s8.iso
 
-# start VM - this will cause the desktop-kubernetes systemd service to copy the config file 'ifconfig-enp0s8' to
-# the /etc/sysconfig/network-scripts directory in the VM, and then it will shut the VM down.
-# See: kickstart/desktop-kubernetes.sh
+# start VM - this will cause the desktop-kubernetes systemd service to copy the config file 'ifcfg-enp0s8' from the
+# ISO to the /etc/sysconfig/network-scripts directory in the VM, and then it will shut the VM down. See
+# kickstart/desktop-kubernetes.sh
 echo "starting VM $vmname"
 VBoxManage startvm $vmname
 
-# getting the IP address verifies the guest is running so we can safely wait for shutdown
+# getting the IP address verifies the guest is running so we can safely wait for shutdown. The IP address
+# could be incorrect here - that will be dealt with by the caller
 echo "Getting IP address from VM $vmname"
 $proj_root/scripts/get-vm-ip $vmname
 
-echo "waiting for VM to stop"
+echo "waiting for VM $vmname to stop"
 $proj_root/scripts/wait-vm $vmname --stopped
 
+# for virtual box or the detach calls below fail
+sleep 5s
+
 # unmount
-echo "VM stopped - detaching ifconfigenp0s8 ISO"
+echo "VM $vmname stopped - detaching ifcfg-enp0s8 ISO"
 VBoxManage storageattach $vmname --storagectl IDE --port 0 --device 0 --medium none

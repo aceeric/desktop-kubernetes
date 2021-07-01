@@ -402,7 +402,10 @@ elif [[ ! -z "$delete" ]]; then
 fi
 
 if [[ -z "$host_network_interface" ]] && [[ $host_only -eq 0 ]]; then
-  echo "specify either --host-only-network-name or --host-only"
+  echo "either --host-only-network-name or --host-only is required"
+  exit 1
+elif [[ ! -z "$host_network_interface" ]] && [[ $host_only -eq 1 ]]; then
+  echo "--host-only-network-name and --host-only are exclusive of each other"
   exit 1
 elif [[ -z "$vboxdir" ]]; then
   echo "--vboxdir is a required option"
@@ -453,9 +456,12 @@ fi
 # if running from scratch, always create a template VM to clone the nodes from. This step also generates
 # the SSH keys into the 'kickstart' directory that are used all over the place to interact with the node VMs
 # via ssh/scp as they are being bootstrapped, and that you will use to SSH into the VMs after the cluster
-# is provisioned. If using host-only networking, this step will also create a host-only VirtualBox network
-# which will be used to initialize the template. This host-only network name will be copied into every VM
-# cloned from the template. So every cloned VM will be on the same host-only network.
+# is provisioned. If using host-only networking, the 'create-template-vm' script will also create a host-only
+# VirtualBox network which will be used to initialize the template. This host-only network name will be copied
+# into every VM cloned from the template. So every cloned VM will be on the same host-only network.
+#
+# Script args are validated above so caller never specifies both bridge (by virtue of the --host-network-interface
+# option) AND host-only (by virtue of the --host-only option)
 
 if [[ $from_scratch -eq 1 ]] || [[ $create_template -eq 1 ]] ; then
   echo "creating a template VM"
@@ -467,7 +473,7 @@ if [[ $from_scratch -eq 1 ]] || [[ $create_template -eq 1 ]] ; then
    --guest-additions-download=$guest_additions_download\
    --guest-additions-path=$guest_additions_path\
    --host-network-interface=$host_network_interface\
-   --host-only\
+   --host-only=\
    --vboxdir=$vboxdir
 fi
 
