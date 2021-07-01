@@ -12,7 +12,7 @@ This project is derivative of **Kelsey Hightower's** [Kubernetes The Hard Way](h
 | Uses [Google Cloud Platform](https://cloud.google.com/) to provision the compute resources | Provisions VMs on the desktop using [VirtualBox](https://www.virtualbox.org/). I was interested to get some experience with the `VBoxManage` utility and CentOS [Kickstart](https://docs.centos.org/en-US/centos/install-guide/Kickstart2/) for hands-free OS installation. The script creates a template VM, and then clones the template for each of the cluster nodes. I also needed the VirtualBox Guest Additions, and came up with a way to automate that installation. Guest Additions provides the ability to get the IP address from a VM. This was an interesting side-effort that resulted in the ability to create a CentOS VM just by running a single script command. |
 | Uses Ubuntu for the cluster node OS | Uses [CentOS 8.](https://www.centos.org/download/) |
 | Structures the installation and configuration tasks by related activities, e.g. creates all the certs, copies binaries, generates configuration files, etc. | Structures the tasks (and associated script filesystem hierarchy) more around the individual Kubernetes components where possible, because I was interested in delineating the specific dependencies and requirements for each component. |
-| Hand-generates the node routing | Uses the built-in VirtualBox routing that comes with either a bridged network - or host-only + NAT. Both options provide host-to-guest, guest-to-guest, and guest-to-internet. |
+| Hand-generates the node routing | Uses the built-in VirtualBox routing that comes with either a bridged network - or host only + NAT. Both options provide host-to-guest, guest-to-guest, and guest-to-internet. |
 | Implements Pod networking via the bridge network plugin from [containernetworking](https://github.com/containernetworking) | Supports cluster networking using one of three networking solutions based on a command-line option: a) [Calico](https://docs.projectcalico.org) + [kube-proxy](https://kubernetes.io/docs/reference/command-line-tools-reference/kube-proxy/), or b) [kube-router](https://github.com/cloudnativelabs/kube-router), or c) [Cilium](https://docs.cilium.io/en/stable/gettingstarted/k8s-install-default). |
 | Uses Cloudflare [cfssl](https://github.com/cloudflare/cfssl) to generate the cluster certs | Uses [openssl](https://www.openssl.org/) since it is almost universally available on Linux. I was interested to see what the scripting would look like using openssl, especially for things like creating CSRs and so on. |
 | Is nicely terse and compact | Is verbose by virtue of using scripts with lots of options, and separating the component installs into separate scripts, thus requiring a lot of option passing and parsing. |
@@ -28,10 +28,10 @@ The `new-cluster` script in the repo root is what you run.
 
 To create a cluster for the first time, run the script as shown below (using your unique values).
 
-Host-only + NAT networking:
+Host only + NAT networking:
 
 ```bash
-$ ./new-cluster --from-scratch --host-only --vboxdir=/sdb1/virtualbox\
+$ ./new-cluster --from-scratch --host-only-network=50.50.50 --vboxdir=/sdb1/virtualbox\
   --networking=calico --monitoring=kube-prometheus
 ```
 
@@ -56,8 +56,8 @@ The following command-line options are supported for the `new-cluster` script:
 
 | Option | Type | Description  |
 | - | - | - |
-| `--host-network-interface` | Required | Specify this, or the `--host-only` option. If this, then the parameter is the name of the primary network interface on your machine. The scripts use this to configure the VirtualBox bridge network for each guest VM. **Important**: you must use this consistently when creating the template, and when creating a cluster from the template. The reason is that the option configures settings at the VM level that then propagate into the guest OS. Since guests are cloned from the template, the guest networking has to be defined consistently with the template. |
-| `--host-only`              | Required | Specify this, or the `--host-network-interface` option. If this, then no parameter is needed. This option configures NAT + Host-Only networking mode. The scripts will create a new host-only network and configure the cluster to use it for intra-cluster networking, and will configure NAT for the cluster to access the internet. *See important note above regarding VBox networking type.* |
+| `--host-network-interface` | Required | Specify this, or the `--host-only-network` option. If this, then the parameter is the name of the primary network interface on your machine. The scripts use this to configure the VirtualBox bridge network for each guest VM. **Important**: you must use this consistently when creating the template, and when creating a cluster from the template. The reason is that the option configures settings at the VM level that then propagate into the guest OS. Since guests are cloned from the template, the guest networking has to be defined consistently with the template. |
+| `--host-only-network`      | Required | Specify this, or the `--host-network-interface` option. If this, then the parameter is the left three octets of the network. E.g. `100.100.100`. This option configures NAT + host only networking mode. The scripts will create a new host only network and configure the cluster to use it for intra-cluster networking, and will configure NAT for the cluster to access the internet. *See important note above regarding VBox networking type.* |
 | `--vboxdir`                | Required | The directory where you keep your VirtualBox VM files. The script uses the `VBoxManage` utility to create the VMs, which will in turn create a sub-directory under this directory for each VM. The directory must exist. The script will not create it. |
 | `--networking`             | Optional | Installs Pod networking. Current valid values are `calico` (which also installs kube-proxy), `kube-router` and `cilium`. E.g.: `--networking=calico`. I use calico. |
 | `--from-scratch`           | Optional | Downloads all the necessary items - such as the k8s binaries, as well as the CentOS ISO and the Guest Additions ISO. Also creates a template (see `--create-template`). If  not specified, then the script expects to find all required objects already on the filesystem. Since all these upstreams are git-ignored, you have to run with this option the first time. |

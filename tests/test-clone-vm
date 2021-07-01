@@ -6,8 +6,10 @@ if [[ -z "$vmname" ]]; then
   exit 1
 fi
 
-# if no octet arg provided, then will be passed to clone-vm as empty which is suitable for bridged networking
-octet="$2"
+# if args not provided, then will be passed to clone-vm as empty which is suitable for bridged networking. Note:
+# caller must provide both or neither - script does not validate
+host_only_network="$2"
+host_only_octet="$3"
 
 proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 $proj_root/scripts/clone-vm\
@@ -16,6 +18,7 @@ $proj_root/scripts/clone-vm\
  --clone-vmname=$vmname\
  --clone-ram=2048\
  --clone-cpu=1\
- --host-only-octet=$octet\
+ --host-only-network=$host_only_network\
+ --host-only-octet=$host_only_octet\
  --vboxdir=/sdb1/virtualbox\
  --shutdown=false

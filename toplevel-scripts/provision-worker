@@ -3,8 +3,8 @@
 set -e
 
 long_opts=controller-ip:,controller-hostname:,template-vmname:,clone-vmname:,clone-ram:,clone-cpu:,clone-disk:,\
-pod-cidr:,host-only-octet:,vboxdir:,priv-key:,admin-kubeconfig:,crictl-download:,crictl-binary:,runc-download:,\
-runc-binary:,cni-plugins-download:,cni-plugins-binary:,containerd-download:,containerd-binary:,\
+pod-cidr:,host-only-network:,host-only-octet:,vboxdir:,priv-key:,admin-kubeconfig:,crictl-download:,crictl-binary:,\
+runc-download:,runc-binary:,cni-plugins-download:,cni-plugins-binary:,containerd-download:,containerd-binary:,\
 kubelet-download:,kubelet-binary:,node-labels:,ca-cert:,ca-key:
 script_name=$(basename "$0")
 proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -17,6 +17,7 @@ clone_ram=
 clone_cpu=
 clone_disk=
 pod_cidr=
+host_only_network=
 host_only_octet=
 vboxdir=
 priv_key=
@@ -84,6 +85,10 @@ function parse_args() {
         ;;
       --pod-cidr)
         pod_cidr=$(opt_val "$2")
+        shift 2
+        ;;
+      --host-only-network)
+        host_only_network=$(opt_val "$2")
         shift 2
         ;;
       --host-only-octet)
@@ -173,6 +178,7 @@ parse_args "$@"
 #echo "clone_cpu=$clone_cpu"
 #echo "clone_disk=$clone_disk"
 #echo "pod_cidr=$pod_cidr"
+#echo "host_only_network=$host_only_network"
 #echo "host_only_octet=$host_only_octet"
 #echo "vboxdir=$vboxdir"
 #echo "priv_key=$priv_key"
@@ -198,6 +204,7 @@ $proj_root/scripts/clone-vm\
  --clone-vmname=$clone_vmname\
  --clone-ram=$clone_ram\
  --clone-cpu=$clone_cpu\
+ --host-only-network=$host_only_network\
  --host-only-octet=$host_only_octet\
  --vboxdir=$vboxdir
 

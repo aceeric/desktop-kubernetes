@@ -7,8 +7,8 @@
 
 set -e
 
-long_opts=priv-key:,template-vmname:,clone-vmname:,clone-ram:,clone-cpus:,clone-disk:,host-only-octet:,\
-vboxdir:,shutdown:
+long_opts=priv-key:,template-vmname:,clone-vmname:,clone-ram:,clone-cpus:,clone-disk:,\
+host-only-network:,host-only-octet:,vboxdir:,shutdown:
 script_name=$(basename "$0")
 proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
@@ -18,6 +18,7 @@ clone_vmname=
 clone_ram=
 clone_cpus=
 clone_disk=
+host_only_network=
 host_only_octet=
 vboxdir=
 shutdown=true
@@ -65,6 +66,10 @@ function parse_args() {
         clone_disk=$(opt_val "$2")
         shift 2
         ;;
+      --host-only-network)
+        host_only_network=$(opt_val "$2")
+        shift 2
+        ;;
       --host-only-octet)
         host_only_octet=$(opt_val "$2")
         shift 2
@@ -94,6 +99,8 @@ parse_args "$@"
 #echo "clone_ram=$clone_ram"
 #echo "clone_cpus=$clone_cpus"
 #echo "clone_disk=$clone_disk"
+#echo "host_only_network=$host_only_network"
+#echo "host_only_octet=$host_only_octet"
 #echo "vboxdir=$vboxdir"
 #echo "shutdown=$shutdown"
 
@@ -104,8 +111,8 @@ VBoxManage clonevm $template_vmname\
  --name=$clone_vmname\
  --register
 
-if [[ ! -z $host_only_octet ]]; then
-  $proj_root/scripts/configure-hostonly-networking $clone_vmname $host_only_octet
+if [[ ! -z $host_only_network ]]; then
+  $proj_root/scripts/configure-hostonly-networking $clone_vmname $host_only_network $host_only_octet
 fi
 
 echo "setting VM characteristics"
@@ -129,8 +136,8 @@ fi
 # value (the clone would appear to have the same IP address as the template for some period of time until VirtualBox
 # assigned a new one.) So this is a work-around. After clearing the IP address property - a subsequent call to
 # 'guestproperty get' blocks until VirtualBox gets around to assigning it a new IP address. Since the project
-# can configure bridged networking with one adaptor or host-only+NAT w/ 2, the script clears two addresses and
-# ignores any errors.
+# can configure bridged networking with one adaptor or host only + NAT with two adaptors, the script clears two
+# addresses and ignores any errors.
 
 echo "starting cloned VM"
 VBoxManage startvm $clone_vmname
@@ -154,7 +161,8 @@ if [[ $shutdown == true ]]; then
   echo "shutting down cloned VM"
   VBoxManage controlvm $clone_vmname acpipowerbutton
   $proj_root/scripts/wait-vm $clone_vmname --stopped
-  # virtual box needs a moment or subsequent vboxmanage commands will intermittently error
+  # virtual box needs a moment or subsequent vboxmanage commands will
+  # intermittently error
   sleep 5s
 fi
 

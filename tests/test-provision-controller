@@ -1,9 +1,12 @@
 #!/usr/bin/env bash
 
+# bridged. Fill in host-only... for host only and NAT
 proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 $proj_root/toplevel-scripts/provision-controller\
  --priv-key=$proj_root/kickstart/id_ed25519\
  --template-vmname=bingo\
+ --host-only-network=\
+ --host-only-octet=\
  --vboxdir=/sdb1/virtualbox\
  --controller-hostname=doc\
  --controller-ram=4096\

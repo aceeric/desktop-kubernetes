@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 
-# Configures host-only networking for the passed VM. Does this by creating an ISO from a network config file
+# Configures host only networking for the passed VM. Does this by creating an ISO from a network config file
 # in the 'hostonly-netcfg' directory. This ISO contains a file that is suitable to place in the
-# /etc/sysconfig/network-scripts directory of the VM. The passed octet is interpolated into the config file.
+# /etc/sysconfig/network-scripts directory of the VM. The passed network params are interpolated into the config file.
 # The presence of this config file causes CentOS to use the file to initialize networking for the interface. So
-# this is how we configure each node in the cluster with a unique static IP address in the host-only network.
+# this is how we configure each node in the cluster with a unique static IP address in the host only network.
 #
-# The interface is named enp0s8 because the way this project works - for host-only networking - a NAT interface is
-# configured in network position one, and the host-only interface takes position two. As a result, the host-only
+# The interface is named enp0s8 because the way this project works - for host only networking - a NAT interface is
+# configured in network position one, and the host only interface takes position two. As a result, the host only
 # network will pick up the name enp0s8. See https://forums.virtualbox.org/viewtopic.php?f=7&t=103195. Snip:
 #
 # "VirtualBox can emulate two chipsets: PIIX3 and ICH9 (see System > Motherboard > Chipset). Depending on the chipset,
@@ -16,25 +16,34 @@
 # distributions, the network adapters are enumerated on the PCI busses and named enp0s3, enp0s8, enp0s9
 # and enp0s10 accordingly. ... In consequence, the naming is indeed deterministic and predictable."
 #
-# The NAT interface is used for external access for the VM (i.e. internet) and the host-only network implements the
+# The NAT interface is used for external access for the VM (i.e. internet) and the host only network implements the
 # k8s cluster network.
+#
+# Usage: configure-hostonly-networking <vmname> <network octets> <host octet>
+#
+# ...where <network octets> are the left three octets of an IPv4 address, and <host octet> is the right-most
+# octet of the IP address to configure the adaptor with. E.g.:
+#
+# configure-hostonly-networking 200.200.200 202
+#
 
 proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 vmname="$1"
-octet="$2"
+network="$2"
+octet="$3"
 
-# create ifcfg ISO with IP Address from passed octet
-echo "creating ifcfg-enp0s8.iso with octet $octet"
-$proj_root/scripts/gen-hostonly-ifcfg-iso $octet
+# create ifcfg ISO with IP Address from passed args
+echo "creating ifcfg-enp0s8.iso with network $network and octet $octet"
+$proj_root/scripts/gen-hostonly-ifcfg-iso $network $octet
 
 # mount ISO to VM
 echo "attaching ifcfg-enp0s8 ISO to VM $vmname"
 VBoxManage storageattach $vmname --storagectl IDE --port 0 --device 0 --type dvddrive\
  --medium $proj_root/media/ifcfg-enp0s8.iso
 
-# start VM - this will cause the desktop-kubernetes systemd service to copy the config file 'ifcfg-enp0s8' from the
-# ISO to the /etc/sysconfig/network-scripts directory in the VM, and then it will shut the VM down. See
+# start VM - this will cause the desktop-kubernetes systemd service to: 1) copy the config file 'ifcfg-enp0s8' from
+# the ISO to the /etc/sysconfig/network-scripts directory in the guest, and then 2) shut the VM down. See
 # kickstart/desktop-kubernetes.sh
 echo "starting VM $vmname"
 VBoxManage startvm $vmname

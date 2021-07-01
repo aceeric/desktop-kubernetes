@@ -2,8 +2,8 @@
 
 set -e
 
-long_opts=priv-key:,template-vmname:,host-only-octet:,vboxdir:,controller-hostname:,controller-ram:,controller-cpu:,\
-controller-disk:,\vboxdir:,etcd-download:,etcd-gzip:,kube-apiserver-download:,kube-apiserver-binary:,\
+long_opts=priv-key:,template-vmname:,host-only-network:,host-only-octet:,vboxdir:,controller-hostname:,controller-ram:,\
+controller-cpu:,controller-disk:,\vboxdir:,etcd-download:,etcd-gzip:,kube-apiserver-download:,kube-apiserver-binary:,\
 kube-controller-manager-download:,kube-controller-manager-binary:,kube-scheduler-download:,kube-scheduler-binary:,\
 ca-cert:,ca-key:
 script_name=$(basename "$0")
@@ -11,6 +11,7 @@ proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 priv_key=
 template_vmname=
+host_only_network=
 host_only_octet=
 vboxdir=
 controller_hostname=
@@ -53,6 +54,10 @@ function parse_args() {
         ;;
       --template-vmname)
         template_vmname=$(opt_val "$2")
+        shift 2
+        ;;
+      --host-only-network)
+        host_only_network=$(opt_val "$2")
         shift 2
         ;;
       --host-only-octet)
@@ -132,6 +137,7 @@ parse_args "$@"
 # debug
 #echo "priv_key=$priv_key"
 #echo "template_vmname=$template_vmname"
+#echo "host_only_network=$host_only_network"
 #echo "host_only_octet=$host_only_octet"
 #echo "vboxdir=$vboxdir"
 #echo "controller_hostname=$controller_hostname"
@@ -156,6 +162,7 @@ $proj_root/scripts/clone-vm\
  --clone-vmname=$controller_hostname\
  --clone-ram=$controller_ram\
  --clone-cpu=$controller_cpu\
+ --host-only-network=$host_only_network\
  --host-only-octet=$host_only_octet\
  --vboxdir=$vboxdir
 

@@ -1,15 +1,31 @@
+
 #!/usr/bin/env bash
 
 #
-# Creates a new host-only network. Virtual box doesn't provide the ability to specify the name when
-# creating a network so echo the newly created network name for the caller to pick up.
+# Creates a new host only network. Does not allow the caller to create a duplicate network. Virtual box doesn't
+# provide the ability to specify the name when creating a network so echo the newly created network name for
+# the caller to pick up.
 #
+# Usage:
+#   create-hostonly-network <network octets>
+
+# ...where <network octets> are the left three octets of an IPv4 address. E.g.:
+#
+# create-hostonly-network 200.200.200
 
 set -e
 
-proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+if [[ "$#" -ne 1 ]]; then
+  echo "usage: create-hostonly-network <network-octets>"
+  exit 1
+fi
 
-# the new host-only network name created by VirtualBox that will be returned to the caller
+if VBoxManage list hostonlyifs | grep IPAddress | awk '{print $2}' | grep -q $1; then
+  echo "error: a host only network already exists for network $1"
+  exit 1
+fi
+
+# the new host only network name created by VirtualBox that will be returned to the caller
 netname=
 
 # the progress line goes to stderr and the cmd output goes to stdout but mask stderr so all the caller sees is
@@ -21,7 +37,7 @@ regex="Interface '([0-9a-z]+)' was successfully created"
 [[ $output =~ $regex ]] && netname="${BASH_REMATCH[1]}"
 
 # set the static network address
-VBoxManage hostonlyif ipconfig $netname --ip 200.200.200.1 --netmask 255.255.255.0
+VBoxManage hostonlyif ipconfig $netname --ip $1.1 --netmask 255.255.255.0
 
 # return newly created network name to caller
 echo $netname

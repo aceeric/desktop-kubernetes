@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
-# Tests creating a host-only network
+# Tests creating a host only network
 
 proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-host_only_network_name=$($proj_root/scripts/create-hostonly-network)
+host_only_network_name=$($proj_root/scripts/create-hostonly-network 60.60.60)
 echo "host_only_network_name=$host_only_network_name"

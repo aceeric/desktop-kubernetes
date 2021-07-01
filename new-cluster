@@ -2,7 +2,7 @@
 
 set -e
 
-long_opts=help,host-network-interface:,host-only,vboxdir:,check-compatibility,from-scratch,create-template,networking:,\
+long_opts=help,host-network-interface:,host-only-network:,vboxdir:,check-compatibility,from-scratch,create-template,networking:,\
 monitoring:,storage:,single-node,up:,down:,delete:
 script_name=$(basename "$0")
 proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -11,7 +11,7 @@ admin_kubeconfig=$proj_root/admin/admin.kubeconfig
 
 # api
 host_network_interface=
-host_only=0
+host_only_network=
 vboxdir=
 check_compatibility=0
 from_scratch=0
@@ -26,7 +26,6 @@ delete=
 
 # internal
 cluster_vms=(doc)
-host_only_opt=
 controller_octet=
 worker1_octet=
 worker2_octet=
@@ -184,7 +183,7 @@ function usage() {
     VM takes a fair bit of time, including the initial 60 seconds for the boot menu to time out and actually
     start the install.
 
-    Usage: new-cluster [--host-network-interface=<interface>] [--host-only] [--vboxdir=</some/path>]
+    Usage: new-cluster [--host-network-interface=<interface>] [--host-only-network=<network>] [--vboxdir=</some/path>]
            [--networking=<type>] [--monitoring=<type>] [--from-scratch] [--create-template] [--single-node]
            [--storage=<type>] [--help] [--check-compatibility]
            [--up=<nodelist>] [--down=<nodelist>] [--delete=<nodelist>]
@@ -197,15 +196,17 @@ function usage() {
                                  the VBoxManage utility to create the VMs, which will in turn create a sub-directory
                                  under this directory for each VM. The directory must exist. The script will not
                                  create it.
-      --host-network-interface   Specify this, or --host-only. If this, then the value is the name of the primary
+      --host-network-interface   Specify this, or --host-only-network. If this, then the value is the name of the primary
                                  network interface on your machine. The scripts use this to configure the VirtualBox
                                  bridge network for each node VM. This option must be applied identically to the
                                  template VM and all clones.
-      --host-only                Specify this, or --host-network-interface. If this, then no value parameter is
-                                 needed. This option configures NAT + Host-Only networking mode. The scripts will
-                                 create a new host-only network and configure the cluster to use it for intra-cluster
-                                 networking, and will configure NAT for the cluster to access the internet. This
-                                 option must be applied identically to the template VM and all clones.
+      --host-only-network        Specify this, or --host-network-interface. If this, then the value is the left three
+                                 octets of the host only network. This option configures NAT + host only networking
+                                 mode. The scripts will create a new host only network and configure the cluster to
+                                 use it for intra-cluster networking, and will configure NAT for the cluster to
+                                 access the internet. This option must be applied identically to the template VM
+                                 and all clones. (The parameter is only used when creating the template. The presence
+                                 of the option is used when creating the clones.)
       --networking               Optional. Installs k8s networking. Current valid values are "calico", "kube-router",
                                  and "cilium". E.g.: --networking=calico. (Calico also installs kube-proxy. The
                                  other networking configurations are kube-proxyless.)
@@ -299,9 +300,9 @@ function parse_args() {
         host_network_interface=$(opt_val "$2")
         shift 2
         ;;
-      --host-only)
-        host_only=1
-        shift
+      --host-only-network)
+        host_only_network=$(opt_val "$2")
+        shift 2
         ;;
       --vboxdir)
         vboxdir=$(opt_val "$2")
@@ -404,11 +405,11 @@ elif [[ ! -z "$delete" ]]; then
   exit
 fi
 
-if [[ -z "$host_network_interface" ]] && [[ $host_only -eq 0 ]]; then
-  echo "either --host-only-network-name or --host-only is required"
+if [[ -z "$host_network_interface" ]] && [[ -z "$host_only_network" ]]; then
+  echo "either --host-network-interface or --host-only-network is required"
   exit 1
-elif [[ ! -z "$host_network_interface" ]] && [[ $host_only -eq 1 ]]; then
-  echo "--host-only-network-name and --host-only are exclusive of each other"
+elif [[ ! -z "$host_network_interface" ]] && [[ ! -z "$host_only_network" ]]; then
+  echo "--host-network-interface and --host-only-network are exclusive of each other"
   exit 1
 elif [[ -z "$vboxdir" ]]; then
   echo "--vboxdir is a required option"
@@ -450,8 +451,7 @@ if [[ $from_scratch -eq 0 ]]; then
 fi
 
 # because of how these are passed to called scripts, the workers have a different format
-if [[ $host_only -eq 1 ]]; then
-  host_only_opt="--host-only"
+if [[ ! -z "$host_only_network" ]]; then
   controller_octet=200
   worker1_octet=,201
   worker2_octet=,202
@@ -460,12 +460,12 @@ fi
 # if running from scratch, always create a template VM to clone the nodes from. This step also generates
 # the SSH keys into the 'kickstart' directory that are used all over the place to interact with the node VMs
 # via ssh/scp as they are being bootstrapped, and that you will use to SSH into the VMs after the cluster
-# is provisioned. If using host-only networking, the 'create-template-vm' script will also create a host-only
-# VirtualBox network which will be used to initialize the template. This host-only network name will be copied
-# into every VM cloned from the template. So every cloned VM will be on the same host-only network.
+# is provisioned. If using host only networking, the 'create-template-vm' script will also create a host only
+# VirtualBox network which will be used to initialize the template. This host only network name will be copied
+# into every VM cloned from the template. So every cloned VM will be on the same host only network.
 #
 # Script args are validated above so caller never specifies both bridge (by virtue of the --host-network-interface
-# option) AND host-only (by virtue of the --host-only option)
+# option) AND host only (by virtue of the --host-only-network option)
 
 if [[ $from_scratch -eq 1 ]] || [[ $create_template -eq 1 ]] ; then
   echo "creating a template VM"
@@ -477,7 +477,7 @@ if [[ $from_scratch -eq 1 ]] || [[ $create_template -eq 1 ]] ; then
    --guest-additions-download=$guest_additions_download\
    --guest-additions-path=$guest_additions_path\
    --host-network-interface=$host_network_interface\
-   $host_only_opt\
+   --host-only-network=$host_only_network\
    --vboxdir=$vboxdir
 fi
 
@@ -491,6 +491,7 @@ echo "provisioning a controller node"
 $proj_root/toplevel-scripts/provision-controller\
  --priv-key=$priv_key\
  --template-vmname=bingo\
+ --host-only-network=$host_only_network\
  --host-only-octet=$controller_octet\
  --vboxdir=$vboxdir\
  --controller-hostname=doc\
@@ -540,6 +541,7 @@ if [[ $single_node -eq 0 ]]; then
   $proj_root/toplevel-scripts/provision-workers\
    --worker=ham,8192,2,20000,10.200.2.0/24$worker1_octet\
    --worker=monk,8192,2,20000,10.200.3.0/24$worker2_octet\
+   --host-only-network=$host_only_network\
    --controller-ip=$controller_ip\
    --controller-hostname=doc\
    --template-vmname=bingo\
@@ -577,7 +579,7 @@ elif [[ "$networking" == "cilium" ]]; then
    --admin-kubeconfig=$admin_kubeconfig
 elif [[ "$networking" == "calico" ]]; then
   nodes="${cluster_vms[@]}"
-  # convert to comma-delimited, e.g.: "doc,ham,monk":
+  # convert array (doc ham monk) to comma-delimited string, e.g.: "doc,ham,monk":
   nodes=${nodes// /,}
   $proj_root/networking/kube-proxy/install-kube-proxy\
    --controller-ip=$controller_ip\

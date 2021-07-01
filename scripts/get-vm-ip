@@ -2,10 +2,10 @@
 
 #
 # Gets the IP address from a VM using Guest Additions functionality. (Obviously requires that Guest Additions
-# installed in the guest.) The project supports provisioning a cluster in either bridged - or host-only - network
+# installed in the guest.) The project supports provisioning a cluster in either bridged - or host only - network
 # mode. In bridged mode there is only one NIC in each guest providing host-to-guest, guest-to-guest, and
-# guest-to-internet. In host-only there are two NICs: first is the NAT NIC for internet access from the guest.
-# Second NIC is the host-only NIC for host-to-guest, and guest-to-guest. This script handles those two cases.
+# guest-to-internet. In host only there are two NICs: first is the NAT NIC for internet access from the guest.
+# Second NIC is the host only NIC for host-to-guest, and guest-to-guest. This script handles those two cases.
 #
 # The script blocks (forever) trying to get the IP address. Handles the case where you're using this to make
 # sure the guest VM started.

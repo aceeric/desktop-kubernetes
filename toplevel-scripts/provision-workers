@@ -2,7 +2,7 @@
 
 set -e
 
-long_opts=worker:,controller-ip:,controller-hostname:,template-vmname:,vboxdir:,\
+long_opts=worker:,host-only-network:,controller-ip:,controller-hostname:,template-vmname:,vboxdir:,\
 priv-key:,crictl-download:,crictl-binary:,runc-download:,runc-binary:,\
 cni-plugins-download:,cni-plugins-binary:,containerd-download:,containerd-binary:,\
 kubelet-download:,kubelet-binary:,node-labels:,ca-cert:,ca-key:
@@ -10,6 +10,7 @@ script_name=$(basename "$0")
 proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 worker=
+host_only_network=
 controller_ip=
 controller_hostname=
 template_vmname=
@@ -54,6 +55,10 @@ function parse_args() {
       --worker)
         worker=$(opt_val "$2")
         workers+=("$worker")
+        shift 2
+        ;;
+      --host-only-network)
+        host_only_network=$(opt_val "$2")
         shift 2
         ;;
       --controller-ip)
@@ -144,6 +149,7 @@ fi
 
 # debug
 #echo "worker=$worker"
+#echo "host_only_network=$host_only_network"
 #echo "workers=${workers[@]}"
 #echo "controller_ip=$controller_ip"
 #echo "controller_hostname=$controller_hostname"
@@ -192,6 +198,7 @@ for worker in "${workers[@]}"; do
    --clone-cpu=$clone_cpu\
    --clone-disk=$clone_disk\
    --pod-cidr=$pod_cidr\
+   --host-only-network=$host_only_network\
    --host-only-octet=$host_only_octet\
    --vboxdir=$vboxdir\
    --priv-key=$priv_key\
