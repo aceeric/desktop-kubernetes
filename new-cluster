@@ -199,12 +199,14 @@ function usage() {
                                  create it.
       --host-network-interface   Specify this, or --host-only. If this, then the value is the name of the primary
                                  network interface on your machine. The scripts use this to configure the VirtualBox
-                                 bridge network for each node VM.
+                                 bridge network for each node VM. This option must be applied identically to the
+                                 template VM and all clones.
       --host-only                Specify this, or --host-network-interface. If this, then no value parameter is
                                  needed. This option configures NAT + Host-Only networking mode. The scripts will
                                  create a new host-only network and configure the cluster to use it for intra-cluster
-                                 networking, and will configure NAT for the cluster to access the internet.
-      --networking               Optional. Installs networking. Current valid values are "calico", "kube-router",
+                                 networking, and will configure NAT for the cluster to access the internet. This
+                                 option must be applied identically to the template VM and all clones.
+      --networking               Optional. Installs k8s networking. Current valid values are "calico", "kube-router",
                                  and "cilium". E.g.: --networking=calico. (Calico also installs kube-proxy. The
                                  other networking configurations are kube-proxyless.)
       --monitoring               Optional. Installs monitoring. Allowed values are "metrics.k8s.io", and
