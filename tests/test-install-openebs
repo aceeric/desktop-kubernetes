@@ -16,6 +16,6 @@ $proj_root/features/storage/openebs/install-openebs\
  --openebs-operator-lite-manifest-download=https://openebs.github.io/charts/openebs-operator-lite.yaml\
  --openebs-operator-lite-manifest=$proj_root/binaries/openebs-operator-lite.yaml\
  --openebs-sc-manifest-download=https://openebs.github.io/charts/openebs-lite-sc.yaml\
- --openebs-sc-manifest=$proj_root/binaries/openebs-lite-sc.yaml
+ --openebs-sc-manifest=$proj_root/binaries/openebs-lite-sc.yaml\
  --nodes=doc,ham,monk
  
