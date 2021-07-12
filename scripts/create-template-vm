@@ -138,7 +138,7 @@ $proj_root/scripts/gen-kickstart-iso
 kickstart_iso_path=$proj_root/media/kickstart.iso
 
 if [[ ! -z "$host_only_network" ]]; then
-  echo "creating new host only network"
+  echo "creating new host only network for $host_only_network"
   host_only_network_name=$($proj_root/scripts/create-hostonly-network $host_only_network)
   echo "host only network created $host_only_network_name"
 fi
