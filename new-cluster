@@ -174,8 +174,7 @@ function usage() {
     -----------
     Creates a Kubernetes cluster on the desktop using VirtualBox and CentOS kickstart for hands-free
     CentOS installation. The cluster consists of three nodes: one controller and two workers. The nodes
-    are configured with VirtualBox bridge networking, which supports host-to-guest, guest-to-guest,
-    and guest-to-internet.
+    are configured with networking support for host-to-guest, guest-to-guest, and guest-to-internet.
 
     The script creates a "template" VM, and then clones that for each cluster node. The initial
     template VM creation runs Kickstart to install the OS, and also installs VirtualBox Guest Additions

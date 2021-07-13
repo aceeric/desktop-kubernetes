@@ -19,11 +19,11 @@ if [[ ! -z "$kdvl" ]] && [[ "$kdvl" == "$unam" ]]; then
       exit 0
     fi
 
-    # If host only networking, the project mounts an config ISO to configure enp0s8 (the only-only interface.) If
+    # If host only networking, the project mounts a config ISO to configure enp0s8 (the only-only interface.) If
     # bridge networking, the config CD is not mounted. Label CFGENP0S8 is assigned by scripts/gen-hostonly-ifcfg-iso.
     # If mounted, then copy the enp0s8 config file from the CD to the config directory and shutdown. This is how we
     # configure the network in each VM in the cluster with a different IPv4 address for host only networking. If bridge
-    # networking, then the CD is not mounted by the caller and so this if-code is never entered. And - we never
+    # networking, then the CD is not mounted by the caller and so this if block is never entered. And - we never
     # mount the ISO in the template VM - only when we clone the template.
     if blkid | grep 'LABEL="CFGENP0S8"'; then
       touch /root/did-network-setup-begin

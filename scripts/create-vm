@@ -3,10 +3,9 @@
 #
 # Creates a CentOS VM from a CentOS ISO, and installs the OS using Kickstart from a Kickstart ISO.
 # Intent is - this VM will be the template VM from which the cluster VMs will subsequently be cloned.
-# Expects ISO files on the file system. Since the template VM will be configured with Vbox bridge networking,
-# expects a host network interface that can be configured into the Vbox bridge network for the VM. This script
-# just creates the VM. To install guest additions, you would need to call 'install-guest-additions' (which is
-# done by the 'create-template-vm' script.)
+# Expects ISO files on the file system. Configures bridged networking or host only networking based on
+# passed options. This script just creates the VM. To install guest additions, you would need to call
+# 'install-guest-additions' (which is done by the 'create-template-vm' script.)
 #
 # todo args: cpu / mem / storage
 #
