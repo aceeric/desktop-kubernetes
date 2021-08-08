@@ -85,13 +85,7 @@ kube_proxy_binary_actual=$($proj_root/scripts/make-download-path\
 #echo "ca_cert=$ca_cert"
 #echo "ca_key=$ca_key"
 
-if [[ ! -z "$kube_proxy_download" ]]; then
-  echo "downloading kube-proxy binary"
-  $proj_root/scripts/download-obj --url="$kube_proxy_download" --dest="$kube_proxy_binary_actual"
-  chmod +x $kube_proxy_binary_actual
-else
-  echo "no URL provided - skipping download and using provided kube-proxy binary"
-fi
+$proj_root/scripts/download-obj --url="$kube_proxy_download" --dest="$kube_proxy_binary_actual" --executable
 
 # gen kube-proxy certificate
 

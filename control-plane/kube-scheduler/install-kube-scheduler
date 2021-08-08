@@ -84,13 +84,7 @@ kube_scheduler_binary_actual=$($proj_root/scripts/make-download-path\
 #echo "ca_cert=$ca_cert"
 #echo "ca_key=$ca_key"
 
-if [[ ! -z "$kube_scheduler_download" ]]; then
-  echo "downloading kube-scheduler binary"
-  $proj_root/scripts/download-obj --url="$kube_scheduler_download" --dest="$kube_scheduler_binary_actual"
-  chmod +x $kube_scheduler_binary_actual
-else
-  echo "no URL provided - skipping download and using provided binary"
-fi
+$proj_root/scripts/download-obj --url="$kube_scheduler_download" --dest="$kube_scheduler_binary_actual" --executable
 
 echo "copying kube-scheduler binary to controller VM"
 scp -i $priv_key $kube_scheduler_binary_actual root@$controller_ip:/usr/local/bin/

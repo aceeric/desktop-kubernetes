@@ -89,13 +89,8 @@ kube_controller_manager_binary_actual=$($proj_root/scripts/make-download-path\
 #echo "ca_cert=$ca_cert"
 #echo "ca_key=$ca_key"
 
-if [[ ! -z "$kube_controller_manager_download" ]]; then
-  echo "downloading kube-controller_manager binary"
-  $proj_root/scripts/download-obj --url="$kube_controller_manager_download" --dest="$kube_controller_manager_binary_actual"
-  chmod +x $kube_controller_manager_binary_actual
-else
-  echo "no URL provided - skipping download and using provided binary"
-fi
+$proj_root/scripts/download-obj --url="$kube_controller_manager_download"\
+ --dest="$kube_controller_manager_binary_actual" --executable
 
 echo "copying kube-controller-manager binary to controller VM"
 scp -i $priv_key $kube_controller_manager_binary_actual root@$controller_ip:/usr/local/bin/
@@ -137,7 +132,7 @@ kubectl config set-context default \
 
 kubectl config use-context default --kubeconfig=$controller_mgr_kubeconfig
 
-echo "copying kubeconfig file to controller VM"
+echo "copying kube-controller-manager kubeconfig file to controller VM"
 scp -i $priv_key $controller_mgr_kubeconfig root@$controller_ip:/var/lib/kubernetes/
 
 echo "copying kube-controller-manager service file to controller VM"

@@ -112,23 +112,8 @@ guest_additions_actual=$($proj_root/scripts/make-download-path\
 #echo "host_only_network=$host_only_network"
 #echo "vboxdir=$vboxdir"
 
-if [[ ! -z "$centos_iso_download" ]]; then
-  if [[ ! -f $centos_iso_actual ]]; then
-    echo "downloading CentOS ISO"
-    $proj_root/scripts/download-obj --url="$centos_iso_download" --dest="$centos_iso_actual"
-  fi
-else
-  echo "skipping download and using provided CentOS ISO"
-fi
-
-if [[ ! -z "$guest_additions_download" ]]; then
-  if [[ ! -f $guest_additions_actual ]]; then
-    echo "downloading guest additions ISO"
-    $proj_root/scripts/download-obj --url="$guest_additions_download" --dest="$guest_additions_actual"
-  fi
-else
-  echo "skipping download and using provided Guest Additions ISO"
-fi
+$proj_root/scripts/download-obj --url="$centos_iso_download" --dest="$centos_iso_actual"
+$proj_root/scripts/download-obj --url="$guest_additions_download" --dest="$guest_additions_actual"
 
 echo "generating SSH keys -- the public key will be copied to the VM by the kickstart script"
 $proj_root/scripts/gen-ssh-keyfiles

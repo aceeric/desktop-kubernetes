@@ -92,19 +92,8 @@ openebs_sc_manifest_actual=$($proj_root/scripts/make-download-path\
 
 echo "installing the OpenEBS operator lite, and associated storage classses"
 
-if [[ ! -z "$openebs_operator_lite_manifest_download" ]]; then
-  echo "downloading OpenEBS operator lite manifest"
-  $proj_root/scripts/download-obj --url="$openebs_operator_lite_manifest_download" --dest="$openebs_operator_lite_manifest_actual"
-else
-  echo "no URL provided - skipping download and using provided operator manifest"
-fi
-
-if [[ ! -z "$openebs_sc_manifest_download" ]]; then
-  echo "downloading OpenEBS storage class manifest"
-  $proj_root/scripts/download-obj --url="$openebs_sc_manifest_download" --dest="$openebs_sc_manifest_actual"
-else
-  echo "no URL provided - skipping download and using provided storeg class manifest"
-fi
+$proj_root/scripts/download-obj --url="$openebs_operator_lite_manifest_download" --dest="$openebs_operator_lite_manifest_actual"
+$proj_root/scripts/download-obj --url="$openebs_sc_manifest_download" --dest="$openebs_sc_manifest_actual"
 
 echo "deploying the openEBS operator lite"
 kubectl --kubeconfig $admin_kubeconfig apply -f $openebs_operator_lite_manifest_actual

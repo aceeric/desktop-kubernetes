@@ -66,12 +66,7 @@ kube_router_yaml_download_actual="$($proj_root/scripts/make-download-path\
 #echo "kube_router_yaml_download_actual=$kube_router_yaml_download_actual"
 #echo "admin_kubeconfig=$admin_kubeconfig"
 
-if [[ ! -z "$kube_router_yaml_download" ]]; then
-  echo "Downloading kube-router yaml"
-  $proj_root/scripts/download-obj --url="$kube_router_yaml_download" --dest="$kube_router_yaml_download_actual"
-else
-  echo "No URL provided - skipping download and using provided yaml"
-fi
+$proj_root/scripts/download-obj --url="$kube_router_yaml_download" --dest="$kube_router_yaml_download_actual"
 
 sed\
  -e 's|"%CLUSTERCIDR%"|10.200.0.0/16|g'\

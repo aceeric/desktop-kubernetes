@@ -22,7 +22,7 @@ if [[ "$1" != "download" ]]; then
   exit
 fi
 
-# this variant tests bridged and also downloading
+# this variant tests bridged and also doing a download
 $proj_root/scripts/create-template-vm\
  --template-vmname=bingo\
  --centos-iso-download=http://mirror.umd.edu/centos/8.3.2011/isos/x86_64/CentOS-8.3.2011-x86_64-dvd1.iso\

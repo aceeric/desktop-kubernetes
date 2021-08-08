@@ -99,33 +99,17 @@ cni_plugins_binary_actual=$($proj_root/scripts/make-download-path\
 
 echo "Copying misc kubernetes binaries"
 
-if [[ ! -z "$crictl_download" ]]; then
-  echo "Downloading crictl binary"
-  $proj_root/scripts/download-obj --url="$crictl_download" --dest="$crictl_binary_actual"
-else
-  echo "No URL provided - skipping download and using provided crictl binary"
-fi
-echo "Copying binary to worker"
+$proj_root/scripts/download-obj --url="$crictl_download" --dest="$crictl_binary_actual"
+echo "Copying crictl binary to worker"
 cat $crictl_binary_actual | ssh -i $priv_key root@$worker_ip\
  "tar zxvf - --no-same-owner -C /usr/local/bin/ crictl && chmod +x /usr/local/bin/crictl"
 
-if [[ ! -z "$runc_download" ]]; then
-  echo "Downloading runc binary"
-  $proj_root/scripts/download-obj --url="$runc_download" --dest="$runc_binary_actual"
-  chmod +x $runc_binary_actual
-else
-  echo "No URL provided - skipping download and using provided runc binary"
-fi
-echo "Copying binary to worker"
+$proj_root/scripts/download-obj --url="$runc_download" --dest="$runc_binary_actual" --executable
+echo "Copying runc binary to worker"
 scp -i $priv_key $runc_binary_actual root@$worker_ip:/usr/local/bin/
 
-if [[ ! -z "$cni_plugins_download" ]]; then
-  echo "Downloading cni_plugins binary"
-  $proj_root/scripts/download-obj --url="$cni_plugins_download" --dest="$cni_plugins_binary_actual"
-else
-  echo "No URL provided - skipping download and using provided cni plugins binary"
-fi
-echo "Copying binary to worker"
+$proj_root/scripts/download-obj --url="$cni_plugins_download" --dest="$cni_plugins_binary_actual"
+echo "Copying cni plugins binary to worker"
 ssh -i $priv_key root@$worker_ip "mkdir -p /opt/cni/bin"
 cat $cni_plugins_binary_actual | ssh -i $priv_key root@$worker_ip "tar zxvf - --no-same-owner -C /opt/cni/bin/"
 

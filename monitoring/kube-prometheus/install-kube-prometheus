@@ -7,13 +7,13 @@
 
 set -e
 
-long_opts=controller-ip:,kube-prometheus-download:,kube-prometheus-dir:,admin-kubeconfig:
+long_opts=controller-ip:,kube-prometheus-download:,kube-prometheus-binary:,admin-kubeconfig:
 script_name=$(basename "$0")
 proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 
 controller_ip=
 kube_prometheus_download=
-kube_prometheus_dir=
+kube_prometheus_binary=
 admin_kubeconfig=
 
 function opt_val() {
@@ -43,8 +43,8 @@ function parse_args() {
         kube_prometheus_download=$(opt_val "$2")
         shift 2
         ;;
-	    --kube-prometheus-dir)
-        kube_prometheus_dir=$(opt_val "$2")
+	    --kube-prometheus-binary)
+        kube_prometheus_binary=$(opt_val "$2")
         shift 2
         ;;
       --admin-kubeconfig)
@@ -61,23 +61,28 @@ function parse_args() {
 
 parse_args "$@"
 
+kube_prometheus_binary_actual=$($proj_root/scripts/make-download-path\
+ --download-url=$kube_prometheus_download --download-path=$kube_prometheus_binary)
+
 # debug
 #echo "controller_ip=$controller_ip"
 #echo "kube_prometheus_download=$kube_prometheus_download"
-#echo "kube_prometheus_dir=$kube_prometheus_dir"
+#echo "kube_prometheus_binary=$kube_prometheus_binary"
+#echo "kube_prometheus_binary_actual=$kube_prometheus_binary_actual"
 #echo "admin_kubeconfig=$admin_kubeconfig"
 
-if [[ ! -z "$kube_prometheus_download" ]]; then
-  echo "Downloading kube-prometheus tarball"
-  curl -L $kube_prometheus_download | tar zxvf - --strip-components 2 -C $kube_prometheus_dir\
-     kube-prometheus-0.7.0/manifests
-else
-  echo "No URL provided - skipping download and using provided directory: $kube_prometheus_dir"
-fi
+$proj_root/scripts/download-obj --url="$kube_prometheus_download" --dest="$kube_prometheus_binary_actual"
 
-kubectl --kubeconfig $admin_kubeconfig create -f $kube_prometheus_dir/setup
-until kubectl --kubeconfig $admin_kubeconfig get servicemonitors --all-namespaces ; do date; sleep 1; echo ""; done
-kubectl --kubeconfig $admin_kubeconfig create -f $kube_prometheus_dir
+manifest_dir=$(basename "$kube_prometheus_binary_actual" .tar.gz)
+
+tar zxvf $kube_prometheus_binary_actual --wildcards "$manifest_dir"'/manifests/setup/*.yaml'\
+ --to-command "kubectl --kubeconfig $admin_kubeconfig create -f -"
+
+until kubectl --kubeconfig $admin_kubeconfig get servicemonitors --all-namespaces &>/dev/null; do date; sleep 1;\
+  echo "Waiting for kube-prometheus CRDs"; done
+
+tar zxvf $kube_prometheus_binary_actual --exclude setup --wildcards "$manifest_dir"'/manifests/*.yaml'\
+ --to-command "kubectl --kubeconfig $admin_kubeconfig create -f -"
 
 echo "creating NodePort service 'grafana-nodeport' to enble Grafana access without port-forwarding"
 

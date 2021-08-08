@@ -89,22 +89,17 @@ etcd_gzip_actual=$($proj_root/scripts/make-download-path --download-url=$etcd_do
 #echo "kubernetes_key=$kubernetes_key"
 #echo "ca_cert=$ca_cert"
 
-if [[ ! -z "$etcd_download" ]]; then
-  echo "downloading etcd gzip"
-  $proj_root/scripts/download-obj --url="$etcd_download" --dest=$etcd_gzip_actual
-else
-  echo "no URL provided - skipping download and using provided gzip file"
-fi
+$proj_root/scripts/download-obj --url="$etcd_download" --dest=$etcd_gzip_actual
 
-echo "extracting binaries to controller"
+echo "extracting etcd binaries to controller"
 cat "$etcd_gzip_actual" | ssh -i $priv_key root@$controller_ip \
  "tar zxvf - --no-same-owner --strip-components 1 -C /usr/local/bin/ etcd-v3.4.14-linux-amd64/etcd etcd-v3.4.14-linux-amd64/etcdctl"
 
-echo "copying TLS material"
+echo "copying etcd TLS material"
 ssh -i $priv_key root@$controller_ip "mkdir -p /etc/etcd /var/lib/etcd && chmod 700 /var/lib/etcd"
 scp -i $priv_key $kubernetes_cert $kubernetes_key $ca_cert root@$controller_ip:/etc/etcd
 
-echo "generating service file"
+echo "generating etcd service file"
 sed $proj_root/control-plane/etcd/etcd.service\
  -e "s|ETCD_NAME|$controller_hostname|g" -e "s|INTERNAL_IP|$controller_ip|g"\
  | ssh -i $priv_key root@$controller_ip "cat > /etc/systemd/system/etcd.service"

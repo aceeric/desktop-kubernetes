@@ -66,14 +66,9 @@ containerd_binary_actual=$($proj_root/scripts/make-download-path\
 #echo "containerd_binary=$containerd_binary"
 #echo "containerd_binary_actual=$containerd_binary_actual"
 
-if [[ ! -z "$containerd_download" ]]; then
-  echo "Downloading containerd binary"
-  $proj_root/scripts/download-obj --url="$containerd_download" --dest="$containerd_binary_actual"
-else
-  echo "No URL provided - skipping download and using provided containerd binary"
-fi
+$proj_root/scripts/download-obj --url="$containerd_download" --dest="$containerd_binary_actual"
 
-echo "Copying binary to worker"
+echo "Copying containerd binary to worker"
 cat $containerd_binary_actual | ssh -i $priv_key root@$worker_ip\
  "tar zxvf - --strip-components 1 --no-same-owner -C /bin/ bin"
 

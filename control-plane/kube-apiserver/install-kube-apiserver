@@ -96,15 +96,9 @@ kube_apiserver_binary_actual=$($proj_root/scripts/make-download-path\
 #echo "ca_cert=$ca_cert"
 #echo "ca_key=$ca_key"
 
-if [[ ! -z "$kube_apiserver_download" ]]; then
-  echo "downloading kube-apiserver binary"
-  $proj_root/scripts/download-obj --url="$kube_apiserver_download" --dest="$kube_apiserver_binary_actual"
-  chmod +x $kube_apiserver_binary_actual
-else
-  echo "no URL provided - skipping download and using provided binary"
-fi
+$proj_root/scripts/download-obj --url="$kube_apiserver_download" --dest="$kube_apiserver_binary_actual" --executable
 
-echo "copying binary to controller"
+echo "copying kube-apiserver binary to controller"
 scp -i $priv_key $kube_apiserver_binary_actual root@$controller_ip:/usr/local/bin/
 
 echo "generating TLS material for kube-apiserver"
@@ -119,18 +113,18 @@ openssl x509 -req -days 10000 -in $service_account_csr -CA $ca_cert -CAkey $ca_k
  -sha256 -out $service_account_cert
 rm -f $service_account_csr
 
-echo "copying api server TLS material to controller VM"
+echo "copying kube-apiserver TLS material to controller VM"
 ssh -i $priv_key root@$controller_ip "mkdir -p /var/lib/kubernetes/"
 scp -i $priv_key\
  $ca_cert $ca_key $kubernetes_cert $kubernetes_key $service_account_cert $service_account_key\
  root@$controller_ip:/var/lib/kubernetes
 
-echo "generating encryption config yaml"
+echo "generating kube-apiserver encryption config yaml"
 encryption_key=$(head -c 32 /dev/urandom | base64)
 sed $proj_root/control-plane/kube-apiserver/encryption-config.yaml -e "s|ENCRYPTION_KEY|$encryption_key|g"\
  | ssh -i $priv_key root@$controller_ip "cat > /var/lib/kubernetes/encryption-config.yaml"
 
-echo "generating service file"
+echo "generating kube-apiserver service file"
 sed $proj_root/control-plane/kube-apiserver/kube-apiserver.service -e "s|CONTROLLER_IP|$controller_ip|g"\
  | ssh -i $priv_key root@$controller_ip "cat > /etc/systemd/system/kube-apiserver.service"
 

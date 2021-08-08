@@ -108,19 +108,8 @@ kubernetes_dashboard_actual=$($proj_root/scripts/make-download-path\
 #echo "ca_cert=$ca_cert"
 #echo "ca_key=$ca_key"
 
-if [[ ! -z "$metrics_server_download" ]]; then
-  echo "Downloading metrics-server yaml"
-  $proj_root/scripts/download-obj --url="$metrics_server_download" --dest="$metrics_server_actual"
-else
-  echo "No URL provided - skipping download and using provided metrics-server yaml"
-fi
-
-if [[ ! -z "$kubernetes_dashboard_download" ]]; then
-  echo "Downloading kubernetes dashboard yaml"
-  $proj_root/scripts/download-obj --url="$kubernetes_dashboard_download" --dest="$kubernetes_dashboard_actual"
-else
-  echo "No URL provided - skipping download and using provided kubernetes dashboard yaml"
-fi
+$proj_root/scripts/download-obj --url="$metrics_server_download" --dest="$metrics_server_actual"
+$proj_root/scripts/download-obj --url="$kubernetes_dashboard_download" --dest="$kubernetes_dashboard_actual"
 
 echo
 echo "installing kubernetes-sigs/metrics-server"

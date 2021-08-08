@@ -89,12 +89,7 @@ for node in "${nodes[@]}"; do
 EOF
 done
 
-if [[ ! -z "$calico_manifest_download" ]]; then
-  echo "downloading calico manifest"
-  $proj_root/scripts/download-obj --url="$calico_manifest_download" --dest="$calico_manifest_actual"
-else
-  echo "no URL provided - skipping download and using provided manifest"
-fi
+$proj_root/scripts/download-obj --url="$calico_manifest_download" --dest="$calico_manifest_actual"
 
 echo "deploying calico manifest"
 kubectl --kubeconfig $admin_kubeconfig create -f $calico_manifest_actual

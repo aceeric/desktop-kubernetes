@@ -5,6 +5,8 @@
 #
 # Usage:
 #
+# make-download-path --download-url=URL --download-path=FILESYSTEM-PATH --default-path=SEE-BELOW
+#
 # download url            download path  default path  output
 # ----------------------  -------------  ------------  ------------
 # https:/foo.com/bar.zip                 /tmp          /tmp/bar.zip
