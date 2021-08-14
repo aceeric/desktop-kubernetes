@@ -1,8 +1,10 @@
 # Desktop Kubernetes
 
-This is a Bash shell project that provisions a desktop Kubernetes cluster using VirtualBox - with each cluster node consisting of a CentOS 8 guest VM. The cluster consists of one VM functioning in a dual role of control plane server and worker node, and two dedicated worker nodes. The cluster is provisioned by running one script - `new-cluster` - with a few command line options. The script makes no changes to your desktop's environment - the only changes it makes to your desktop are the files it downloads, and the VirtualBox VMs it creates. (Of course, VirtualBox may create various network interfaces but these are cleaned up by VirtualBox if you remove the cluster.)
+<img align="left" src="/home/eace/IdeaProjects/desktop-kubernetes/resources/desktop-kubernetes.jpg" style="zoom:23%;" />
 
-This has been tested on Ubuntu 20.04.X systems host with 64 gig of RAM and 6+ hyper-threaded processors.
+Desktop Kubernetes is a Bash shell project that provisions a desktop Kubernetes cluster using VirtualBox - with each cluster node consisting of a CentOS 8 guest VM. The cluster consists of one VM functioning in a dual role of control plane server and worker node, and two dedicated worker nodes. The cluster is provisioned by running one script - `new-cluster` - with a few command line options. The script makes no changes to your desktop's environment - the only changes it makes to your desktop are the files it downloads, and the VirtualBox VMs it creates. (Of course, VirtualBox may create various network interfaces but these are cleaned up by VirtualBox if you remove the cluster.)
+
+This has been tested on Ubuntu 20.04.X systems with 64 gig of RAM and 6+ hyper-threaded processors.
 
 This project is derivative of **Kelsey Hightower's** [Kubernetes The Hard Way](https://github.com/kelseyhightower/kubernetes-the-hard-way). The differences between the Hightower project and this project are listed below:
 
@@ -22,23 +24,23 @@ This project is derivative of **Kelsey Hightower's** [Kubernetes The Hard Way](h
 
 The `new-cluster` script in the repo root is what you run.
 
-> Before running the first time: 1) If you're going with bridged networking, run `ifconfig` and get the name of your primary network interface. 2) Determine where on the filesystem you store VirtualBox VM files. Each VM will be about 6 gigs, and there will be four VMs: one template, and three nodes. So you need 24 gigabytes. 3) Check the CentOS mirror in the `new-cluster` script and make sure it makes sense for your geography.
+> Before running the first time: 1) Determine where on the filesystem you store VirtualBox VM files. Each VM will be about 6 gigs, and there will be four VMs: one template, and three nodes. So you need 24 gigabytes. 2) Check the CentOS mirror in the `new-cluster` script and make sure it makes sense for your geography.
 >
 > I also recommend you run once with just the `--check-compatibility` option to check the versions of the utilities used by the scripts (curl, etc.) against the tested versions. E.g.: `./new-cluster --check-compatibility`. There will likely be differences and you have to decide whether the differences are material. Most probably aren't.
 
 To create a cluster for the first time, run the script as shown below (using your unique values).
 
-Host only + NAT networking:
+**Host only + NAT networking:** This option enables the cluster to run on different networks. It's good for a laptop installation where you want to run the cluster in various locations. Any IP address is fine for the host network. Supply the left three octets - the script will assign the rightmost octet:
 
 ```bash
-$ ./new-cluster --host-only-network=50.1.1 --vboxdir=/sdb1/virtualbox\
+$ ./new-cluster --host-only-network=50.1.1 --vboxdir=/sdb1/virtualbox --create-template\
   --networking=calico --monitoring=kube-prometheus
 ```
 
-Bridged networking:
+**Bridged networking:** This is good for a desktop install since you can't run the cluster on a different network once the cluster is created. For this approach, first run `ifconfig` and get the name of your primary network interface. You use that in the `--host-network-interface` option:
 
 ```shell
-$ ./new-cluster --host-network-interface=enp0s31f6\
+$ ./new-cluster --host-network-interface=enp0s31f6 --create-template\
   --vboxdir=/sdb1/virtualbox --networking=calico --monitoring=kube-prometheus
 ```
 
@@ -62,7 +64,7 @@ The following command-line options are supported for the `new-cluster` script:
 | `--host-only-network`      | Required | Specify this, or the `--host-network-interface` option. If this, then the parameter is the left three octets of the network. E.g. `100.100.100`. This option configures NAT + host only networking mode. The scripts will create a new host only network and configure the cluster to use it for intra-cluster networking, and will configure NAT for the cluster to access the internet. *See important note above regarding VBox networking type.* |
 | `--vboxdir`                | Required | The directory where you keep your VirtualBox VM files. The script uses the `VBoxManage` utility to create the VMs, which will in turn create a sub-directory under this directory for each VM. The directory must exist. The script will not create it. |
 | `--networking`             | Optional | Installs Pod networking. Current valid values are `calico` (which also installs kube-proxy), `kube-router` and `cilium`. E.g.: `--networking=calico`. I use calico. |
-| `--create-template`        | Optional | First creates a template VM to clone all the cluster nodes from before bringing up the cluster. (This step by far takes the longest.) If not specified, expects to find an existing VM to clone from. This option installs the OS using Kickstart, then installs Guest Additions. |
+| `--create-template`        | Optional | First creates a template VM to clone all the cluster nodes from before bringing up the cluster. (This step by far takes the longest.) If not specified, expects to find an existing VM to clone from. This option installs the OS using Kickstart, then installs Guest Additions. You must provide this option for the very first cluster you create. |
 | `--monitoring`             | Optional | Installs monitoring. Allowed values are `metrics.k8s.io`, and `kube-prometheus`. The `metrics.k8s.io` value installs the [Resource metrics pipeline](https://kubernetes.io/docs/tasks/debug-application-cluster/resource-usage-monitoring/) and it also installs [Kubernetes Dashboard](https://github.com/kubernetes/dashboard), which can be accessed using `kubectl proxy`. The `kube-prometheus` value installs Prometheus and Grafana using the [kube-prometheus](https://github.com/prometheus-operator/kube-prometheus) stack. This option creates a `NodePort` service on port 30300 so you can access Grafana without port-forwarding. Once the cluster is up, the script will display the IP addresses of each of the nodes, and you can access Grafana on any one of those IP addresses on port 30300. (Remember to allow cookies for this site.) |
 | `--storage`                | Optional | Installs dynamic storage provisioning to support running workloads that use Persistent Volumes and Persistent Volume Claims. Currently, the only supported value is `openebs`, which installs the [OpenEBS](https://docs.openebs.io/docs/next/uglocalpv-hostpath.html) *Local HostPath* provisioner. This provisioner runs as a DaemonSet in the cluster and provides dynamic provisioning of HostPath volumes. This is a light-weight provisioner that supports desktop testing. OpenEBS creates directories inside the cluster VMs for each PV. For this feature to be reasonably stable, you have to be cognizant of the amount of storage in the VMs you provision as compared the the storage consumed by the workloads you're testing. The script internals contain resizing logic but this isn't exposed via the script API at present. |
 | `--single-node`            | Optional | Creates a single node cluster. The default is to create three nodes: one control plan node, named *doc*, and two workers, named *ham* and *monk*. This option is useful to quickly test changes since it is faster to provision a single node. |
