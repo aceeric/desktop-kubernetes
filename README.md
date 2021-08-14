@@ -1,4 +1,4 @@
-# Desktop Kubernetes (κυβερνήτης επιφάνειας εργασίας)
+# Desktop Kubernetes
 
 <img src="resources/desktop-kubernetes.jpg" width="100"/>
 
@@ -112,7 +112,7 @@ For explicitly versioned components, changes only need to be made one time in th
 | host     | curl                                                         | 7.68.0             |
 | guest VM | Centos ISO                                                   | 8.3.2011-x86_64    |
 | guest VM | Virtual Box Guest Additions ISO                              | 6.1.18             |
-| k8s      | etcd                                                         | v3.4.14            |
+| k8s      | etcd                                                         | v3.5.0             |
 | k8s      | kube-apiserver                                               | v1.20.1            |
 | k8s      | kube-controller-manager                                      | v1.20.1            |
 | k8s      | kube-scheduler                                               | v1.20.1            |
@@ -126,7 +126,7 @@ For explicitly versioned components, changes only need to be made one time in th
 | k8s      | kube-router (if installed)                                   | v1.1.1             |
 | k8s      | Metrics Server (if installed)                                | 0.4.2              |
 | k8s      | Kubernetes Dashboard (if installed)                          | 2.0.0              |
-| k8s      | Calico networking (if installed)                             | 3.18.0             |
+| k8s      | Calico networking (if installed)                             | 3.20.0             |
 | k8s      | Cilium networking and Hubble network monitoring (if installed) | 1.9.4              |
 | k8s      | kube-prometheus stack (if installed)                         | 0.7.0              |
 | k8s      | OpenEBS (if installed)                                       | 2.7.0              |
