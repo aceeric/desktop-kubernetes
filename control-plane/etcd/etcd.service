@@ -21,7 +21,10 @@ ExecStart=/usr/local/bin/etcd\
   --initial-cluster-token=etcd-cluster-0\
   --initial-cluster=ETCD_NAME=https://INTERNAL_IP:2380\
   --initial-cluster-state new\
-  --data-dir=/var/lib/etcd
+  --data-dir=/var/lib/etcd\
+  --log-level=info\
+  --logger=zap\
+  --log-outputs=stderr
 Restart=on-failure
 RestartSec=5
 

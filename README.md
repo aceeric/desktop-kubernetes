@@ -1,4 +1,4 @@
-# Desktop Kubernetes
+# Desktop Kubernetes (κυβερνήτης επιφάνειας εργασίας)
 
 <img src="resources/desktop-kubernetes.jpg" width="100"/>
 

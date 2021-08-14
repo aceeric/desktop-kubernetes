@@ -6,7 +6,7 @@ $proj_root/scripts/configure-controller\
  --vboxdir=/sdb1/virtualbox\
  --priv-key=$proj_root/kickstart/id_ed25519\
  --etcd-download=\
- --etcd-gzip=$proj_root/binaries/etcd-v3.4.14-linux-amd64.tar.gz\
+ --etcd-gzip=$proj_root/binaries/etcd-v3.5.0-linux-amd64.tar.gz\
  --kube-apiserver-download=\
  --kube-apiserver-binary=$proj_root/binaries/kube-apiserver\
  --kube-controller-manager-download=\

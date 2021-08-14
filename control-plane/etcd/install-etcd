@@ -77,6 +77,7 @@ function parse_args() {
 parse_args "$@"
 
 etcd_gzip_actual=$($proj_root/scripts/make-download-path --download-url=$etcd_download --download-path=$etcd_gzip)
+subdir=$(basename -s .tar.gz $etcd_gzip_actual)
 
 # debug
 #echo "priv_key=$priv_key"
@@ -93,7 +94,7 @@ $proj_root/scripts/download-obj --url="$etcd_download" --dest=$etcd_gzip_actual
 
 echo "extracting etcd binaries to controller"
 cat "$etcd_gzip_actual" | ssh -i $priv_key root@$controller_ip \
- "tar zxvf - --no-same-owner --strip-components 1 -C /usr/local/bin/ etcd-v3.4.14-linux-amd64/etcd etcd-v3.4.14-linux-amd64/etcdctl"
+ "tar zxvf - --no-same-owner --strip-components 1 -C /usr/local/bin/ $subdir/etcd $subdir/etcdctl"
 
 echo "copying etcd TLS material"
 ssh -i $priv_key root@$controller_ip "mkdir -p /etc/etcd /var/lib/etcd && chmod 700 /var/lib/etcd"
