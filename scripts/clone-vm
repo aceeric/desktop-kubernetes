@@ -67,10 +67,12 @@ function parse_args() {
         shift 2
         ;;
       --host-only-network)
+        # this is the host only network octet, like 55.1.1
         host_only_network=$(opt_val "$2")
         shift 2
         ;;
       --host-only-octet)
+        # this is the host octet, like 100 (with above, makes 55.1.1.100)
         host_only_octet=$(opt_val "$2")
         shift 2
         ;;

@@ -39,7 +39,7 @@ subjects:
   name: coredns
   namespace: kube-system
 ---
-# TEST set pods=verified (instead of insecure) to pass conformance tests
+# set pods=verified (instead of insecure) to pass conformance tests
 apiVersion: v1
 kind: ConfigMap
 metadata:

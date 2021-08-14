@@ -106,15 +106,13 @@ VBoxManage modifyvm $template_vmname\
  --memory 4096\
  --vram 128\
  --graphicscontroller vmsvga\
- --boot1 dvd\
- --nic1 nat\
- --cableconnected1 on\
- --macaddress1 auto
+ --boot1 dvd
 
 # if bridged, there is only one network adaptor. If host only, then nic1 is the NAT network for internet access, and
 # nic2 is the host only network adaptor. See the kickstart file for related configuration. If the caller passes the
 # host network interface then that means bridged networking is desired because bridged networking requires the
 # host's interface name. If the caller passes the name of the host only network, then that means host only.
+
 if [[ ! -z "$host_network_interface" ]]; then
   echo "configuring template VM for bridge networking with host network interface: $host_network_interface"
   VBoxManage modifyvm $template_vmname\

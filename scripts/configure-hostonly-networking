@@ -30,12 +30,12 @@
 proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 
 vmname="$1"
-network="$2"
-octet="$3"
+network_octets="$2"
+host_octet="$3"
 
 # create ifcfg ISO with IP Address from passed args
-echo "creating ifcfg-enp0s8.iso with network $network and octet $octet"
-$proj_root/scripts/gen-hostonly-ifcfg-iso $network $octet
+echo "creating ifcfg-enp0s8.iso with network $network_octets and octet $host_octet"
+$proj_root/scripts/gen-hostonly-ifcfg-iso $network_octets $host_octet
 
 # mount ISO to VM
 echo "attaching ifcfg-enp0s8 ISO to VM $vmname"

@@ -8,7 +8,10 @@ fi
 
 # if args not provided, then will be passed to clone-vm as empty which is suitable for bridged networking. Note:
 # caller must provide both or neither - script does not validate
+
+# The network octets, like 55.1.1
 host_only_network="$2"
+# The host octet, like 10, resulting in a host IP address of 55.1.1.100
 host_only_octet="$3"
 
 proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
