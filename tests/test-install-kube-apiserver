@@ -17,7 +17,7 @@ $proj_root/control-plane/kube-apiserver/install-kube-apiserver\
 # --priv-key=$proj_root/kickstart/id_ed25519\
 # --controller-ip=$ip\
 # --controller-hostname="$1"\
-# --kube-apiserver-download=https://storage.googleapis.com/kubernetes-release/release/v1.20.1/bin/linux/amd64/kube-apiserver\
+# --kube-apiserver-download=https://storage.googleapis.com/kubernetes-release/release/v1.22.0/bin/linux/amd64/kube-apiserver\
 # --kube-apiserver-binary=$proj_root/binaries\
 # --kubernetes-cert=$proj_root/tls/kubernetes.pem\
 # --kubernetes-key=$proj_root/tls/kubernetes-key.pem\

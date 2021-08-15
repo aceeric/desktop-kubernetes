@@ -37,7 +37,7 @@ $ ./new-cluster --host-only-network=50.1.1 --vboxdir=/sdb1/virtualbox --create-t
   --networking=calico --monitoring=kube-prometheus
 ```
 
-**Bridged networking:** This is good for a desktop install since you can't run the cluster on a different network once the cluster is created. For this approach, first run `ifconfig` and get the name of your primary network interface. You use that in the `--host-network-interface` option:
+**Bridged networking:** This is good for a desktop install since you can't run the cluster on a different network once the cluster is created. For this approach, first run `ifconfig` and get the name of your primary network interface. You use that in the `--host-network-interface` option (mine is shown below):
 
 ```shell
 $ ./new-cluster --host-network-interface=enp0s31f6 --create-template\
@@ -47,6 +47,8 @@ $ ./new-cluster --host-network-interface=enp0s31f6 --create-template\
 The `--networking` option installs cluster networking. In the example: Calico and kube-proxy.
 
 The `--monitoring` option installs monitoring. In the example: Kube Prometheus. (The kube-prometheus param also creates a NodePort service on port 30300 which you can access directly using any one of the VM IPs to access the Grafana dashboard using credentials admin/admin.)
+
+The `--create-tempalate` option is required the first time: it creates a template VM which is used to clone the cluster VMs.
 
 > Please Note: URLs are perishable. Just in the time that I was developing this project, the CentOS version and URL changed slightly so - don't be surprised if you have to tweak the URLs. The script provides an option to test each URL and tell you which ones it couldn't access. Then you will have to modify the `new-cluster` script accordingly.
 
@@ -60,11 +62,11 @@ The following command-line options are supported for the `new-cluster` script:
 
 | Option | Type | Description  |
 | - | - | - |
-| `--host-network-interface` | Required | Specify this, or the `--host-only-network` option. If this, then the parameter is the name of the primary network interface on your machine. The scripts use this to configure the VirtualBox bridge network for each guest VM. **Important**: you must use this consistently when creating the template, and when creating a cluster from the template. The reason is that the option configures settings at the VM level that then propagate into the guest OS. Since guests are cloned from the template, the guest networking has to be defined consistently with the template. |
+| `--host-network-interface` | Required | Specify this, or the `--host-only-network` option. If this, then the parameter is the name of the primary network interface on your machine. The scripts use this to configure the VirtualBox bridge network for each guest VM. **Important**: you must specify this consistently when creating the template, and when creating a cluster from the template. The reason is that the option configures settings at the VM level that then propagate into the guest OS. Since guests are cloned from the template, the guest networking has to be defined consistently with the template. |
 | `--host-only-network`      | Required | Specify this, or the `--host-network-interface` option. If this, then the parameter is the left three octets of the network. E.g. `100.100.100`. This option configures NAT + host only networking mode. The scripts will create a new host only network and configure the cluster to use it for intra-cluster networking, and will configure NAT for the cluster to access the internet. *See important note above regarding VBox networking type.* |
 | `--vboxdir`                | Required | The directory where you keep your VirtualBox VM files. The script uses the `VBoxManage` utility to create the VMs, which will in turn create a sub-directory under this directory for each VM. The directory must exist. The script will not create it. |
 | `--networking`             | Optional | Installs Pod networking. Current valid values are `calico` (which also installs kube-proxy), `kube-router` and `cilium`. E.g.: `--networking=calico`. I use calico. |
-| `--create-template`        | Optional | First creates a template VM to clone all the cluster nodes from before bringing up the cluster. (This step by far takes the longest.) If not specified, expects to find an existing VM to clone from. This option installs the OS using Kickstart, then installs Guest Additions. You must provide this option for the very first cluster you create. |
+| `--create-template`        | Optional | First creates a template VM to clone all the cluster nodes from before bringing up the cluster. (This step by far takes the longest.) If not specified, the script expects to find an existing VM to clone from. This option installs the OS using Kickstart, then installs Guest Additions. You must provide this option for the very first cluster you create. |
 | `--monitoring`             | Optional | Installs monitoring. Allowed values are `metrics.k8s.io`, and `kube-prometheus`. The `metrics.k8s.io` value installs the [Resource metrics pipeline](https://kubernetes.io/docs/tasks/debug-application-cluster/resource-usage-monitoring/) and it also installs [Kubernetes Dashboard](https://github.com/kubernetes/dashboard), which can be accessed using `kubectl proxy`. The `kube-prometheus` value installs Prometheus and Grafana using the [kube-prometheus](https://github.com/prometheus-operator/kube-prometheus) stack. This option creates a `NodePort` service on port 30300 so you can access Grafana without port-forwarding. Once the cluster is up, the script will display the IP addresses of each of the nodes, and you can access Grafana on any one of those IP addresses on port 30300. (Remember to allow cookies for this site.) |
 | `--storage`                | Optional | Installs dynamic storage provisioning to support running workloads that use Persistent Volumes and Persistent Volume Claims. Currently, the only supported value is `openebs`, which installs the [OpenEBS](https://docs.openebs.io/docs/next/uglocalpv-hostpath.html) *Local HostPath* provisioner. This provisioner runs as a DaemonSet in the cluster and provides dynamic provisioning of HostPath volumes. This is a light-weight provisioner that supports desktop testing. OpenEBS creates directories inside the cluster VMs for each PV. For this feature to be reasonably stable, you have to be cognizant of the amount of storage in the VMs you provision as compared the the storage consumed by the workloads you're testing. The script internals contain resizing logic but this isn't exposed via the script API at present. |
 | `--single-node`            | Optional | Creates a single node cluster. The default is to create three nodes: one control plan node, named *doc*, and two workers, named *ham* and *monk*. This option is useful to quickly test changes since it is faster to provision a single node. |
@@ -78,12 +80,22 @@ The following command-line options are supported for the `new-cluster` script:
 | `--up`, `--down`, `--delete` | Takes a comma-separated list of VM names, and starts (`--up`), stops (`--down`), or deletes (`--delete`) them all. The `--down` option is a graceful shutdown. The `--delete` is a fast shutdown and also removes the Virtual Box VM files from the file system. |
 | `--help`                     | Displays this help and exits. |
 
+## Examples
+
+`./new-cluster --create-template --host-only-network=40.20.1 --vboxdir=/sdb1/virtualbox/ --networking=calico --monitoring=kube-prometheus --storage=openebs`
+
+Creates a template VM configured with host-only networking and NAT. The host network is 40.20.1. The script will create a host-only network in VirtualBox for the template. For the k8s cluster, it installs Calico networking, Kube-Prometheus monitoring, and the OpenEBS HostPath Provisioner. Each VM gets a sequential IP address (40.20.1.200, 40.20.1.201, 40.20.1.202). This is what you run - with `--create-template` - the very first time.
+
+`./new-cluster --host-only-network=40.20.1 --vboxdir=/sdb1/virtualbox/ --networking=calico --monitoring=kube-prometheus --storage=openebs`
+
+Creates a k8s cluster exactly as above, except uses the template created by the prior invocation. **Notice** that the `--host-only-network` option matches the option that was specified when the template was created. This is what you run if you're happy with the template: you just keep tearing down your cluster and re-creating it from the template. If ever you change something about the template generation, then you would delete the template, and go back to the first form of the script invocation. The value you choose for the octets is up to you but - once you pick those values you have to use them consistently because they are used to configure the NIC in the guest, and the octets have to match a Host-Only network configured in VirtualBox. (E.g. in the VBox UI: File > Host Network Manager > Properties.)
 
 ## ToDos
 
 | Task                           | Description                                                  |
 | ------------------------------ | ------------------------------------------------------------ |
-| Kubernetes                     | Update to 1.21.1                                             |
+| Kubernetes                     | Stay current with Kubernetes (last update was 1.22.0)        |
+| Management Cluster             | Support the ability to configure as a management cluster     |
 | Sonobuoy                       | See if it is possible for this cluster to pass the Kubernetes certification tests using [Sonobuoy](https://github.com/vmware-tanzu/sonobuoy). Currently, with kube-router and calico, one test case is failing. |
 | Centos minimal                 | Provision with CentOS minimal                                |
 | Load Balancer                  | Implement [MetalLB](https://github.com/google/metallb) ?     |
@@ -101,32 +113,32 @@ This project has been testing with the following tools, components and versions.
 
 For explicitly versioned components, changes only need to be made one time in the `new-cluster` script. *If you decide to use later (or earlier) Kubernetes components, be aware that the supported options can change between versions which may require additional script changes.*
 
-| Where    | Component                                                    | Version            |
-| -------- | ------------------------------------------------------------ | ------------------ |
-| host     | Linux desktop                                                | Ubuntu 20.04.2 LTS |
-| host     | openssl                                                      | 1.1.1f             |
-| host     | openssh                                                      | OpenSSH_8.2p1      |
-| host     | genisoimage (used to create the Kickstart ISO)               | 1.1.11             |
-| host     | Virtual Box / VBoxManage                                     | 6.1.18r142142      |
-| host     | kubectl (client only)                                        | v1.18.0            |
-| host     | curl                                                         | 7.68.0             |
-| guest VM | Centos ISO                                                   | 8.3.2011-x86_64    |
-| guest VM | Virtual Box Guest Additions ISO                              | 6.1.18             |
-| k8s      | etcd                                                         | v3.5.0             |
-| k8s      | kube-apiserver                                               | v1.20.1            |
-| k8s      | kube-controller-manager                                      | v1.20.1            |
-| k8s      | kube-scheduler                                               | v1.20.1            |
-| k8s      | kubelet                                                      | v1.20.1            |
-| k8s      | crictl                                                       | v1.19.0            |
-| k8s      | runc                                                         | v1.0.0-rc92        |
-| k8s      | cni plugins                                                  | v0.9.0             |
-| k8s      | containerd                                                   | v1.4.3             |
-| k8s      | CoreDNS                                                      | 1.8.0              |
-| k8s      | kube-proxy (if installed)                                    | v1.20.1            |
-| k8s      | kube-router (if installed)                                   | v1.1.1             |
-| k8s      | Metrics Server (if installed)                                | 0.4.2              |
-| k8s      | Kubernetes Dashboard (if installed)                          | 2.0.0              |
-| k8s      | Calico networking (if installed)                             | 3.20.0             |
-| k8s      | Cilium networking and Hubble network monitoring (if installed) | 1.9.4              |
-| k8s      | kube-prometheus stack (if installed)                         | 0.7.0              |
-| k8s      | OpenEBS (if installed)                                       | 2.7.0              |
+| Where    | Component                                                      | Version            | Updated    |
+| -------- | -------------------------------------------------------------- | ------------------ | ---------- |
+| host     | Linux desktop                                                  | Ubuntu 20.04.2 LTS |            |
+| host     | openssl                                                        | 1.1.1f             |            |
+| host     | openssh                                                        | OpenSSH_8.2p1      |            |
+| host     | genisoimage (used to create the Kickstart ISO)                 | 1.1.11             |            |
+| host     | Virtual Box / VBoxManage                                       | 6.1.18r142142      |            |
+| host     | kubectl (client only)                                          | v1.22.0            | 2021-08-14 |
+| host     | curl                                                           | 7.68.0             |            |
+| guest VM | Centos ISO                                                     | 8.3.2011-x86_64    |            |
+| guest VM | Virtual Box Guest Additions ISO                                | 6.1.18             |            |
+| k8s      | etcd                                                           | v3.5.0             | 2021-08-14 |
+| k8s      | kube-apiserver                                                 | v1.22.0            | 2021-08-14 |
+| k8s      | kube-controller-manager                                        | v1.22.0            | 2021-08-14 |
+| k8s      | kube-scheduler                                                 | v1.22.0            | 2021-08-14 |
+| k8s      | kubelet                                                        | v1.22.0            | 2021-08-14 |
+| k8s      | crictl                                                         | v1.22.0            | 2021-08-14 |
+| k8s      | runc                                                           | v1.0.1             | 2021-08-14 |
+| k8s      | cni plugins                                                    | v1.0.0             | 2021-08-14 |
+| k8s      | containerd                                                     | v1.5.5             | 2021-08-14 |
+| k8s      | CoreDNS                                                        | 1.8.0              |            |
+| k8s      | kube-proxy (if installed)                                      | v1.22.0            | 2021-08-14 |
+| k8s      | kube-router (if installed)                                     | v1.3.1             | 2021-08-14 |
+| k8s      | Metrics Server (if installed)                                  | 0.4.2              |            |
+| k8s      | Kubernetes Dashboard (if installed)                            | 2.0.0              |            |
+| k8s      | Calico networking (if installed)                               | 3.20.0             | 2021-08-14 |
+| k8s      | Cilium networking and Hubble network monitoring (if installed) | 1.9.4              |            |
+| k8s      | kube-prometheus stack (if installed)                           | 0.7.0              |            |
+| k8s      | OpenEBS (if installed)                                         | 2.11.0             | 2021-08-14 |

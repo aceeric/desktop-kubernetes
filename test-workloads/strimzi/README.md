@@ -6,7 +6,7 @@ See the help for the `--storage` option of the `new-cluster` script for info on 
 
 #### Steps
 
-Get `strimzi.io-install-latest.yaml` (in this case, 0.22.0):
+Get `strimzi.io-install-latest.yaml` (in this case, 0.25.0, as of 14-Aug-2021):
 ```shell
 curl -L https://strimzi.io/install/latest?namespace=kafka -o test-workloads/strimzi/strimzi.io-install-latest.yaml
 ```

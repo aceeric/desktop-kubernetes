@@ -4,7 +4,7 @@
 SONOGZIP=https://github.com/vmware-tanzu/sonobuoy/releases/download/v0.20.0/sonobuoy_0.20.0_linux_386.tar.gz
 [[ -f conformance/sonobuoy ]] || curl -sL $SONOGZIP | tar zxvf - -C conformance sonobuoy
 
-image: k8s.gcr.io/conformance:v1.20.1
+image: k8s.gcr.io/conformance:v1.22.0
 
 #### smoke test - should run one test successfully
 

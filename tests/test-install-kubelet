@@ -18,6 +18,6 @@ $proj_root/worker/kubelet/install-kubelet\
 # --controller-ip=$controller_ip\
 # --worker-ip=$worker_ip\
 # --worker-hostname=ham\
-# --kubelet-download=https://storage.googleapis.com/kubernetes-release/release/v1.20.1/bin/linux/amd64/kubelet\
+# --kubelet-download=https://storage.googleapis.com/kubernetes-release/release/v1.22.0/bin/linux/amd64/kubelet\
 # --kubelet-binary=$proj_root/binaries\
 # --ca-cert=$proj_root/tls/ca.pem

@@ -1,21 +1,10 @@
 #!/usr/bin/env bash
 
 proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-#$proj_root/features/storage/openebs/install-openebs\
-# --priv-key=$proj_root/kickstart/id_ed25519\
-# --admin-kubeconfig=$proj_root/admin/admin.kubeconfig\
-# --openebs-operator-lite-manifest-download=\
-# --openebs-operator-lite-manifest=$proj_root/binaries/openebs-operator-lite.yaml\
-# --openebs-sc-manifest-download=\
-# --openebs-sc-manifest=$proj_root/binaries/openebs-lite-sc.yaml\
-# --nodes=doc,ham,monk
-
 $proj_root/features/storage/openebs/install-openebs\
  --priv-key=$proj_root/kickstart/id_ed25519\
  --admin-kubeconfig=$proj_root/admin/admin.kubeconfig\
- --openebs-operator-lite-manifest-download=https://openebs.github.io/charts/openebs-operator-lite.yaml\
- --openebs-operator-lite-manifest=$proj_root/binaries/openebs-operator-lite.yaml\
+ --openebs-hostpath-operator-manifest-download=https://raw.githubusercontent.com/openebs/charts/gh-pages/hostpath-operator.yaml\
+ --openebs-hostpath-operator-manifest=$proj_root/binaries/openebs-hostpath-operator.yaml\
  --openebs-sc-manifest-download=https://openebs.github.io/charts/openebs-lite-sc.yaml\
- --openebs-sc-manifest=$proj_root/binaries/openebs-lite-sc.yaml\
- --nodes=doc,ham,monk
- 
+ --openebs-sc-manifest=$proj_root/binaries/openebs-lite-sc.yaml

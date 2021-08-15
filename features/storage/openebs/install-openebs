@@ -2,18 +2,17 @@
 
 set -e
 
-long_opts=priv-key:,admin-kubeconfig:,openebs-operator-lite-manifest-download:,openebs-operator-lite-manifest:,\
-openebs-sc-manifest-download:,openebs-sc-manifest:,nodes:
+long_opts=priv-key:,admin-kubeconfig:,openebs-hostpath-operator-manifest-download:,openebs-hostpath-operator-manifest:,\
+openebs-sc-manifest-download:,openebs-sc-manifest:
 script_name=$(basename "$0")
 proj_root="$(cd "$(dirname "${BASH_SOURCE[0]}")/../../.." && pwd)"
 
 priv_key=
 admin_kubeconfig=
-openebs_operator_lite_manifest_download=
-openebs_operator_lite_manifest=
+openebs_hostpath_operator_manifest_download=
+openebs_hostpath_operator_manifest=
 openebs_sc_manifest_download=
 openebs_sc_manifest=
-nodes=()
 
 function opt_val() {
   opt="$1"
@@ -42,12 +41,12 @@ function parse_args() {
         admin_kubeconfig=$(opt_val "$2")
         shift 2
         ;;
-	    --openebs-operator-lite-manifest-download)
-        openebs_operator_lite_manifest_download=$(opt_val "$2")
+	    --openebs-hostpath-operator-manifest-download)
+        openebs_hostpath_operator_manifest_download=$(opt_val "$2")
         shift 2
         ;;
-      --openebs-operator-lite-manifest)
-        openebs_operator_lite_manifest=$(opt_val "$2")
+      --openebs-hostpath-operator-manifest)
+        openebs_hostpath_operator_manifest=$(opt_val "$2")
         shift 2
         ;;
       --openebs-sc-manifest-download)
@@ -56,11 +55,6 @@ function parse_args() {
         ;;
       --openebs-sc-manifest)
         openebs_sc_manifest=$(opt_val "$2")
-        shift 2
-        ;;
-      --nodes)
-        nodes=$(opt_val "$2")
-        IFS=',' read -ra nodes <<< "$nodes"
         shift 2
         ;;
       --)
@@ -73,8 +67,8 @@ function parse_args() {
 
 parse_args "$@"
 
-openebs_operator_lite_manifest_actual=$($proj_root/scripts/make-download-path\
- --download-url=$openebs_operator_lite_manifest_download --download-path=$openebs_operator_lite_manifest)
+openebs_hostpath_operator_manifest_actual=$($proj_root/scripts/make-download-path\
+ --download-url=$openebs_hostpath_operator_manifest_download --download-path=$openebs_hostpath_operator_manifest)
 
 openebs_sc_manifest_actual=$($proj_root/scripts/make-download-path\
  --download-url=$openebs_sc_manifest_download --download-path=$openebs_sc_manifest)
@@ -82,22 +76,23 @@ openebs_sc_manifest_actual=$($proj_root/scripts/make-download-path\
 # debug
 #echo "priv_key=$priv_key"
 #echo "admin_kubeconfig=$admin_kubeconfig"
-#echo "openebs_operator_lite_manifest_download=$openebs_operator_lite_manifest_download"
-#echo "openebs_operator_lite_manifest=$openebs_operator_lite_manifest"
-#echo "openebs_operator_lite_manifest_actual=$openebs_operator_lite_manifest_actual"
+#echo "openebs_hostpath_operator_manifest_download=$openebs_hostpath_operator_manifest_download"
+#echo "openebs_hostpath_operator_manifest=$openebs_hostpath_operator_manifest"
+#echo "openebs_hostpath_operator_manifest_actual=$openebs_hostpath_operator_manifest_actual"
 #echo "openebs_sc_manifest_download=$openebs_sc_manifest_download"
 #echo "openebs_sc_manifest=$openebs_sc_manifest"
 #echo "openebs_sc_manifest_actual=$openebs_sc_manifest_actual"
-#echo "nodes=${nodes[@]}"
 
-echo "installing the OpenEBS operator lite, and associated storage classses"
+echo "installing the OpenEBS Hostpath Operator, and associated storage classes"
 
-$proj_root/scripts/download-obj --url="$openebs_operator_lite_manifest_download" --dest="$openebs_operator_lite_manifest_actual"
+$proj_root/scripts/download-obj --url="$openebs_hostpath_operator_manifest_download" --dest="$openebs_hostpath_operator_manifest_actual"
 $proj_root/scripts/download-obj --url="$openebs_sc_manifest_download" --dest="$openebs_sc_manifest_actual"
 
-echo "deploying the openEBS operator lite"
-kubectl --kubeconfig $admin_kubeconfig apply -f $openebs_operator_lite_manifest_actual
-kubectl --kubeconfig $admin_kubeconfig -n openebs wait po -lopenebs.io/version --for condition=ready --timeout=10m
+echo "deploying the openEBS hostpath operator"
+kubectl --kubeconfig $admin_kubeconfig apply -f $openebs_hostpath_operator_manifest_actual
+sleep 2s
+kubectl --kubeconfig $admin_kubeconfig -n openebs wait po -lopenebs.io/component-name=openebs-localpv-provisioner\
+  --for condition=ready --timeout=10m
 
 echo "creating openEBS storage classes"
 kubectl --kubeconfig $admin_kubeconfig apply -f $openebs_sc_manifest_actual

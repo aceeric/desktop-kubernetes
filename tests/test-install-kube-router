@@ -11,6 +11,6 @@ $proj_root/networking/kube-router/install-kube-router\
 
 #$proj_root/networking/kube-router/install-kube-router\
 # --controller-ip=$ip\
-# --kube-router-yaml-download=https://raw.githubusercontent.com/cloudnativelabs/kube-router/v1.1.1/daemonset/generic-kuberouter-all-features.yaml\
+# --kube-router-yaml-download=https://raw.githubusercontent.com/cloudnativelabs/kube-router/v1.3.1/daemonset/generic-kuberouter-all-features.yaml\
 # --kube-router-yaml=$proj_root/binaries\
 # --admin-kubeconfig=$proj_root/admin/admin.kubeconfig

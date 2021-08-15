@@ -14,7 +14,7 @@ $proj_root/control-plane/kube-scheduler/install-kube-scheduler\
 # --priv-key=$proj_root/kickstart/id_ed25519\
 # --controller-ip=192.168.0.ZZZ\
 # --controller-hostname=doc\
-# --kube-scheduler-download=https://storage.googleapis.com/kubernetes-release/release/v1.20.1/bin/linux/amd64/kube-scheduler\
+# --kube-scheduler-download=https://storage.googleapis.com/kubernetes-release/release/v1.22.0/bin/linux/amd64/kube-scheduler\
 # --kube-scheduler-binary=$proj_root/binaries\
 # --ca-cert=$proj_root/tls/ca.pem\
 # --ca-key=$proj_root/tls/ca-key.pem
