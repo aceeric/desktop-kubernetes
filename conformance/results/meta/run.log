@@ -1,0 +1,434 @@
+{"level":"info","msg":"Filtering namespaces based on the following regex:.*","time":"2021-08-15T21:51:25Z"}
+{"level":"info","msg":"Namespace default Matched=true","time":"2021-08-15T21:51:25Z"}
+{"level":"info","msg":"Namespace kafka Matched=true","time":"2021-08-15T21:51:25Z"}
+{"level":"info","msg":"Namespace kube-node-lease Matched=true","time":"2021-08-15T21:51:25Z"}
+{"level":"info","msg":"Namespace kube-public Matched=true","time":"2021-08-15T21:51:25Z"}
+{"level":"info","msg":"Namespace kube-system Matched=true","time":"2021-08-15T21:51:25Z"}
+{"level":"info","msg":"Namespace monitoring Matched=true","time":"2021-08-15T21:51:25Z"}
+{"level":"info","msg":"Namespace openebs Matched=true","time":"2021-08-15T21:51:25Z"}
+{"level":"info","msg":"Namespace sonobuoy Matched=true","time":"2021-08-15T21:51:25Z"}
+{"level":"info","msg":"Starting server Expected Results: [{global e2e} {doc systemd-logs} {ham systemd-logs} {monk systemd-logs}]","time":"2021-08-15T21:51:25Z"}
+{"level":"info","msg":"Starting annotation update routine","time":"2021-08-15T21:51:25Z"}
+{"address":"0.0.0.0","level":"info","msg":"Starting aggregation server","port":8080,"time":"2021-08-15T21:51:25Z"}
+{"level":"info","msg":"Running plugin","plugin":"e2e","time":"2021-08-15T21:51:25Z"}
+{"level":"info","msg":"Running plugin","plugin":"systemd-logs","time":"2021-08-15T21:51:25Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","node":"doc","plugin_name":"systemd-logs","time":"2021-08-15T21:51:40Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","node":"monk","plugin_name":"systemd-logs","time":"2021-08-15T21:51:45Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","node":"ham","plugin_name":"systemd-logs","time":"2021-08-15T21:51:46Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T21:51:48Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T21:51:56Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T21:52:06Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T21:54:00Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T21:54:00Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T21:54:04Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T21:54:06Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T21:55:38Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T21:55:48Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T21:55:48Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T21:56:10Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T21:56:13Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T21:56:23Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T21:56:26Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T21:56:26Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T21:56:28Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T21:56:36Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T21:56:38Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T21:56:44Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T21:57:55Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T21:57:56Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T21:57:56Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T21:57:58Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T21:58:00Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T21:58:02Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T21:59:14Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T21:59:17Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T21:59:39Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T21:59:41Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T21:59:43Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T21:59:45Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T21:59:47Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T21:59:48Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T21:59:54Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T21:59:55Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T21:59:56Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T21:59:58Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:00:05Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:00:08Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:00:10Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:00:17Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:00:26Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:00:38Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:01:47Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:02:15Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:02:17Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:02:17Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:02:19Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:02:22Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:02:25Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:02:27Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:02:31Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:02:31Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:02:31Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:02:41Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:02:47Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:02:49Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:06:52Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:06:54Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:06:56Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:07:18Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:07:30Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:08:04Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:08:12Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:08:24Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:08:26Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:08:28Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:09:14Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:09:14Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:09:16Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:09:19Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:09:19Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:09:22Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:09:30Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:09:34Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:09:46Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:09:48Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:09:52Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:10:17Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:10:19Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:10:23Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:10:25Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:10:37Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:10:37Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:10:42Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:10:52Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:11:00Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:11:07Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:13:01Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:13:21Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:18:26Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:18:32Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:18:39Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:18:46Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:18:48Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:19:14Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:19:16Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:19:23Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:19:33Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:20:45Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:20:48Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:20:50Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:21:01Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:21:03Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:21:05Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:21:07Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:21:09Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:21:12Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:21:20Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:21:20Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:21:22Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:21:24Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:21:45Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:21:48Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:21:55Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:22:05Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:22:13Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:22:20Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:22:24Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:22:24Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:22:27Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:22:29Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:22:29Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:23:15Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:23:23Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:23:38Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:23:38Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:23:53Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:23:57Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:27:59Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:29:20Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:29:21Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:29:23Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:29:31Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:29:33Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:29:37Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:29:42Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:29:42Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:29:44Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:29:46Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:29:57Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:29:59Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:30:39Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:30:43Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:30:46Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:30:48Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:30:51Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:30:51Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:30:51Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:30:55Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:31:55Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:31:55Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:31:57Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:32:01Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:32:31Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:32:45Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:33:46Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:34:00Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:34:02Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:34:24Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:34:26Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:35:03Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:35:05Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:35:12Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:35:12Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:35:34Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:35:36Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:35:38Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:35:45Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:36:45Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:36:47Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:37:07Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:37:29Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:37:31Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:37:35Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:37:46Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:37:56Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:37:56Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:37:58Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:38:03Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:38:03Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:38:09Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:38:29Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:38:30Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:38:32Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:39:00Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:39:05Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:39:07Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:39:11Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:39:13Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:39:16Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:39:20Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:39:28Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:42:03Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:42:05Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:42:14Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:43:06Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:43:08Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:43:10Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:43:12Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:43:15Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:43:17Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:44:17Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:44:19Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:44:19Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:44:33Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:44:58Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:45:00Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:45:02Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:45:16Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:45:21Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:45:24Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:45:27Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:45:29Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:45:44Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:45:57Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:46:00Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:46:00Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:46:03Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:46:13Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:46:13Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:46:34Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:46:34Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:46:46Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:46:48Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:46:48Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:47:00Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:47:02Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:47:08Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:47:08Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:47:10Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:47:14Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:47:19Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:47:35Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:47:37Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:47:42Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:47:50Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:47:56Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:48:19Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:49:41Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:49:41Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:49:43Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:49:45Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:50:07Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:50:09Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:50:35Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:50:35Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:56:01Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:56:16Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:56:18Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:56:24Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:56:24Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:56:32Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:56:36Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:56:41Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:56:45Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:56:47Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:57:01Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:57:09Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:57:15Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:57:17Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T22:59:46Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:00:00Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:00:09Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:00:25Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:00:32Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:00:33Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:00:35Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:00:37Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:00:37Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:00:38Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:00:44Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:00:51Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:01:51Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:01:55Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:01:57Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:02:10Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:02:12Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:02:14Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:02:19Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:02:21Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:02:26Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:06:31Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:06:34Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:06:34Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:06:41Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:06:44Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:06:46Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:06:48Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:07:22Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:07:23Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:07:27Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:12:27Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:12:41Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:12:52Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:12:59Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:13:01Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:13:10Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:13:12Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:13:34Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:13:35Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:13:45Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:13:47Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:13:58Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:14:09Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:14:18Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:14:24Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:14:35Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:14:38Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:14:38Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:14:41Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:15:25Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:15:27Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:15:31Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:16:57Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:16:59Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:17:02Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:17:12Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:17:20Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:17:27Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:17:33Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:17:56Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:18:09Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:18:15Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:18:16Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:18:16Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:18:18Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:18:18Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:18:20Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:18:20Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:18:37Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:19:45Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:20:13Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:20:14Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:21:15Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:21:47Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:21:50Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:21:58Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:22:50Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:22:54Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:22:54Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:22:56Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:23:05Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:23:06Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:23:11Z"}
+{"client_cert":"","level":"info","msg":"received aggregator request","plugin_name":"e2e","time":"2021-08-15T23:23:12Z"}
+{"level":"info","msg":"Last update to annotations on exit","time":"2021-08-15T23:23:12Z"}
+{"level":"info","msg":"Shutting down aggregation server","time":"2021-08-15T23:23:12Z"}
+{"level":"info","msg":"flowschemas not specified in non-nil Resources. Skipping flowschemas query.","time":"2021-08-15T23:23:12Z"}
+{"level":"info","msg":"prioritylevelconfigurations not specified in non-nil Resources. Skipping prioritylevelconfigurations query.","time":"2021-08-15T23:23:12Z"}
+{"level":"info","msg":"runtimeclasses not specified in non-nil Resources. Skipping runtimeclasses query.","time":"2021-08-15T23:23:12Z"}
+{"level":"info","msg":"csidrivers not specified in non-nil Resources. Skipping csidrivers query.","time":"2021-08-15T23:23:12Z"}
+{"level":"info","msg":"csinodes not specified in non-nil Resources. Skipping csinodes query.","time":"2021-08-15T23:23:12Z"}
+{"level":"info","msg":"storageversions not specified in non-nil Resources. Skipping storageversions query.","time":"2021-08-15T23:23:12Z"}
+{"level":"info","msg":"ingressclasses not specified in non-nil Resources. Skipping ingressclasses query.","time":"2021-08-15T23:23:12Z"}
+{"level":"info","msg":"bgppeers not specified in non-nil Resources. Skipping bgppeers query.","time":"2021-08-15T23:23:12Z"}
+{"level":"info","msg":"hostendpoints not specified in non-nil Resources. Skipping hostendpoints query.","time":"2021-08-15T23:23:12Z"}
+{"level":"info","msg":"globalnetworksets not specified in non-nil Resources. Skipping globalnetworksets query.","time":"2021-08-15T23:23:12Z"}
+{"level":"info","msg":"ipamhandles not specified in non-nil Resources. Skipping ipamhandles query.","time":"2021-08-15T23:23:12Z"}
+{"level":"info","msg":"kubecontrollersconfigurations not specified in non-nil Resources. Skipping kubecontrollersconfigurations query.","time":"2021-08-15T23:23:12Z"}
+{"level":"info","msg":"clusterinformations not specified in non-nil Resources. Skipping clusterinformations query.","time":"2021-08-15T23:23:12Z"}
+{"level":"info","msg":"felixconfigurations not specified in non-nil Resources. Skipping felixconfigurations query.","time":"2021-08-15T23:23:12Z"}
+{"level":"info","msg":"bgpconfigurations not specified in non-nil Resources. Skipping bgpconfigurations query.","time":"2021-08-15T23:23:12Z"}
+{"level":"info","msg":"ipamblocks not specified in non-nil Resources. Skipping ipamblocks query.","time":"2021-08-15T23:23:12Z"}
+{"level":"info","msg":"ipamconfigs not specified in non-nil Resources. Skipping ipamconfigs query.","time":"2021-08-15T23:23:12Z"}
+{"level":"info","msg":"blockaffinities not specified in non-nil Resources. Skipping blockaffinities query.","time":"2021-08-15T23:23:12Z"}
+{"level":"info","msg":"ippools not specified in non-nil Resources. Skipping ippools query.","time":"2021-08-15T23:23:12Z"}
+{"level":"info","msg":"globalnetworkpolicies not specified in non-nil Resources. Skipping globalnetworkpolicies query.","time":"2021-08-15T23:23:12Z"}
+{"level":"info","msg":"endpointslices not specified in non-nil Resources. Skipping endpointslices query.","time":"2021-08-15T23:23:12Z"}
+{"level":"info","msg":"kafkarebalances not specified in non-nil Resources. Skipping kafkarebalances query.","time":"2021-08-15T23:23:12Z"}
+{"level":"info","msg":"kafkas not specified in non-nil Resources. Skipping kafkas query.","time":"2021-08-15T23:23:12Z"}
+{"level":"info","msg":"kafkatopics not specified in non-nil Resources. Skipping kafkatopics query.","time":"2021-08-15T23:23:12Z"}
+{"level":"info","msg":"kafkaconnectors not specified in non-nil Resources. Skipping kafkaconnectors query.","time":"2021-08-15T23:23:12Z"}
+{"level":"info","msg":"kafkausers not specified in non-nil Resources. Skipping kafkausers query.","time":"2021-08-15T23:23:12Z"}
+{"level":"info","msg":"kafkamirrormakers not specified in non-nil Resources. Skipping kafkamirrormakers query.","time":"2021-08-15T23:23:12Z"}
+{"level":"info","msg":"kafkaconnects2is not specified in non-nil Resources. Skipping kafkaconnects2is query.","time":"2021-08-15T23:23:12Z"}
+{"level":"info","msg":"kafkabridges not specified in non-nil Resources. Skipping kafkabridges query.","time":"2021-08-15T23:23:12Z"}
+{"level":"info","msg":"kafkamirrormaker2s not specified in non-nil Resources. Skipping kafkamirrormaker2s query.","time":"2021-08-15T23:23:12Z"}
+{"level":"info","msg":"kafkaconnects not specified in non-nil Resources. Skipping kafkaconnects query.","time":"2021-08-15T23:23:12Z"}
+{"level":"info","msg":"networksets not specified in non-nil Resources. Skipping networksets query.","time":"2021-08-15T23:23:12Z"}
+{"level":"info","msg":"alertmanagerconfigs not specified in non-nil Resources. Skipping alertmanagerconfigs query.","time":"2021-08-15T23:23:12Z"}
+{"level":"info","msg":"horizontalpodautoscalers not specified in non-nil Resources. Skipping horizontalpodautoscalers query.","time":"2021-08-15T23:23:12Z"}
+{"level":"info","msg":"prometheuses not specified in non-nil Resources. Skipping prometheuses query.","time":"2021-08-15T23:23:12Z"}
+{"level":"info","msg":"probes not specified in non-nil Resources. Skipping probes query.","time":"2021-08-15T23:23:12Z"}
+{"level":"info","msg":"prometheusrules not specified in non-nil Resources. Skipping prometheusrules query.","time":"2021-08-15T23:23:12Z"}
+{"level":"info","msg":"alertmanagers not specified in non-nil Resources. Skipping alertmanagers query.","time":"2021-08-15T23:23:12Z"}
+{"level":"info","msg":"thanosrulers not specified in non-nil Resources. Skipping thanosrulers query.","time":"2021-08-15T23:23:12Z"}
+{"level":"info","msg":"servicemonitors not specified in non-nil Resources. Skipping servicemonitors query.","time":"2021-08-15T23:23:12Z"}
+{"level":"info","msg":"podmonitors not specified in non-nil Resources. Skipping podmonitors query.","time":"2021-08-15T23:23:12Z"}
+{"level":"info","msg":"events not specified in non-nil Resources. Skipping events query.","time":"2021-08-15T23:23:12Z"}
+{"level":"info","msg":"secrets not specified in non-nil Resources. Skipping secrets query.","time":"2021-08-15T23:23:12Z"}
+{"level":"info","msg":"csistoragecapacities not specified in non-nil Resources. Skipping csistoragecapacities query.","time":"2021-08-15T23:23:12Z"}
+{"level":"info","msg":"Collecting Node Configuration and Health...","time":"2021-08-15T23:23:12Z"}
+{"level":"info","msg":"Creating host results for doc under /tmp/sonobuoy/dbec8409-5e30-41cc-95d1-ef389a424166/hosts/doc\n","time":"2021-08-15T23:23:12Z"}
+{"level":"info","msg":"Creating host results for ham under /tmp/sonobuoy/dbec8409-5e30-41cc-95d1-ef389a424166/hosts/ham\n","time":"2021-08-15T23:23:12Z"}
+{"level":"info","msg":"Creating host results for monk under /tmp/sonobuoy/dbec8409-5e30-41cc-95d1-ef389a424166/hosts/monk\n","time":"2021-08-15T23:23:12Z"}
+{"level":"info","msg":"Running cluster queries","time":"2021-08-15T23:23:12Z"}
+{"level":"info","msg":"Running ns query (default)","time":"2021-08-15T23:23:12Z"}
+{"level":"info","msg":"Running ns query (kafka)","time":"2021-08-15T23:23:12Z"}
+{"level":"info","msg":"Running ns query (kube-node-lease)","time":"2021-08-15T23:23:12Z"}
+{"level":"info","msg":"Running ns query (kube-public)","time":"2021-08-15T23:23:13Z"}
+{"level":"info","msg":"Running ns query (kube-system)","time":"2021-08-15T23:23:14Z"}
+{"level":"info","msg":"Running ns query (monitoring)","time":"2021-08-15T23:23:14Z"}
+{"level":"info","msg":"Running ns query (openebs)","time":"2021-08-15T23:23:15Z"}
+{"level":"info","msg":"Running ns query (sonobuoy)","time":"2021-08-15T23:23:16Z"}
+{"level":"info","msg":"Namespace default Matched=false","time":"2021-08-15T23:23:17Z"}
+{"level":"info","msg":"Namespace kafka Matched=false","time":"2021-08-15T23:23:17Z"}
+{"level":"info","msg":"Namespace kube-node-lease Matched=false","time":"2021-08-15T23:23:17Z"}
+{"level":"info","msg":"Namespace kube-public Matched=false","time":"2021-08-15T23:23:17Z"}
+{"level":"info","msg":"Namespace kube-system Matched=false","time":"2021-08-15T23:23:17Z"}
+{"level":"info","msg":"Namespace monitoring Matched=false","time":"2021-08-15T23:23:17Z"}
+{"level":"info","msg":"Namespace openebs Matched=false","time":"2021-08-15T23:23:17Z"}
+{"level":"info","msg":"Namespace prestop-2440 Matched=false","time":"2021-08-15T23:23:17Z"}
+{"level":"info","msg":"Namespace sonobuoy Matched=true","time":"2021-08-15T23:23:17Z"}
+{"level":"info","msg":"Collecting Pod Logs by namespace (sonobuoy)","time":"2021-08-15T23:23:17Z"}
+{"level":"info","msg":"Collecting Pod Logs by FieldSelectors []","time":"2021-08-15T23:23:17Z"}
+{"level":"info","msg":"Log lines after this point will not appear in the downloaded tarball.","time":"2021-08-15T23:23:17Z"}

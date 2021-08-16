@@ -69,7 +69,7 @@ The following command-line options are supported for the `new-cluster` script:
 | `--create-template`        | Optional | First creates a template VM to clone all the cluster nodes from before bringing up the cluster. (This step by far takes the longest.) If not specified, the script expects to find an existing VM to clone from. This option installs the OS using Kickstart, then installs Guest Additions. You must provide this option for the very first cluster you create. |
 | `--monitoring`             | Optional | Installs monitoring. Allowed values are `metrics.k8s.io`, and `kube-prometheus`. The `metrics.k8s.io` value installs the [Resource metrics pipeline](https://kubernetes.io/docs/tasks/debug-application-cluster/resource-usage-monitoring/) and it also installs [Kubernetes Dashboard](https://github.com/kubernetes/dashboard), which can be accessed using `kubectl proxy`. The `kube-prometheus` value installs Prometheus and Grafana using the [kube-prometheus](https://github.com/prometheus-operator/kube-prometheus) stack. This option creates a `NodePort` service on port 30300 so you can access Grafana without port-forwarding. Once the cluster is up, the script will display the IP addresses of each of the nodes, and you can access Grafana on any one of those IP addresses on port 30300. (Remember to allow cookies for this site.) |
 | `--storage`                | Optional | Installs dynamic storage provisioning to support running workloads that use Persistent Volumes and Persistent Volume Claims. Currently, the only supported value is `openebs`, which installs the [OpenEBS](https://docs.openebs.io/docs/next/uglocalpv-hostpath.html) *Local HostPath* provisioner. This controller provides dynamic provisioning of HostPath volumes. This is a light-weight provisioner that supports desktop testing. OpenEBS creates directories inside the cluster VMs for each PV. For this feature to be reasonably stable, you have to be cognizant of the amount of storage in the VMs you provision as compared the the storage consumed by the workloads you're testing. The script internals contain resizing logic but this isn't exposed via the script API at present. |
-| `--single-node`            | Optional | Creates a single node cluster. The default is to create three nodes: one control plan node, named *doc*, and two workers, named *ham* and *monk*. This option is useful to quickly test changes since it is faster to provision a single node. |
+| `--single-node`            | Optional | Creates a single node cluster. The default is to create three nodes: one control plane node, named *doc*, and two workers, named *ham* and *monk*. This option is useful to quickly test changes since it is faster to provision a single node. |
 
 ### Other (optional) options
 
@@ -94,6 +94,7 @@ Creates a k8s cluster exactly as above, except uses the template created by the 
 
 | Task                           | Description                                                  |
 | ------------------------------ | ------------------------------------------------------------ |
+| Graceful shutdown              | Configure graceful shutdown                                  |
 | Kubernetes                     | Stay current with Kubernetes (last update was 1.22.0)        |
 | Management Cluster             | Support the ability to configure as a management cluster     |
 | Sonobuoy                       | See if it is possible for this cluster to pass the Kubernetes certification tests using [Sonobuoy](https://github.com/vmware-tanzu/sonobuoy). Currently, with kube-router and calico, one test case is failing. |
@@ -109,7 +110,7 @@ Creates a k8s cluster exactly as above, except uses the template created by the 
 
 ## Versions
 
-This project has been testing with the following tools, components and versions. The Kubernetes component versions and CentOS and VirtualBox Guest Addition versions are hard-coded into the `new-cluster` script where possible. (Some manifests, like OpenEBS for example, don't have versioned URLs...)
+This project has been tested with the following tools, components and versions. The Kubernetes component versions and CentOS and VirtualBox Guest Addition versions are hard-coded into the `new-cluster` script where possible. (Some manifests, like OpenEBS for example, don't have versioned URLs...)
 
 For explicitly versioned components, changes only need to be made one time in the `new-cluster` script. *If you decide to use later (or earlier) Kubernetes components, be aware that the supported options can change between versions which may require additional script changes.*
 

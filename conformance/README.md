@@ -1,24 +1,15 @@
+### Sonobuoy conformance testing (15-AUG-2021)
 
-### Sonobuoy conformance testing
-
-SONOGZIP=https://github.com/vmware-tanzu/sonobuoy/releases/download/v0.20.0/sonobuoy_0.20.0_linux_386.tar.gz
+SONOGZIP=https://github.com/vmware-tanzu/sonobuoy/releases/download/v0.53.1/sonobuoy_0.53.1_linux_amd64.tar.gz
 [[ -f conformance/sonobuoy ]] || curl -sL $SONOGZIP | tar zxvf - -C conformance sonobuoy
-
-image: k8s.gcr.io/conformance:v1.22.0
 
 #### smoke test - should run one test successfully
 
-conformance/sonobuoy run\
- --sonobuoy-image projects.registry.vmware.com/sonobuoy/sonobuoy:v0.20.0\
- --mode=quick
+conformance/sonobuoy run --mode=quick
 
-#### run all e2e conformance tests
---plugin=e2e\
+#### run conformance tests
 
-conformance/sonobuoy run\
- --sonobuoy-image=projects.registry.vmware.com/sonobuoy/sonobuoy:v0.20.0\
- --mode=certified-conformance\
- --timeout=30000
+conformance/sonobuoy run --mode=certified-conformance --timeout=30000
 
 ####  watch the tests run in one console window
 
@@ -30,29 +21,10 @@ conformance/sonobuoy logs -f
 
 ####  get the test results upon completion
 
-results=$(conformance/sonobuoy retrieve) &&\
- mv $results conformance &&\
- conformance/sonobuoy results conformance/$results &&\
- tar -zxvf conformance/$results --strip-components 2 -C conformance plugins/e2e/sonobuoy_results.yaml
+outfile=$(conformance/sonobuoy retrieve) &&\
+ mv $outfile conformance &&\
+ mkdir conformance/results; tar xzf conformance/$outfile -C conformance/results
 
 #### clean up the cluster
 
 sonobuoy delete --wait
-
-####  get failures
-
-./getfails sonobuoy_results.yaml
-NAME: [sig-scheduling] SchedulerPredicates [Serial] validates that there is no conflict between pods with same hostPort but different hostIP and protocol [Conformance]
-NAME: [sig-network] Services should have session affinity timeout work for service with type clusterIP [LinuxOnly] [Conformance]
-NAME: [sig-network] Services should have session affinity timeout work for NodePort service [LinuxOnly] [Conformance]
-
-####  run only failures
-
-sonobuoy run --e2e-focus "validates that there is no conflict between pods with same hostPort but different hostIP and protocol"
-sonobuoy run --e2e-focus "should have session affinity timeout work for service with type clusterIP"
-sonobuoy run --e2e-focus "should have session affinity timeout work for NodePort service"
-
-####  failure with kube-router + calico
-
-"[k8s.io] [sig-node] NoExecuteTaintManager Multiple Pods [Serial] evicts pods with minTolerationSeconds [Disruptive] [Conformance]"
-sonobuoy run --e2e-focus "evicts pods with minTolerationSeconds"
