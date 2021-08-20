@@ -1,6 +1,6 @@
 ### Sonobuoy conformance testing (15-AUG-2021)
 
-SONOGZIP=https://github.com/vmware-tanzu/sonobuoy/releases/download/v0.53.1/sonobuoy_0.53.1_linux_amd64.tar.gz
+SONOGZIP=https://github.com/vmware-tanzu/sonobuoy/releases/download/v0.53.2/sonobuoy_0.53.2_linux_amd64.tar.gz
 [[ -f conformance/sonobuoy ]] || curl -sL $SONOGZIP | tar zxvf - -C conformance sonobuoy
 
 #### smoke test - should run one test successfully
@@ -23,7 +23,7 @@ conformance/sonobuoy logs -f
 
 outfile=$(conformance/sonobuoy retrieve) &&\
  mv $outfile conformance &&\
- mkdir conformance/results; tar xzf conformance/$outfile -C conformance/results
+ mkdir -p conformance/results; tar xzf conformance/$outfile -C conformance/results
 
 #### clean up the cluster
 

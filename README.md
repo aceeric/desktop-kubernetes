@@ -94,10 +94,11 @@ Creates a k8s cluster exactly as above, except uses the template created by the 
 
 | Task                           | Description                                                  |
 | ------------------------------ | ------------------------------------------------------------ |
+| CoreDNS                        | Consider latest github deployment has coredns:1.8.4...       |
+| Aggregation                    | Remove patch and incorporate into main api-server setup      |
 | Graceful shutdown              | Configure graceful shutdown                                  |
 | Kubernetes                     | Stay current with Kubernetes (last update was 1.22.0)        |
 | Management Cluster             | Support the ability to configure as a management cluster     |
-| Sonobuoy                       | See if it is possible for this cluster to pass the Kubernetes certification tests using [Sonobuoy](https://github.com/vmware-tanzu/sonobuoy). Currently, with kube-router and calico, one test case is failing. |
 | Centos minimal                 | Provision with CentOS minimal                                |
 | Load Balancer                  | Implement [MetalLB](https://github.com/google/metallb) ?     |
 | Firewall                       | There are plenty of posts discussing how to configure the firewall settings for Kubernetes. The documented settings do not appear to work with CoreDNS on CentOS 8. (In fact, many posters recommend to disable `firewalld` on CentOS.) So presently, the firewall is disabled but my goal is to run the cluster with the firewall enabled and the correct rules defined |
@@ -110,7 +111,7 @@ Creates a k8s cluster exactly as above, except uses the template created by the 
 
 ## Versions
 
-This project has been tested with the following tools, components and versions. The Kubernetes component versions and CentOS and VirtualBox Guest Addition versions are hard-coded into the `new-cluster` script where possible. (Some manifests, like OpenEBS for example, don't have versioned URLs...)
+Version v1.0.0 of this project has been tested with the following tools, components and versions. The Kubernetes component versions and CentOS and VirtualBox Guest Addition versions are hard-coded into the `new-cluster` script where possible. (Some manifests, like OpenEBS for example, don't have versioned URLs...)
 
 For explicitly versioned components, changes only need to be made one time in the `new-cluster` script. *If you decide to use later (or earlier) Kubernetes components, be aware that the supported options can change between versions which may require additional script changes.*
 
@@ -143,3 +144,4 @@ For explicitly versioned components, changes only need to be made one time in th
 | k8s      | Cilium networking and Hubble network monitoring (if installed) | 1.9.4              |            |
 | k8s      | kube-prometheus stack (if installed)                           | 0.7.0              |            |
 | k8s      | OpenEBS (if installed)                                         | 2.11.0             | 2021-08-14 |
+| k8s      | Sonobuoy conformance (passed)                                  | v0.53.2            | 2021-08-18 |
