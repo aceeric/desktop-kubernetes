@@ -1,6 +1,6 @@
 # Desktop Kubernetes
 
-<img src="resources/desktop-kubernetes.jpg" width="100"/>
+<img src="resources/desktop-kubernetes-no-text.jpg" width="100"/>
 
 Desktop Kubernetes is a Bash shell project that provisions a desktop Kubernetes cluster using VirtualBox - with each cluster node consisting of a CentOS 8 guest VM. The cluster consists of one VM functioning in a dual role of control plane server and worker node, and two dedicated worker nodes. The cluster is provisioned by running one script - `new-cluster` - with a few command line options. The script makes no changes to your desktop's environment - the only changes it makes to your desktop are the files it downloads, and the VirtualBox VMs it creates. (Of course, VirtualBox may create various network interfaces but these are cleaned up by VirtualBox if you remove the cluster.)
 
