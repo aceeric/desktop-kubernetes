@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 #
-# Gets the IP address from a VM using Guest Additions functionality. (Obviously requires that Guest Additions
+# Gets the IP address from a VM using Guest Additions functionality. (Obviously requires that Guest Additions are
 # installed in the guest.) The project supports provisioning a cluster in either bridged - or host only - network
 # mode. In bridged mode: NIC 1 in each guest is bridged, providing host-to-guest, guest-to-guest, and
 # guest-to-internet. In host only mode: NIC 1 is a NAT network for internet access from the guest and NIC 2 is the

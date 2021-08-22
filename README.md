@@ -96,6 +96,7 @@ Creates a k8s cluster exactly as above, except uses the template created by the 
 | ------------------------------ | ------------------------------------------------------------ |
 | CoreDNS                        | Consider latest github deployment has coredns:1.8.4...       |
 | Aggregation                    | Remove patch and incorporate into main api-server setup      |
+| Kubernetes binaries            | For these, encode the version into the downloaded binary and strip it when copied into the VM for better documentation |
 | Graceful shutdown              | Configure graceful shutdown                                  |
 | Kubernetes                     | Stay current with Kubernetes (last update was 1.22.0)        |
 | Management Cluster             | Support the ability to configure as a management cluster     |
@@ -107,7 +108,8 @@ Creates a k8s cluster exactly as above, except uses the template created by the 
 | Nodes                          | Consider making the number of controllers configurable, as well as node characteristics such as storage, RAM, and CPU. Right now, only one controller and two workers are supported, their names are hard-coded, etc. |
 | Hands-free install improvement | The current version builds a Kickstart ISO, and mounts the ISO on the VM to do the hands-free CentOS install. Unfortunately, this method does not allow you to change the boot menu timeout on the *initial* startup of the VM. So, unless you intervene, the boot menu takes 60 seconds to time out before the Kickstart installation begins. The alternate way to do this is to break apart the ISO, modify the boot menu timeout, and then re-build the ISO. I may consider this at some future point, although that would not easily lend itself to automation |
 | CoreOS?                        | Consider [Fedora CoreOS](https://getfedora.org/en/coreos?stream=stable) as a VM OS |
-| Other VM provisioning          | Experiment with other VM provisioning tooling (Terraform? Vagrant?) |
+| CentOS Stream                  | The new way to get CentOS |
+| Other VM provisioning          | Experiment with other VM provisioning tooling (Terraform? Vagrant? CloudInit?) |
 
 ## Versions
 
@@ -142,6 +144,6 @@ For explicitly versioned components, changes only need to be made one time in th
 | k8s      | Kubernetes Dashboard (if installed)                            | 2.0.0              |            |
 | k8s      | Calico networking (if installed)                               | 3.20.0             | 2021-08-14 |
 | k8s      | Cilium networking and Hubble network monitoring (if installed) | 1.9.4              |            |
-| k8s      | kube-prometheus stack (if installed)                           | 0.7.0              |            |
+| k8s      | kube-prometheus stack (if installed)                           | 0.8.0              | 2021-08-21 |
 | k8s      | OpenEBS (if installed)                                         | 2.11.0             | 2021-08-14 |
 | k8s      | Sonobuoy conformance (passed)                                  | v0.53.2            | 2021-08-18 |
