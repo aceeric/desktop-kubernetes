@@ -3,9 +3,9 @@
 mismatch=0
 tested_openssl_version="1.1.1f"
 tested_genisoimage_version="1.1.11"
-tested_vboxmanage_version="6.1.18r142142"
+tested_vboxmanage_version="6.1.18"
 tested_ssh_version="OpenSSH_8.2p1"
-tested_host_os_version="Ubuntu 20.04.2 LTS"
+tested_host_os_version="Ubuntu 20.04.3 LTS"
 tested_kubectl_version="v1.22.0"
 tested_curl_version="7.68.0"
 
@@ -25,7 +25,7 @@ fi
 
 if which vboxmanage &>/dev/null; then
   vboxmanage_version=$(vboxmanage --version)
-  [[ $vboxmanage_version == "$tested_vboxmanage_version" ]] && vboxmanage_ok=Yes || { vboxmanage_ok=No; mismatch=1; }
+  [[ $vboxmanage_version == $tested_vboxmanage_version* ]] && vboxmanage_ok=Yes || { vboxmanage_ok=No; mismatch=1; }
 else
   vboxmanage_version="not found"
 fi

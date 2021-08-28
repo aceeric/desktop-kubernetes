@@ -4,12 +4,14 @@
 
 Desktop Kubernetes is a Bash shell project that provisions a desktop Kubernetes cluster using VirtualBox - with each cluster node consisting of a CentOS 8 guest VM. The cluster consists of one VM functioning in a dual role of control plane server and worker node, and two dedicated worker nodes. The cluster is provisioned by running one script - `new-cluster` - with a few command line options. The script makes no changes to your desktop's environment - the only changes it makes to your desktop are the files it downloads, and the VirtualBox VMs it creates. (Of course, VirtualBox may create various network interfaces but these are cleaned up by VirtualBox if you remove the cluster.)
 
+Desktop Kubernetes is kind of like the '57 Chevy of Kubernetes dev distros: you can take it apart and put it back together with just a few tools.
+
 This has been tested on Ubuntu 20.04.X systems with 64 gig of RAM and 6+ hyper-threaded processors.
 
 This project is derivative of **Kelsey Hightower's** [Kubernetes The Hard Way](https://github.com/kelseyhightower/kubernetes-the-hard-way). The differences between the Hightower project and this project are listed below:
 
 | Hightower | This project |
-| :-- | --- |
+| :-------- | ------------ |
 | Presents a series of manual labs to get hands-on experience with Kubernetes installation as a learning exercise | Is automated - brings up a desktop Kubernetes cluster with one controller and multiple workers with a single Bash shell script invocation (see the *Quick Start* further on down.) |
 | Uses [Google Cloud Platform](https://cloud.google.com/) to provision the compute resources | Provisions VMs on the desktop using [VirtualBox](https://www.virtualbox.org/). I was interested to get some experience with the `VBoxManage` utility and CentOS [Kickstart](https://docs.centos.org/en-US/centos/install-guide/Kickstart2/) for hands-free OS installation. The script creates a template VM, and then clones the template for each of the cluster nodes. I also needed the VirtualBox Guest Additions, and came up with a way to automate that installation. Guest Additions provides the ability to get the IP address from a VM. This was an interesting side-effort that resulted in the ability to create a CentOS VM just by running a single script command. |
 | Uses Ubuntu for the cluster node OS | Uses [CentOS 8.](https://www.centos.org/download/) |
@@ -19,6 +21,7 @@ This project is derivative of **Kelsey Hightower's** [Kubernetes The Hard Way](h
 | Uses Cloudflare [cfssl](https://github.com/cloudflare/cfssl) to generate the cluster certs | Uses [openssl](https://www.openssl.org/) since it is almost universally available on Linux. I was interested to see what the scripting would look like using openssl, especially for things like creating CSRs and so on. |
 | Is nicely terse and compact | Is verbose by virtue of using scripts with lots of options, and separating the component installs into separate scripts, thus requiring a lot of option passing and parsing. |
 | Does not include monitoring | Installs either [Kubernetes Metrics Server](https://github.com/kubernetes-sigs/metrics-server) with the [Kubernetes Dashboard](https://kubernetes.io/docs/tasks/access-application-cluster/web-ui-dashboard/) - or - the [kube-prometheus](https://github.com/prometheus-operator/kube-prometheus) stack. |
+| Does not include additional features since it is focused on Kubernetes itself | Supports OpenEBS volume provisioner |
 
 ## Quick Start
 
@@ -107,8 +110,9 @@ Creates a k8s cluster exactly as above, except uses the template created by the 
 | Headless                       | Support running the VMs headless. At present, each VM comes up on the desktop, which can be somewhat intrusive it you're doing other work. (OTOH it does provide positive feedback on what's happening) |
 | Nodes                          | Consider making the number of controllers configurable, as well as node characteristics such as storage, RAM, and CPU. Right now, only one controller and two workers are supported, their names are hard-coded, etc. |
 | Hands-free install improvement | The current version builds a Kickstart ISO, and mounts the ISO on the VM to do the hands-free CentOS install. Unfortunately, this method does not allow you to change the boot menu timeout on the *initial* startup of the VM. So, unless you intervene, the boot menu takes 60 seconds to time out before the Kickstart installation begins. The alternate way to do this is to break apart the ISO, modify the boot menu timeout, and then re-build the ISO. I may consider this at some future point, although that would not easily lend itself to automation |
-| CoreOS?                        | Consider [Fedora CoreOS](https://getfedora.org/en/coreos?stream=stable) as a VM OS |
+| Flatcar Linux                  | Consider [Flatcar Linux](https://kinvolk.io/blog/2020/02/flatcar-container-linux-enters-new-era-after-coreos-end-of-life-announcement/) as a VM OS |
 | CentOS Stream                  | The new way to get CentOS |
+| Static Pods                    | Consider running the Kubernetes core components as static pods |
 | Other VM provisioning          | Experiment with other VM provisioning tooling (Terraform? Vagrant? CloudInit?) |
 
 ## Versions
@@ -119,11 +123,11 @@ For explicitly versioned components, changes only need to be made one time in th
 
 | Where    | Component                                                      | Version            | Updated    |
 | -------- | -------------------------------------------------------------- | ------------------ | ---------- |
-| host     | Linux desktop                                                  | Ubuntu 20.04.2 LTS |            |
+| host     | Linux desktop                                                  | Ubuntu 20.04.3 LTS | 2021-08-27 |
 | host     | openssl                                                        | 1.1.1f             |            |
 | host     | openssh                                                        | OpenSSH_8.2p1      |            |
 | host     | genisoimage (used to create the Kickstart ISO)                 | 1.1.11             |            |
-| host     | Virtual Box / VBoxManage                                       | 6.1.18r142142      |            |
+| host     | Virtual Box / VBoxManage                                       | 6.1.18             |            |
 | host     | kubectl (client only)                                          | v1.22.0            | 2021-08-14 |
 | host     | curl                                                           | 7.68.0             |            |
 | guest VM | Centos ISO                                                     | 8.3.2011-x86_64    |            |
