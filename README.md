@@ -1,10 +1,10 @@
 # Desktop Kubernetes
 
-<img src="resources/desktop-kubernetes-no-text.jpg" width="100" align="left"/>
+<img src="resources/desktop-kubernetes-no-text.jpg" width="100"/>
 
 Desktop Kubernetes is a Linux *Bash* project that provisions a desktop Kubernetes cluster using VirtualBox - with each cluster node consisting of a CentOS 8 guest VM. Desktop Kubernetes is the *57 Chevy* of Kubernetes distros: you can take it apart and put it back together with just a few Linux console tools: bash, curl, genisoimage, ssh, scp, openssl, vboxmanage, and kubectl. That being said, v1.0.0 of this distribution is Kubernetes Certified. See: [CNCF Interactive Landscape](https://landscape.cncf.io/card-mode?category=platform&amp;grouping=category&amp;selected=desktop-kubernetes). 
 
-<img src="https://www.cncf.io/wp-content/uploads/2020/07/certified_kubernetes_color-1.png" style="zoom:15%;" align="left" />
+<img src="https://www.cncf.io/wp-content/uploads/2020/07/certified_kubernetes_color-1.png" width="90"/>
 
 The cluster provisioned by the project consists of one VM functioning in a dual role of control plane server and worker node, plus two dedicated worker nodes. The cluster is provisioned by running one script - `new-cluster` - with a few command line options. The script makes no changes to your desktop's environment - the only changes it makes to your desktop are the files it downloads, and the VirtualBox VMs it creates. (Of course, VirtualBox may create various network interfaces but these are cleaned up by VirtualBox if you remove the cluster.)
 
