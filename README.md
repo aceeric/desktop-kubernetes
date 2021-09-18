@@ -1,10 +1,12 @@
 # Desktop Kubernetes
 
-<img src="resources/desktop-kubernetes-no-text.jpg" width="100"/>
+<img src="resources/desktop-kubernetes-no-text.jpg" width="100" align="left"/>
 
-Desktop Kubernetes is a Bash shell project that provisions a desktop Kubernetes cluster using VirtualBox - with each cluster node consisting of a CentOS 8 guest VM. The cluster consists of one VM functioning in a dual role of control plane server and worker node, and two dedicated worker nodes. The cluster is provisioned by running one script - `new-cluster` - with a few command line options. The script makes no changes to your desktop's environment - the only changes it makes to your desktop are the files it downloads, and the VirtualBox VMs it creates. (Of course, VirtualBox may create various network interfaces but these are cleaned up by VirtualBox if you remove the cluster.)
+Desktop Kubernetes is a Linux *Bash* project that provisions a desktop Kubernetes cluster using VirtualBox - with each cluster node consisting of a CentOS 8 guest VM. Desktop Kubernetes is the *57 Chevy* of Kubernetes distros: you can take it apart and put it back together with just a few Linux console tools: bash, curl, genisoimage, ssh, scp, openssl, vboxmanage, and kubectl. That being said, v1.0.0 of this distribution is Kubernetes Certified. See: [CNCF Interactive Landscape](https://landscape.cncf.io/card-mode?category=platform&amp;grouping=category&amp;selected=desktop-kubernetes). 
 
-Desktop Kubernetes is kind of like the '57 Chevy of Kubernetes dev distros: you can take it apart and put it back together with just a few tools.
+<img src="https://www.cncf.io/wp-content/uploads/2020/07/certified_kubernetes_color-1.png" style="zoom:15%;" align="left" />
+
+The cluster provisioned by the project consists of one VM functioning in a dual role of control plane server and worker node, plus two dedicated worker nodes. The cluster is provisioned by running one script - `new-cluster` - with a few command line options. The script makes no changes to your desktop's environment - the only changes it makes to your desktop are the files it downloads, and the VirtualBox VMs it creates. (Of course, VirtualBox may create various network interfaces but these are cleaned up by VirtualBox if you remove the cluster.)
 
 This has been tested on Ubuntu 20.04.X systems with 64 gig of RAM and 6+ hyper-threaded processors.
 
@@ -47,11 +49,11 @@ $ ./new-cluster --host-network-interface=enp0s31f6 --create-template\
   --vboxdir=/sdb1/virtualbox --networking=calico --monitoring=kube-prometheus
 ```
 
-The `--networking` option installs cluster networking. In the example: Calico and kube-proxy.
+The `--networking` option installs cluster networking. In the example: Calico (and kube-proxy.)
 
 The `--monitoring` option installs monitoring. In the example: Kube Prometheus. (The kube-prometheus param also creates a NodePort service on port 30300 which you can access directly using any one of the VM IPs to access the Grafana dashboard using credentials admin/admin.)
 
-The `--create-tempalate` option is required the first time: it creates a template VM which is used to clone the cluster VMs.
+The `--create-template` option is required the first time: it creates a template VM which is used to clone the cluster VMs.
 
 > Please Note: URLs are perishable. Just in the time that I was developing this project, the CentOS version and URL changed slightly so - don't be surprised if you have to tweak the URLs. The script provides an option to test each URL and tell you which ones it couldn't access. Then you will have to modify the `new-cluster` script accordingly.
 
@@ -64,7 +66,7 @@ The following command-line options are supported for the `new-cluster` script:
 ### Cluster creation options
 
 | Option | Type | Description  |
-| - | - | - |
+| ------ | ---- | ----------- |
 | `--host-network-interface` | Required | Specify this, or the `--host-only-network` option. If this, then the parameter is the name of the primary network interface on your machine. The scripts use this to configure the VirtualBox bridge network for each guest VM. **Important**: you must specify this consistently when creating the template, and when creating a cluster from the template. The reason is that the option configures settings at the VM level that then propagate into the guest OS. Since guests are cloned from the template, the guest networking has to be defined consistently with the template. |
 | `--host-only-network`      | Required | Specify this, or the `--host-network-interface` option. If this, then the parameter is the left three octets of the network. E.g. `100.100.100`. This option configures NAT + host only networking mode. The scripts will create a new host only network and configure the cluster to use it for intra-cluster networking, and will configure NAT for the cluster to access the internet. *See important note above regarding VBox networking type.* |
 | `--vboxdir`                | Required | The directory where you keep your VirtualBox VM files. The script uses the `VBoxManage` utility to create the VMs, which will in turn create a sub-directory under this directory for each VM. The directory must exist. The script will not create it. |
@@ -77,7 +79,7 @@ The following command-line options are supported for the `new-cluster` script:
 ### Other (optional) options
 
 | Option | Description |
-| - | - |
+| ------ | ----------- |
 | `--verify` | Looks for all the upstreams or filesystem objects used by the script. Valid options are `upstreams` and `files`. If `upstreams`, then the script does a curl HEAD request for each upstream (e.g. CentOS ISO, Kubernetes binaries, etc.). If `files`, then the same check is performed for the downloaded filesystem objects. This is a useful option to see all the objects that are required to provision a cluster. The list is influenced by some other options. E.g. if you specify `--monitoring=kube-prometheus`, then that will add to the list of objects to be checked. |
 | `--check-compatibility`      | Checks the installed versions of various desktop tools used by the project (curl, kubectl, etc) against what the project has been tested on - and then exits, taking no further action. You should do this at least once. Or just run `verify-prereqs` in the `scripts` directory. Note - there will likely be differences between your desktop and what I tested with - you will have to determine whether the differences are relevant. |
 | `--up`, `--down`, `--delete` | Takes a comma-separated list of VM names, and starts (`--up`), stops (`--down`), or deletes (`--delete`) them all. The `--down` option is a graceful shutdown. The `--delete` is a fast shutdown and also removes the Virtual Box VM files from the file system. |
@@ -85,19 +87,47 @@ The following command-line options are supported for the `new-cluster` script:
 
 ## Examples
 
+**Example 1**
+
 `./new-cluster --create-template --host-only-network=40.20.1 --vboxdir=/sdb1/virtualbox/ --networking=calico --monitoring=kube-prometheus --storage=openebs`
 
 Creates a template VM configured with host-only networking and NAT. The host network is 40.20.1. The script will create a host-only network in VirtualBox for the template. For the k8s cluster, it installs Calico networking, Kube-Prometheus monitoring, and the OpenEBS HostPath Provisioner. Each VM gets a sequential IP address (40.20.1.200, 40.20.1.201, 40.20.1.202). This is what you run - with `--create-template` - the very first time.
+
+**Example 2**
 
 `./new-cluster --host-only-network=40.20.1 --vboxdir=/sdb1/virtualbox/ --networking=calico --monitoring=kube-prometheus --storage=openebs`
 
 Creates a k8s cluster exactly as above, except uses the template created by the prior invocation. **Notice** that the `--host-only-network` option matches the option that was specified when the template was created. This is what you run if you're happy with the template: you just keep tearing down your cluster and re-creating it from the template. If ever you change something about the template generation, then you would delete the template, and go back to the first form of the script invocation. The value you choose for the octets is up to you but - once you pick those values you have to use them consistently because they are used to configure the NIC in the guest, and the octets have to match a Host-Only network configured in VirtualBox. (E.g. in the VBox UI: File > Host Network Manager > Properties.)
 
+**Example 3**
+
+```shell
+$ ./new-cluster --verify=upstreams --create-template --monitoring=kube-prometheus --networking=calico --storage=openebs
+OK: https://github.com/etcd-io/etcd/releases/download/v3.5.0/etcd-v3.5.0-linux-amd64.tar.gz
+OK: https://dl.k8s.io/v1.22.0/bin/linux/amd64/kube-apiserver
+OK: https://dl.k8s.io/v1.22.0/bin/linux/amd64/kube-controller-manager
+OK: https://dl.k8s.io/v1.22.0/bin/linux/amd64/kube-scheduler
+OK: https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.22.0/crictl-v1.22.0-linux-amd64.tar.gz
+OK: https://github.com/opencontainers/runc/releases/download/v1.0.1/runc.amd64
+OK: https://github.com/containernetworking/plugins/releases/download/v1.0.0/cni-plugins-linux-amd64-v1.0.0.tgz
+OK: https://github.com/containerd/containerd/releases/download/v1.5.5/containerd-1.5.5-linux-amd64.tar.gz
+OK: https://dl.k8s.io/v1.22.0/bin/linux/amd64/kubelet
+OK: http://mirror.umd.edu/centos/8.3.2011/isos/x86_64/CentOS-8.3.2011-x86_64-dvd1.iso
+OK: http://download.virtualbox.org/virtualbox/6.1.18/VBoxGuestAdditions_6.1.18.iso
+OK: https://github.com/prometheus-operator/kube-prometheus/archive/v0.8.0.tar.gz
+OK: https://storage.googleapis.com/kubernetes-release/release/v1.22.0/bin/linux/amd64/kube-proxy
+OK: https://docs.projectcalico.org/manifests/calico.yaml
+OK: https://raw.githubusercontent.com/openebs/charts/gh-pages/hostpath-operator.yaml
+OK: https://openebs.github.io/charts/openebs-lite-sc.yaml
+```
+
+Using the cluster creation options, checks the upstream URLS with a HEAD request to make sure all those resources are presently available matching the hard-coded versions. Doesn't actually create a cluster. Note - some upstreams don't have versioned URLs, which unfortunately makes it impossible to achieve a completely deterministic install...   
+
 ## ToDos
 
 | Task                           | Description                                                  |
 | ------------------------------ | ------------------------------------------------------------ |
-| CoreDNS                        | Consider latest github deployment has coredns:1.8.4...       |
+| CoreDNS                        | Consider latest GitHub deployment has coredns:1.8.4...       |
 | Aggregation                    | Remove patch and incorporate into main api-server setup      |
 | Kubernetes binaries            | For these, encode the version into the downloaded binary and strip it when copied into the VM for better documentation |
 | Graceful shutdown              | Configure graceful shutdown                                  |
@@ -111,13 +141,13 @@ Creates a k8s cluster exactly as above, except uses the template created by the 
 | Nodes                          | Consider making the number of controllers configurable, as well as node characteristics such as storage, RAM, and CPU. Right now, only one controller and two workers are supported, their names are hard-coded, etc. |
 | Hands-free install improvement | The current version builds a Kickstart ISO, and mounts the ISO on the VM to do the hands-free CentOS install. Unfortunately, this method does not allow you to change the boot menu timeout on the *initial* startup of the VM. So, unless you intervene, the boot menu takes 60 seconds to time out before the Kickstart installation begins. The alternate way to do this is to break apart the ISO, modify the boot menu timeout, and then re-build the ISO. I may consider this at some future point, although that would not easily lend itself to automation |
 | Flatcar Linux                  | Consider [Flatcar Linux](https://kinvolk.io/blog/2020/02/flatcar-container-linux-enters-new-era-after-coreos-end-of-life-announcement/) as a VM OS |
-| CentOS Stream                  | The new way to get CentOS |
+| CentOS Stream                  | The new way to get CentOS                                    |
 | Static Pods                    | Consider running the Kubernetes core components as static pods |
 | Other VM provisioning          | Experiment with other VM provisioning tooling (Terraform? Vagrant? CloudInit?) |
 
 ## Versions
 
-Version v1.0.0 of this project has been tested with the following tools, components and versions. The Kubernetes component versions and CentOS and VirtualBox Guest Addition versions are hard-coded into the `new-cluster` script where possible. (Some manifests, like OpenEBS for example, don't have versioned URLs...)
+Version v1.0.0 of this project has been tested with the following tools, components and versions. I've tried to make this as comprehensive and accurate as possible. The Kubernetes component versions and CentOS and VirtualBox Guest Addition versions are hard-coded into the `new-cluster` script where possible. (Some manifests, like OpenEBS for example, don't have versioned URLs. So in those cases, the versions reflect the testing at the point in time indicated in the table.)
 
 For explicitly versioned components, changes only need to be made one time in the `new-cluster` script. *If you decide to use later (or earlier) Kubernetes components, be aware that the supported options can change between versions which may require additional script changes.*
 
