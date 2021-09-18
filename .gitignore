@@ -6,6 +6,7 @@
 *.csr
 *.srl
 *.iso
+*.lock
 id_ed25519*
 *.kubeconfig
 binaries/*.yaml
