@@ -91,8 +91,8 @@ apiVersion: v1
 kind: Service
 metadata:
   name: grafana-nodeport
-  labels:
-    app: grafana
+  #labels:
+  #  app: grafana
 spec:
   ports:
   - name: http
@@ -101,7 +101,7 @@ spec:
     protocol: TCP
     targetPort: 3000
   selector:
-    app: grafana
+    app.kubernetes.io/name: grafana
   type: NodePort
 EOF
 
