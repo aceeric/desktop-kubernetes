@@ -160,8 +160,8 @@ For explicitly versioned components, changes only need to be made one time in th
 | host     | Virtual Box / VBoxManage                                       | 6.1.26             | 2021-09-18 |
 | host     | kubectl (client only)                                          | v1.22.0            | 2021-08-14 |
 | host     | curl                                                           | 7.68.0             |            |
-| guest VM | Centos ISO                                                     | 8.4.2105-x86_64    | 2021-09-18 |
-| guest VM | Virtual Box Guest Additions ISO                                | 6.1.26             | 2021-09-18 |
+| guest VM | Centos ISO                                                     | 8.5.2111-x86_64    | 2021-11-27 |
+| guest VM | Virtual Box Guest Additions ISO                                | 6.1.30             | 2021-11-27 |
 | k8s      | etcd                                                           | v3.5.0             | 2021-08-14 |
 | k8s      | kube-apiserver                                                 | v1.22.0            | 2021-08-14 |
 | k8s      | kube-controller-manager                                        | v1.22.0            | 2021-08-14 |
