@@ -55,7 +55,7 @@ The `--monitoring` option installs monitoring. In the example: Kube Prometheus. 
 
 The `--create-template` option is required the first time: it creates a template VM which is used to clone the cluster VMs.
 
-> Please Note: URLs are perishable. Just in the time that I was developing this project, the CentOS version and URL changed slightly so - don't be surprised if you have to tweak the URLs. The script provides an option to test each URL and tell you which ones it couldn't access. Then you will have to modify the `new-cluster` script accordingly.
+> Please Note: URLs are perishable. The script provides an option to test each URL and tell you which ones it couldn't access. Then you will have to modify the `new-cluster` script accordingly.
 
 Once the cluster comes up, the script will display a message telling you how to set your `KUBECONFIG` in order to access the cluster. It will also display a message showing how to SSH into each node. The `scripts` directory also has a helper script `sshto` that takes a VM name as an arg and SSHs into the VM. E.g.: `scripts/sshto doc`.
 
@@ -89,13 +89,13 @@ The following command-line options are supported for the `new-cluster` script:
 
 **Example 1**
 
-`./new-cluster --create-template --host-only-network=40.20.1 --vboxdir=/sdb1/virtualbox/ --networking=calico --monitoring=kube-prometheus --storage=openebs`
+`./new-cluster --create-template --host-only-network=192.168.56 --vboxdir=/sdb1/virtualbox/ --networking=calico --monitoring=kube-prometheus --storage=openebs`
 
-Creates a template VM configured with host-only networking and NAT. The host network is 40.20.1. The script will create a host-only network in VirtualBox for the template. For the k8s cluster, it installs Calico networking, Kube-Prometheus monitoring, and the OpenEBS HostPath Provisioner. Each VM gets a sequential IP address (40.20.1.200, 40.20.1.201, 40.20.1.202). This is what you run - with `--create-template` - the very first time.
+Creates a template VM configured with host-only networking and NAT. The host network is 192.168.56. The script will create a host-only network in VirtualBox for the template. For the k8s cluster, it installs Calico networking, Kube-Prometheus monitoring, and the OpenEBS HostPath Provisioner. Each VM gets a sequential IP address (192.168.56.200, 192.168.56.201, 192.168.56.202). This is what you run - with `--create-template` - the very first time.
 
 **Example 2**
 
-`./new-cluster --host-only-network=40.20.1 --vboxdir=/sdb1/virtualbox/ --networking=calico --monitoring=kube-prometheus --storage=openebs`
+`./new-cluster --host-only-network=192.168.56 --vboxdir=/sdb1/virtualbox/ --networking=calico --monitoring=kube-prometheus --storage=openebs`
 
 Creates a k8s cluster exactly as above, except uses the template created by the prior invocation. **Notice** that the `--host-only-network` option matches the option that was specified when the template was created. This is what you run if you're happy with the template: you just keep tearing down your cluster and re-creating it from the template. If ever you change something about the template generation, then you would delete the template, and go back to the first form of the script invocation. The value you choose for the octets is up to you but - once you pick those values you have to use them consistently because they are used to configure the NIC in the guest, and the octets have to match a Host-Only network configured in VirtualBox. (E.g. in the VBox UI: File > Host Network Manager > Properties.)
 
@@ -112,7 +112,7 @@ OK: https://github.com/opencontainers/runc/releases/download/v1.0.1/runc.amd64
 OK: https://github.com/containernetworking/plugins/releases/download/v1.0.0/cni-plugins-linux-amd64-v1.0.0.tgz
 OK: https://github.com/containerd/containerd/releases/download/v1.5.5/containerd-1.5.5-linux-amd64.tar.gz
 OK: https://dl.k8s.io/v1.22.0/bin/linux/amd64/kubelet
-OK: http://mirror.umd.edu/centos/8.3.2011/isos/x86_64/CentOS-8.3.2011-x86_64-dvd1.iso
+OK: https://mirror.umd.edu/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-latest-dvd1.iso
 OK: http://download.virtualbox.org/virtualbox/6.1.18/VBoxGuestAdditions_6.1.18.iso
 OK: https://github.com/prometheus-operator/kube-prometheus/archive/v0.8.0.tar.gz
 OK: https://storage.googleapis.com/kubernetes-release/release/v1.22.0/bin/linux/amd64/kube-proxy
@@ -151,33 +151,33 @@ Version v1.0.0 of this project has been tested with the following tools, compone
 
 For explicitly versioned components, changes only need to be made one time in the `new-cluster` script. *If you decide to use later (or earlier) Kubernetes components, be aware that the supported options can change between versions which may require additional script changes.*
 
-| Where    | Component                                                      | Version            | Updated    |
-| -------- | -------------------------------------------------------------- | ------------------ | ---------- |
-| host     | Linux desktop                                                  | Ubuntu 20.04.3 LTS | 2021-08-27 |
-| host     | openssl                                                        | 1.1.1f             |            |
-| host     | openssh                                                        | OpenSSH_8.2p1      |            |
-| host     | genisoimage (used to create the Kickstart ISO)                 | 1.1.11             |            |
-| host     | Virtual Box / VBoxManage                                       | 6.1.26             | 2021-09-18 |
-| host     | kubectl (client only)                                          | v1.22.0            | 2021-08-14 |
-| host     | curl                                                           | 7.68.0             |            |
-| guest VM | Centos ISO                                                     | 8.5.2111-x86_64    | 2021-11-27 |
-| guest VM | Virtual Box Guest Additions ISO                                | 6.1.30             | 2021-11-27 |
-| k8s      | etcd                                                           | v3.5.0             | 2021-08-14 |
-| k8s      | kube-apiserver                                                 | v1.22.0            | 2021-08-14 |
-| k8s      | kube-controller-manager                                        | v1.22.0            | 2021-08-14 |
-| k8s      | kube-scheduler                                                 | v1.22.0            | 2021-08-14 |
-| k8s      | kubelet                                                        | v1.22.0            | 2021-08-14 |
-| k8s      | crictl                                                         | v1.22.0            | 2021-08-14 |
-| k8s      | runc                                                           | v1.0.1             | 2021-08-14 |
-| k8s      | cni plugins                                                    | v1.0.0             | 2021-08-14 |
-| k8s      | containerd                                                     | v1.5.5             | 2021-08-14 |
-| k8s      | CoreDNS                                                        | 1.8.0              |            |
-| k8s      | kube-proxy (if installed)                                      | v1.22.0            | 2021-08-14 |
-| k8s      | kube-router (if installed)                                     | v1.3.1             | 2021-08-14 |
-| k8s      | Metrics Server (if installed)                                  | 0.4.2              |            |
-| k8s      | Kubernetes Dashboard (if installed)                            | 2.0.0              |            |
-| k8s      | Calico networking (if installed)                               | 3.20.0             | 2021-08-14 |
-| k8s      | Cilium networking and Hubble network monitoring (if installed) | 1.9.4              |            |
-| k8s      | kube-prometheus stack (if installed)                           | 0.8.0              | 2021-08-21 |
-| k8s      | OpenEBS (if installed)                                         | 2.11.0             | 2021-08-14 |
-| k8s      | Sonobuoy conformance (passed)                                  | v0.53.2            | 2021-08-18 |
+| Where    | Component                                                      | Version                | Updated    |
+| -------- | -------------------------------------------------------------- |------------------------| ---------- |
+| host     | Linux desktop                                                  | Ubuntu 20.04.4 LTS     | 2022-02-26 |
+| host     | openssl                                                        | 1.1.1f                 |            |
+| host     | openssh                                                        | OpenSSH_8.2p1          |            |
+| host     | genisoimage (used to create the Kickstart ISO)                 | 1.1.11                 |            |
+| host     | Virtual Box / VBoxManage                                       | 6.1.30                 | 2022-02-26 |
+| host     | kubectl (client only)                                          | v1.22.0                | 2021-08-14 |
+| host     | curl                                                           | 7.68.0                 |            |
+| guest VM | Centos ISO                                                     | Stream-8-x86_64-latest | 2022-02-26 |
+| guest VM | Virtual Box Guest Additions ISO                                | 6.1.30                 | 2021-11-27 |
+| k8s      | etcd                                                           | v3.5.0                 | 2021-08-14 |
+| k8s      | kube-apiserver                                                 | v1.22.0                | 2021-08-14 |
+| k8s      | kube-controller-manager                                        | v1.22.0                | 2021-08-14 |
+| k8s      | kube-scheduler                                                 | v1.22.0                | 2021-08-14 |
+| k8s      | kubelet                                                        | v1.22.0                | 2021-08-14 |
+| k8s      | crictl                                                         | v1.22.0                | 2021-08-14 |
+| k8s      | runc                                                           | v1.0.1                 | 2021-08-14 |
+| k8s      | cni plugins                                                    | v1.0.0                 | 2021-08-14 |
+| k8s      | containerd                                                     | v1.5.5                 | 2021-08-14 |
+| k8s      | CoreDNS                                                        | 1.8.0                  |            |
+| k8s      | kube-proxy (if installed)                                      | v1.22.0                | 2021-08-14 |
+| k8s      | kube-router (if installed)                                     | v1.3.1                 | 2021-08-14 |
+| k8s      | Metrics Server (if installed)                                  | 0.4.2                  |            |
+| k8s      | Kubernetes Dashboard (if installed)                            | 2.0.0                  |            |
+| k8s      | Calico networking (if installed)                               | 3.20.0                 | 2021-08-14 |
+| k8s      | Cilium networking and Hubble network monitoring (if installed) | 1.9.4                  |            |
+| k8s      | kube-prometheus stack (if installed)                           | 0.8.0                  | 2021-08-21 |
+| k8s      | OpenEBS (if installed)                                         | 2.11.0                 | 2021-08-14 |
+| k8s      | Sonobuoy conformance (passed)                                  | v0.53.2                | 2021-08-18 |
