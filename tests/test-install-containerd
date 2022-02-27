@@ -7,10 +7,10 @@ $proj_root/worker/containerd/install-containerd\
  --priv-key=$proj_root/kickstart/id_ed25519\
  --worker-ip=$ip\
  --containerd-download=\
- --containerd-binary=$proj_root/binaries/containerd-1.5.5-linux-amd64.tar.gz
+ --containerd-binary=$proj_root/binaries/containerd-1.6.0-linux-amd64.tar.gz
 
 #$proj_root/worker/containerd/install-containerd\\
 # --priv-key=$proj_root/kickstart/id_ed25519\
 # --worker-ip=$ip\
-# --containerd-download=https://github.com/containerd/containerd/releases/download/v1.5.5/containerd-1.5.5-linux-amd64.tar.gz\
+# --containerd-download=https://github.com/containerd/containerd/releases/download/v1.6.0/containerd-1.6.0-linux-amd64.tar.gz\
 # --containerd-binary=$proj_root/binaries

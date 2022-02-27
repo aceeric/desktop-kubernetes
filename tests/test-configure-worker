@@ -15,9 +15,9 @@ $proj_root/scripts/configure-worker\
  --runc-download=\
  --runc-binary=$proj_root/binaries/runc\
  --cni-plugins-download=\
- --cni-plugins-binary=$proj_root/binaries/cni-plugins-linux-amd64-v1.0.0.tgz\
+ --cni-plugins-binary=$proj_root/binaries/cni-plugins-linux-amd64-v1.1.0.tgz\
  --containerd-download=\
- --containerd-binary=$proj_root/binaries/containerd-1.5.5-linux-amd64.tar.gz\
+ --containerd-binary=$proj_root/binaries/containerd-1.6.0-linux-amd64.tar.gz\
  --kubelet-download=\
  --kubelet-binary=$proj_root/binaries/kubelet\
  --pod-cidr=10.200.1.0/24\

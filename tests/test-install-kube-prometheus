@@ -10,6 +10,6 @@ ip=$($proj_root/scripts/get-vm-ip "$1")
 
 $proj_root/monitoring/kube-prometheus/install-kube-prometheus\
  --controller-ip=$ip\
- --kube-prometheus-download=https://github.com/prometheus-operator/kube-prometheus/archive/v0.8.0.tar.gz\
+ --kube-prometheus-download=https://github.com/prometheus-operator/kube-prometheus/archive/v0.10.0.tar.gz\
  --kube-prometheus-binary=$proj_root/binaries/kube-prometheus-0.8.0.tar.gz\
  --admin-kubeconfig=$proj_root/admin/admin.kubeconfig

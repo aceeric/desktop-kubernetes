@@ -19,6 +19,8 @@ binaries/kube-prometheus
 binaries/runc
 binaries/kubernetes-dashboard-recommended.yaml
 binaries/metrics-server-components.yaml
+binaries/coredns.yaml.sed
+binaries/deploy.sh
 conformance/sonobuoy
 conformance/results
 sonobuoy_results.yaml

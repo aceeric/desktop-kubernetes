@@ -6,7 +6,7 @@ tested_genisoimage_version="1.1.11"
 tested_vboxmanage_version="6.1.30"
 tested_ssh_version="OpenSSH_8.2p1"
 tested_host_os_version="Ubuntu 20.04.4 LTS"
-tested_kubectl_version="v1.22.0"
+tested_kubectl_version="v1.23.4"
 tested_curl_version="7.68.0"
 
 if which openssl &>/dev/null; then
