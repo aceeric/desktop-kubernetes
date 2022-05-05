@@ -155,7 +155,7 @@ For explicitly versioned components, changes only need to be made one time in th
 | host     | openssh                                                        | OpenSSH_8.2p1          |            |
 | host     | genisoimage (used to create the Kickstart ISO)                 | 1.1.11                 |            |
 | host     | Virtual Box / VBoxManage                                       | 6.1.30                 | 2022-02-26 |
-| host     | kubectl (client only)                                          | v1.23.4                | 2022-02-26 |
+| host     | kubectl (client only)                                          | v1.24.0                | 2022-05-05 |
 | host     | curl                                                           | 7.68.0                 |            |
 | guest VM | Centos ISO                                                     | Stream-8-x86_64-latest | 2022-02-26 |
 | guest VM | Virtual Box Guest Additions ISO                                | 6.1.30                 | 2021-11-27 |
