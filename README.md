@@ -159,17 +159,17 @@ For explicitly versioned components, changes only need to be made one time in th
 | host     | curl                                                           | 7.68.0                 |            |
 | guest VM | Centos ISO                                                     | Stream-8-x86_64-latest | 2022-02-26 |
 | guest VM | Virtual Box Guest Additions ISO                                | 6.1.30                 | 2021-11-27 |
-| k8s      | etcd                                                           | v3.5.4                 | 2022-02-26 |
-| k8s      | kube-apiserver                                                 | v1.24.0                | 2022-02-26 |
-| k8s      | kube-controller-manager                                        | v1.24.0                | 2022-02-26 |
-| k8s      | kube-scheduler                                                 | v1.24.0                | 2022-02-26 |
-| k8s      | kubelet                                                        | v1.24.0                | 2022-02-26 |
-| k8s      | crictl                                                         | v1.24.0                | 2022-02-26 |
-| k8s      | runc                                                           | v1.1.1                 | 2022-02-26 |
+| k8s      | etcd                                                           | v3.5.4                 | 2022-05-05 |
+| k8s      | kube-apiserver                                                 | v1.24.0                | 2022-05-05 |
+| k8s      | kube-controller-manager                                        | v1.24.0                | 2022-05-05 |
+| k8s      | kube-scheduler                                                 | v1.24.0                | 2022-05-05 |
+| k8s      | kubelet                                                        | v1.24.0                | 2022-05-05 |
+| k8s      | crictl                                                         | v1.24.0                | 2022-05-05 |
+| k8s      | runc                                                           | v1.1.1                 | 2022-05-05 |
 | k8s      | cni plugins                                                    | v1.1.0                 | 2022-02-26 |
-| k8s      | containerd                                                     | v1.6.4                 | 2022-02-26 |
+| k8s      | containerd                                                     | v1.6.4                 | 2022-05-05 |
 | k8s      | CoreDNS                                                        | 1.9.0                  | 2022-02-26 |
-| k8s      | kube-proxy (if installed)                                      | v1.24.0                | 2022-02-26 |
+| k8s      | kube-proxy (if installed)                                      | v1.24.0                | 2022-05-05 |
 | k8s      | kube-router (if installed)                                     | v1.3.1                 | 2021-08-14 |
 | k8s      | Metrics Server (if installed)                                  | 0.4.2                  |            |
 | k8s      | Kubernetes Dashboard (if installed)                            | 2.0.0                  |            |
