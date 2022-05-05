@@ -103,19 +103,19 @@ Creates a k8s cluster exactly as above, except uses the template created by the 
 
 ```shell
 $ ./new-cluster --verify=upstreams --create-template --monitoring=kube-prometheus --networking=calico --storage=openebs
-OK: https://github.com/etcd-io/etcd/releases/download/v3.5.2/etcd-v3.5.2-linux-amd64.tar.gz
-OK: https://dl.k8s.io/v1.23.4/bin/linux/amd64/kube-apiserver
-OK: https://dl.k8s.io/v1.23.4/bin/linux/amd64/kube-controller-manager
-OK: https://dl.k8s.io/v1.23.4/bin/linux/amd64/kube-scheduler
-OK: https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.23.0/crictl-v1.23.0-linux-amd64.tar.gz
-OK: https://github.com/opencontainers/runc/releases/download/v1.1.0/runc.amd64
+OK: https://github.com/etcd-io/etcd/releases/download/v3.5.4/etcd-v3.5.4-linux-amd64.tar.gz
+OK: https://dl.k8s.io/v1.24.0/bin/linux/amd64/kube-apiserver
+OK: https://dl.k8s.io/v1.24.0/bin/linux/amd64/kube-controller-manager
+OK: https://dl.k8s.io/v1.24.0/bin/linux/amd64/kube-scheduler
+OK: https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.24.0/crictl-v1.24.0-linux-amd64.tar.gz
+OK: https://github.com/opencontainers/runc/releases/download/v1.1.1/runc.amd64
 OK: https://github.com/containernetworking/plugins/releases/download/v1.1.0/cni-plugins-linux-amd64-v1.1.0.tgz
-OK: https://github.com/containerd/containerd/releases/download/v1.6.0/containerd-1.6.0-linux-amd64.tar.gz
-OK: https://dl.k8s.io/v1.23.4/bin/linux/amd64/kubelet
+OK: https://github.com/containerd/containerd/releases/download/v1.6.4/containerd-1.6.4-linux-amd64.tar.gz
+OK: https://dl.k8s.io/v1.24.0/bin/linux/amd64/kubelet
 OK: https://mirror.umd.edu/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-latest-dvd1.iso
 OK: https://download.virtualbox.org/virtualbox/6.1.30/VBoxGuestAdditions_6.1.30.iso
 OK: https://github.com/prometheus-operator/kube-prometheus/archive/v0.10.0.tar.gz
-OK: https://dl.k8s.io/v1.23.4/bin/linux/amd64//kube-proxy
+OK: https://dl.k8s.io/v1.24.0/bin/linux/amd64//kube-proxy
 OK: https://docs.projectcalico.org/manifests/calico.yaml
 OK: https://raw.githubusercontent.com/openebs/charts/gh-pages/hostpath-operator.yaml
 OK: https://openebs.github.io/charts/openebs-lite-sc.yaml
@@ -159,17 +159,17 @@ For explicitly versioned components, changes only need to be made one time in th
 | host     | curl                                                           | 7.68.0                 |            |
 | guest VM | Centos ISO                                                     | Stream-8-x86_64-latest | 2022-02-26 |
 | guest VM | Virtual Box Guest Additions ISO                                | 6.1.30                 | 2021-11-27 |
-| k8s      | etcd                                                           | v3.5.2                 | 2022-02-26 |
-| k8s      | kube-apiserver                                                 | v1.23.4                | 2022-02-26 |
-| k8s      | kube-controller-manager                                        | v1.23.4                | 2022-02-26 |
-| k8s      | kube-scheduler                                                 | v1.23.4                | 2022-02-26 |
-| k8s      | kubelet                                                        | v1.23.4                | 2022-02-26 |
-| k8s      | crictl                                                         | v1.23.0                | 2022-02-26 |
-| k8s      | runc                                                           | v1.1.0                 | 2022-02-26 |
+| k8s      | etcd                                                           | v3.5.4                 | 2022-02-26 |
+| k8s      | kube-apiserver                                                 | v1.24.0                | 2022-02-26 |
+| k8s      | kube-controller-manager                                        | v1.24.0                | 2022-02-26 |
+| k8s      | kube-scheduler                                                 | v1.24.0                | 2022-02-26 |
+| k8s      | kubelet                                                        | v1.24.0                | 2022-02-26 |
+| k8s      | crictl                                                         | v1.24.0                | 2022-02-26 |
+| k8s      | runc                                                           | v1.1.1                 | 2022-02-26 |
 | k8s      | cni plugins                                                    | v1.1.0                 | 2022-02-26 |
-| k8s      | containerd                                                     | v1.6.0                 | 2022-02-26 |
+| k8s      | containerd                                                     | v1.6.4                 | 2022-02-26 |
 | k8s      | CoreDNS                                                        | 1.9.0                  | 2022-02-26 |
-| k8s      | kube-proxy (if installed)                                      | v1.23.4                | 2022-02-26 |
+| k8s      | kube-proxy (if installed)                                      | v1.24.0                | 2022-02-26 |
 | k8s      | kube-router (if installed)                                     | v1.3.1                 | 2021-08-14 |
 | k8s      | Metrics Server (if installed)                                  | 0.4.2                  |            |
 | k8s      | Kubernetes Dashboard (if installed)                            | 2.0.0                  |            |
