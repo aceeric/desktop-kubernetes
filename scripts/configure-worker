@@ -172,7 +172,7 @@ fi
 echo "Getting IP address from running VM"
 worker_ip=$($proj_root/scripts/get-vm-ip $worker_hostname)
 
-echo "Making worker configuration changes"
+echo "Making worker VM configuration changes"
 # The socat binary enables support for the kubectl port-forward command. By default the kubelet
 # will fail to start if swap is enabled so disable swap
 ssh -i $priv_key root@$worker_ip << EOF
@@ -182,16 +182,6 @@ EOF
 
 echo "Configuring firewall rules"
 $proj_root/scripts/configure-firewall $worker_ip $priv_key --worker
-
-# https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/
-echo "Configuring networking"
-ssh -i $priv_key root@$worker_ip << EOF
-  modprobe br_netfilter
-  echo br_netfilter > /etc/modules-load.d/k8s.conf
-  echo net.bridge.bridge-nf-call-ip6tables = 1 >> /etc/sysctl.d/k8s.conf
-  echo net.bridge.bridge-nf-call-iptables = 1 >> /etc/sysctl.d/k8s.conf
-  sysctl --system
-EOF
 
 echo "Generating TLS certs for the worker"
 

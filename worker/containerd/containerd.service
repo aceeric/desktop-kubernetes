@@ -4,7 +4,6 @@ Documentation=https://containerd.io
 After=network.target
 
 [Service]
-ExecStartPre=/sbin/modprobe overlay
 ExecStart=/bin/containerd
 Restart=always
 RestartSec=5
