@@ -1,11 +1,14 @@
-### Sonobuoy conformance testing (15-AUG-2021)
+### Sonobuoy conformance testing
 
-SONOGZIP=https://github.com/vmware-tanzu/sonobuoy/releases/download/v0.53.2/sonobuoy_0.53.2_linux_amd64.tar.gz
+13-July-2022
+
+SONOGZIP=https://github.com/vmware-tanzu/sonobuoy/releases/download/v0.56.8/sonobuoy_0.56.8_linux_amd64.tar.gz
 [[ -f conformance/sonobuoy ]] || curl -sL $SONOGZIP | tar zxvf - -C conformance sonobuoy
 
 #### smoke test - should run one test successfully
 
 conformance/sonobuoy run --mode=quick
+watch 'conformance/sonobuoy status --json | json_pp'
 
 #### run conformance tests
 
@@ -13,7 +16,7 @@ conformance/sonobuoy run --mode=certified-conformance --timeout=30000
 
 ####  watch the tests run in one console window
 
-watch 'sonobuoy status --json | json_pp'
+watch 'conformance/sonobuoy status --json | json_pp'
 
 ####  watch the logs as the tests run in another console window
 
@@ -27,4 +30,4 @@ outfile=$(conformance/sonobuoy retrieve) &&\
 
 #### clean up the cluster
 
-sonobuoy delete --wait
+conformance/sonobuoy delete --wait

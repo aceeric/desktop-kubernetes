@@ -43,25 +43,25 @@ guest_additions_download=https://download.virtualbox.org/virtualbox/6.1.30/VBoxG
 guest_additions_path=$proj_root/media/VBoxGuestAdditions_6.1.30.iso
 etcd_download=https://github.com/etcd-io/etcd/releases/download/v3.5.4/etcd-v3.5.4-linux-amd64.tar.gz
 etcd_gzip=$proj_root/binaries/etcd-v3.5.4-linux-amd64.tar.gz
-kube_apiserver_download=https://dl.k8s.io/v1.24.0/bin/linux/amd64/kube-apiserver
+kube_apiserver_download=https://dl.k8s.io/v1.24.2/bin/linux/amd64/kube-apiserver
 kube_apiserver_binary=$proj_root/binaries/kube-apiserver
-kube_controller_manager_download=https://dl.k8s.io/v1.24.0/bin/linux/amd64/kube-controller-manager
+kube_controller_manager_download=https://dl.k8s.io/v1.24.2/bin/linux/amd64/kube-controller-manager
 kube_controller_manager_binary=$proj_root/binaries/kube-controller-manager
-kube_scheduler_download=https://dl.k8s.io/v1.24.0/bin/linux/amd64/kube-scheduler
+kube_scheduler_download=https://dl.k8s.io/v1.24.2/bin/linux/amd64/kube-scheduler
 kube_scheduler_binary=$proj_root/binaries/kube-scheduler
-crictl_download=https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.24.0/crictl-v1.24.0-linux-amd64.tar.gz
-crictl_binary=$proj_root/binaries/crictl-v1.24.0-linux-amd64.tar.gz
+crictl_download=https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.24.2/crictl-v1.24.2-linux-amd64.tar.gz
+crictl_binary=$proj_root/binaries/crictl-v1.24.2-linux-amd64.tar.gz
 runc_download=https://github.com/opencontainers/runc/releases/download/v1.1.1/runc.amd64
 runc_binary=$proj_root/binaries/runc
-cni_plugins_download=https://github.com/containernetworking/plugins/releases/download/v1.1.0/cni-plugins-linux-amd64-v1.1.0.tgz
-cni_plugins_binary=$proj_root/binaries/cni-plugins-linux-amd64-v1.1.0.tgz
+cni_plugins_download=https://github.com/containernetworking/plugins/releases/download/v1.1.1/cni-plugins-linux-amd64-v1.1.1.tgz
+cni_plugins_binary=$proj_root/binaries/cni-plugins-linux-amd64-v1.1.1.tgz
 containerd_download=https://github.com/containerd/containerd/releases/download/v1.6.4/containerd-1.6.4-linux-amd64.tar.gz
 containerd_binary=$proj_root/binaries/containerd-1.6.4-linux-amd64.tar.gz
-kubelet_download=https://dl.k8s.io/v1.24.0/bin/linux/amd64/kubelet
+kubelet_download=https://dl.k8s.io/v1.24.2/bin/linux/amd64/kubelet
 kubelet_binary=$proj_root/binaries/kubelet
 kube_router_yaml_download=https://raw.githubusercontent.com/cloudnativelabs/kube-router/v1.3.1/daemonset/generic-kuberouter-all-features.yaml
 kube_router_yaml=$proj_root/binaries/generic-kuberouter-all-features.yaml
-kube_proxy_download=https://dl.k8s.io/v1.24.0/bin/linux/amd64/kube-proxy
+kube_proxy_download=https://dl.k8s.io/v1.24.2/bin/linux/amd64/kube-proxy
 kube_proxy_binary=$proj_root/binaries/kube-proxy
 
 # extras
@@ -76,8 +76,10 @@ kubernetes_dashboard_manifest=$proj_root/binaries/kubernetes-dashboard-recommend
 #hubble_yaml=cilium-1.9.4-quick-hubble-install.yaml
 kube_prometheus_download=https://github.com/prometheus-operator/kube-prometheus/archive/v0.10.0.tar.gz
 kube_prometheus_binary=$proj_root/binaries/kube-prometheus-0.10.0.tar.gz
-calico_manifest_download=https://docs.projectcalico.org/manifests/calico.yaml
-calico_manifest=$proj_root/binaries/calico-v3.22.0.yaml
+# this binary is large (1g) but is there a better way to get a versioned release artifact?
+calico_download=https://github.com/projectcalico/calico/releases/download/v3.23.2/release-v3.23.2.tgz
+# this binary name is expected elsewhere in exactly this form: 'calico-vNN.NN.NN.tgz'
+calico_binary=$proj_root/binaries/calico-v3.23.2.tgz
 openebs_hostpath_operator_manifest_download=https://raw.githubusercontent.com/openebs/charts/gh-pages/hostpath-operator.yaml
 openebs_hostpath_operator_manifest=$proj_root/binaries/openebs-hostpath-operator.yaml
 openebs_sc_manifest_download=https://openebs.github.io/charts/openebs-lite-sc.yaml
@@ -107,7 +109,7 @@ function check_files() {
   fi
   if [[ "$networking" == "calico" ]]; then
     objects+=($kube_proxy_binary)
-    objects+=($calico_manifest)
+    objects+=($calico_binary)
   fi
   if [[ "$storage" == "openebs" ]]; then
     objects+=($openebs_hostpath_operator_manifest)
@@ -152,7 +154,7 @@ function check_urls() {
   fi
   if [[ "$networking" == "calico" ]]; then
     objects+=($kube_proxy_download)
-    objects+=($calico_manifest_download)
+    objects+=($calico_download)
   fi
   if [[ "$storage" == "openebs" ]]; then
     objects+=($openebs_hostpath_operator_manifest_download)
@@ -584,8 +586,8 @@ elif [[ "$networking" == "calico" ]]; then
    --ca-cert=$proj_root/tls/ca.pem\
    --ca-key=$proj_root/tls/ca-key.pem
   $proj_root/networking/calico/install-calico-networking\
-   --calico-manifest-download=$calico_manifest_download\
-   --calico-manifest=$calico_manifest\
+   --calico-download=$calico_download\
+   --calico-binary=$calico_binary\
    --priv-key=$priv_key\
    --admin-kubeconfig=$admin_kubeconfig\
    --pod-cidr=10.200.0.0/16\

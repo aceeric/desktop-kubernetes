@@ -2,7 +2,9 @@
 
 <img src="resources/desktop-kubernetes-no-text.jpg" width="100"/>
 
-Desktop Kubernetes is a Linux *Bash* project that provisions a desktop Kubernetes cluster using VirtualBox - with each cluster node consisting of a CentOS 8 guest VM. Desktop Kubernetes is the *57 Chevy* of Kubernetes distros: you can take it apart and put it back together with just a few Linux console tools: bash, curl, genisoimage, ssh, scp, openssl, vboxmanage, and kubectl. That being said, v1.0.0 of this distribution is Kubernetes Certified. See: [CNCF Interactive Landscape](https://landscape.cncf.io/card-mode?category=platform&amp;grouping=category&amp;selected=desktop-kubernetes). 
+Desktop Kubernetes is a Linux *Bash* project that provisions a desktop Kubernetes cluster using VirtualBox - with each cluster node consisting of a CentOS 8 guest VM. The purpose is specifically to create a realistic development and unit testing environment.
+
+Desktop Kubernetes is the *57 Chevy* of Kubernetes distros: you can take it apart and put it back together with just a few Linux console tools: bash, curl, genisoimage, ssh, scp, openssl, vboxmanage, and kubectl. That being said, v1.0.0 of this distribution is Kubernetes Certified. See: [CNCF Interactive Landscape](https://landscape.cncf.io/card-mode?category=platform&amp;grouping=category&amp;selected=desktop-kubernetes). 
 
 <img src="https://www.cncf.io/wp-content/uploads/2020/07/certified_kubernetes_color-1.png" width="90"/>
 
@@ -70,7 +72,7 @@ The following command-line options are supported for the `new-cluster` script:
 | Option | Type | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | ------ | ---- |--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | `--host-network-interface` | Required | Specify this, or the `--host-only-network` option. If this, then the parameter is the name of the primary network interface on your machine. The scripts use this to configure the VirtualBox bridge network for each guest VM. **Important**: you must specify this consistently when creating the template, and when creating a cluster from the template. The reason is that the option configures settings at the VM level that then propagate into the guest OS. Since guests are cloned from the template, the guest networking has to be defined consistently with the template.                                                                                                                                                                                                                                                                      |
-| `--host-only-network`      | Required | Specify this, or the `--host-network-interface` option. If this, then the parameter is the left three octets of the network. E.g. `192.168.56`. (*For some additional information on this address, see*: [the VirtualBox docs](https://www.virtualbox.org/manual/ch06.html).) This option configures NAT + host only networking mode. The scripts will create a new host only network and configure the cluster to use it for intra-cluster networking, and will configure NAT for the cluster to access the internet. *See important note in the table entry immediately above regarding VBox networking type.*                                                                                                                                                                                                                                         |
+| `--host-only-network`      | Required | Specify this, or the `--host-network-interface` option. If this, then the parameter is the left three octets of the network. E.g. `192.168.56`. (*For some additional information on this address, see*: [the VirtualBox docs](https://www.virtualbox.org/manual/ch06.html) *section on "Host-Only Networking"*.) This option configures NAT + host only networking mode. The scripts will create a new host only network and configure the cluster to use it for intra-cluster networking, and will configure NAT for the cluster to access the internet. *See important note in the table entry immediately above regarding VBox networking type.*                                                                                                                                                                                                                                         |
 | `--vboxdir`                | Required | The directory where you keep your VirtualBox VM files. The script uses the `VBoxManage` utility to create the VMs, which will in turn create a sub-directory under this directory for each VM. The directory must exist. The script will not create it.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                      |
 | `--networking`             | Optional | Installs Pod networking. Current valid values are `calico` (which also installs kube-proxy), `kube-router` and `cilium`. E.g.: `--networking=calico`. I use calico. And: calico is the pod networking that I used to get the k8s conformance tests passing.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | `--create-template`        | Optional | First creates a template VM to clone all the cluster nodes from before bringing up the cluster. (This step by far takes the longest.) If not specified, the script expects to find an existing VM to clone from. This option installs the OS using Kickstart, then installs Guest Additions. You must provide this option for the very first cluster you create.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                             |
@@ -106,19 +108,17 @@ Creates a k8s cluster exactly as above, except uses the template created by the 
 ```shell
 $ ./new-cluster --verify=upstreams --create-template --monitoring=kube-prometheus --networking=calico --storage=openebs
 OK: https://github.com/etcd-io/etcd/releases/download/v3.5.4/etcd-v3.5.4-linux-amd64.tar.gz
-OK: https://dl.k8s.io/v1.24.0/bin/linux/amd64/kube-apiserver
-OK: https://dl.k8s.io/v1.24.0/bin/linux/amd64/kube-controller-manager
-OK: https://dl.k8s.io/v1.24.0/bin/linux/amd64/kube-scheduler
-OK: https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.24.0/crictl-v1.24.0-linux-amd64.tar.gz
+OK: https://dl.k8s.io/v1.24.2/bin/linux/amd64/kube-apiserver
+OK: https://dl.k8s.io/v1.24.2/bin/linux/amd64/kube-controller-manager
+OK: https://dl.k8s.io/v1.24.2/bin/linux/amd64/kube-scheduler
+OK: https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.24.2/crictl-v1.24.2-linux-amd64.tar.gz
 OK: https://github.com/opencontainers/runc/releases/download/v1.1.1/runc.amd64
-OK: https://github.com/containernetworking/plugins/releases/download/v1.1.0/cni-plugins-linux-amd64-v1.1.0.tgz
+OK: https://github.com/containernetworking/plugins/releases/download/v1.1.1/cni-plugins-linux-amd64-v1.1.1.tgz
 OK: https://github.com/containerd/containerd/releases/download/v1.6.4/containerd-1.6.4-linux-amd64.tar.gz
-OK: https://dl.k8s.io/v1.24.0/bin/linux/amd64/kubelet
-OK: https://mirror.umd.edu/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-latest-dvd1.iso
-OK: https://download.virtualbox.org/virtualbox/6.1.30/VBoxGuestAdditions_6.1.30.iso
+OK: https://dl.k8s.io/v1.24.2/bin/linux/amd64/kubelet
 OK: https://github.com/prometheus-operator/kube-prometheus/archive/v0.10.0.tar.gz
-OK: https://dl.k8s.io/v1.24.0/bin/linux/amd64//kube-proxy
-OK: https://docs.projectcalico.org/manifests/calico.yaml
+OK: https://dl.k8s.io/v1.24.2/bin/linux/amd64/kube-proxy
+OK: https://github.com/projectcalico/calico/releases/download/v3.23.2/release-v3.23.2.tgz
 OK: https://raw.githubusercontent.com/openebs/charts/gh-pages/hostpath-operator.yaml
 OK: https://openebs.github.io/charts/openebs-lite-sc.yaml
 ```
@@ -156,26 +156,26 @@ For explicitly versioned components, changes only need to be made one time in th
 | host     | openssl                                                        | 1.1.1f                 |            |
 | host     | openssh                                                        | OpenSSH_8.2p1          |            |
 | host     | genisoimage (used to create the Kickstart ISO)                 | 1.1.11                 |            |
-| host     | Virtual Box / VBoxManage                                       | 6.1.30                 | 2022-02-26 |
-| host     | kubectl (client only)                                          | v1.24.0                | 2022-05-05 |
+| host     | Virtual Box / VBoxManage                                       | 6.1.34                 | 2022-07-14 |
+| host     | kubectl (client only)                                          | v1.24.3                | 2022-07-14 |
 | host     | curl                                                           | 7.68.0                 |            |
-| guest VM | Centos ISO                                                     | Stream-8-x86_64-latest | 2022-02-26 |
+| guest VM | Centos ISO                                                     | Stream-8-x86_64-latest | 2022-07-11 |
 | guest VM | Virtual Box Guest Additions ISO                                | 6.1.30                 | 2021-11-27 |
 | k8s      | etcd                                                           | v3.5.4                 | 2022-05-05 |
-| k8s      | kube-apiserver                                                 | v1.24.0                | 2022-05-05 |
-| k8s      | kube-controller-manager                                        | v1.24.0                | 2022-05-05 |
-| k8s      | kube-scheduler                                                 | v1.24.0                | 2022-05-05 |
-| k8s      | kubelet                                                        | v1.24.0                | 2022-05-05 |
-| k8s      | crictl                                                         | v1.24.0                | 2022-05-05 |
+| k8s      | kube-apiserver                                                 | v1.24.2                | 2022-07-14 |
+| k8s      | kube-controller-manager                                        | v1.24.2                | 2022-07-14 |
+| k8s      | kube-scheduler                                                 | v1.24.2                | 2022-07-14 |
+| k8s      | kubelet                                                        | v1.24.2                | 2022-07-14 |
+| k8s      | crictl                                                         | v1.24.2                | 2022-07-14 |
 | k8s      | runc                                                           | v1.1.1                 | 2022-05-05 |
-| k8s      | cni plugins                                                    | v1.1.0                 | 2022-02-26 |
+| k8s      | cni plugins                                                    | v1.1.1                 | 2022-07-14 |
 | k8s      | containerd                                                     | v1.6.4                 | 2022-05-05 |
 | k8s      | CoreDNS                                                        | 1.9.0                  | 2022-02-26 |
-| k8s      | kube-proxy (if installed)                                      | v1.24.0                | 2022-05-05 |
+| k8s      | kube-proxy (if installed)                                      | v1.24.2                | 2022-07-14 |
 | k8s      | kube-router (if installed)                                     | v1.3.1                 | 2021-08-14 |
 | k8s      | Metrics Server (if installed)                                  | 0.4.2                  |            |
 | k8s      | Kubernetes Dashboard (if installed)                            | 2.0.0                  |            |
-| k8s      | Calico networking (if installed)                               | 3.22.0                 | 2022-02-26 |
+| k8s      | Calico networking (if installed)                               | 3.23.2                 | 2022-07-14 |
 | k8s      | Cilium networking and Hubble network monitoring (if installed) | 1.9.4                  |            |
 | k8s      | kube-prometheus stack (if installed)                           | 0.10.0                 | 2022-02-26 |
 | k8s      | OpenEBS (if installed)                                         | 2.11.1                 | 2022-02-26 |

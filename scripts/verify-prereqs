@@ -3,10 +3,10 @@
 mismatch=0
 tested_openssl_version="1.1.1f"
 tested_genisoimage_version="1.1.11"
-tested_vboxmanage_version="6.1.30"
+tested_vboxmanage_version="6.1.34"
 tested_ssh_version="OpenSSH_8.2p1"
 tested_host_os_version="Ubuntu 20.04.4 LTS"
-tested_kubectl_version="v1.24.0"
+tested_kubectl_version="v1.24.3"
 tested_curl_version="7.68.0"
 
 if which openssl &>/dev/null; then
@@ -45,7 +45,7 @@ else
 fi
 
 if which kubectl &>/dev/null; then
-  kubectl_version=$(kubectl version --short --client | grep -v Kustomize | cut -d: -f2- | xargs)
+  kubectl_version=$(kubectl version 2>/dev/null --short --client | grep 'Client Version' | cut -d: -f2- | xargs)
   [[ $kubectl_version == "$tested_kubectl_version" ]] && kubectl_ok=Yes || { kubectl_ok=No; mismatch=1; }
 else
   kubectl_version="not found"
