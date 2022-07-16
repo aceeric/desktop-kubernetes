@@ -1,0 +1,30 @@
+#!/usr/bin/env bash
+
+#
+# Creates an ISO from the kickstart directory and writes the ISO into the project 'iso'
+# directory. Expected contents of the kickstart directory (in order for it to be successfully used
+# to install CentOS and configure it as needed) are:
+#
+# - ks.cfg                               - kickstart script - the %post section refs the other directory files
+# - id_ed25519.pub                       - to initialize ssh in the guest VM so other scripts can ssh into the VM
+# - desktop-kubernetes.service           - the systemctl unit to perform unattended guest additions install
+# - install-vbox-guest-additions.sh      - called by the service to actually install guest additions
+#
+# Note: volume ID 'OEMDRV' in the genisoimage command below is important:
+# https://docs.centos.org/en-US/8-docs/advanced-install/assembly_making-kickstart-files-available-to-the-installation-program/
+#
+# snip: "A specially named Kickstart file can be present in the root of a specially named volume on the system
+# to be installed. This lets you bypass the need for another system, and makes the installation program
+# load the file automatically."
+#
+# The -J option supports long filenames. Docs recommend -R with -J
+#
+
+set -e
+
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+cp $script_dir/desktop-kubernetes.service $script_dir/desktop-kubernetes.sh $script_dir/ks.cfg $DTKBASE/generated/kickstart
+
+rm -f $DTKBASE/generated/iso/kickstart.iso
+genisoimage -J -R -volid OEMDRV -o $DTKBASE/generated/iso/kickstart.iso $DTKBASE/generated/kickstart

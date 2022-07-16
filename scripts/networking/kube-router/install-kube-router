@@ -1,0 +1,88 @@
+#!/usr/bin/env bash
+
+set -e
+
+long_opts=controller-ip:,kube-router-yaml-download:,kube-router-yaml:,admin-kubeconfig:
+script_name=$(basename "$0")
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+controller_ip=
+kube_router_yaml_download=
+kube_router_yaml=
+admin_kubeconfig=
+
+function opt_val() {
+  opt="$1"
+  if [[ "$opt" == =* ]]; then
+    echo "${opt:1}"
+  else
+    echo "$opt"
+  fi
+}
+
+function parse_args() {
+  if [[ "$#" -eq 0 ]]; then
+    echo "no args provided"
+    exit 1
+  fi
+  local parsed
+  parsed=$(getopt --options "" --longoptions $long_opts -n $script_name -- "$@")
+  eval set -- "$parsed"
+  while true; do
+    case "$1" in
+	    --controller-ip)
+        controller_ip=$(opt_val "$2")
+        shift 2
+        ;;
+      --kube-router-yaml-download)
+        kube_router_yaml_download=$(opt_val "$2")
+        shift 2
+        ;;
+      --kube-router-yaml)
+        kube_router_yaml=$(opt_val "$2")
+        shift 2
+        ;;
+      --admin-kubeconfig)
+        admin_kubeconfig=$(opt_val "$2")
+        shift 2
+        ;;
+      --)
+        shift
+        break
+        ;;
+    esac
+  done
+}
+
+parse_args "$@"
+
+kube_router_yaml_download_actual="$(xec make-download-path\
+ --download-url=$kube_router_yaml_download --download-path=$kube_router_yaml)"
+
+# debug
+#echo "controller_ip=$controller_ip"
+#echo "kube_router_yaml_download=$kube_router_yaml_download"
+#echo "kube_router_yaml=$kube_router_yaml"
+#echo "kube_router_yaml_download_actual=$kube_router_yaml_download_actual"
+#echo "admin_kubeconfig=$admin_kubeconfig"
+
+xec download-obj --url="$kube_router_yaml_download" --dest="$kube_router_yaml_download_actual"
+
+sed\
+ -e 's|"%CLUSTERCIDR%"|10.200.0.0/16|g'\
+ -e 's|%APISERVER%|https://'$controller_ip':6443|g'\
+ $kube_router_yaml_download_actual | kubectl --kubeconfig $admin_kubeconfig apply -f -
+
+# Wait for kube-router to become fully ready. Otherwise when we install CoreDNS, the CoreDNS pod comes
+# up with an invalid IP address (10.88.something) and then it doesn't function correctly. Unclear presently
+# how it actually comes up with that IP because 88 is specified nowhere that I can find
+
+echo "waiting (indefinitely) for pod networking"
+
+ready=0
+desired=1
+while [[ $ready -ne $desired ]]; do
+  sleep 1s
+  ready=$(kubectl --kubeconfig $admin_kubeconfig -n kube-system get ds kube-router -ojsonpath='{.status.numberReady}')
+  desired=$(kubectl --kubeconfig $admin_kubeconfig -n kube-system get ds kube-router -ojsonpath='{.status.desiredNumberScheduled}')
+done

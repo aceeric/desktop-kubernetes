@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+
+# Configures host only networking for the passed VM. Does this by creating an ISO from a network config file
+# in the 'hostonly-netcfg' directory. This ISO contains a file that is suitable to place in the
+# /etc/sysconfig/network-scripts directory of the VM. The passed network params are interpolated into the config file.
+# The presence of this config file causes CentOS to use the file to initialize networking for the interface. So
+# this is how we configure each node in the cluster with a unique static IP address in the host only network.
+#
+# The interface is named enp0s8 because the way this project works - for host only networking - a NAT interface is
+# configured in network position one, and the host only interface takes position two. As a result, the host only
+# network will pick up the name enp0s8. See https://forums.virtualbox.org/viewtopic.php?f=7&t=103195. Snip:
+#
+# "VirtualBox can emulate two chipsets: PIIX3 and ICH9 (see System > Motherboard > Chipset). Depending on the chipset,
+# VirtualBox defines the layout of the virtual PCI busses that are provided to the guest. When using the PIIX3 chipset
+# (default), the first four network adapters are devices 3, 8, 9 and 10 on PCI bus 0. On most modern Linux
+# distributions, the network adapters are enumerated on the PCI busses and named enp0s3, enp0s8, enp0s9
+# and enp0s10 accordingly. ... In consequence, the naming is indeed deterministic and predictable."
+#
+# The NAT interface is used for external access for the VM (i.e. internet) and the host only network implements the
+# k8s cluster network.
+#
+# Usage: configure-hostonly-networking <vmname> <network octets> <host octet>
+#
+# ...where <network octets> are the left three octets of an IPv4 address, and <host octet> is the right-most
+# octet of the IP address to configure the adaptor with. E.g.:
+#
+# configure-hostonly-networking 200.200.200 202
+#
+
+vmname="$1"
+network_octets="$2"
+host_octet="$3"
+
+# create ifcfg ISO with IP Address from passed args
+echo "creating ifcfg-enp0s8.iso with network $network_octets and octet $host_octet"
+xec gen-hostonly-ifcfg-iso $network_octets $host_octet
+
+# mount ISO to VM
+echo "attaching ifcfg-enp0s8 ISO to VM $vmname"
+VBoxManage storageattach $vmname --storagectl IDE --port 0 --device 0 --type dvddrive\
+ --medium $DTKBASE/generated/iso/ifcfg-enp0s8.iso
+
+# start VM - this will cause the desktop-kubernetes systemd service to: 1) copy the config file 'ifcfg-enp0s8' from
+# the ISO to the /etc/sysconfig/network-scripts directory in the guest, and then 2) shut the VM down. See
+# kickstart/desktop-kubernetes.sh
+echo "starting VM $vmname"
+VBoxManage startvm $vmname
+
+# getting the IP address verifies the guest is running so we can safely wait for shutdown. The IP address
+# could be incorrect here - that will be dealt with by the caller
+echo "Getting IP address from VM $vmname"
+xec get-vm-ip $vmname
+
+echo "waiting for VM $vmname to stop"
+xec wait-vm $vmname --stopped
+
+# for virtual box or the detach calls below fail
+sleep 5s
+
+# unmount
+echo "VM $vmname stopped - detaching ifcfg-enp0s8 ISO"
+VBoxManage storageattach $vmname --storagectl IDE --port 0 --device 0 --medium none

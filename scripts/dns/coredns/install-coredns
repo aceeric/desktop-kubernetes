@@ -1,0 +1,64 @@
+#!/usr/bin/env bash
+
+#
+# Applies the coredns.yaml to the cluster. The yaml is generated from upstreams as documented in the README
+# todo handle replicas
+#
+
+set -e
+
+long_opts=replicas:,admin-kubeconfig:
+script_name=$(basename "$0")
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+replicas=
+admin_kubeconfig=
+
+function opt_val() {
+  opt="$1"
+  if [[ "$opt" == =* ]]; then
+    echo "${opt:1}"
+  else
+    echo "$opt"
+  fi
+}
+
+function parse_args() {
+  if [[ "$#" -eq 0 ]]; then
+    echo "no args provided"
+    exit 1
+  fi
+  local parsed
+  parsed=$(getopt --options "" --longoptions $long_opts -n $script_name -- "$@")
+  eval set -- "$parsed"
+  while true; do
+    case "$1" in
+      --replicas)
+        replicas=$(opt_val "$2")
+        shift 2
+        ;;
+      --admin-kubeconfig)
+        admin_kubeconfig=$(opt_val "$2")
+        shift 2
+        ;;
+      --)
+        shift
+        break
+        ;;
+    esac
+  done
+}
+
+parse_args "$@"
+
+# debug
+#echo "replicas=$replicas"
+#echo "admin_kubeconfig=$admin_kubeconfig"
+
+echo "applying coredns.yaml to the cluster"
+kubectl --kubeconfig $admin_kubeconfig apply -f $script_dir/coredns.yaml
+
+kubectl --kubeconfig $admin_kubeconfig -n kube-system wait pod -lk8s-app=kube-dns --for condition=Ready --timeout=10m
+
+echo "no errors detected with CoreDNS installation"
+

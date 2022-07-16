@@ -1,0 +1,116 @@
+#!/usr/bin/env bash
+
+set -e
+
+long_opts=priv-key:,controller-ip:,controller-hostname:,etcd-download:,etcd-gzip:,kubernetes-cert:,kubernetes-key:,ca-cert:
+script_name=$(basename "$0")
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+priv_key=
+controller_ip=
+controller_hostname=
+etcd_download=
+etcd_gzip=
+kubernetes_cert=
+kubernetes_key=
+ca_cert=
+
+function opt_val() {
+  opt="$1"
+  if [[ "$opt" == =* ]]; then
+    echo "${opt:1}"
+  else
+    echo "$opt"
+  fi
+}
+
+function parse_args() {
+  if [[ "$#" -eq 0 ]]; then
+    echo "no args provided"
+    exit 1
+  fi
+  local parsed
+  parsed=$(getopt --options "" --longoptions $long_opts -n $script_name -- "$@")
+  eval set -- "$parsed"
+  while true; do
+    case "$1" in
+	    --priv-key)
+        priv_key=$(opt_val "$2")
+        shift 2
+        ;;
+	    --controller-ip)
+        controller_ip=$(opt_val "$2")
+        shift 2
+        ;;
+      --controller-hostname)
+        controller_hostname=$(opt_val "$2")
+        shift 2
+        ;;
+      --etcd-download)
+        etcd_download=$(opt_val "$2")
+        shift 2
+        ;;
+      --etcd-gzip)
+        etcd_gzip=$(opt_val "$2")
+        shift 2
+        ;;
+      --kubernetes-cert)
+        kubernetes_cert=$(opt_val "$2")
+        shift 2
+        ;;
+      --kubernetes-key)
+        kubernetes_key=$(opt_val "$2")
+        shift 2
+        ;;
+      --ca-cert)
+        ca_cert=$(opt_val "$2")
+        shift 2
+        ;;
+      --)
+        shift
+        break
+        ;;
+    esac
+  done
+}
+
+parse_args "$@"
+
+etcd_gzip_actual=$(xec make-download-path --download-url=$etcd_download --download-path=$etcd_gzip)
+subdir=$(basename -s .tar.gz $etcd_gzip_actual)
+
+# debug
+#echo "priv_key=$priv_key"
+#echo "controller_ip=$controller_ip"
+#echo "controller_hostname=$controller_hostname"
+#echo "etcd_download=$etcd_download"
+#echo "etcd_gzip=$etcd_gzip"
+#echo "etcd_gzip_actual=$etcd_gzip_actual"
+#echo "kubernetes_cert=$kubernetes_cert"
+#echo "kubernetes_key=$kubernetes_key"
+#echo "ca_cert=$ca_cert"
+
+xec download-obj --url="$etcd_download" --dest=$etcd_gzip_actual
+
+echo "extracting etcd binaries to controller"
+cat "$etcd_gzip_actual" | ssh -i $priv_key root@$controller_ip \
+ "tar zxvf - --no-same-owner --strip-components 1 -C /usr/local/bin/ $subdir/etcd $subdir/etcdctl"
+
+echo "copying etcd TLS material"
+ssh -i $priv_key root@$controller_ip "mkdir -p /etc/etcd /var/lib/etcd && chmod 700 /var/lib/etcd"
+scp -i $priv_key $kubernetes_cert $kubernetes_key $ca_cert root@$controller_ip:/etc/etcd
+
+echo "generating etcd service file"
+sed $script_dir/etcd.service\
+ -e "s|ETCD_NAME|$controller_hostname|g" -e "s|INTERNAL_IP|$controller_ip|g"\
+ | ssh -i $priv_key root@$controller_ip "cat > /etc/systemd/system/etcd.service"
+
+echo "starting etcd service"
+ssh -i $priv_key root@$controller_ip "systemctl daemon-reload && systemctl enable etcd && systemctl start etcd"
+
+echo "verifying etcd is running"
+
+ssh -i $priv_key root@$controller_ip\
+ "etcdctl --cert=/etc/etcd/kubernetes.pem --key=/etc/etcd/kubernetes-key.pem --cacert=/etc/etcd/ca.pem member list"
+
+echo "no errors detected with etcd installation"

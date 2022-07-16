@@ -1,0 +1,75 @@
+#!/usr/bin/env bash
+
+# Mount the guest additions ISO and boot the VM. On boot, the desktop-kubernetes service that was
+# installed by the kickstart script will run, and install the guest additions unattended, booting the VM
+# when needed. To watch the guest additions being installed, you can log into the VM, open a terminal,
+# and: 'journalctl -u desktop-kubernetes -f'. Upon return from this script, the guest additions install
+# has completed, the VM is shut down, and the guest additions ISO is detached.
+
+set -e
+
+long_opts=template-vmname:,guest-additions-path:
+script_name=$(basename "$0")
+
+template_vmname=
+guest_additions_path=
+
+function opt_val() {
+  opt="$1"
+  if [[ "$opt" == =* ]]; then
+    echo "${opt:1}"
+  else
+    echo "$opt"
+  fi
+}
+
+function parse_args() {
+  if [[ "$#" -eq 0 ]]; then
+    echo "no args provided"
+    exit 1
+  fi
+  local parsed
+  parsed=$(getopt --options "" --longoptions $long_opts -n $script_name -- "$@")
+  eval set -- "$parsed"
+  while true; do
+    case "$1" in
+	    --template-vmname)
+        template_vmname=$(opt_val "$2")
+        shift 2
+        ;;
+      --guest-additions-path)
+        guest_additions_path=$(opt_val "$2")
+        shift 2
+        ;;
+      --)
+        shift
+        break
+        ;;
+    esac
+  done
+}
+
+parse_args "$@"
+
+# debug
+#echo "template_vmname=$template_vmname"
+#echo "guest_additions_path=$guest_additions_path"
+
+# attach guest additions ISO and set boot from disk
+VBoxManage storageattach $template_vmname --storagectl IDE --port 0 --device 0 --type dvddrive\
+ --medium $guest_additions_path
+VBoxManage modifyvm $template_vmname --boot1 disk --boot2 none --boot3 none --boot4 none
+
+# If successful it will be possible to get the IP address from the VM
+echo "starting VM to begin guest additions installation"
+VBoxManage startvm $template_vmname
+
+echo "waiting for the VM to start and install guest additions"
+xec wait-vm $template_vmname --started
+
+echo "waiting for the VM to stop - the guest additions install script performs a shutdown when it is done"
+xec wait-vm $template_vmname --stopped
+sleep 5s
+
+echo "detaching guest additions ISO"
+VBoxManage storageattach $template_vmname --storagectl IDE --port 0 --device 0 --medium none

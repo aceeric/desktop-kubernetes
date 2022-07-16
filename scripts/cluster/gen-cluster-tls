@@ -1,0 +1,109 @@
+#!/usr/bin/env bash
+
+# generates 'kubernetes.pem' and 'kubernetes-key.pem' in the 'tls' directory which are used in
+# the configuration of etcd and the api server on the controller. See for some additional info:
+# https://kubernetes.io/docs/concepts/cluster-administration/certificates/
+
+set -e
+
+long_opts=controller-ip:,ca-cert:,ca-key:
+script_name=$(basename "$0")
+
+controller_ip=
+ca_cert=
+ca_key=
+
+function opt_val() {
+  opt="$1"
+  if [[ "$opt" == =* ]]; then
+    echo "${opt:1}"
+  else
+    echo "$opt"
+  fi
+}
+
+function parse_args() {
+  if [[ "$#" -eq 0 ]]; then
+    echo "no args provided"
+    exit 1
+  fi
+  local parsed
+  parsed=$(getopt --options "" --longoptions $long_opts -n $script_name -- "$@")
+  eval set -- "$parsed"
+  while true; do
+    case "$1" in
+	    --controller-ip)
+        controller_ip=$(opt_val "$2")
+        shift 2
+        ;;
+      --ca-cert)
+        ca_cert=$(opt_val "$2")
+        shift 2
+        ;;
+      --ca-key)
+        ca_key=$(opt_val "$2")
+        shift 2
+        ;;
+      --)
+        shift
+        break
+        ;;
+    esac
+  done
+}
+
+parse_args "$@"
+
+# debug
+#echo "controller_ip=$controller_ip"
+#echo "ca_cert=$ca_cert"
+#echo "ca_key=$ca_key"
+
+# generate key
+openssl genrsa -out $DTKBASE/generated/cert/kubernetes-key.pem 2048
+
+# generate a CSR conf with the controller IP address embedded
+tmp_dir=$(mktemp -d)
+
+cat <<EOF > $tmp_dir/kubernetes-csr.conf
+[ req ]
+default_bits = 2048
+prompt = no
+default_md = sha256
+req_extensions = req_ext
+distinguished_name = dn
+
+[ dn ]
+CN = kubernetes
+
+[ req_ext ]
+subjectAltName = @alt_names
+
+[ alt_names ]
+DNS.1 = kubernetes
+DNS.2 = kubernetes.default
+DNS.3 = kubernetes.default.svc
+DNS.4 = kubernetes.default.svc.cluster
+DNS.5 = kubernetes.default.svc.cluster.local
+IP.1 = $controller_ip
+IP.2 = 10.32.0.1
+IP.3 = 127.0.0.1
+
+[ v3_ext ]
+authorityKeyIdentifier=keyid,issuer:always
+basicConstraints=CA:FALSE
+keyUsage=keyEncipherment,dataEncipherment,digitalSignature,nonRepudiation
+extendedKeyUsage=serverAuth,clientAuth
+subjectAltName=@alt_names
+EOF
+
+# create a CSR using the conf from above
+openssl req -new -key $DTKBASE/generated/cert/kubernetes-key.pem\
+ -out $tmp_dir/kubernetes.csr -config $tmp_dir/kubernetes-csr.conf
+
+# gen certificate using the ca cert and key provided to the script, and the csr from above
+openssl x509 -req -in $tmp_dir/kubernetes.csr -CA $ca_cert -CAkey $ca_key\
+ -CAcreateserial -out $DTKBASE/generated/cert/kubernetes.pem -days 10000 -extensions v3_ext -extfile $tmp_dir/kubernetes-csr.conf
+
+# cleanup
+rm -rf $tmp_dir $DTKBASE/generated/cert/ca.srl

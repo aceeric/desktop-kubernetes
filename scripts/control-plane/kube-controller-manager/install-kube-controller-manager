@@ -1,0 +1,153 @@
+#!/usr/bin/env bash
+
+# installs the kube-controller-manager. The service definition configures kube-controller-manager to allocate
+# pod CIDRs to nodes as documented here: https://github.com/cloudnativelabs/kube-router/blob/master/docs/generic.md
+# This integrates with kube-router.
+
+set -e
+
+long_opts=priv-key:,controller-ip:,controller-hostname:,\
+kube-controller-manager-download:,kube-controller-manager-binary:,ca-cert:,ca-key:
+script_name=$(basename "$0")
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+priv_key=
+controller_ip=
+controller_hostname=
+kube_controller_manager_download=
+kube_controller_manager_binary=
+ca_cert=
+ca_key=
+
+function opt_val() {
+  opt="$1"
+  if [[ "$opt" == =* ]]; then
+    echo "${opt:1}"
+  else
+    echo "$opt"
+  fi
+}
+
+function parse_args() {
+  if [[ "$#" -eq 0 ]]; then
+    echo "no args provided"
+    exit 1
+  fi
+  local parsed
+  parsed=$(getopt --options "" --longoptions $long_opts -n $script_name -- "$@")
+  eval set -- "$parsed"
+  while true; do
+    case "$1" in
+	    --priv-key)
+        priv_key=$(opt_val "$2")
+        shift 2
+        ;;
+	    --controller-ip)
+        controller_ip=$(opt_val "$2")
+        shift 2
+        ;;
+      --controller-hostname)
+        controller_hostname=$(opt_val "$2")
+        shift 2
+        ;;
+      --kube-controller-manager-download)
+        kube_controller_manager_download=$(opt_val "$2")
+        shift 2
+        ;;
+      --kube-controller-manager-binary)
+        kube_controller_manager_binary=$(opt_val "$2")
+        shift 2
+        ;;
+      --ca-cert)
+        ca_cert=$(opt_val "$2")
+        shift 2
+        ;;
+      --ca-key)
+        ca_key=$(opt_val "$2")
+        shift 2
+        ;;
+      --)
+        shift
+        break
+        ;;
+    esac
+  done
+}
+
+parse_args "$@"
+
+kube_controller_manager_binary_actual=$(xec make-download-path\
+ --download-url=$kube_controller_manager_download --download-path=$kube_controller_manager_binary)
+
+# debug
+#echo "priv_key=$priv_key"
+#echo "controller_ip=$controller_ip"
+#echo "controller_hostname=$controller_hostname"
+#echo "kube_controller_manager_download=$kube_controller_manager_download"
+#echo "kube_controller_manager_binary=$kube_controller_manager_binary"
+#echo "kube_controller_manager_binary_actual=$kube_controller_manager_binary_actual"
+#echo "ca_cert=$ca_cert"
+#echo "ca_key=$ca_key"
+
+xec download-obj --url="$kube_controller_manager_download"\
+ --dest="$kube_controller_manager_binary_actual" --executable
+
+echo "copying kube-controller-manager binary to controller VM"
+scp -i $priv_key $kube_controller_manager_binary_actual root@$controller_ip:/usr/local/bin/
+
+# gen some path refs to make the commands below a little less busy looking
+controller_mgr_cert=$DTKBASE/generated/cert/kube-controller-manager.pem
+controller_mgr_key=$DTKBASE/generated/cert/kube-controller-manager-key.pem
+controller_mgr_csr=$DTKBASE/generated/cert/kube-controller-manager.csr
+controller_mgr_kubeconfig=$DTKBASE/generated/kubeconfig/kube-controller-manager.kubeconfig
+controller_mgr_service=$script_dir/kube-controller-manager.service
+
+echo "generating TLS material for kube-controller-manager"
+openssl req -newkey rsa:2048 -nodes -keyout $controller_mgr_key\
+ -subj "/CN=system:kube-controller-manager" -out $controller_mgr_csr
+
+openssl x509 -req -days 10000 -in $controller_mgr_csr -CA $ca_cert -CAkey $ca_key\
+ -CAcreateserial -sha256 -out $controller_mgr_cert
+# cleanup
+rm -f $controller_mgr_csr
+
+echo "generating a kubeconfig file for the kube-controller-manager service"
+rm -f $controller_mgr_kubeconfig
+kubectl config set-cluster kubernetes \
+--certificate-authority=$ca_cert \
+--embed-certs=true \
+--server=https://$controller_ip:6443 \
+--kubeconfig=$controller_mgr_kubeconfig
+
+kubectl config set-credentials system:kube-controller-manager \
+--client-certificate=$controller_mgr_cert \
+--client-key=$controller_mgr_key \
+--embed-certs=true \
+--kubeconfig=$controller_mgr_kubeconfig
+
+kubectl config set-context default \
+--cluster=kubernetes \
+--user=system:kube-controller-manager \
+--kubeconfig=$controller_mgr_kubeconfig
+
+kubectl config use-context default --kubeconfig=$controller_mgr_kubeconfig
+
+echo "copying kube-controller-manager kubeconfig file to controller VM"
+scp -i $priv_key $controller_mgr_kubeconfig root@$controller_ip:/var/lib/kubernetes/
+
+echo "copying kube-controller-manager service file to controller VM"
+scp -i $priv_key $controller_mgr_service root@$controller_ip:/etc/systemd/system/
+
+echo "starting kube-controller-manager service"
+ssh -i "$priv_key" root@$controller_ip\
+ "systemctl daemon-reload && systemctl enable kube-controller-manager && systemctl start kube-controller-manager"
+exit
+
+echo "verifying kube-controller-manager is running"
+set +e
+for i in {1..10}; do
+  ssh -i "$priv_key" root@$controller_ip "systemctl is-active --quiet kube-controller-manager" && break
+  sleep 1s
+done
+
+echo "no errors detected with kube-controller-manager installation"

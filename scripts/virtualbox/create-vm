@@ -1,0 +1,170 @@
+#!/usr/bin/env bash
+
+#
+# Creates a CentOS VM from a CentOS ISO, and installs the OS using Kickstart from a Kickstart ISO.
+# Intent is - this VM will be the template VM from which the cluster VMs will subsequently be cloned.
+# Expects ISO files on the file system. Configures bridged networking or host only networking based on
+# passed options. This script just creates the VM. To install guest additions, you would need to call
+# 'install-guest-additions' (which is done by the 'create-template-vm' script.)
+#
+# todo args: cpu / mem / storage
+#
+
+set -e
+
+long_opts=template-vmname:,centos-iso-path:,kickstart-iso-path:,host-network-interface:,host-only-network-name:,vboxdir:
+script_name=$(basename "$0")
+
+template_vmname=
+centos_iso_path=
+kickstart_iso_path=
+host_network_interface=
+host_only_network_name=
+vboxdir=
+
+function opt_val() {
+  opt="$1"
+  if [[ "$opt" == =* ]]; then
+    echo "${opt:1}"
+  else
+    echo "$opt"
+  fi
+}
+
+function parse_args() {
+  if [[ "$#" -eq 0 ]]; then
+    echo "no args provided"
+    exit 1
+  fi
+  local parsed
+  parsed=$(getopt --options "" --longoptions $long_opts -n $script_name -- "$@")
+  eval set -- "$parsed"
+  while true; do
+    case "$1" in
+	    --template-vmname)
+        template_vmname=$(opt_val "$2")
+        shift 2
+        ;;
+      --centos-iso-path)
+        centos_iso_path=$(opt_val "$2")
+        shift 2
+        ;;
+      --kickstart-iso-path)
+        kickstart_iso_path=$(opt_val "$2")
+        shift 2
+        ;;
+      --host-network-interface)
+        host_network_interface=$(opt_val "$2")
+        shift 2
+        ;;
+      --host-only-network-name)
+        host_only_network_name=$(opt_val "$2")
+        shift 2
+        ;;
+      --vboxdir)
+        vboxdir=$(opt_val "$2")
+        shift 2
+        ;;
+      --)
+        shift
+        break
+        ;;
+    esac
+  done
+}
+
+parse_args "$@"
+
+# debug
+#echo "template_vmname=$template_vmname"
+#echo "centos_iso_path=$centos_iso_path"
+#echo "kickstart_iso_path=$kickstart_iso_path"
+#echo "host_network_interface=$host_network_interface"
+#echo "host_only_network_name=$host_only_network_name"
+#echo "vboxdir=$vboxdir"
+
+if [[ ! -z "$host_network_interface" ]] && [[ ! -z "$host_only_network_name" ]]; then
+  echo "specify either --host-only-network-name or --host-network-interface"
+  exit 1
+elif [[ -z "$host_network_interface" ]] && [[ -z "$host_only_network_name" ]]; then
+  echo "specify either --host-only-network-name or --host-network-interface"
+  exit 1
+fi
+
+echo "creating VM"
+
+VBoxManage createvm\
+ --name $template_vmname\
+ --ostype RedHat_64\
+ --register\
+ --basefolder $vboxdir
+
+VBoxManage modifyvm $template_vmname\
+ --ioapic on\
+ --cpus 2\
+ --memory 4096\
+ --vram 128\
+ --graphicscontroller vmsvga\
+ --boot1 dvd
+
+# if bridged, there is only one network adaptor. If host only, then nic1 is the NAT network for internet access, and
+# nic2 is the host only network adaptor. See the kickstart file for related configuration. If the caller passes the
+# host network interface then that means bridged networking is desired because bridged networking requires the
+# host's interface name. If the caller passes the name of the host only network, then that means host only.
+
+if [[ ! -z "$host_network_interface" ]]; then
+  echo "configuring template VM for bridge networking with host network interface: $host_network_interface"
+  VBoxManage modifyvm $template_vmname\
+   --nic1 bridged\
+   --nictype1 82540EM\
+   --cableconnected1 on\
+   --nicpromisc1 deny\
+   --macaddress1 auto\
+   --bridgeadapter1 $host_network_interface
+elif [[ ! -z "$host_only_network_name" ]]; then
+  echo "configuring template VM for host only networking with host only network name: $host_only_network_name"
+  VBoxManage modifyvm $template_vmname\
+   --nic1 nat\
+   --nictype1 82540EM\
+   --cableconnected1 on\
+   --nicpromisc1 deny\
+   --macaddress1 auto\
+   --nic2 hostonly\
+   --cableconnected2 on\
+   --macaddress2 auto\
+   --hostonlyadapter2 $host_only_network_name
+fi
+
+# create and attach a hard drive
+VBoxManage createhd --filename $vboxdir/$template_vmname/$template_vmname.vdi --size 20000 --format VDI
+VBoxManage storagectl $template_vmname --name SATA --add sata --controller IntelAHCI
+VBoxManage storageattach $template_vmname --storagectl SATA --port 1 --device 0 --type hdd\
+ --medium $vboxdir/$template_vmname/$template_vmname.vdi
+
+# configure and attach the Centos installation ISO
+VBoxManage storagectl $template_vmname --name IDE --add ide --controller PIIX4
+VBoxManage storageattach $template_vmname --storagectl IDE --port 1 --device 0 --type dvddrive\
+ --medium $centos_iso_path
+
+# attach the kickstart iso created by the gen-kickstart-iso script
+VBoxManage storageattach $template_vmname --storagectl IDE --port 1 --device 1 --type dvddrive\
+ --medium $kickstart_iso_path
+
+# set boot from DVD
+VBoxManage modifyvm $template_vmname --boot1 dvd --boot2 disk --boot3 none --boot4 none
+
+echo "starting VM to begin kickstart installation"
+VBoxManage startvm $template_vmname
+
+echo "waiting for VM to start"
+xec wait-vm $template_vmname --started
+
+echo "waiting for kickstart to complete and VM to stop"
+xec wait-vm $template_vmname --stopped
+
+# for virtual box or the detach calls below fail
+sleep 5s
+
+echo "detaching ISO files from VM"
+VBoxManage storageattach $template_vmname --storagectl IDE --port 1 --device 0 --medium none
+VBoxManage storageattach $template_vmname --storagectl IDE --port 1 --device 1 --medium none

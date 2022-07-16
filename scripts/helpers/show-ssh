@@ -1,0 +1,15 @@
+#!/usr/bin/env bash
+
+set -e
+
+priv_key=$1
+shift
+
+echo "To access the cluster node(s) via ssh:"
+echo
+
+for vm in "$@"
+do
+  ip=$(xec get-vm-ip $vm)
+  echo "$vm: ssh -i $priv_key root@$ip"
+done

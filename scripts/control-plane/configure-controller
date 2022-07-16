@@ -1,0 +1,209 @@
+#!/usr/bin/env bash
+
+# Configures a controller node
+
+# todo consider --no-gen-cluster-certs
+
+set -e
+
+long_opts=controller-hostname:,vboxdir:,priv-key:,\
+etcd-download:,etcd-gzip:,kube-apiserver-download:,kube-apiserver-binary:,\
+kube-controller-manager-download:,kube-controller-manager-binary:,\
+kube-scheduler-download:,kube-scheduler-binary:,ca-cert:,ca-key:
+script_name=$(basename "$0")
+
+# api
+controller_hostname=
+vboxdir=
+priv_key=
+etcd_download=
+etcd_gzip=
+kube_apiserver_download=
+kube_apiserver_binary=
+kube_controller_manager_download=
+kube_controller_manager_binary=
+kube_scheduler_download=
+kube_scheduler_binary=
+ca_cert=
+ca_key=
+
+# internal
+controller_ip=
+
+function opt_val() {
+  opt="$1"
+  if [[ "$opt" == =* ]]; then
+    echo "${opt:1}"
+  else
+    echo "$opt"
+  fi
+}
+
+function parse_args() {
+  if [[ "$#" -eq 0 ]]; then
+    echo "no args provided"
+    exit 1
+  fi
+  local parsed
+  parsed=$(getopt --options "" --longoptions $long_opts -n $script_name -- "$@")
+  eval set -- "$parsed"
+  while true; do
+    case "$1" in
+      --controller-hostname)
+        controller_hostname=$(opt_val "$2")
+        shift 2
+        ;;
+      --vboxdir)
+        vboxdir=$(opt_val "$2")
+        shift 2
+        ;;
+      --priv-key)
+        priv_key=$(opt_val "$2")
+        shift 2
+        ;;
+      --etcd-download)
+        etcd_download=$(opt_val "$2")
+        shift 2
+        ;;
+      --etcd-gzip)
+        etcd_gzip=$(opt_val "$2")
+        shift 2
+        ;;
+      --kube-apiserver-download)
+        kube_apiserver_download=$(opt_val "$2")
+        shift 2
+        ;;
+      --kube-apiserver-binary)
+        kube_apiserver_binary=$(opt_val "$2")
+        shift 2
+        ;;
+      --kube-controller-manager-download)
+        kube_controller_manager_download=$(opt_val "$2")
+        shift 2
+        ;;
+      --kube-controller-manager-binary)
+        kube_controller_manager_binary=$(opt_val "$2")
+        shift 2
+        ;;
+      --kube-scheduler-download)
+        kube_scheduler_download=$(opt_val "$2")
+        shift 2
+        ;;
+      --kube-scheduler-binary)
+        kube_scheduler_binary=$(opt_val "$2")
+        shift 2
+        ;;
+      --ca-cert)
+        ca_cert=$(opt_val "$2")
+        shift 2
+        ;;
+      --ca-key)
+        ca_key=$(opt_val "$2")
+        shift 2
+        ;;
+      --)
+        shift
+        break
+        ;;
+    esac
+  done
+}
+
+parse_args "$@"
+
+# debug
+#echo "controller_hostname=$controller_hostname"
+#echo "vboxdir=$vboxdir"
+#echo "priv_key=$priv_key"
+#echo "etcd_download=$etcd_download"
+#echo "etcd_gzip=$etcd_gzip"
+#echo "kube_apiserver_download=$kube_apiserver_download"
+#echo "kube_apiserver_binary=$kube_apiserver_binary"
+#echo "kube_controller_manager_download=$kube_controller_manager_download"
+#echo "kube_controller_manager_binary=$kube_controller_manager_binary"
+#echo "kube_scheduler_download=$kube_scheduler_download"
+#echo "kube_scheduler_binary=$kube_scheduler_binary"
+#echo "ca_cert=$ca_cert"
+#echo "ca_key=$ca_key"
+
+run_count=$(VBoxManage list runningvms | awk '{print $1}' | grep -e'"'$controller_hostname'"' | wc -l)
+if [[ $run_count -eq 0 ]]; then
+  echo "starting controller VM"
+  VBoxManage startvm $controller_hostname
+fi
+
+echo "getting controller IP address from running VM"
+controller_ip=$(xec get-vm-ip $controller_hostname)
+
+echo "configuring firewall rules"
+xec configure-firewall $controller_ip $priv_key --controller
+
+# creates kubernetes.pem and kubernetes-key.pem
+xec gen-cluster-tls\
+  --controller-ip=$controller_ip\
+  --ca-cert=$ca_cert\
+  --ca-key=$ca_key
+
+kubernetes_cert=$DTKBASE/generated/cert/kubernetes.pem
+kubernetes_key=$DTKBASE/generated/cert/kubernetes-key.pem
+
+echo "installing etcd into controller"
+xec install-etcd\
+ --priv-key=$priv_key\
+ --controller-ip=$controller_ip\
+ --controller-hostname=$controller_hostname\
+ --etcd-download=$etcd_download\
+ --etcd-gzip=$etcd_gzip\
+ --kubernetes-cert=$kubernetes_cert\
+ --kubernetes-key=$kubernetes_key\
+ --ca-cert=$ca_cert
+
+echo "installing kube-apiserver into controller"
+xec install-kube-apiserver\
+ --priv-key=$priv_key\
+ --controller-ip=$controller_ip\
+ --controller-hostname=$controller_hostname\
+ --kube-apiserver-download=$kube_apiserver_download\
+ --kube-apiserver-binary=$kube_apiserver_binary\
+ --kubernetes-cert=$kubernetes_cert\
+ --kubernetes-key=$kubernetes_key\
+ --ca-cert=$ca_cert\
+ --ca-key=$ca_key
+
+echo "installing kube-controller-manager into controller"
+xec install-kube-controller-manager\
+ --priv-key=$priv_key\
+ --controller-ip=$controller_ip\
+ --controller-hostname=$controller_hostname\
+ --kube-controller-manager-download=$kube_controller_manager_download\
+ --kube-controller-manager-binary=$kube_controller_manager_binary\
+ --ca-cert=$ca_cert\
+ --ca-key=$ca_key
+
+echo "installing kube-scheduler into controller"
+xec install-kube-scheduler\
+ --priv-key=$priv_key\
+ --controller-ip=$controller_ip\
+ --controller-hostname=$controller_hostname\
+ --kube-scheduler-download=$kube_scheduler_download\
+ --kube-scheduler-binary=$kube_scheduler_binary\
+ --ca-cert=$ca_cert\
+ --ca-key=$ca_key
+
+healthy_count=0
+for i in {1..10}; do
+  healthy_count=$(kubectl --kubeconfig=$DTKBASE/generated/kubeconfig/kube-controller-manager.kubeconfig\
+    get componentstatuses --no-headers 2>/dev/null | awk '{print $2}' | grep Healthy | wc -l)
+  if [[ "$healthy_count" -eq 3 ]]; then
+    break
+  fi
+  sleep 1s
+done
+
+if [[ "$healthy_count" -ne 3 ]]; then
+  echo "unable to verify that controller was successfully configured"
+  exit 1
+fi
+
+echo "no errors detected with controller installation"
+
