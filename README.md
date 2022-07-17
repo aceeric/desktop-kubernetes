@@ -8,7 +8,7 @@ Desktop Kubernetes is the *57 Chevy* of Kubernetes distros: you can take it apar
 
 <img src="https://www.cncf.io/wp-content/uploads/2020/07/certified_kubernetes_color-1.png" width="90"/>
 
-The project consists of a number of bash scripts and supporting manifests / config files. The design is documented [here](resources/design.md.)
+The project consists of a number of bash scripts and supporting manifests / config files. The design is documented [here](https://github.com/aceeric/desktop-kubernetes/blob/master/resources/design.md).
 
 One of the premises of the project is transparency. Every single binary or manifest used to create the cluster is pulled from an official upstream, including CentOS itself.
 
