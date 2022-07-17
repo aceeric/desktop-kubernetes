@@ -29,9 +29,9 @@ worker2_octet=
 
 # This snippet enables all scripts to exec all other scripts without knowing any
 # other script's path, as long all the scripts (except this one) are children
-# of the 'scripts' directory. In the case where you're debugging child scripts,
-# you must first execute these lines of code (once) in your console.
-export DTKBASE=$(pwd)
+# of the 'scripts' directory. In the case where you're directly testing child scripts,
+# you must define DTKBASE and the xec function in your console first.
+export DTKBASE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 function xec() { f=$(find $DTKBASE/scripts -name $1) && $f "${@:2}"; }
 export -f xec
 
@@ -468,11 +468,8 @@ if [[ ! -z "$host_only_network" ]]; then
 fi
 
 # create directories to generate various files into
-mkdir -p generated/kickstart
-mkdir -p generated/kubeconfig
-mkdir -p generated/cert
-mkdir -p generated/hostonly-netcfg
-mkdir -p generated/iso
+mkdir -p $DTKBASE/generated/kickstart $DTKBASE/generated/kubeconfig\
+         $DTKBASE/generated/cert $DTKBASE/generated/hostonly-netcfg $DTKBASE/generated/iso
 
 # Create a template VM to clone the nodes from. This step also generates the SSH keys into the 'kickstart' directory
 # that are used all over the place to interact with the node VMs via ssh/scp as they are being bootstrapped, and that
