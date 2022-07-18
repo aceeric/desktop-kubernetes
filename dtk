@@ -608,7 +608,7 @@ elif [[ "$networking" == "calico" ]]; then
    --calico-binary=$calico_binary\
    --priv-key=$DTKBASE/generated/kickstart/id_ed25519\
    --admin-kubeconfig=$DTKBASE/generated/kubeconfig/admin.kubeconfig\
-   --pod-cidr=10.200.0.0/16\
+   --cluster-cidr=10.200.0.0/16\
    --nodes=$nodes
 fi
 

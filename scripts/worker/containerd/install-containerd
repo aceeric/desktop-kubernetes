@@ -2,7 +2,7 @@
 
 set -e
 
-long_opts=priv-key:,worker-ip:,containerd-download:,containerd-binary:
+long_opts=priv-key:,worker-ip:,containerd-download:,containerd-binary:,pod-cidr:
 script_name=$(basename "$0")
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
@@ -10,6 +10,7 @@ priv_key=
 worker_ip=
 containerd_download=
 containerd_binary=
+pod_cidr=
 
 function opt_val() {
   opt="$1"
@@ -44,6 +45,10 @@ function parse_args() {
         ;;
       --containerd-binary)
         containerd_binary=$(opt_val "$2")
+        shift 2
+        ;;
+      --pod-cidr)
+        pod_cidr=$(opt_val "$2")
         shift 2
         ;;
       --)
@@ -100,9 +105,10 @@ EOF
 # https://kubernetes.io/docs/tasks/administer-cluster/migrating-from-dockershim/troubleshooting-cni-plugin-related-errors/
 # and:
 # https://github.com/containerd/containerd/blob/main/script/setup/install-cni
-echo "Copying 10-containerd-net.conflist to /etc/cni/net.d/"
+echo "Copying 10-containerd-net.conflist to /etc/cni/net.d/ in worker VM"
 ssh -i "$priv_key" root@$worker_ip "mkdir -p /etc/cni/net.d"
-scp -i $priv_key $script_dir/10-containerd-net.conflist root@$worker_ip:/etc/cni/net.d/
+sed $script_dir/10-containerd-net.conflist\
+ -e "s|PODCIDR|$pod_cidr|g" | ssh -i $priv_key root@$worker_ip "cat > /etc/cni/net.d/10-containerd-net.conflist"
 
 echo "Starting containerd service"
 ssh -i "$priv_key" root@$worker_ip "systemctl daemon-reload && systemctl enable containerd && systemctl start containerd"

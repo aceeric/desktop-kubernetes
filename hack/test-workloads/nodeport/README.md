@@ -63,9 +63,9 @@ spec:
 
 $ kubectl get po -lapp.kubernetes.io/name=load-balancer-example --all-namespaces -owide
 NAME                           READY   STATUS    RESTARTS   AGE   IP             NODE
-hello-world-6df5659cb7-8nbwh   1/1     Running   0          10m   10.200.2.214   monk
-hello-world-6df5659cb7-b4b6x   1/1     Running   0          10m   10.200.1.144   ham
-hello-world-6df5659cb7-g8vrn   1/1     Running   0          10m   10.200.0.156   doc
+hello-world-6df5659cb7-8nbwh   1/1     Running   0          10m   11.200.2.214   monk
+hello-world-6df5659cb7-b4b6x   1/1     Running   0          10m   11.200.1.144   ham
+hello-world-6df5659cb7-g8vrn   1/1     Running   0          10m   11.200.0.156   doc
 
 $ for vm in doc ham monk; do\
   ip=$(scripts/get-vm-ip $vm);\

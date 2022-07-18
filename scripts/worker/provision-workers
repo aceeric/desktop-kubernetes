@@ -176,7 +176,7 @@ if [[ ! -f $admin_kubeconfig ]]; then
 fi
 
 # expect each worker in the form 'hostname,ram,cpu,pod-cidr,host-only-octet' e.g.:
-# 'worker1,4096,2,10.200.1.0/24,202'. Note - host-only-octet can be empty if bridged networking
+# 'worker1,4096,2,nnn.nnn.nnn.nnn/24,202'. Note - host-only-octet can be empty if bridged networking
 for worker in "${workers[@]}"; do
   IFS=',' read -ra wrkr <<< "$worker"
   clone_vmname=${wrkr[0]}

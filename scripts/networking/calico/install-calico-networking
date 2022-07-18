@@ -2,7 +2,7 @@
 
 set -e
 
-long_opts=calico-download:,calico-binary:,priv-key:,admin-kubeconfig:,pod-cidr:,nodes:
+long_opts=calico-download:,calico-binary:,priv-key:,admin-kubeconfig:,cluster-cidr:,nodes:
 script_name=$(basename "$0")
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
@@ -10,7 +10,7 @@ calico_download=
 calico_binary=
 priv_key=
 admin_kubeconfig=
-pod_cidr=
+cluster_cidr=
 nodes=()
 
 function opt_val() {
@@ -48,8 +48,8 @@ function parse_args() {
         admin_kubeconfig=$(opt_val "$2")
         shift 2
         ;;
-      --pod-cidr)
-        pod_cidr=$(opt_val "$2")
+      --cluster-cidr)
+        cluster_cidr=$(opt_val "$2")
         shift 2
         ;;
       --nodes)
@@ -88,7 +88,7 @@ fi
 # echo "calico_version=$calico_version"
 # echo "priv_key=$priv_key"
 # echo "admin_kubeconfig=$admin_kubeconfig"
-# echo "pod_cidr=$pod_cidr"
+# echo "cluster_cidr=$cluster_cidr"
 # echo "nodes=${nodes[@]}"
 
 ## per https://docs.projectcalico.org/maintenance/troubleshoot/troubleshooting#configure-networkmanager
@@ -119,7 +119,7 @@ fi
 
 echo "deploying calico manifest"
 kubectl --kubeconfig $admin_kubeconfig create -f $DTKBASE/binaries/calico-$calico_version.yaml
-kubectl --kubeconfig $admin_kubeconfig -n kube-system set env ds/calico-node CALICO_IPV4POOL_CIDR=$pod_cidr
+kubectl --kubeconfig $admin_kubeconfig -n kube-system set env ds/calico-node CALICO_IPV4POOL_CIDR=$cluster_cidr
 
 echo "waiting (indefinitely) for calico daemonset"
 

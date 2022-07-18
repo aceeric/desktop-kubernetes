@@ -209,7 +209,8 @@ xec install-containerd\
  --priv-key=$priv_key\
  --worker-ip=$worker_ip\
  --containerd-download=$containerd_download\
- --containerd-binary=$containerd_binary
+ --containerd-binary=$containerd_binary\
+ --pod-cidr=$pod_cidr
 
 echo "Installing the kubelet"
 xec install-kubelet\
