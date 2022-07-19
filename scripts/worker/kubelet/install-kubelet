@@ -127,9 +127,8 @@ scp -i $priv_key $ca_cert root@$worker_ip:/var/lib/kubernetes/
 
 echo "Copying kubelet service and config files to worker VM"
 
-# todo - since kube-controller-manager is configured to assign a podCIDR to each node, it should not be
-#  necessary here and in fact is overridden (can be seen in the kubelet journalctl logs). So test what happens
-#  if the podCIDR line is completely removed from the kubelet-config.yaml
+# todo - per https://kubernetes.io/docs/reference/config-api/kubelet-config.v1beta1 the kubelet ignores
+# pod CIDR in a clustered environment so try removing all refs in this project to pod cidr...
 
 sed $script_dir/kubelet-config.yaml\
  -e "s|PODCIDR|$pod_cidr|g" | ssh -i $priv_key root@$worker_ip "cat > /var/lib/kubelet/kubelet-config.yaml"

@@ -101,14 +101,15 @@ ssh -i $priv_key root@$worker_ip << EOF
   sysctl --system
 EOF
 
-# 10-containerd-net.conflist based on, with mods:
-# https://kubernetes.io/docs/tasks/administer-cluster/migrating-from-dockershim/troubleshooting-cni-plugin-related-errors/
-# and:
-# https://github.com/containerd/containerd/blob/main/script/setup/install-cni
-echo "Copying 10-containerd-net.conflist to /etc/cni/net.d/ in worker VM"
-ssh -i "$priv_key" root@$worker_ip "mkdir -p /etc/cni/net.d"
-sed $script_dir/10-containerd-net.conflist\
- -e "s|PODCIDR|$pod_cidr|g" | ssh -i $priv_key root@$worker_ip "cat > /etc/cni/net.d/10-containerd-net.conflist"
+###### This appears to be un-necessary:
+###### 10-containerd-net.conflist based on, with mods:
+###### https://kubernetes.io/docs/tasks/administer-cluster/migrating-from-dockershim/troubleshooting-cni-plugin-related-errors/
+###### and:
+###### https://github.com/containerd/containerd/blob/main/script/setup/install-cni
+#####echo "Copying 10-containerd-net.conflist to /etc/cni/net.d/ in worker VM"
+#####ssh -i "$priv_key" root@$worker_ip "mkdir -p /etc/cni/net.d"
+#####sed $script_dir/10-containerd-net.conflist\
+##### -e "s|PODCIDR|$pod_cidr|g" | ssh -i $priv_key root@$worker_ip "cat > /etc/cni/net.d/10-containerd-net.conflist"
 
 echo "Starting containerd service"
 ssh -i "$priv_key" root@$worker_ip "systemctl daemon-reload && systemctl enable containerd && systemctl start containerd"
