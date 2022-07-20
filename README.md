@@ -182,4 +182,4 @@ This project has been tested with the following tools, components and versions. 
 | k8s      | Cilium networking and Hubble network monitoring (if installed) | 1.9.4                  |            |
 | k8s      | kube-prometheus stack (if installed)                           | 0.10.0                 | 2022-02-26 |
 | k8s      | OpenEBS (if installed)                                         | 2.11.1                 | 2022-02-26 |
-| k8s      | Sonobuoy conformance (passed)                                  | v0.53.2                | 2021-08-18 |
+| k8s      | Sonobuoy conformance (passed)                                  | v0.56.8                | 2022-07-20 |
