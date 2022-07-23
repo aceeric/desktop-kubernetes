@@ -10,8 +10,8 @@ if [[ -z "$DTKBASE" ]]; then
   exit 0
 fi
 
-if [[ -z "$1" ]]; then
-  echo "need VM name to clone from in arg 1"
+if [[ "$#" -ne 2 ]]; then
+  echo "need VM name to clone from in arg 1, and VM name to clone to in arg 2"
   exit 0
 fi
 
@@ -25,7 +25,7 @@ fi
 xec clone-vm\
  --priv-key=$DTKBASE/generated/kickstart/id_ed25519\
  --template-vmname=$1\
- --clone-vmname=scratch\
+ --clone-vmname=$2\
  --clone-ram=4096\
  --clone-cpu=2\
  --host-only-network=192.168.56\
@@ -35,8 +35,8 @@ xec clone-vm\
 
 # Configure etc/hosts in the VM
 
-xec configure-etc-hosts $DTKBASE/generated/kickstart/id_ed25519 scratch
+xec configure-etc-hosts $DTKBASE/generated/kickstart/id_ed25519 $2
 
 # Display to the console how to ssh into the VM
 
-xec show-ssh $DTKBASE/generated/kickstart/id_ed25519 scratch
+xec show-ssh $DTKBASE/generated/kickstart/id_ed25519 $2
