@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+#
+# Creates a template VM the way the 'dtk' script does it.
+#
+
+if [[ -z "$DTKBASE" ]]; then
+  echo 'requires environment variable DTKBASE. E.g.: export DTKBASE=~/projects/desktop-kubernetes'
+  exit 0
+fi
+
+if ! type -f xec &>/dev/null; then
+  function xec() { f=$(find $DTKBASE/scripts -name $1) && $f "${@:2}"; }
+  export -f xec
+fi
+
+centos_iso_download=https://mirror.umd.edu/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-latest-dvd1.iso
+centos_iso_path=$DTKBASE/binaries/CentOS-Stream-8-x86_64-latest-dvd1.iso
+guest_additions_download=https://download.virtualbox.org/virtualbox/6.1.30/VBoxGuestAdditions_6.1.30.iso
+guest_additions_path=$DTKBASE/binaries/VBoxGuestAdditions_6.1.30.iso
+
+xec create-template-vm\
+  --template-vmname=deleteme\
+  --centos-iso-download=$centos_iso_download\
+  --centos-iso-path=$centos_iso_path\
+  --guest-additions-download=$guest_additions_download\
+  --guest-additions-path=$guest_additions_path\
+  --host-only-network=192.168.56\
+  --vboxdir=/sdb1/virtualboxvms

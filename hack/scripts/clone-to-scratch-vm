@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+#
+# Clones a template VM into VM 'scratch' for testing CentOS configuration
+# changes, manual Kubernetes component installs, etc. The template VM name to
+# clone from is required as arg1. E.g.: ./hack/scripts/clone-to-scratch-vm bingo
+#
+
+if [[ -z "$DTKBASE" ]]; then
+  echo 'requires environment variable DTKBASE. E.g.: export DTKBASE=~/projects/desktop-kubernetes'
+  exit 0
+fi
+
+if [[ -z "$1" ]]; then
+  echo "need VM name to clone from in arg 1"
+  exit 0
+fi
+
+if ! type -f xec &>/dev/null; then
+  function xec() { f=$(find $DTKBASE/scripts -name $1) && $f "${@:2}"; }
+  export -f xec
+fi
+
+# Clone template VM in arg 1 into VM "scratch"
+
+xec clone-vm\
+ --priv-key=$DTKBASE/generated/kickstart/id_ed25519\
+ --template-vmname=$1\
+ --clone-vmname=scratch\
+ --clone-ram=4096\
+ --clone-cpu=2\
+ --host-only-network=192.168.56\
+ --host-only-octet=120\
+ --vboxdir=/sdb1/virtualboxvms\
+ --shutdown=false
+
+# Configure etc/hosts in the VM
+
+xec configure-etc-hosts $DTKBASE/generated/kickstart/id_ed25519 scratch
+
+# Display to the console how to ssh into the VM
+
+xec show-ssh $DTKBASE/generated/kickstart/id_ed25519 scratch

@@ -3,7 +3,7 @@
 #
 # Creates a template VM suitable to clone into a cluster VM. Specifically:
 #
-# 1. generates an SSH file into the 'kickstart' directory to support SSH access to the VM
+# 1. *may* generate SSH key pair into the 'kickstart' directory to support SSH access to the VM
 # 2. generates the kickstart ISO into the 'media' directory from the contents of the 'kickstart' directory
 # 3. creates a VM from the passed CentOS ISO and generated kickstart ISO
 # 4. installs guest additions from the passed ISO to support other scripts getting the IP address from the VM
@@ -13,6 +13,7 @@ set -e
 
 long_opts=template-vmname:,centos-iso-download:,centos-iso-path:,\
 guest-additions-download:,guest-additions-path:,host-network-interface:,host-only-network:,vboxdir:
+
 script_name=$(basename "$0")
 
 # api
@@ -114,7 +115,7 @@ guest_additions_actual=$(xec make-download-path\
 xec download-obj --url="$centos_iso_download" --dest="$centos_iso_actual"
 xec download-obj --url="$guest_additions_download" --dest="$guest_additions_actual"
 
-echo "generating SSH keys -- the public key will be copied to the VM by the kickstart script"
+echo "checking/generating SSH keys -- the public key will be copied to the VM by the kickstart script"
 xec gen-ssh-keyfiles
 
 echo "generating kickstart ISO"
@@ -123,8 +124,8 @@ kickstart_iso_path=$DTKBASE/generated/iso/kickstart.iso
 
 if [[ ! -z "$host_only_network" ]]; then
   echo "creating new host only network for $host_only_network"
-  host_only_network_name=$(xec create-hostonly-network $host_only_network)
-  echo "host only network created $host_only_network_name"
+  host_only_network_name=$(xec get-or-create-hostonly-network $host_only_network)
+  echo "host only network: $host_only_network_name"
 fi
 
 echo "creating VM"

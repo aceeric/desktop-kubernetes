@@ -27,4 +27,4 @@ script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 cp $script_dir/desktop-kubernetes.service $script_dir/desktop-kubernetes.sh $script_dir/ks.cfg $DTKBASE/generated/kickstart
 
 rm -f $DTKBASE/generated/iso/kickstart.iso
-genisoimage -J -R -volid OEMDRV -o $DTKBASE/generated/iso/kickstart.iso $DTKBASE/generated/kickstart
+genisoimage -J -R -input-charset utf-8 -volid OEMDRV -o $DTKBASE/generated/iso/kickstart.iso $DTKBASE/generated/kickstart

@@ -21,3 +21,4 @@ conformance/sonobuoy
 conformance/results
 sonobuoy_results.yaml
 generated/*
+scratch/*
