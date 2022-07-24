@@ -8,6 +8,27 @@ if [[ -z "$DTKBASE" ]]; then
   exit 0
 fi
 
+if [[ "$#" -ne 4 ]]; then
+  echo "Usage:"
+  echo "hack/scripts/create-template-vm --host-only-network 192.168.56 my-template-vm /sdb1/virtualboxvms"
+  echo "...or..."
+  echo "hack/scripts/create-template-vm --host-network-interface enp0s31f6 rke2-template /sdb1/virtualboxvms"
+  exit 1
+fi
+
+HOSTONLY=
+HNI=
+for arg; do
+  if [[ "$arg" == "--host-only-network" ]]; then
+    shift
+    HOSTONLY=$1
+  fi
+  if [[ "$arg" == "--host-network-interface" ]]; then
+    shift
+    HNI=$1
+  fi
+done
+
 if ! type -f xec &>/dev/null; then
   function xec() { f=$(find $DTKBASE/scripts -name $1) && $f "${@:2}"; }
   export -f xec
@@ -18,11 +39,24 @@ centos_iso_path=$DTKBASE/binaries/CentOS-Stream-8-x86_64-latest-dvd1.iso
 guest_additions_download=https://download.virtualbox.org/virtualbox/6.1.30/VBoxGuestAdditions_6.1.30.iso
 guest_additions_path=$DTKBASE/binaries/VBoxGuestAdditions_6.1.30.iso
 
-xec create-template-vm\
-  --template-vmname=deleteme\
-  --centos-iso-download=$centos_iso_download\
-  --centos-iso-path=$centos_iso_path\
-  --guest-additions-download=$guest_additions_download\
-  --guest-additions-path=$guest_additions_path\
-  --host-only-network=192.168.56\
-  --vboxdir=/sdb1/virtualboxvms
+if [[ ! -z "$HOSTONLY" ]]; then
+  xec create-template-vm\
+    --template-vmname=$2\
+    --centos-iso-download=$centos_iso_download\
+    --centos-iso-path=$centos_iso_path\
+    --guest-additions-download=$guest_additions_download\
+    --guest-additions-path=$guest_additions_path\
+    --host-only-network=$HOSTONLY\
+    --vboxdir=$3
+elif [[ ! -z "$HNI" ]]; then
+  xec create-template-vm\
+    --template-vmname=$2\
+    --centos-iso-download=$centos_iso_download\
+    --centos-iso-path=$centos_iso_path\
+    --guest-additions-download=$guest_additions_download\
+    --guest-additions-path=$guest_additions_path\
+    --host-network-interface=$HNI\
+    --vboxdir=$3
+else
+  echo "couldn't parse args"
+fi
