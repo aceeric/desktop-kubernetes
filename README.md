@@ -4,9 +4,9 @@
 
 Desktop Kubernetes is a Linux *Bash* project that provisions a desktop Kubernetes cluster using VirtualBox - with each cluster node consisting of a CentOS 8 guest VM. The purpose is to create a local development and testing environment that is 100% compatible with a production-grade Kubernetes environment.
 
-Desktop Kubernetes is the *57 Chevy* of Kubernetes distros: you can take it apart and put it back together with just a few Linux console tools: bash, curl, genisoimage, ssh, scp, tar, openssl, vboxmanage, and kubectl. That being said, v1.0.0 of this distribution is Kubernetes Certified. See: [CNCF Interactive Landscape](https://landscape.cncf.io/card-mode?category=platform&amp;grouping=category&amp;selected=desktop-kubernetes). 
+Desktop Kubernetes is the *57 Chevy* of Kubernetes distros: you can take it apart and put it back together with just a few Linux console tools: bash, curl, genisoimage, ssh, scp, tar, openssl, vboxmanage, and kubectl. That being said, **v1.24.2** of this distribution is Kubernetes Certified. See: [CNCF Interactive Landscape](https://landscape.cncf.io/card-mode?category=platform&amp;grouping=category&amp;selected=desktop-kubernetes). 
 
-<img src="https://www.cncf.io/wp-content/uploads/2020/07/certified_kubernetes_color-1.png" width="90"/>
+[<img src="https://www.cncf.io/wp-content/uploads/2020/07/certified_kubernetes_color-1.png" width="90"/>](https://github.com/cncf/k8s-conformance/tree/master/v1.24/desktop-kubernetes)
 
 The project consists of a number of bash scripts and supporting manifests / config files. The design is documented [here](https://github.com/aceeric/desktop-kubernetes/blob/master/resources/design.md).
 
