@@ -136,7 +136,7 @@ elif [[ ! -z "$host_only_network_name" ]]; then
 fi
 
 # create and attach a hard drive
-VBoxManage createhd --filename $vboxdir/$template_vmname/$template_vmname.vdi --size 20000 --format VDI
+VBoxManage createhd --filename $vboxdir/$template_vmname/$template_vmname.vdi --size 40000 --format VDI
 VBoxManage storagectl $template_vmname --name SATA --add sata --controller IntelAHCI
 VBoxManage storageattach $template_vmname --storagectl SATA --port 1 --device 0 --type hdd\
  --medium $vboxdir/$template_vmname/$template_vmname.vdi
