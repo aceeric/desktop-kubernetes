@@ -159,7 +159,7 @@ This project has been tested with the following tools, components and versions. 
 | host     | openssl                                                        | 1.1.1f                 |            |
 | host     | openssh                                                        | OpenSSH_8.2p1          |            |
 | host     | genisoimage (used to create the Kickstart ISO)                 | 1.1.11                 |            |
-| host     | Virtual Box / VBoxManage                                       | 6.1.34                 | 2022-07-14 |
+| host     | Virtual Box / VBoxManage                                       | 6.1.36                 | 2022-07-30 |
 | host     | kubectl (client only)                                          | v1.24.3                | 2022-07-14 |
 | host     | curl                                                           | 7.68.0                 |            |
 | guest VM | Centos ISO                                                     | Stream-8-x86_64-latest | 2022-07-11 |

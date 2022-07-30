@@ -3,7 +3,7 @@
 mismatch=0
 tested_openssl_version="1.1.1f"
 tested_genisoimage_version="1.1.11"
-tested_vboxmanage_version="6.1.34"
+tested_vboxmanage_version="6.1.36"
 tested_ssh_version="OpenSSH_8.2p1"
 tested_host_os_version="Ubuntu 20.04.4 LTS"
 tested_kubectl_version="v1.24.3"
