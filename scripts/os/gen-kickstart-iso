@@ -3,7 +3,7 @@
 #
 # Creates an ISO from the kickstart directory and writes the ISO into the project 'iso'
 # directory. Expected contents of the kickstart directory (in order for it to be successfully used
-# to install CentOS and configure it as needed) are:
+# to install CentOS or Rocky and configure it as needed) are:
 #
 # - ks.cfg                               - kickstart script - the %post section refs the other directory files
 # - id_ed25519.pub                       - to initialize ssh in the guest VM so other scripts can ssh into the VM

@@ -3,7 +3,7 @@
 set -e
 
 long_opts=help,host-network-interface:,host-only-network:,vboxdir:,check-compatibility,create-template,networking:,\
-monitoring:,storage:,single-node,up:,down:,delete:,verify:,sshto:
+monitoring:,storage:,single-node,up:,down:,delete:,verify:,sshto:,template-name:,linux:
 
 # api
 host_network_interface=
@@ -20,6 +20,8 @@ down=
 delete=
 verify=
 sshto=
+template_name=bingo
+linux=centos
 
 # internal
 cluster_vms=(doc)
@@ -44,6 +46,8 @@ export -f xec
 # core
 centos_iso_download=https://mirror.umd.edu/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-latest-dvd1.iso
 centos_iso_path=$DTKBASE/binaries/CentOS-Stream-8-x86_64-latest-dvd1.iso
+rocky_iso_download=https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9.0-x86_64-dvd.iso
+rocky_iso_path=$DTKBASE/binaries/Rocky-9.0-x86_64-dvd.iso
 guest_additions_download=https://download.virtualbox.org/virtualbox/6.1.36/VBoxGuestAdditions_6.1.36.iso
 guest_additions_path=$DTKBASE/binaries/VBoxGuestAdditions_6.1.36.iso
 etcd_download=https://github.com/etcd-io/etcd/releases/download/v3.5.4/etcd-v3.5.4-linux-amd64.tar.gz
@@ -92,15 +96,19 @@ openebs_sc_manifest=$DTKBASE/binaries/openebs-lite-sc.yaml
 
 #
 # Verifies the existence of all the filesystem objects required to provision a cluster. If arg1 is '1' then that means
-# we are creating a template VM. In that case the CentOS and VBox Guest Additions ISOs are included in the check
+# we are creating a template VM. In that case the OS and VBox Guest Additions ISOs are included in the check
 #
 function check_files() {
   local result=0
   local objects=($containerd_binary $cni_plugins_binary $runc_binary $crictl_binary\
     $etcd_gzip $kube_apiserver_binary $kube_controller_manager_binary $kube_scheduler_binary $kubelet_binary)
   if [[ "$1" == 1 ]]; then
-    objects+=($centos_iso_path)
     objects+=($guest_additions_path)
+    if [[ $linux == "centos" ]]; then
+      objects+=($centos_iso_path)
+    else
+      objects+=($rocky_iso_path)
+    fi
   fi
   if [[ "$monitoring" == "metrics.k8s.io" ]]; then
     objects+=($metrics_server_manifest)
@@ -137,15 +145,19 @@ function check_files() {
 
 #
 # Verifies the existence of all the downloads required to provision a cluster. If arg1 is '1' then
-# the CentOS and VBox Guest Additions ISOs are included in the check
+# the OS and VBox Guest Additions ISOs are included in the check
 #
 function check_urls() {
   local result=0
   local objects=($etcd_download $kube_apiserver_download $kube_controller_manager_download $kube_scheduler_download\
     $crictl_download $runc_download $cni_plugins_download $containerd_download $kubelet_download)
   if [[ "$1" == 1 ]]; then
-    objects+=($centos_iso_download)
     objects+=($guest_additions_download)
+    if [[ $linux == "centos" ]]; then
+      objects+=($centos_iso_download)
+    else
+      objects+=($rocky_iso_download)
+    fi
   fi
   if [[ "$monitoring" == "metrics.k8s.io" ]]; then
     objects+=($metrics_server_download)
@@ -186,9 +198,10 @@ function usage() {
   done <<< '
     dtk
     ---
-    Creates a Kubernetes cluster on the desktop using VirtualBox and CentOS kickstart for hands-free
-    CentOS installation. The cluster consists of three nodes: one controller and two workers. The nodes
-    are configured with networking support for host-to-guest, guest-to-guest, and guest-to-internet.
+    Creates a Kubernetes cluster on the desktop using VirtualBox and kickstart for hands-free CentOS
+    or Rocky Linux installation. The cluster consists of three nodes: one controller and two workers.
+    The nodes are configured with networking support for host-to-guest, guest-to-guest, and
+    guest-to-internet.
 
     The script creates a "template" VM, and then clones that for each cluster node. The initial
     template VM creation runs Kickstart to install the OS, and also installs VirtualBox Guest Additions
@@ -197,8 +210,8 @@ function usage() {
     start the install.
 
     Usage: dtk [--host-network-interface=<interface>] [--host-only-network=<network>] [--vboxdir=</some/path>]
-           [--networking=<type>] [--monitoring=<type>] [--create-template] [--single-node]
-           [--storage=<type>] [--help] [--check-compatibility] [--verify=<files|upstreams>]
+           [--networking=<type>] [--monitoring=<type>] [--create-template] [--single-node] [--template-name]
+           [--linux=<centos|rocky>] [--storage=<type>] [--help] [--check-compatibility] [--verify=<files|upstreams>]
            [--up=<nodelist>] [--down=<nodelist>] [--delete=<nodelist>] [--sshto=<vmname>]
 
     Options:
@@ -229,9 +242,13 @@ function usage() {
                                  (This step by far takes the longest.) You have to do this at least once. Once the
                                  template is created, brings up the cluster by cloning the template for each node.
                                  If not specified, the script expects to find an existing VM to clone from.
+      --template-name            Optional. Specifies the template name to create - or clone from. Default is
+                                 "bingo" if not provided.
       --single-node              Optional. Creates a single node cluster. The default is to create one control
-                                 plane node, named "doc", and two workers, named "ham" and "monk". This option
-                                 is useful to quickly test changes since it is faster to provision a single node.
+                                 plane node, and two workers. This option is useful to quickly test changes since
+                                 it is faster to provision a single node.
+      --linux                    Optional. Valid values are "centos" for CentOS Stream (the default) and "rocky"
+                                 for Rocky Linux. Ignored unless --create-template is specified.
       --storage                  Optional. Installs a dynamic storage provisioner. This supports testing workloads
                                  that use PVs and PVCs. Presently, the only supported value is "openebs". E.g.:
                                  --storage=openebs
@@ -240,7 +257,7 @@ function usage() {
 
       --verify                   Looks for all the upstreams or filesystem objects used by the script. Valid options
                                  are "upstreams" and "files". If "upstreams", then the script does a curl HEAD request
-                                 for each upstream (e.g. CentOS ISO, Kubernetes binaries, etc.). If "files", then
+                                 for each upstream (e.g. OS ISO, Kubernetes binaries, etc.). If "files", then
                                  the same check is performed for the downloaded filesystem objects. This is a useful
                                  option to see all the objects that are required to provision a cluster. The list is
                                  influenced by some other options. E.g. if you specify --monitoring=kube-prometheus,
@@ -254,7 +271,7 @@ function usage() {
                                  workers first and the controller last.
       --delete                   Tears down the cluster: Force stops all VMs and removes associated files from
                                  the directory specified in the --vboxdir option.
-      --sshto                    SSHs to the named VM. E.g: "--sshto doc"
+      --sshto                    SSHs to the named VM. E.g: "--sshto myvmname"
       --help                     Displays this help and exits.
 
     Examples:
@@ -269,7 +286,7 @@ function usage() {
       Uses the template VM created by a prior invocation. Configures host-only plus NAT networking. Creates a
       single-node cluster.
 
-      dtk --up=doc,ham,monk
+      dtk --up=vm1,vm2,vm3
 
       Starts the VMs for the default three-node cluster created by the script.
     '
@@ -377,6 +394,18 @@ function parse_args() {
         sshto=$(opt_val "$2")
         shift 2
         ;;
+      --template-name)
+        template_name=$(opt_val "$2")
+        shift 2
+        ;;
+      --linux)
+        linux=$(opt_val "$2")
+        if [[ "$linux" != "centos" ]] && [[ "$linux" != "rocky" ]]; then
+          echo "unsupported parameter value for --linux option: $linux"
+          exit 1
+        fi
+        shift 2
+        ;;
       --)
         shift
         break
@@ -395,6 +424,8 @@ function parse_args() {
   #echo "storage=$storage"
   #echo "single_node=$single_node"
   #echo "verify=$verify"
+  #echo "template_name=$template_name"
+  #echo "linux=$linux"
 
   if [[ $# -ne 0 ]]; then
     echo "Unsupported command line option(s): $@"
@@ -484,10 +515,17 @@ mkdir -p $DTKBASE/generated/kickstart $DTKBASE/generated/kubeconfig\
 if [[ $create_template -eq 1 ]] ; then
   echo "creating a template VM"
 
+  if [[ $linux == "centos" ]]; then
+    linux_iso_download=$centos_iso_download
+    linux_iso_path=$centos_iso_path
+  else
+    linux_iso_download=$rocky_iso_download
+    linux_iso_path=$rocky_iso_path
+  fi
   xec create-template-vm\
-   --template-vmname=bingo\
-   --centos-iso-download=$centos_iso_download\
-   --centos-iso-path=$centos_iso_path\
+   --template-vmname=$template_name\
+   --linux-iso-download=$linux_iso_download\
+   --linux-iso-path=$linux_iso_path\
    --guest-additions-download=$guest_additions_download\
    --guest-additions-path=$guest_additions_path\
    --host-network-interface=$host_network_interface\
@@ -504,7 +542,7 @@ echo "provisioning a controller node"
 
 xec provision-controller\
  --priv-key=$DTKBASE/generated/kickstart/id_ed25519\
- --template-vmname=bingo\
+ --template-vmname=$template_name\
  --host-only-network=$host_only_network\
  --host-only-octet=$controller_octet\
  --vboxdir=$vboxdir\
@@ -558,7 +596,7 @@ if [[ $single_node -eq 0 ]]; then
    --host-only-network=$host_only_network\
    --controller-ip=$controller_ip\
    --controller-hostname=doc\
-   --template-vmname=bingo\
+   --template-vmname=$template_name\
    --vboxdir=$vboxdir\
    --priv-key=$DTKBASE/generated/kickstart/id_ed25519\
    --crictl-download=$crictl_download\
@@ -593,7 +631,7 @@ elif [[ "$networking" == "cilium" ]]; then
    --admin-kubeconfig=$DTKBASE/generated/kubeconfig/admin.kubeconfig
 elif [[ "$networking" == "calico" ]]; then
   nodes="${cluster_vms[@]}"
-  # convert array (doc ham monk) to comma-delimited string, e.g.: "doc,ham,monk":
+  # convert array (x y z) to comma-delimited string "x,y,z":
   nodes=${nodes// /,}
   xec install-kube-proxy\
    --controller-ip=$controller_ip\

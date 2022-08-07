@@ -3,7 +3,7 @@
 # Configures host only networking for the passed VM. Does this by creating an ISO from a network config file
 # in the 'hostonly-netcfg' directory. This ISO contains a file that is suitable to place in the
 # /etc/sysconfig/network-scripts directory of the VM. The passed network params are interpolated into the config file.
-# The presence of this config file causes CentOS to use the file to initialize networking for the interface. So
+# The presence of this config file causes the OS to use the file to initialize networking for the interface. So
 # this is how we configure each node in the cluster with a unique static IP address in the host only network.
 #
 # The interface is named enp0s8 because the way this project works - for host only networking - a NAT interface is
@@ -41,7 +41,7 @@ VBoxManage storageattach $vmname --storagectl IDE --port 0 --device 0 --type dvd
  --medium $DTKBASE/generated/iso/ifcfg-enp0s8.iso
 
 # start VM - this will cause the desktop-kubernetes systemd service to: 1) copy the config file 'ifcfg-enp0s8' from
-# the ISO to the /etc/sysconfig/network-scripts directory in the guest, and then 2) shut the VM down. See
+# the ISO to the /etc/sysconfig/network-scripts directory in the guest which configures network interface. See
 # kickstart/desktop-kubernetes.sh
 echo "starting VM $vmname"
 VBoxManage startvm $vmname
@@ -51,8 +51,8 @@ VBoxManage startvm $vmname
 echo "Getting IP address from VM $vmname"
 xec get-vm-ip $vmname
 
-echo "waiting for VM $vmname to stop"
-xec wait-vm $vmname --stopped
+echo "stopping VM $vmname"
+VBoxManage controlvm $vmname acpipowerbutton
 
 # for virtual box or the detach calls below fail
 sleep 5s

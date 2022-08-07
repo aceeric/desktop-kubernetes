@@ -5,21 +5,21 @@
 #
 # 1. *may* generate SSH key pair into the 'kickstart' directory to support SSH access to the VM
 # 2. generates the kickstart ISO into the 'media' directory from the contents of the 'kickstart' directory
-# 3. creates a VM from the passed CentOS ISO and generated kickstart ISO
+# 3. creates a VM from the passed Linux ISO and generated kickstart ISO
 # 4. installs guest additions from the passed ISO to support other scripts getting the IP address from the VM
 #
 
 set -e
 
-long_opts=template-vmname:,centos-iso-download:,centos-iso-path:,\
+long_opts=template-vmname:,linux-iso-download:,linux-iso-path:,\
 guest-additions-download:,guest-additions-path:,host-network-interface:,host-only-network:,vboxdir:
 
 script_name=$(basename "$0")
 
 # api
 template_vmname=
-centos_iso_download=
-centos_iso_path=
+linux_iso_download=
+linux_iso_path=
 guest_additions_download=
 guest_additions_path=
 host_network_interface=
@@ -56,12 +56,12 @@ function parse_args() {
         template_vmname=$(opt_val "$2")
         shift 2
         ;;
-      --centos-iso-download)
-        centos_iso_download=$(opt_val "$2")
+      --linux-iso-download)
+        linux_iso_download=$(opt_val "$2")
         shift 2
         ;;
-      --centos-iso-path)
-        centos_iso_path=$(opt_val "$2")
+      --linux-iso-path)
+        linux_iso_path=$(opt_val "$2")
         shift 2
         ;;
       --guest-additions-download)
@@ -94,17 +94,17 @@ function parse_args() {
 
 parse_args "$@"
 
-centos_iso_actual=$(xec make-download-path\
- --download-url=$centos_iso_download --download-path=$centos_iso_path)
+linux_iso_actual=$(xec make-download-path\
+ --download-url=$linux_iso_download --download-path=$linux_iso_path)
 
 guest_additions_actual=$(xec make-download-path\
  --download-url=$guest_additions_download --download-path=$guest_additions_path)
 
 # debug
 #echo "template_vmname=$template_vmname"
-#echo "centos_iso_download=$centos_iso_download"
-#echo "centos_iso_path=$centos_iso_path"
-#echo "centos_iso_actual=$centos_iso_actual"
+#echo "linux_iso_download=$linux_iso_download"
+#echo "linux_iso_path=$linux_iso_path"
+#echo "linux_iso_actual=$linux_iso_actual"
 #echo "guest_additions_download=$guest_additions_download"
 #echo "guest_additions_path=$guest_additions_path"
 #echo "guest_additions_actual=$guest_additions_actual"
@@ -112,7 +112,7 @@ guest_additions_actual=$(xec make-download-path\
 #echo "host_only_network=$host_only_network"
 #echo "vboxdir=$vboxdir"
 
-xec download-obj --url="$centos_iso_download" --dest="$centos_iso_actual"
+xec download-obj --url="$linux_iso_download" --dest="$linux_iso_actual"
 xec download-obj --url="$guest_additions_download" --dest="$guest_additions_actual"
 
 echo "checking/generating SSH keys -- the public key will be copied to the VM by the kickstart script"
@@ -130,7 +130,7 @@ fi
 
 echo "creating VM"
 xec create-vm --template-vmname=$template_vmname\
-  --centos-iso-path=$centos_iso_actual\
+  --linux-iso-path=$linux_iso_actual\
   --kickstart-iso-path=$kickstart_iso_path\
   --host-network-interface=$host_network_interface\
   --host-only-network-name=$host_only_network_name\

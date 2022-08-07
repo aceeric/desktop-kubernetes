@@ -21,7 +21,7 @@ See the _Narrative_ section that follows for a description of each numeric annot
 dtk
 ├─ scripts/virtualbox/create-template-vm (1)
 │  ├─ scripts/vm/gen-ssh-keyfiles
-│  ├─ scripts/centos/gen-kickstart-iso
+│  ├─ scripts/os/gen-kickstart-iso
 │  ├─ scripts/virtualbox/create-vm
 │  └─ scripts/virtualbox/install-guest-additions
 │
@@ -30,7 +30,7 @@ dtk
 ├─ scripts/control-plane/provision-controller (3)
 │  ├─ scripts/virtualbox/clone-vm
 │  ├─ scripts/control-plane/configure-controller
-│  │  ├─ scripts/centos/configure-firewall
+│  │  ├─ scripts/os/configure-firewall
 │  │  ├─ scripts/cluster/gen-cluster-tls
 │  │  ├─ scripts/control-plane/etcd/install-etcd
 │  │  ├─ scripts/control-plane/kube-apiserver/install-kube-apiserver
@@ -39,7 +39,7 @@ dtk
 │  └─ scripts/cluster/gen-admin-kubeconfig
 │   
 ├─ scripts/worker/configure-worker (4)
-│  ├─ scripts/centos/configure-firewall
+│  ├─ scripts/os/configure-firewall
 │  ├─ scripts/worker/kubelet/gen-worker-tls
 │  ├─ scripts/worker/misc/install-misc-bins
 │  ├─ scripts/worker/containerd/install-containerd
@@ -61,7 +61,7 @@ dtk
 
 ## Narrative
 
-1. If the `--create-template` arg is provided then ssh keys are generated, and a template VM is created using Kickstart and a CentOS ISO. This ssh public key is copied into the VM in the `authorized-keys` file, and Virtual Box Guest Additions is installed. This template VM is cloned in subsequent steps to create the three VMs that comprise the Kubernetes cluster, so each VM has an identical configuration. Guest Additions is used because it enables getting the IP address of a VirtualBox VM.
+1. If the `--create-template` arg is provided then ssh keys are generated, and a template VM is created using Kickstart and a CentOS or Rocky ISO depending on the `--linux` option. This ssh public key is copied into the VM in the `authorized-keys` file, and Virtual Box Guest Additions is installed. This template VM is cloned in subsequent steps to create the three VMs that comprise the Kubernetes cluster, so each VM has an identical configuration. Guest Additions is used because it enables getting the IP address of a VirtualBox VM.
 2. A root CA is generated for the cluster. This CA is used to sign certs throughout the remainder of the cluster provisioning process.
 3. A controller is provisioned with: cluster TLS, `etcd`, the `api server`, `controller manager`, and `scheduler`. (This project runs with a single controller to minimize the desktop footprint.)
 4. Because the controller is also a worker, the controller is configured as a worker node.

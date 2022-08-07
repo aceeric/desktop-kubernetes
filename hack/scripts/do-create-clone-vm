@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Clones a template VM into a clone VM for testing CentOS configuration
+# Clones a template VM into a clone VM for testing Linux configuration
 # changes, manual Kubernetes component installs, etc.
 #
 

@@ -106,7 +106,9 @@ VBoxManage clonevm $template_vmname\
  --name=$clone_vmname\
  --register
 
+
 if [[ ! -z $host_only_network ]]; then
+  echo "configure hostonly networking"
   xec configure-hostonly-networking $clone_vmname $host_only_network $host_only_octet
 fi
 
@@ -126,6 +128,8 @@ VBoxManage modifyvm $clone_vmname\
 echo "starting cloned VM"
 VBoxManage startvm $clone_vmname
 xec wait-vm $clone_vmname --started
+
+echo "clearing existing IP address"
 VBoxManage guestproperty delete $clone_vmname "/VirtualBox/GuestInfo/Net/0/V4/IP" || :
 VBoxManage guestproperty delete $clone_vmname "/VirtualBox/GuestInfo/Net/1/V4/IP" || :
 

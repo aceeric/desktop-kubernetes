@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 #
-# Creates a CentOS VM from a CentOS ISO, and installs the OS using Kickstart from a Kickstart ISO.
+# Creates a Linux VM from a Linux ISO, and installs the OS using Kickstart from a Kickstart ISO.
 # Intent is - this VM will be the template VM from which the cluster VMs will subsequently be cloned.
 # Expects ISO files on the file system. Configures bridged networking or host only networking based on
 # passed options. This script just creates the VM. To install guest additions, you would need to call
@@ -12,11 +12,11 @@
 
 set -e
 
-long_opts=template-vmname:,centos-iso-path:,kickstart-iso-path:,host-network-interface:,host-only-network-name:,vboxdir:
+long_opts=template-vmname:,linux-iso-path:,kickstart-iso-path:,host-network-interface:,host-only-network-name:,vboxdir:
 script_name=$(basename "$0")
 
 template_vmname=
-centos_iso_path=
+linux_iso_path=
 kickstart_iso_path=
 host_network_interface=
 host_only_network_name=
@@ -45,8 +45,8 @@ function parse_args() {
         template_vmname=$(opt_val "$2")
         shift 2
         ;;
-      --centos-iso-path)
-        centos_iso_path=$(opt_val "$2")
+      --linux-iso-path)
+        linux_iso_path=$(opt_val "$2")
         shift 2
         ;;
       --kickstart-iso-path)
@@ -77,7 +77,7 @@ parse_args "$@"
 
 # debug
 #echo "template_vmname=$template_vmname"
-#echo "centos_iso_path=$centos_iso_path"
+#echo "linux_iso_path=$linux_iso_path"
 #echo "kickstart_iso_path=$kickstart_iso_path"
 #echo "host_network_interface=$host_network_interface"
 #echo "host_only_network_name=$host_only_network_name"
@@ -141,10 +141,10 @@ VBoxManage storagectl $template_vmname --name SATA --add sata --controller Intel
 VBoxManage storageattach $template_vmname --storagectl SATA --port 1 --device 0 --type hdd\
  --medium $vboxdir/$template_vmname/$template_vmname.vdi
 
-# configure and attach the Centos installation ISO
+# configure and attach the Linux installation ISO
 VBoxManage storagectl $template_vmname --name IDE --add ide --controller PIIX4
 VBoxManage storageattach $template_vmname --storagectl IDE --port 1 --device 0 --type dvddrive\
- --medium $centos_iso_path
+ --medium $linux_iso_path
 
 # attach the kickstart iso created by the gen-kickstart-iso script
 VBoxManage storageattach $template_vmname --storagectl IDE --port 1 --device 1 --type dvddrive\

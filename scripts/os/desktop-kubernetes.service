@@ -1,6 +1,8 @@
 [Unit]
-Description=Install VBox guest additions on boot
-After=default.target
+Description=Desktop Kubernetes
+#After=default.target
+Before=network-pre.target
+Wants=network-pre.target
 
 [Service]
 Type=simple

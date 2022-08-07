@@ -8,17 +8,22 @@ if [[ -z "$DTKBASE" ]]; then
   exit 0
 fi
 
-if [[ "$#" -ne 4 ]]; then
+if [[ "$#" -ne 4 ]] && [[ "$#" -ne 5 ]]; then
   echo "Usage:"
-  echo "hack/scripts/create-template-vm --host-only-network 192.168.56 my-template-vm /sdb1/virtualboxvms"
+  echo "hack/scripts/create-template-vm --host-only-network 192.168.56 my-template-vm /sdb1/virtualboxvms --rocky"
   echo "...or..."
-  echo "hack/scripts/create-template-vm --host-network-interface enp0s31f6 rke2-template /sdb1/virtualboxvms"
+  echo "hack/scripts/create-template-vm --host-network-interface enp0s31f6 rke2-template /sdb1/virtualboxvms --rocky"
+  echo "the --rocky switch is optional"
   exit 1
 fi
 
 HOSTONLY=
 HNI=
+ROCKY=0
 for arg; do
+  if [[ "$arg" == "--rocky" ]]; then
+    ROCKY=1
+  fi
   if [[ "$arg" == "--host-only-network" ]]; then
     shift
     HOSTONLY=$1
@@ -34,16 +39,21 @@ if ! type -f xec &>/dev/null; then
   export -f xec
 fi
 
-centos_iso_download=https://mirror.umd.edu/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-latest-dvd1.iso
-centos_iso_path=$DTKBASE/binaries/CentOS-Stream-8-x86_64-latest-dvd1.iso
-guest_additions_download=https://download.virtualbox.org/virtualbox/6.1.30/VBoxGuestAdditions_6.1.30.iso
-guest_additions_path=$DTKBASE/binaries/VBoxGuestAdditions_6.1.30.iso
+linux_iso_download=https://mirror.umd.edu/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-latest-dvd1.iso
+linux_iso_path=$DTKBASE/binaries/CentOS-Stream-8-x86_64-latest-dvd1.iso
+guest_additions_download=https://download.virtualbox.org/virtualbox/6.1.36/VBoxGuestAdditions_6.1.36.iso
+guest_additions_path=$DTKBASE/binaries/VBoxGuestAdditions_6.1.36.iso
+
+if [[ $ROCKY -eq 1 ]]; then
+  linux_iso_download=https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9.0-x86_64-dvd.iso
+  linux_iso_path=$DTKBASE/binaries/Rocky-9.0-x86_64-dvd.iso
+fi
 
 if [[ ! -z "$HOSTONLY" ]]; then
   xec create-template-vm\
     --template-vmname=$2\
-    --centos-iso-download=$centos_iso_download\
-    --centos-iso-path=$centos_iso_path\
+    --linux-iso-download=$linux_iso_download\
+    --linux-iso-path=$linux_iso_path\
     --guest-additions-download=$guest_additions_download\
     --guest-additions-path=$guest_additions_path\
     --host-only-network=$HOSTONLY\
@@ -51,8 +61,8 @@ if [[ ! -z "$HOSTONLY" ]]; then
 elif [[ ! -z "$HNI" ]]; then
   xec create-template-vm\
     --template-vmname=$2\
-    --centos-iso-download=$centos_iso_download\
-    --centos-iso-path=$centos_iso_path\
+    --linux-iso-download=$linux_iso_download\
+    --linux-iso-path=$linux_iso_path\
     --guest-additions-download=$guest_additions_download\
     --guest-additions-path=$guest_additions_path\
     --host-network-interface=$HNI\
