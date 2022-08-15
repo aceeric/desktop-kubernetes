@@ -106,10 +106,9 @@ VBoxManage clonevm $template_vmname\
  --name=$clone_vmname\
  --register
 
-
 if [[ ! -z $host_only_network ]]; then
   echo "configure hostonly networking"
-  xec configure-hostonly-networking $clone_vmname $host_only_network $host_only_octet
+  xec configure-hostonly-networking $clone_vmname $host_only_network $host_only_octet $clone_vmname
 fi
 
 echo "setting VM characteristics"
@@ -139,7 +138,7 @@ clone_ip=$(xec get-vm-ip $clone_vmname)
 # this will be the very first occurrence of SSH'ing into the VM
 
 echo "setting the hostname for cloned VM"
-ssh-keygen -f ~/.ssh/known_hosts -R $clone_ip 
+ssh-keygen -f ~/.ssh/known_hosts -R $clone_ip
 ssh -o "StrictHostKeyChecking no" -i $priv_key root@$clone_ip "hostnamectl set-hostname $clone_vmname"
 
 if [[ $shutdown == true ]]; then

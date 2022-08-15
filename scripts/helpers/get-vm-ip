@@ -1,11 +1,10 @@
 #!/usr/bin/env bash
-
 #
 # Gets the IP address from a VM using Guest Additions functionality. (Obviously requires that Guest Additions are
 # installed in the guest.) The project supports provisioning a cluster in either bridged - or host only - network
-# mode. In bridged mode: NIC 1 in each guest is bridged, providing host-to-guest, guest-to-guest, and
-# guest-to-internet. In host only mode: NIC 1 is a NAT network for internet access from the guest and NIC 2 is the
-# host only NIC for host-to-guest, and guest-to-guest. This script handles those two cases.
+# mode. In bridged mode: enp0s3 is bridged, providing host-to-guest, guest-to-guest, and guest-to-internet. In
+# host only mode: enp0s3 is a NAT network for internet access from the guest and enp0s8 is the host only NIC
+# for host-to-guest, and guest-to-guest. This script handles those two cases.
 #
 # The script blocks (forever) trying to get the IP address. Handles the case where you're using this to make
 # sure the guest VM started.
@@ -17,22 +16,21 @@ fi
 
 vm="$1"
 
-while true; do
-  net1name=$(VBoxManage guestproperty get "$vm" "/VirtualBox/GuestInfo/Net/1/Name" 2>/dev/null)
-  if [[ $? -ne 0 ]] || [[ "$net1name" == "No value set!" ]]; then
-    sleep 2s
-  else
-    break
-  fi
+netnum=
+
+while [[ -z $netnum ]]; do
+  for interface in 0 1; do
+    netname=$(VBoxManage guestproperty get "$vm" "/VirtualBox/GuestInfo/Net/$interface/Name" 2>/dev/null | awk '{print $2}')
+    if [[ $netname == "enp0s3" ]]; then
+      netnum=$interface
+    elif [[ $netname == "enp0s8" ]]; then
+      netnum=$interface
+      # if we find enp0s8 we're done
+      break
+    fi
+  done
 done
-net1name=$(echo "$net1name" | awk '{print $2}')
 
-if [[ "$net1name" == "enp0s8" ]]; then
-  # host-only networking so enps08 NIC2 has the IP address
-  ip=$(VBoxManage guestproperty get "$vm" "/VirtualBox/GuestInfo/Net/1/V4/IP" 2>/dev/null)
-else
-  # bridged networking so enps03 NIC1 has the IP address
-  ip=$(VBoxManage guestproperty get "$vm" "/VirtualBox/GuestInfo/Net/0/V4/IP" 2>/dev/null)
-fi
+ip=$(VBoxManage guestproperty get "$vm" "/VirtualBox/GuestInfo/Net/$netnum/V4/IP" 2>/dev/null)
 
-echo "$ip" | awk '{ print $2 }'
+echo "$ip" | awk '{print $2}'

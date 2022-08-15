@@ -19,17 +19,18 @@
 # The NAT interface is used for external access for the VM (i.e. internet) and the host only network implements the
 # k8s cluster network.
 #
-# Usage: configure-hostonly-networking <vmname> <network octets> <host octet>
+# Usage: configure-hostonly-networking <vmname> <network octets> <host octet> <vmname>
 #
 # ...where <network octets> are the left three octets of an IPv4 address, and <host octet> is the right-most
 # octet of the IP address to configure the adaptor with. E.g.:
 #
-# configure-hostonly-networking 200.200.200 202
+# configure-hostonly-networking 200.200.200 202 my-cloned-vm
 #
 
 vmname="$1"
 network_octets="$2"
 host_octet="$3"
+clone_vmname="$4"
 
 # create ifcfg ISO with IP Address from passed args
 echo "creating ifcfg-enp0s8.iso with network $network_octets and octet $host_octet"
@@ -46,10 +47,14 @@ VBoxManage storageattach $vmname --storagectl IDE --port 0 --device 0 --type dvd
 echo "starting VM $vmname"
 VBoxManage startvm $vmname
 
-# getting the IP address verifies the guest is running so we can safely wait for shutdown. The IP address
-# could be incorrect here - that will be dealt with by the caller
-echo "Getting IP address from VM $vmname"
-xec get-vm-ip $vmname
+echo "waiting indefinitely for VM IP assignment"
+while true; do
+  clone_ip=$(xec get-vm-ip $clone_vmname)
+  if [[ $clone_ip == "$network_octets.$host_octet" ]]; then
+    break
+  fi
+  sleep 3s
+done
 
 echo "stopping VM $vmname"
 VBoxManage controlvm $vmname acpipowerbutton

@@ -1,8 +1,6 @@
 [Unit]
 Description=Desktop Kubernetes
-#After=default.target
-Before=network-pre.target
-Wants=network-pre.target
+After=default.target
 
 [Service]
 Type=simple
