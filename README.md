@@ -116,18 +116,18 @@ The value you choose for the octets is up to you but - once you pick those value
 $ ./dtk --verify=upstreams --create-template --monitoring=kube-prometheus\
   --networking=calico --storage=openebs
 OK: https://github.com/etcd-io/etcd/releases/download/v3.5.4/etcd-v3.5.4-linux-amd64.tar.gz
-OK: https://dl.k8s.io/v1.24.2/bin/linux/amd64/kube-apiserver
-OK: https://dl.k8s.io/v1.24.2/bin/linux/amd64/kube-controller-manager
-OK: https://dl.k8s.io/v1.24.2/bin/linux/amd64/kube-scheduler
+OK: https://dl.k8s.io/v1.25.0/bin/linux/amd64/kube-apiserver
+OK: https://dl.k8s.io/v1.25.0/bin/linux/amd64/kube-controller-manager
+OK: https://dl.k8s.io/v1.25.0/bin/linux/amd64/kube-scheduler
 OK: https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.24.2/crictl-v1.24.2-linux-amd64.tar.gz
 OK: https://github.com/opencontainers/runc/releases/download/v1.1.1/runc.amd64
 OK: https://github.com/containernetworking/plugins/releases/download/v1.1.1/cni-plugins-linux-amd64-v1.1.1.tgz
 OK: https://github.com/containerd/containerd/releases/download/v1.6.4/containerd-1.6.4-linux-amd64.tar.gz
-OK: https://dl.k8s.io/v1.24.2/bin/linux/amd64/kubelet
+OK: https://dl.k8s.io/v1.25.0/bin/linux/amd64/kubelet
 OK: https://download.virtualbox.org/virtualbox/6.1.36/VBoxGuestAdditions_6.1.36.iso
 OK: https://mirror.umd.edu/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-latest-dvd1.iso
 OK: https://github.com/prometheus-operator/kube-prometheus/archive/v0.10.0.tar.gz
-OK: https://dl.k8s.io/v1.24.2/bin/linux/amd64/kube-proxy
+OK: https://dl.k8s.io/v1.25.0/bin/linux/amd64/kube-proxy
 OK: https://github.com/projectcalico/calico/releases/download/v3.23.2/release-v3.23.2.tgz
 OK: https://raw.githubusercontent.com/openebs/charts/gh-pages/hostpath-operator.yaml
 OK: https://openebs.github.io/charts/openebs-lite-sc.yaml
@@ -170,16 +170,16 @@ This project has been tested with the following tools, components and versions. 
 | guest VM | Rocky Linux ISO                                                | Rocky-9.0-x86_64-dvd   | 2022-08-06 |
 | guest VM | Virtual Box Guest Additions ISO                                | 6.1.36                 | 2022-07-30 |
 | k8s      | etcd                                                           | v3.5.4                 | 2022-05-05 |
-| k8s      | kube-apiserver                                                 | v1.24.2                | 2022-07-14 |
-| k8s      | kube-controller-manager                                        | v1.24.2                | 2022-07-14 |
-| k8s      | kube-scheduler                                                 | v1.24.2                | 2022-07-14 |
-| k8s      | kubelet                                                        | v1.24.2                | 2022-07-14 |
+| k8s      | kube-apiserver                                                 | v1.25.0                | 2022-08-24 |
+| k8s      | kube-controller-manager                                        | v1.25.0                | 2022-08-24 |
+| k8s      | kube-scheduler                                                 | v1.25.0                | 2022-08-24 |
+| k8s      | kubelet                                                        | v1.25.0                | 2022-08-24 |
 | k8s      | crictl                                                         | v1.24.2                | 2022-07-14 |
 | k8s      | runc                                                           | v1.1.1                 | 2022-05-05 |
 | k8s      | cni plugins                                                    | v1.1.1                 | 2022-07-14 |
 | k8s      | containerd                                                     | v1.6.4                 | 2022-05-05 |
 | k8s      | CoreDNS                                                        | 1.9.0                  | 2022-02-26 |
-| k8s      | kube-proxy (if installed)                                      | v1.24.2                | 2022-07-14 |
+| k8s      | kube-proxy (if installed)                                      | v1.25.0                | 2022-08-24 |
 | k8s      | kube-router (if installed)                                     | v1.3.1                 | 2021-08-14 |
 | k8s      | Metrics Server (if installed)                                  | 0.4.2                  |            |
 | k8s      | Kubernetes Dashboard (if installed)                            | 2.0.0                  |            |

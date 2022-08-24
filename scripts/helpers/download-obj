@@ -7,8 +7,8 @@
 #
 # download-obj --url=https://foobar.com/downloads/frobozz.tar.gz --dest="/tmp/downloads/frobozz.tar.gz"
 #
-# The --dest arg specifies a fully qualified path and file name. All directories must exist. The script will
-# not create them. Optional --executable arg does a chmod +x on the downloaded file
+# The --dest arg specifies a fully qualified path and file name. The  script will create all intermediate
+# directories if they don't exist. Optional --executable arg does a chmod +x on the downloaded file
 
 set -e
 
@@ -66,6 +66,8 @@ if [[ -z "$url" ]] || [[ -z "$dest" ]] || [[ "$#" -ne 0 ]]; then
   echo "invalid args"
   exit 1
 fi
+
+mkdir -p $(dirname "$dest")
 
 if [[ ! -f "$dest" ]]; then
   echo "downloading $url"

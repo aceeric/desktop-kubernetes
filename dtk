@@ -52,12 +52,12 @@ guest_additions_download=https://download.virtualbox.org/virtualbox/6.1.36/VBoxG
 guest_additions_path=$DTKBASE/binaries/VBoxGuestAdditions_6.1.36.iso
 etcd_download=https://github.com/etcd-io/etcd/releases/download/v3.5.4/etcd-v3.5.4-linux-amd64.tar.gz
 etcd_gzip=$DTKBASE/binaries/etcd-v3.5.4-linux-amd64.tar.gz
-kube_apiserver_download=https://dl.k8s.io/v1.24.2/bin/linux/amd64/kube-apiserver
-kube_apiserver_binary=$DTKBASE/binaries/kube-apiserver
-kube_controller_manager_download=https://dl.k8s.io/v1.24.2/bin/linux/amd64/kube-controller-manager
-kube_controller_manager_binary=$DTKBASE/binaries/kube-controller-manager
-kube_scheduler_download=https://dl.k8s.io/v1.24.2/bin/linux/amd64/kube-scheduler
-kube_scheduler_binary=$DTKBASE/binaries/kube-scheduler
+kube_apiserver_download=https://dl.k8s.io/v1.25.0/bin/linux/amd64/kube-apiserver
+kube_apiserver_binary=$DTKBASE/binaries/kube-apiserver-v1.25.0
+kube_controller_manager_download=https://dl.k8s.io/v1.25.0/bin/linux/amd64/kube-controller-manager
+kube_controller_manager_binary=$DTKBASE/binaries/kube-controller-manager-v1.25.0
+kube_scheduler_download=https://dl.k8s.io/v1.25.0/bin/linux/amd64/kube-scheduler
+kube_scheduler_binary=$DTKBASE/binaries/kube-scheduler-v1.25.0
 crictl_download=https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.24.2/crictl-v1.24.2-linux-amd64.tar.gz
 crictl_binary=$DTKBASE/binaries/crictl-v1.24.2-linux-amd64.tar.gz
 runc_download=https://github.com/opencontainers/runc/releases/download/v1.1.1/runc.amd64
@@ -66,12 +66,12 @@ cni_plugins_download=https://github.com/containernetworking/plugins/releases/dow
 cni_plugins_binary=$DTKBASE/binaries/cni-plugins-linux-amd64-v1.1.1.tgz
 containerd_download=https://github.com/containerd/containerd/releases/download/v1.6.4/containerd-1.6.4-linux-amd64.tar.gz
 containerd_binary=$DTKBASE/binaries/containerd-1.6.4-linux-amd64.tar.gz
-kubelet_download=https://dl.k8s.io/v1.24.2/bin/linux/amd64/kubelet
-kubelet_binary=$DTKBASE/binaries/kubelet
+kubelet_download=https://dl.k8s.io/v1.25.0/bin/linux/amd64/kubelet
+kubelet_binary=$DTKBASE/binaries/kubelet-v1.25.0
 kube_router_yaml_download=https://raw.githubusercontent.com/cloudnativelabs/kube-router/v1.3.1/daemonset/generic-kuberouter-all-features.yaml
 kube_router_yaml=$DTKBASE/binaries/generic-kuberouter-all-features.yaml
-kube_proxy_download=https://dl.k8s.io/v1.24.2/bin/linux/amd64/kube-proxy
-kube_proxy_binary=$DTKBASE/binaries/kube-proxy
+kube_proxy_download=https://dl.k8s.io/v1.25.0/bin/linux/amd64/kube-proxy
+kube_proxy_binary=$DTKBASE/binaries/kube-proxy-v1.25.0
 
 # extras
 metrics_server_download=https://github.com/kubernetes-sigs/metrics-server/releases/download/v0.4.2/components.yaml
@@ -535,7 +535,7 @@ fi
 
 # gen-root-ca generates $DTKBASE/generated/cert/ca.pem and ca-key.pem used throughout to configure TLS
 
-echo "generating root CA into the 'tls' directory on this machine"
+echo "generating root CA"
 xec gen-root-ca
 
 echo "provisioning a controller node"

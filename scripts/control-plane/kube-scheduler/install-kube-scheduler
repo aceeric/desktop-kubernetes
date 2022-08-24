@@ -87,7 +87,7 @@ kube_scheduler_binary_actual=$(xec make-download-path\
 xec download-obj --url="$kube_scheduler_download" --dest="$kube_scheduler_binary_actual" --executable
 
 echo "copying kube-scheduler binary to controller VM"
-scp -i $priv_key $kube_scheduler_binary_actual root@$controller_ip:/usr/local/bin/
+scp -i $priv_key $kube_scheduler_binary_actual root@$controller_ip:/usr/local/bin/kube-scheduler
 
 # gen some path refs to make the commands below a little less busy looking
 kube_scheduler_cert=$DTKBASE/generated/cert/kube-scheduler.pem

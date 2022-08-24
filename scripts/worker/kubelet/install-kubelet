@@ -94,7 +94,7 @@ kubelet_binary_actual="$(xec make-download-path\
 xec download-obj --url="$kubelet_download" --dest="$kubelet_binary_actual" --executable
 
 echo "copying binary to worker"
-scp -i $priv_key $kubelet_binary_actual root@$worker_ip:/usr/local/bin/
+scp -i $priv_key $kubelet_binary_actual root@$worker_ip:/usr/local/bin/kubelet
 
 # TODO name the kubeconfig file with the worker hostname in it?
 echo "Generating a kubeconfig file for the kubelet"

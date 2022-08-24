@@ -93,7 +93,7 @@ xec download-obj --url="$kube_controller_manager_download"\
  --dest="$kube_controller_manager_binary_actual" --executable
 
 echo "copying kube-controller-manager binary to controller VM"
-scp -i $priv_key $kube_controller_manager_binary_actual root@$controller_ip:/usr/local/bin/
+scp -i $priv_key $kube_controller_manager_binary_actual root@$controller_ip:/usr/local/bin/kube-controller-manager
 
 # gen some path refs to make the commands below a little less busy looking
 controller_mgr_cert=$DTKBASE/generated/cert/kube-controller-manager.pem

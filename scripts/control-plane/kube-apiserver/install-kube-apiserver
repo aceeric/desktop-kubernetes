@@ -105,7 +105,7 @@ kube_apiserver_binary_actual=$(xec make-download-path\
 xec download-obj --url="$kube_apiserver_download" --dest="$kube_apiserver_binary_actual" --executable
 
 echo "copying kube-apiserver binary to controller"
-scp -i $priv_key $kube_apiserver_binary_actual root@$controller_ip:/usr/local/bin/
+scp -i $priv_key $kube_apiserver_binary_actual root@$controller_ip:/usr/local/bin/kube-apiserver
 
 echo "generating TLS material for kube-apiserver"
 
