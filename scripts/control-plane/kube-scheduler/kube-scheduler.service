@@ -5,6 +5,7 @@ Documentation=https://github.com/kubernetes/kubernetes
 [Service]
 ExecStart=/usr/local/bin/kube-scheduler \
   --config=/etc/kubernetes/config/kube-scheduler.yaml \
+  --authorization-always-allow-paths=/healthz,/readyz,/livez,/metrics \
   --v=2
 Restart=on-failure
 RestartSec=5

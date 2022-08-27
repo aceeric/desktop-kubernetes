@@ -105,4 +105,6 @@ spec:
   type: NodePort
 EOF
 
+xec tweak-monitoring $controller_ip
+
 echo "To access Grafana, log in with admin/admin to: http://$controller_ip:30300"

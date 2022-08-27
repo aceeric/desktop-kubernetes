@@ -1,0 +1,112 @@
+#!/usr/bin/env bash
+#
+# The kube prometheus stack wants to monitor kube-controller-manager and kube-scheduler as
+# Pods. Since we run them as systemd units we have to do some additional work to get prometheus
+# to scrape those two components.
+#
+# Usage:
+#
+# tweak-monitoring controller-ip-address
+#
+# E.g.:
+#
+# tweak-monitoring 192.168.56.200
+#
+
+set -e
+
+# kube-controller-manager
+
+cat <<EOF | kubectl apply -f -
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: kube-controller-manager-prometheus-discovery
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/name: kube-controller-manager
+subsets:
+- addresses:
+  - ip: $1
+  ports:
+  - name: http-metrics
+    port: 10257
+    protocol: TCP
+EOF
+
+cat <<EOF | kubectl apply -f -
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: kube-system
+  name: kube-controller-manager-prometheus-discovery
+  labels:
+    app.kubernetes.io/name: kube-controller-manager
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+  - name: http-metrics
+    port: 10257
+    protocol: TCP
+    targetPort: 10257
+EOF
+
+echo "waiting (indefinitely) for servicemonitor/kube-controller-manager in monitoring namespace"
+while true; do
+  kubectl -n monitoring get servicemonitor kube-controller-manager &>/dev/null && break || sleep 5s
+done
+
+kubectl -n monitoring patch servicemonitor kube-controller-manager --type='json'\
+  -p='[{"op": "replace", "path": "/spec/endpoints/0/port", "value": "http-metrics"}]'
+
+kubectl -n monitoring patch servicemonitor kube-controller-manager --type='json'\
+  -p='[{"op": "add", "path": "/spec/endpoints/0/tlsConfig/serverName", "value":"localhost"}]'
+
+# kube-scheduler
+
+cat <<EOF | kubectl apply -f -
+apiVersion: v1
+kind: Endpoints
+metadata:
+  name: kube-scheduler-prometheus-discovery
+  namespace: kube-system
+  labels:
+    app.kubernetes.io/name: kube-scheduler
+subsets:
+- addresses:
+  - ip: $1
+  ports:
+  - name: http-metrics
+    port: 10259
+    protocol: TCP
+EOF
+
+cat <<EOF | kubectl apply -f -
+apiVersion: v1
+kind: Service
+metadata:
+  namespace: kube-system
+  name: kube-scheduler-prometheus-discovery
+  labels:
+    app.kubernetes.io/name: kube-scheduler
+spec:
+  type: ClusterIP
+  clusterIP: None
+  ports:
+  - name: http-metrics
+    port: 10259
+    protocol: TCP
+    targetPort: 10259
+EOF
+
+echo "waiting (indefinitely) for servicemonitor/kube-scheduler in monitoring namespace"
+while true; do
+  kubectl -n monitoring get servicemonitor kube-scheduler &>/dev/null && break || sleep 5s
+done
+
+kubectl -n monitoring patch servicemonitor kube-scheduler --type='json'\
+  -p='[{"op": "replace", "path": "/spec/endpoints/0/port", "value": "http-metrics"}]'
+
+kubectl -n monitoring patch servicemonitor kube-scheduler --type='json'\
+  -p='[{"op": "add", "path": "/spec/endpoints/0/tlsConfig/serverName", "value":"localhost"}]'
