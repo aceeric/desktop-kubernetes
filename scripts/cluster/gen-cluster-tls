@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# generates 'kubernetes.pem' and 'kubernetes-key.pem' in the 'tls' directory which are used in
+# generates 'kubernetes.pem' and 'kubernetes-key.pem' in the 'generated/cert' directory which are used in
 # the configuration of etcd and the api server on the controller. See for some additional info:
 # https://kubernetes.io/docs/concepts/cluster-administration/certificates/
 

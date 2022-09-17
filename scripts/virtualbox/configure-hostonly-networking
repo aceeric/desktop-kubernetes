@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
-# Configures host only networking for the passed VM. Does this by creating an ISO from a network config file
-# in the 'hostonly-netcfg' directory. This ISO contains a file that is suitable to place in the
-# /etc/sysconfig/network-scripts directory of the VM. The passed network params are interpolated into the config file.
-# The presence of this config file causes the OS to use the file to initialize networking for the interface. So
-# this is how we configure each node in the cluster with a unique static IP address in the host only network.
+# Configures host only networking for the passed VM. Does this by calling 'gen-hostonly-ifcfg-iso' to create
+# an ISO containing a network config file. Mounts the ISO to the VM and starts the VM. The presence of this
+# ISO is detected by the desktop-kubernetes systemd service which copies it to /etc/sysconfig/network-scripts
+# in the VM. So this is how we configure each node in the cluster with a unique static IP address in the
+# host only network.
 #
 # The interface is named enp0s8 because the way this project works - for host only networking - a NAT interface is
 # configured in network position one, and the host only interface takes position two. As a result, the host only
@@ -41,9 +41,9 @@ echo "attaching ifcfg-enp0s8 ISO to VM $vmname"
 VBoxManage storageattach $vmname --storagectl IDE --port 0 --device 0 --type dvddrive\
  --medium $DTKBASE/generated/iso/ifcfg-enp0s8.iso
 
-# start VM - this will cause the desktop-kubernetes systemd service to: 1) copy the config file 'ifcfg-enp0s8' from
+# start VM - this will cause the desktop-kubernetes systemd service to copy the config file 'ifcfg-enp0s8' from
 # the ISO to the /etc/sysconfig/network-scripts directory in the guest which configures network interface. See
-# kickstart/desktop-kubernetes.sh
+# 'scripts/os/desktop-kubernetes.sh'
 echo "starting VM $vmname"
 VBoxManage startvm $vmname
 

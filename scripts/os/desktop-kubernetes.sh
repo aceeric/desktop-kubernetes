@@ -1,7 +1,10 @@
 #!/usr/bin/bash
 #
 # Configures the host only network adapter. Installs VirtualBox Guest Additions in
-# two steps with a reboot in between.
+# two steps with a reboot in between. Note - the Guest Additions install seems sensitive
+# to the Linux version. I got this working with Centos Stream / Rocky 9 then happened
+# to test w/ Centos 7 and it didn't work any more. It seems too much trouble to support
+# multiple versions.
 #
 
 set -e
@@ -15,8 +18,8 @@ function msg() {
 
 # If host only networking, the project mounts a config ISO to the cloned VM to
 # configure enp0s8 (the host-only interface.) Label CFGENP0S8 is assigned to this
-# ISO by scripts/gen-hostonly-ifcfg-iso. If mounted, then copy the enp0s8 config
-# file from the CD to the network config directory. This is how we configure the
+# ISO by 'scripts/virtualbox/gen-hostonly-ifcfg-iso'. If mounted, then copy the enp0s8
+# config file from the CD to the network config directory. This is how we configure the
 # network in each VM in the cluster with a different IPv4 address for host only
 # networking. If bridge networking, then the CD is not mounted to the clone and
 # so this if block is never entered. And - we never mount the ISO in the template

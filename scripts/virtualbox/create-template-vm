@@ -3,8 +3,8 @@
 #
 # Creates a template VM suitable to clone into a cluster VM. Specifically:
 #
-# 1. *may* generate SSH key pair into the 'kickstart' directory to support SSH access to the VM
-# 2. generates the kickstart ISO into the 'media' directory from the contents of the 'kickstart' directory
+# 1. *may* generate SSH key pair into the 'generated/kickstart' directory to support SSH access to the VM
+# 2. generates the kickstart ISO into the 'generated/iso' directory
 # 3. creates a VM from the passed Linux ISO and generated kickstart ISO
 # 4. installs guest additions from the passed ISO to support other scripts getting the IP address from the VM
 #
