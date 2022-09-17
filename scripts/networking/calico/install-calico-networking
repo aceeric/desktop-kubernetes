@@ -2,12 +2,14 @@
 
 set -e
 
-long_opts=calico-download:,calico-binary:,priv-key:,admin-kubeconfig:,cluster-cidr:,nodes:
+long_opts=calico-tigera-download:,calico-tigera-binary:,calico-custom-resources-download:,calico-custom-resources-manifest:,priv-key:,admin-kubeconfig:,cluster-cidr:,nodes:
 script_name=$(basename "$0")
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-calico_download=
-calico_binary=
+calico_tigera_download=
+calico_tigera_binary=
+calico_custom_resources_download=
+calico_custom_resources_manifest=
 priv_key=
 admin_kubeconfig=
 cluster_cidr=
@@ -32,12 +34,20 @@ function parse_args() {
   eval set -- "$parsed"
   while true; do
     case "$1" in
-      --calico-download)
-        calico_download=$(opt_val "$2")
+      --calico-tigera-download)
+        calico_tigera_download=$(opt_val "$2")
         shift 2
         ;;
-      --calico-binary)
-        calico_binary=$(opt_val "$2")
+      --calico-tigera-binary)
+        calico_tigera_binary=$(opt_val "$2")
+        shift 2
+        ;;
+      --calico-custom-resources-download)
+        calico_custom_resources_download=$(opt_val "$2")
+        shift 2
+        ;;
+      --calico-custom-resources-manifest)
+        calico_custom_resources_manifest=$(opt_val "$2")
         shift 2
         ;;
       --priv-key)
@@ -67,32 +77,26 @@ function parse_args() {
 
 parse_args "$@"
 
-calico_binary_actual=$(xec make-download-path\
- --download-url=$calico_download --download-path=$calico_binary)
-
-# parse the calico version because it is embedded in a path in the TGZ that contains the manifest we want
-calico_version=
-regex="calico-(v[0-9]{,2}\.[0-9]{,2}\.[0-9]{,2})\.tgz"
-if [[ $calico_binary =~ $regex ]]; then
-  # e.g. 'v3.23.2'
-  calico_version="${BASH_REMATCH[1]}"
-else
-  echo "unable to parse a version number in the expected form from the calico binary: $calico_binary_actual"
-  exit 1
-fi
+calico_tigera_binary_actual=$(xec make-download-path\
+ --download-url=$calico_tigera_download --download-path=$calico_tigera_binary)
+calico_custom_resources_manifest_actual=$(xec make-download-path\
+ --download-url=$calico_custom_resources_download --download-path=$calico_custom_resources_manifest)
 
 # debug
-# echo "calico_download=$calico_download"
-# echo "calico_binary=$calico_binary"
-# echo "calico_binary_actual=$calico_binary_actual"
+# echo "calico_tigera_download=$calico_tigera_download"
+# echo "calico_tigera_binary=$calico_tigera_binary"
+# echo "calico_tigera_binary_actual=$calico_tigera_binary_actual"
+# echo "calico_custom_resources_download=$calico_custom_resources_download"
+# echo "calico_custom_resources_manifest=$calico_custom_resources_manifest"
+# echo "calico_custom_resources_manifest_actual=$calico_custom_resources_manifest_actual"
 # echo "calico_version=$calico_version"
 # echo "priv_key=$priv_key"
 # echo "admin_kubeconfig=$admin_kubeconfig"
 # echo "cluster_cidr=$cluster_cidr"
 # echo "nodes=${nodes[@]}"
 
-## per https://docs.projectcalico.org/maintenance/troubleshoot/troubleshooting#configure-networkmanager
-## last eyeballed on 14-Jul-2022
+# per https://docs.projectcalico.org/maintenance/troubleshoot/troubleshooting#configure-networkmanager
+# last eyeballed on 14-Jul-2022
 for node in "${nodes[@]}"; do
   worker_ip=$(xec get-vm-ip $node)
   ssh -i $priv_key root@$worker_ip << EOF
@@ -102,24 +106,28 @@ for node in "${nodes[@]}"; do
 EOF
 done
 
-# only download the tgz if we don't already have the versioned manifest
-if [[ ! -f $DTKBASE/binaries/calico-$calico_version.yaml ]]; then
-  xec download-obj --url="$calico_download" --dest="$calico_binary_actual"
+xec download-obj --url="$calico_tigera_download" --dest="$calico_tigera_binary_actual"
+xec download-obj --url="$calico_custom_resources_download" --dest="$calico_custom_resources_manifest_actual"
+
+# Goal is to patch the upstream manifest and leave the upstream un-touched. As of v3.24.1
+# the ipPools value in the upstream was "cidr: 192.168.0.0/16". If that changes, then error,
+# otherwise calico will be mis-configured because the sed expression won't be correct for
+# the manifest
+if ! grep 'cidr: 192.168.0.0/16' $calico_custom_resources_manifest_actual; then
+  echo "Calico manifest $calico_tigera_binary_actual not as expected"
+  exit 1
 fi
 
-# ditto extract
-if [[ ! -f $DTKBASE/binaries/calico-$calico_version.yaml ]]; then
-  echo "extracting calico manifest from tgz"
-  tar zxvf $calico_binary_actual\
-    --strip-components 2\
-    -C $DTKBASE/binaries\
-    --transform "s/calico.yaml/calico-$calico_version.yaml/g"\
-    release-$calico_version/manifests/calico.yaml
-fi
+echo "deploying calico tigera and custom resources"
+kubectl --kubeconfig $admin_kubeconfig create -f $calico_tigera_binary_actual
 
-echo "deploying calico manifest"
-kubectl --kubeconfig $admin_kubeconfig create -f $DTKBASE/binaries/calico-$calico_version.yaml
-kubectl --kubeconfig $admin_kubeconfig -n kube-system set env ds/calico-node CALICO_IPV4POOL_CIDR=$cluster_cidr
+kubectl --kubeconfig $admin_kubeconfig  wait --for condition=established\
+  crd/installations.operator.tigera.io crd/apiservers.operator.tigera.io --timeout=1m
+
+# these are cluster-scoped, hence no namespace
+echo "deploying calico Installation and APIServer resources"
+sed "s|cidr: 192.168.0.0/16|cidr: $cluster_cidr|" $calico_custom_resources_manifest_actual\
+  | kubectl --kubeconfig $admin_kubeconfig create -f -
 
 echo "waiting (indefinitely) for calico daemonset"
 
@@ -127,7 +135,7 @@ desired=0
 ready=1
 while [[ $ready -ne $desired ]]; do
   sleep 1s
-  calicods=$(kubectl --kubeconfig $admin_kubeconfig -n kube-system get ds/calico-node --no-headers\
+  calicods=$(kubectl --kubeconfig $admin_kubeconfig -n calico-system get ds/calico-node --no-headers\
    -ocustom-columns='DESIRED:status.desiredNumberScheduled,READY:status.numberReady')
   IFS=' ' read -ra cols <<< "$calicods"
   desired="${cols[0]}"

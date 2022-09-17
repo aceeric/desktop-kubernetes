@@ -128,7 +128,8 @@ OK: https://download.virtualbox.org/virtualbox/6.1.36/VBoxGuestAdditions_6.1.36.
 OK: https://mirror.umd.edu/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-latest-dvd1.iso
 OK: https://github.com/prometheus-operator/kube-prometheus/archive/v0.10.0.tar.gz
 OK: https://dl.k8s.io/v1.25.0/bin/linux/amd64/kube-proxy
-OK: https://github.com/projectcalico/calico/releases/download/v3.23.2/release-v3.23.2.tgz
+OK: https://raw.githubusercontent.com/projectcalico/calico/v3.24.1/manifests/tigera-operator.yaml
+OK: https://raw.githubusercontent.com/projectcalico/calico/v3.24.1/manifests/custom-resources.yaml
 OK: https://raw.githubusercontent.com/openebs/charts/gh-pages/hostpath-operator.yaml
 OK: https://openebs.github.io/charts/openebs-lite-sc.yaml
 ```
@@ -183,7 +184,7 @@ This project has been tested with the following tools, components and versions. 
 | k8s      | kube-router (if installed)                                     | v1.3.1                 | 2021-08-14 |
 | k8s      | Metrics Server (if installed)                                  | 0.4.2                  |            |
 | k8s      | Kubernetes Dashboard (if installed)                            | 2.0.0                  |            |
-| k8s      | Calico networking (if installed)                               | 3.23.2                 | 2022-07-14 |
+| k8s      | Calico networking (if installed)                               | 3.24.1                 | 2022-09-16 |
 | k8s      | Cilium networking and Hubble network monitoring (if installed) | 1.9.4                  |            |
 | k8s      | kube-prometheus stack (if installed)                           | 0.10.0                 | 2022-02-26 |
 | k8s      | OpenEBS (if installed)                                         | 2.11.1                 | 2022-02-26 |

@@ -85,10 +85,10 @@ kubernetes_dashboard_manifest=$DTKBASE/binaries/kubernetes-dashboard-recommended
 #hubble_yaml=cilium-1.9.4-quick-hubble-install.yaml
 kube_prometheus_download=https://github.com/prometheus-operator/kube-prometheus/archive/v0.10.0.tar.gz
 kube_prometheus_binary=$DTKBASE/binaries/kube-prometheus-0.10.0.tar.gz
-# this binary is large (1g) but is there a better way to get a versioned release artifact?
-calico_download=https://github.com/projectcalico/calico/releases/download/v3.23.2/release-v3.23.2.tgz
-# this binary name is expected elsewhere in exactly this form: 'calico-vNN.NN.NN.tgz'
-calico_binary=$DTKBASE/binaries/calico-v3.23.2.tgz
+calico_tigera_download=https://raw.githubusercontent.com/projectcalico/calico/v3.24.1/manifests/tigera-operator.yaml
+calico_tigera_manifest=$DTKBASE/binaries/calico-v3.24.1-tigera-operator.yaml
+calico_custom_resources_download=https://raw.githubusercontent.com/projectcalico/calico/v3.24.1/manifests/custom-resources.yaml
+calico_custom_resources_manifest=$DTKBASE/binaries/calico-v3.24.1-custom-resources.yaml
 openebs_hostpath_operator_manifest_download=https://raw.githubusercontent.com/openebs/charts/gh-pages/hostpath-operator.yaml
 openebs_hostpath_operator_manifest=$DTKBASE/binaries/openebs-hostpath-operator.yaml
 openebs_sc_manifest_download=https://openebs.github.io/charts/openebs-lite-sc.yaml
@@ -122,7 +122,8 @@ function check_files() {
   fi
   if [[ "$networking" == "calico" ]]; then
     objects+=($kube_proxy_binary)
-    objects+=($calico_binary)
+    objects+=($calico_tigera_manifest)
+    objects+=($calico_custom_resources_manifest)
   fi
   if [[ "$storage" == "openebs" ]]; then
     objects+=($openebs_hostpath_operator_manifest)
@@ -171,7 +172,8 @@ function check_urls() {
   fi
   if [[ "$networking" == "calico" ]]; then
     objects+=($kube_proxy_download)
-    objects+=($calico_download)
+    objects+=($calico_tigera_download)
+    objects+=($calico_custom_resources_download)
   fi
   if [[ "$storage" == "openebs" ]]; then
     objects+=($openebs_hostpath_operator_manifest_download)
@@ -642,8 +644,10 @@ elif [[ "$networking" == "calico" ]]; then
    --ca-cert=$DTKBASE/generated/cert/ca.pem\
    --ca-key=$DTKBASE/generated/cert/ca-key.pem
   xec install-calico-networking\
-   --calico-download=$calico_download\
-   --calico-binary=$calico_binary\
+   --calico-tigera-download=$calico_tigera_download\
+   --calico-tigera-binary=$calico_tigera_manifest\
+   --calico-custom-resources-download=$calico_custom_resources_download\
+   --calico-custom-resources-manifest=$calico_custom_resources_manifest\
    --priv-key=$DTKBASE/generated/kickstart/id_ed25519\
    --admin-kubeconfig=$DTKBASE/generated/kubeconfig/admin.kubeconfig\
    --cluster-cidr=10.200.0.0/16\
