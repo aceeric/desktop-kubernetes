@@ -491,11 +491,10 @@ elif [[ ! -d $vboxdir ]]; then
   exit 1
 fi
 
-# because of how these are passed to called scripts, the workers have a different format
 if [[ ! -z "$host_only_network" ]]; then
   controller_octet=200
-  worker1_octet=,201
-  worker2_octet=,202
+  worker1_octet=201
+  worker2_octet=202
 fi
 
 # create directories to generate various files into
@@ -591,8 +590,8 @@ if [[ $single_node -eq 0 ]]; then
   cluster_vms+=(ham)
   cluster_vms+=(monk)
   xec provision-workers\
-   --worker=ham,8192,2,10.200.2.0/24$worker1_octet\
-   --worker=monk,8192,2,10.200.3.0/24$worker2_octet\
+   --worker=ham,8192,2,10.200.2.0/24,$worker1_octet\
+   --worker=monk,8192,2,10.200.3.0/24,$worker2_octet\
    --host-only-network=$host_only_network\
    --controller-ip=$controller_ip\
    --controller-hostname=doc\
@@ -672,8 +671,10 @@ if [[ -n "$monitoring" ]]; then
      --ca-cert=$DTKBASE/generated/cert/ca.pem\
      --ca-key=$DTKBASE/generated/cert/ca-key.pem
   elif [[ "$monitoring" == "kube-prometheus" ]]; then
+    nodes="${cluster_vms[@]}"
+    nodes=${nodes// /,}
     xec install-kube-prometheus\
-     --controller-ip=$controller_ip\
+     --nodes=$nodes\
      --kube-prometheus-download=$kube_prometheus_download\
      --kube-prometheus-binary=$kube_prometheus_binary\
      --admin-kubeconfig=$DTKBASE/generated/kubeconfig/admin.kubeconfig

@@ -2,111 +2,60 @@
 #
 # The kube prometheus stack wants to monitor kube-controller-manager and kube-scheduler as
 # Pods. Since we run them as systemd units we have to do some additional work to get prometheus
-# to scrape those two components.
+# to scrape those two components. Also create resources to monitor kube-proxy which kube-prometheus
+# does not seem to include a monitor for at present.
 #
 # Usage:
 #
-# tweak-monitoring controller-ip-address
+# tweak-monitoring <vm names comma-separated list> <path to admin kubeconfig>
+#
+# The first VM in the list is considered to be the control plane VM. All VMs are considered as workers.
 #
 # E.g.:
 #
-# tweak-monitoring 192.168.56.200
+# tweak-monitoring peter,paul,mary ./generated/kubeconfig/admin.kubeconfig
 #
 
 set -e
 
-# kube-controller-manager
+controller_ip=
+worker_ips=
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+admin_kubeconfig=$2
 
-cat <<EOF | kubectl apply -f -
-apiVersion: v1
-kind: Endpoints
-metadata:
-  name: kube-controller-manager-prometheus-discovery
-  namespace: kube-system
-  labels:
-    app.kubernetes.io/name: kube-controller-manager
-subsets:
-- addresses:
-  - ip: $1
-  ports:
-  - name: http-metrics
-    port: 10257
-    protocol: TCP
-EOF
+IFS=',' read -ra node_array <<< "$1"
+for node in "${node_array[@]}"; do
+  ipaddr=$(xec get-vm-ip $node)
+  if [[ -z $controller_ip ]]; then
+    controller_ip="  - ip: $ipaddr"
+  fi
+  if [[ ! -z $worker_ips ]]; then
+    worker_ips="$worker_ips\n"
+  fi
+  worker_ips="$worker_ips  - ip: $ipaddr"
+done
 
-cat <<EOF | kubectl apply -f -
-apiVersion: v1
-kind: Service
-metadata:
-  namespace: kube-system
-  name: kube-controller-manager-prometheus-discovery
-  labels:
-    app.kubernetes.io/name: kube-controller-manager
-spec:
-  type: ClusterIP
-  clusterIP: None
-  ports:
-  - name: http-metrics
-    port: 10257
-    protocol: TCP
-    targetPort: 10257
-EOF
+sed -e "s/CONTROLLER/$controller_ip/g" -e "s/WORKERS/$worker_ips/g" $script_dir/manifests.yaml\
+  | kubectl --kubeconfig $admin_kubeconfig apply -f -
 
 echo "waiting (indefinitely) for servicemonitor/kube-controller-manager in monitoring namespace"
 while true; do
-  kubectl -n monitoring get servicemonitor kube-controller-manager &>/dev/null && break || sleep 5s
+  kubectl --kubeconfig $admin_kubeconfig -n monitoring get servicemonitor kube-controller-manager &>/dev/null && break || sleep 5s
 done
 
-kubectl -n monitoring patch servicemonitor kube-controller-manager --type='json'\
+kubectl --kubeconfig $admin_kubeconfig -n monitoring patch servicemonitor kube-controller-manager --type='json'\
   -p='[{"op": "replace", "path": "/spec/endpoints/0/port", "value": "http-metrics"}]'
 
-kubectl -n monitoring patch servicemonitor kube-controller-manager --type='json'\
+kubectl --kubeconfig $admin_kubeconfig -n monitoring patch servicemonitor kube-controller-manager --type='json'\
   -p='[{"op": "add", "path": "/spec/endpoints/0/tlsConfig/serverName", "value":"localhost"}]'
-
-# kube-scheduler
-
-cat <<EOF | kubectl apply -f -
-apiVersion: v1
-kind: Endpoints
-metadata:
-  name: kube-scheduler-prometheus-discovery
-  namespace: kube-system
-  labels:
-    app.kubernetes.io/name: kube-scheduler
-subsets:
-- addresses:
-  - ip: $1
-  ports:
-  - name: http-metrics
-    port: 10259
-    protocol: TCP
-EOF
-
-cat <<EOF | kubectl apply -f -
-apiVersion: v1
-kind: Service
-metadata:
-  namespace: kube-system
-  name: kube-scheduler-prometheus-discovery
-  labels:
-    app.kubernetes.io/name: kube-scheduler
-spec:
-  type: ClusterIP
-  clusterIP: None
-  ports:
-  - name: http-metrics
-    port: 10259
-    protocol: TCP
-    targetPort: 10259
-EOF
 
 echo "waiting (indefinitely) for servicemonitor/kube-scheduler in monitoring namespace"
 while true; do
-  kubectl -n monitoring get servicemonitor kube-scheduler &>/dev/null && break || sleep 5s
+  kubectl --kubeconfig $admin_kubeconfig -n monitoring get servicemonitor kube-scheduler &>/dev/null && break || sleep 5s
 done
 
-kubectl -n monitoring patch servicemonitor kube-scheduler --type='json'\
+kubectl --kubeconfig $admin_kubeconfig -n monitoring patch servicemonitor kube-scheduler --type='json'\
   -p='[{"op": "replace", "path": "/spec/endpoints/0/port", "value": "http-metrics"}]'
 
-kubectl -n monitoring patch servicemonitor kube-scheduler --type='json'\
+kubectl --kubeconfig $admin_kubeconfig -n monitoring patch servicemonitor kube-scheduler --type='json'\
   -p='[{"op": "add", "path": "/spec/endpoints/0/tlsConfig/serverName", "value":"localhost"}]'
