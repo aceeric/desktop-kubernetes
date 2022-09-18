@@ -1,33 +1,81 @@
-### Sonobuoy conformance testing
+# Sonobuoy conformance testing
+17-September-2022
 
-13-July-2022
+This README assumes you're in the repo root. E.g.:
 
-SONOGZIP=https://github.com/vmware-tanzu/sonobuoy/releases/download/v0.56.8/sonobuoy_0.56.8_linux_amd64.tar.gz
+```
+$ pwd
+/home/eace/projects/desktop-kubernetes
+```
+
+# Get Sonobuoy
+
+SONOGZIP=https://github.com/vmware-tanzu/sonobuoy/releases/download/v0.56.10/sonobuoy_0.56.10_linux_amd64.tar.gz
 [[ -f conformance/sonobuoy ]] || curl -sL $SONOGZIP | tar zxvf - -C conformance sonobuoy
 
-#### smoke test - should run one test successfully
+## Smoke test - should run one test successfully
 
 conformance/sonobuoy run --mode=quick
 watch 'conformance/sonobuoy status --json | json_pp'
+conformance/sonobuoy delete --wait
 
-#### run conformance tests
+## Run conformance tests
 
 conformance/sonobuoy run --mode=certified-conformance --timeout=30000
 
-####  watch the tests run in one console window
+## Watch the tests run in one console window
 
 watch 'conformance/sonobuoy status --json | json_pp'
 
-####  watch the logs as the tests run in another console window
+## Watch the logs as the tests run in another console window
 
 conformance/sonobuoy logs -f
 
-####  get the test results upon completion
+## Get the test results upon completion
 
 outfile=$(conformance/sonobuoy retrieve) &&\
  mv $outfile conformance &&\
- mkdir -p conformance/results; tar xzf conformance/$outfile -C conformance/results
+ rm -rf conformance/results &&\
+ mkdir -p conformance/results &&\
+ tar xzf conformance/$outfile -C conformance/results
 
-#### clean up the cluster
+## Clean up the cluster
 
 conformance/sonobuoy delete --wait
+
+## Certification submission process
+
+### This repo
+
+1. Download Sono / Update Sono version in main README / Run Sono per above. If PASS:
+2. Copy two Sono result files to a staging dir in this project:
+   ```
+   find conformance/results \( -name e2e.log -o -name junit_01.xml \) | xargs -I% cp % conformance/conformance-submission
+   ```
+5. Hand edit `PRODUCT.yaml` and `README.md` in `conformance/conformance-submission` as needed
+6. Git commit and push
+7. Tag `desktop-kubernetes` with a tag matching the Kubernetes version: `git tag -a v1.25.0 -m "Kubernetes 1.25.0 passes Sonobuoy conformance v0.56.10"`
+8. Git push the tag: `git push origin v1.25.0`
+
+## Conformance fork
+
+E.g.: `~/projects/k8s-conformance-esace-fork`
+
+1. Sync fork https://github.com/aceeric/k8s-conformance/tree/master
+2. Do a `git pull`
+3. Create branch like `v1.25-desktop-kubernetes`
+5. Create directory like `./v1.25/desktop-kubernetes`
+6. Populate the directory: `cp ~/projects/desktop-kubernetes/conformance/conformance-submission/* ~projects/k8s-conformance-esace-fork/v1.25/desktop-kubernetes`
+7. Verify
+   ```
+   $ ls -l ~projects/k8s-conformance-esace-fork/v1.25/desktop-kubernetes
+   total 3484
+   -rw-rw-r-- 1 eace eace 1494089 Sep 17 21:30 e2e.log
+   -rw-rw-r-- 1 eace eace 2059000 Sep 17 21:30 junit_01.xml
+   -rw-rw-r-- 1 eace eace     509 Sep 17 21:30 PRODUCT.yaml
+   -rw-rw-r-- 1 eace eace    4507 Sep 17 21:30 README.md
+   ```
+8. Git commit to the branch with message `Conformance results for v1.24/desktop-kubernetes`
+9. Push to GitHub
+10. Create a Pull Request to https://github.com/cncf/k8s-conformance from the fork per https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request-from-a-fork
+

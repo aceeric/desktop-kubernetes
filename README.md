@@ -160,7 +160,7 @@ This project has been tested with the following tools, components and versions. 
 
 | Where    | Component                                                      | Version                | Updated    |
 | -------- | -------------------------------------------------------------- |------------------------| ---------- |
-| host     | Linux desktop                                                  | Ubuntu 20.04.4 LTS     | 2022-02-26 |
+| host     | Linux desktop                                                  | Ubuntu 20.04.5 LTS     | 2022-09-17 |
 | host     | openssl                                                        | 1.1.1f                 |            |
 | host     | openssh                                                        | OpenSSH_8.2p1          |            |
 | host     | genisoimage (used to create the Kickstart ISO)                 | 1.1.11                 |            |
@@ -188,4 +188,4 @@ This project has been tested with the following tools, components and versions. 
 | k8s      | Cilium networking and Hubble network monitoring (if installed) | 1.9.4                  |            |
 | k8s      | kube-prometheus stack (if installed)                           | 0.10.0                 | 2022-02-26 |
 | k8s      | OpenEBS (if installed)                                         | 2.11.1                 | 2022-02-26 |
-| k8s      | Sonobuoy conformance (passed)                                  | v0.56.8                | 2022-07-20 |
+| k8s      | Sonobuoy conformance (passed)                                  | 0.56.10                | 2022-09-17 |
