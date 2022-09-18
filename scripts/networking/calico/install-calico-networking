@@ -113,7 +113,7 @@ xec download-obj --url="$calico_custom_resources_download" --dest="$calico_custo
 # the ipPools value in the upstream was "cidr: 192.168.0.0/16". If that changes, then error,
 # otherwise calico will be mis-configured because the sed expression won't be correct for
 # the manifest
-if ! grep 'cidr: 192.168.0.0/16' $calico_custom_resources_manifest_actual; then
+if ! grep -q 'cidr: 192.168.0.0/16' $calico_custom_resources_manifest_actual; then
   echo "Calico manifest $calico_tigera_binary_actual not as expected"
   exit 1
 fi
