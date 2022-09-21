@@ -4,9 +4,9 @@
 
 Desktop Kubernetes is a Linux *Bash* project that provisions a desktop Kubernetes cluster using VirtualBox - with each cluster node consisting of a CentOS Stream or Rocky Linux guest VM. The purpose is to create a local development and testing environment that is 100% compatible with a production-grade Kubernetes environment.
 
-Desktop Kubernetes is the *57 Chevy* of Kubernetes distros: you can take it apart and put it back together with just a few Linux console tools: bash, curl, genisoimage, ssh, scp, tar, openssl, vboxmanage, and kubectl. That being said, **v1.24.2** of this distribution is Kubernetes Certified. See: [CNCF Interactive Landscape](https://landscape.cncf.io/card-mode?category=platform&amp;grouping=category&amp;selected=desktop-kubernetes). 
+Desktop Kubernetes is the *57 Chevy* of Kubernetes distros: you can take it apart and put it back together with just a few Linux console tools: bash, curl, genisoimage, ssh, scp, tar, openssl, vboxmanage, and kubectl. That being said, **v1.25.0** of this distribution is Kubernetes Certified. See: [CNCF Interactive Landscape](https://landscape.cncf.io/card-mode?category=platform&amp;grouping=category&amp;selected=desktop-kubernetes). 
 
-[<img src="https://www.cncf.io/wp-content/uploads/2020/07/certified_kubernetes_color-1.png" width="90"/>](https://github.com/cncf/k8s-conformance/tree/master/v1.24/desktop-kubernetes)
+[<img src="https://www.cncf.io/wp-content/uploads/2020/07/certified_kubernetes_color-1.png" width="90"/>](https://github.com/cncf/k8s-conformance/tree/master/v1.25/desktop-kubernetes)
 
 The project consists of a number of bash scripts and supporting manifests / config files. The design is documented [here](https://github.com/aceeric/desktop-kubernetes/blob/master/resources/design.md).
 
@@ -165,7 +165,7 @@ This project has been tested with the following tools, components and versions. 
 | host     | openssh                                                        | OpenSSH_8.2p1          |            |
 | host     | genisoimage (used to create the Kickstart ISO)                 | 1.1.11                 |            |
 | host     | Virtual Box / VBoxManage                                       | 6.1.36                 | 2022-07-30 |
-| host     | kubectl (client only)                                          | v1.24.3                | 2022-07-14 |
+| host     | kubectl (client only)                                          | v1.25.0                | 2022-08-24 |
 | host     | curl                                                           | 7.68.0                 |            |
 | guest VM | Centos ISO                                                     | Stream-8-x86_64-latest | 2022-07-11 |
 | guest VM | Rocky Linux ISO                                                | Rocky-9.0-x86_64-dvd   | 2022-08-06 |
