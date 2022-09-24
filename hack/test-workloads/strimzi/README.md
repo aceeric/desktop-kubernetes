@@ -8,20 +8,20 @@ See the help for the `--storage` option of the `dtk` script for info on OpenEBS.
 
 Get `strimzi.io-install-latest.yaml` (in this case, 0.25.0, as of 14-Aug-2021):
 ```shell
-curl -L https://strimzi.io/install/latest?namespace=kafka -o test-workloads/strimzi/strimzi.io-install-latest.yaml
+curl -L https://strimzi.io/install/latest?namespace=kafka -o hack/test-workloads/strimzi/strimzi.io-install-latest.yaml
 ```
 
 Deploy the Strimzi Cluster Operator and CRDs and wait for the Strimzi Operator pod to be ready:
 ```shell
 $ kubectl create ns kafka &&\
-  kubectl -n kafka create -f test-workloads/strimzi/strimzi.io-install-latest.yaml &&\
+  kubectl -n kafka create -f hack/test-workloads/strimzi/strimzi.io-install-latest.yaml &&\
   kubectl -n kafka wait pod -lname=strimzi-cluster-operator --for=condition=ready 
 pod/strimzi-cluster-operator-68c6747bc6-w8gkr condition met
 ```
 
 Deploy the Kafka CR to create the single-node Kafka/Zookeeper cluster. This example also configures an external listener so we can connect to Kafka from outside the cluster:
 ```shell
-$ kubectl -n kafka apply -f test-workloads/strimzi/kafka-persistent-single.yaml
+$ kubectl -n kafka apply -f hack/test-workloads/strimzi/kafka-persistent-single.yaml
 ```
 
 Wait for all the pods to reach the running state, and for the PVCs to be created and bound, and the PVs to be created.
