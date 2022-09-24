@@ -75,8 +75,8 @@ kube_proxy_binary=$DTKBASE/binaries/kube-proxy-v1.25.0
 # extras
 metrics_server_download=https://github.com/kubernetes-sigs/metrics-server/releases/download/v0.4.2/components.yaml
 metrics_server_manifest=$DTKBASE/binaries/metrics-server-components.yaml
-kubernetes_dashboard_download=https://raw.githubusercontent.com/kubernetes/dashboard/v2.0.0/aio/deploy/recommended.yaml
-kubernetes_dashboard_manifest=$DTKBASE/binaries/kubernetes-dashboard-recommended.yaml
+kubernetes_dashboard_download=https://raw.githubusercontent.com/kubernetes/dashboard/v2.7.0/aio/deploy/recommended.yaml
+kubernetes_dashboard_manifest=$DTKBASE/binaries/kubernetes-dashboard-recommended-v2.7.0.yaml
 # do cilium/hubble differently - see the README with the install script
 #cilium_yaml_download=https://raw.githubusercontent.com/cilium/cilium/1.9.4/install/kubernetes/quick-install.yaml
 #cilium_yaml=cilium-1.9.4-quick-install.yaml
@@ -100,7 +100,7 @@ openebs_sc_manifest=$DTKBASE/binaries/openebs-lite-sc.yaml
 function check_files() {
   local result=0
   local objects=($containerd_binary $cni_plugins_binary $runc_binary $crictl_binary\
-    $etcd_gzip $kube_apiserver_binary $kube_controller_manager_binary $kube_scheduler_binary $kubelet_binary)
+    $etcd_gzip $kube_apiserver_binary $kube_controller_manager_binary $kube_scheduler_binary $kubelet_binary,$kubernetes_dashboard_manifest)
   if [[ "$1" == 1 ]]; then
     objects+=($guest_additions_path)
     if [[ $linux == "centos" ]]; then
@@ -111,7 +111,6 @@ function check_files() {
   fi
   if [[ "$monitoring" == "metrics.k8s.io" ]]; then
     objects+=($metrics_server_manifest)
-    objects+=($kubernetes_dashboard_manifest)
   fi
   if [[ "$monitoring" == "kube-prometheus" ]]; then
     objects+=($kube_prometheus_binary)
@@ -150,7 +149,7 @@ function check_files() {
 function check_urls() {
   local result=0
   local objects=($etcd_download $kube_apiserver_download $kube_controller_manager_download $kube_scheduler_download\
-    $crictl_download $runc_download $cni_plugins_download $containerd_download $kubelet_download)
+    $crictl_download $runc_download $cni_plugins_download $containerd_download $kubelet_download, $kubernetes_dashboard_download)
   if [[ "$1" == 1 ]]; then
     objects+=($guest_additions_download)
     if [[ $linux == "centos" ]]; then
@@ -161,7 +160,6 @@ function check_urls() {
   fi
   if [[ "$monitoring" == "metrics.k8s.io" ]]; then
     objects+=($metrics_server_download)
-    objects+=($kubernetes_dashboard_download)
   fi
   if [[ "$monitoring" == "kube-prometheus" ]]; then
     objects+=($kube_prometheus_download)
@@ -661,15 +659,9 @@ if [[ -n "$monitoring" ]]; then
   echo "installing Monitoring"
   if [[ "$monitoring" == "metrics.k8s.io" ]]; then
     xec install-metrics-server\
-     --priv-key=$DTKBASE/generated/kickstart/id_ed25519\
-     --controller-ip=$controller_ip\
      --admin-kubeconfig=$DTKBASE/generated/kubeconfig/admin.kubeconfig\
      --metrics-server-download=$metrics_server_download\
-     --metrics-server-manifest=$metrics_server_manifest\
-     --kubernetes-dashboard-download=$kubernetes_dashboard_download\
-     --kubernetes-dashboard-manifest=$kubernetes_dashboard_manifest\
-     --ca-cert=$DTKBASE/generated/cert/ca.pem\
-     --ca-key=$DTKBASE/generated/cert/ca-key.pem
+     --metrics-server-manifest=$metrics_server_manifest
   elif [[ "$monitoring" == "kube-prometheus" ]]; then
     nodes="${cluster_vms[@]}"
     nodes=${nodes// /,}
@@ -693,6 +685,14 @@ if [[ -n "$storage" ]]; then
      --openebs-sc-manifest=$openebs_sc_manifest
   fi
 fi
+
+echo "installing Kubernetes Dashboard"
+
+xec install-kubernetes-dashboard\
+ --controller-ip=$controller_ip\
+ --admin-kubeconfig=$DTKBASE/generated/kubeconfig/admin.kubeconfig\
+ --kubernetes-dashboard-download=$kubernetes_dashboard_download\
+ --kubernetes-dashboard-manifest=$kubernetes_dashboard_manifest
 
 echo
 echo "finished provisioning cluster. To interact with the cluster:"

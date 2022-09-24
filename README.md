@@ -12,7 +12,7 @@ The project consists of a number of bash scripts and supporting manifests / conf
 
 One of the premises of the project is transparency. Every single binary or manifest used to create the cluster is pulled from an official upstream, including the OS itself.
 
-The cluster provisioned by the project consists of one 4-cpu VM functioning in a dual role of control plane server and worker node, plus two dedicated 2-cpu worker node VMs - a total of three VMs. The cluster is provisioned by running one script - `dtk` - with a few command line options. The script makes no changes to your desktop's environment - the only changes it makes to your desktop are the files it downloads, and the VirtualBox VMs it creates. (Of course, VirtualBox may create various network interfaces but these are cleaned up by VirtualBox if you remove the cluster.)
+The cluster provisioned by the project consists of one 4-cpu VM functioning in a dual role of control plane server and worker node, plus two dedicated 2-cpu worker node VMs - a total of three VMs. The cluster is provisioned by running one script - `dtk` - with a few command line options. The script makes no changes to your desktop's environment - other than the files it downloads, and the VirtualBox VMs it creates. (Of course, VirtualBox may create various network interfaces but these are cleaned up by VirtualBox if you remove the cluster.)
 
 This has been tested on Ubuntu 20.04.X systems with 64 gig of RAM and 6+ hyper-threaded processors.
 
@@ -150,9 +150,10 @@ Using the cluster creation options, checks the upstream URLS with a HEAD request
 | Headless                    | Support running the VMs headless. At present, each VM comes up on the desktop, which can be somewhat intrusive it you're doing other work. (OTOH it does provide positive feedback on what's happening) |
 | Nodes                       | Consider making the number of controllers configurable, as well as node characteristics such as storage, RAM, and CPU. Right now, only one controller and two workers are supported, their names are hard-coded, etc. |
 | Hands-free install improvement | The current version builds a Kickstart ISO, and mounts the ISO on the VM to do the hands-free install. Unfortunately, this method does not allow you to change the boot menu timeout on the *initial* startup of the VM. So, unless you intervene, the boot menu takes 60 seconds to time out before the Kickstart installation begins. The alternate way to do this is to break apart the ISO, modify the boot menu timeout, and then re-build the ISO. I may consider this at some future point, although that would not easily lend itself to automation |
-| Flatcar Linux               | Consider [Flatcar Linux](https://kinvolk.io/blog/2020/02/flatcar-container-linux-enters-new-era-after-coreos-end-of-life-announcement/) as a VM OS |
+| Linux               | Consider other Linux variants (Currently support CentOS Stream and Rocky) |
 | Static Pods                 | Consider running the Kubernetes core components as static pods |
 | Other VM provisioning       | Experiment with other VM provisioning tooling (Terraform? Vagrant? CloudInit?) |
+| Virtualization | Consider other virtualization tools (KVM) |
 
 ## Versions
 
@@ -180,10 +181,10 @@ This project has been tested with the following tools, components and versions. 
 | k8s      | cni plugins                                                    | v1.1.1                 | 2022-07-14 |
 | k8s      | containerd                                                     | v1.6.4                 | 2022-05-05 |
 | k8s      | CoreDNS                                                        | 1.9.0                  | 2022-02-26 |
+| k8s      | Kubernetes Dashboard                                           | v2.7.0                 | 2022-09-23 |
 | k8s      | kube-proxy (if installed)                                      | v1.25.0                | 2022-08-24 |
 | k8s      | kube-router (if installed)                                     | v1.3.1                 | 2021-08-14 |
 | k8s      | Metrics Server (if installed)                                  | 0.4.2                  |            |
-| k8s      | Kubernetes Dashboard (if installed)                            | 2.0.0                  |            |
 | k8s      | Calico networking (if installed)                               | 3.24.1                 | 2022-09-16 |
 | k8s      | Cilium networking and Hubble network monitoring (if installed) | 1.9.4                  |            |
 | k8s      | kube-prometheus stack (if installed)                           | 0.10.0                 | 2022-02-26 |
