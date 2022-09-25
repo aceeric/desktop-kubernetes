@@ -3,7 +3,7 @@
 set -e
 
 long_opts=help,host-network-interface:,host-only-network:,vboxdir:,check-compatibility,create-template,networking:,\
-monitoring:,storage:,single-node,up:,down:,delete:,verify:,sshto:,template-name:,linux:
+monitoring:,storage:,single-node,up:,down:,delete:,verify:,sshto:,template-name:,linux:,containerized-cplane
 
 # api
 host_network_interface=
@@ -22,6 +22,7 @@ verify=
 sshto=
 template_name=bingo
 linux=centos
+containerized_cplane=0
 
 # internal
 cluster_vms=(doc)
@@ -37,61 +38,7 @@ export DTKBASE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 function xec() { f=$(find $DTKBASE/scripts -name $1) && $f "${@:2}"; }
 export -f xec
 
-# These are the various binaries and manifests that are downloaded by the scripts in the project. Two
-# elements are defined for each upstream: the URL to get it from, and the filesystem location. This way,
-# once the script is run once, subsequent invocations can just use the downloaded objects. All downloads
-# are placed into in the 'binaries' directory.
-
-# core
-centos_iso_download=https://mirror.umd.edu/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-latest-dvd1.iso
-centos_iso_path=$DTKBASE/binaries/CentOS-Stream-8-x86_64-latest-dvd1.iso
-rocky_iso_download=https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9.0-x86_64-dvd.iso
-rocky_iso_path=$DTKBASE/binaries/Rocky-9.0-x86_64-dvd.iso
-guest_additions_download=https://download.virtualbox.org/virtualbox/6.1.36/VBoxGuestAdditions_6.1.36.iso
-guest_additions_path=$DTKBASE/binaries/VBoxGuestAdditions_6.1.36.iso
-etcd_download=https://github.com/etcd-io/etcd/releases/download/v3.5.4/etcd-v3.5.4-linux-amd64.tar.gz
-etcd_gzip=$DTKBASE/binaries/etcd-v3.5.4-linux-amd64.tar.gz
-kube_apiserver_download=https://dl.k8s.io/v1.25.0/bin/linux/amd64/kube-apiserver
-kube_apiserver_binary=$DTKBASE/binaries/kube-apiserver-v1.25.0
-kube_controller_manager_download=https://dl.k8s.io/v1.25.0/bin/linux/amd64/kube-controller-manager
-kube_controller_manager_binary=$DTKBASE/binaries/kube-controller-manager-v1.25.0
-kube_scheduler_download=https://dl.k8s.io/v1.25.0/bin/linux/amd64/kube-scheduler
-kube_scheduler_binary=$DTKBASE/binaries/kube-scheduler-v1.25.0
-crictl_download=https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.24.2/crictl-v1.24.2-linux-amd64.tar.gz
-crictl_binary=$DTKBASE/binaries/crictl-v1.24.2-linux-amd64.tar.gz
-runc_download=https://github.com/opencontainers/runc/releases/download/v1.1.1/runc.amd64
-runc_binary=$DTKBASE/binaries/runc
-cni_plugins_download=https://github.com/containernetworking/plugins/releases/download/v1.1.1/cni-plugins-linux-amd64-v1.1.1.tgz
-cni_plugins_binary=$DTKBASE/binaries/cni-plugins-linux-amd64-v1.1.1.tgz
-containerd_download=https://github.com/containerd/containerd/releases/download/v1.6.4/containerd-1.6.4-linux-amd64.tar.gz
-containerd_binary=$DTKBASE/binaries/containerd-1.6.4-linux-amd64.tar.gz
-kubelet_download=https://dl.k8s.io/v1.25.0/bin/linux/amd64/kubelet
-kubelet_binary=$DTKBASE/binaries/kubelet-v1.25.0
-kube_router_yaml_download=https://raw.githubusercontent.com/cloudnativelabs/kube-router/v1.3.1/daemonset/generic-kuberouter-all-features.yaml
-kube_router_yaml=$DTKBASE/binaries/generic-kuberouter-all-features.yaml
-kube_proxy_download=https://dl.k8s.io/v1.25.0/bin/linux/amd64/kube-proxy
-kube_proxy_binary=$DTKBASE/binaries/kube-proxy-v1.25.0
-
-# extras
-metrics_server_download=https://github.com/kubernetes-sigs/metrics-server/releases/download/v0.4.2/components.yaml
-metrics_server_manifest=$DTKBASE/binaries/metrics-server-components.yaml
-kubernetes_dashboard_download=https://raw.githubusercontent.com/kubernetes/dashboard/v2.7.0/aio/deploy/recommended.yaml
-kubernetes_dashboard_manifest=$DTKBASE/binaries/kubernetes-dashboard-recommended-v2.7.0.yaml
-# do cilium/hubble differently - see the README with the install script
-#cilium_yaml_download=https://raw.githubusercontent.com/cilium/cilium/1.9.4/install/kubernetes/quick-install.yaml
-#cilium_yaml=cilium-1.9.4-quick-install.yaml
-#hubble_yaml_download=https://raw.githubusercontent.com/cilium/cilium/1.9.4/install/kubernetes/quick-hubble-install.yaml
-#hubble_yaml=cilium-1.9.4-quick-hubble-install.yaml
-kube_prometheus_download=https://github.com/prometheus-operator/kube-prometheus/archive/v0.10.0.tar.gz
-kube_prometheus_binary=$DTKBASE/binaries/kube-prometheus-0.10.0.tar.gz
-calico_tigera_download=https://raw.githubusercontent.com/projectcalico/calico/v3.24.1/manifests/tigera-operator.yaml
-calico_tigera_manifest=$DTKBASE/binaries/calico-v3.24.1-tigera-operator.yaml
-calico_custom_resources_download=https://raw.githubusercontent.com/projectcalico/calico/v3.24.1/manifests/custom-resources.yaml
-calico_custom_resources_manifest=$DTKBASE/binaries/calico-v3.24.1-custom-resources.yaml
-openebs_hostpath_operator_manifest_download=https://raw.githubusercontent.com/openebs/charts/gh-pages/hostpath-operator.yaml
-openebs_hostpath_operator_manifest=$DTKBASE/binaries/openebs-hostpath-operator.yaml
-openebs_sc_manifest_download=https://openebs.github.io/charts/openebs-lite-sc.yaml
-openebs_sc_manifest=$DTKBASE/binaries/openebs-lite-sc.yaml
+source $DTKBASE/artifacts
 
 #
 # Verifies the existence of all the filesystem objects required to provision a cluster. If arg1 is '1' then that means
@@ -210,8 +157,8 @@ function usage() {
 
     Usage: dtk [--host-network-interface=<interface>] [--host-only-network=<network>] [--vboxdir=</some/path>]
            [--networking=<type>] [--monitoring=<type>] [--create-template] [--single-node] [--template-name]
-           [--linux=<centos|rocky>] [--storage=<type>] [--help] [--check-compatibility] [--verify=<files|upstreams>]
-           [--up=<nodelist>] [--down=<nodelist>] [--delete=<nodelist>] [--sshto=<vmname>]
+           [--linux=<centos|rocky>] [--storage=<type>] [--containerized-cplane] [--help] [--check-compatibility]
+           [--verify=<files|upstreams>] [--up=<nodelist>] [--down=<nodelist>] [--delete=<nodelist>] [--sshto=<vmname>]
 
     Options:
 
@@ -251,6 +198,9 @@ function usage() {
       --storage                  Optional. Installs a dynamic storage provisioner. This supports testing workloads
                                  that use PVs and PVCs. Presently, the only supported value is "openebs". E.g.:
                                  --storage=openebs
+      --containerized-cplane     Optional. If specified (without a value), creates the control plane components as
+                                 containers on the controller VM. By default, creates the control plane components as
+                                 as systemd units.
 
       Other optional options:
 
@@ -363,6 +313,10 @@ function parse_args() {
           exit 1
         fi
         shift 2
+        ;;
+      --containerized-cplane)
+        containerized_cplane=1
+        shift
         ;;
       --single-node)
         single_node=1
@@ -531,85 +485,19 @@ if [[ $create_template -eq 1 ]] ; then
 fi
 
 # gen-root-ca generates $DTKBASE/generated/cert/ca.pem and ca-key.pem used throughout to configure TLS
-
 echo "generating root CA"
 xec gen-root-ca
 
-echo "provisioning a controller node"
-
-xec provision-controller\
- --priv-key=$DTKBASE/generated/kickstart/id_ed25519\
- --template-vmname=$template_name\
+echo "Generating Kubernetes core cluster"
+xec gen-core-k8s\
  --host-only-network=$host_only_network\
- --host-only-octet=$controller_octet\
  --vboxdir=$vboxdir\
- --controller-hostname=doc\
- --controller-ram=8192\
- --controller-cpu=4\
- --controller-disk=20000\
- --etcd-download=$etcd_download\
- --etcd-gzip=$etcd_gzip\
- --kube-apiserver-download=$kube_apiserver_download\
- --kube-apiserver-binary=$kube_apiserver_binary\
- --kube-controller-manager-download=$kube_controller_manager_download\
- --kube-controller-manager-binary=$kube_controller_manager_binary\
- --kube-scheduler-download=$kube_scheduler_download\
- --kube-scheduler-binary=$kube_scheduler_binary\
- --ca-cert=$DTKBASE/generated/cert/ca.pem\
- --ca-key=$DTKBASE/generated/cert/ca-key.pem
-
-echo "provisioning worker nodes"
-
-controller_ip=$(xec get-vm-ip doc)
-
-# make the controller a worker as well (use admin.kubeconfig created by provision-controller
-xec configure-worker\
- --controller-ip=$controller_ip\
- --controller-hostname=doc\
- --worker-hostname=doc\
+ --single-node=$single_node\
+ --template-vmname=$template_name\
+ --containerized=$containerized_cplane\
  --priv-key=$DTKBASE/generated/kickstart/id_ed25519\
- --admin-kubeconfig=$DTKBASE/generated/kubeconfig/admin.kubeconfig\
- --crictl-download=$crictl_download\
- --crictl-binary=$crictl_binary\
- --runc-download=$runc_download\
- --runc-binary=$runc_binary\
- --cni-plugins-download=$cni_plugins_download\
- --cni-plugins-binary=$cni_plugins_binary\
- --containerd-download=$containerd_download\
- --containerd-binary=$containerd_binary\
- --kubelet-download=$kubelet_download\
- --kubelet-binary=$kubelet_binary\
- --pod-cidr=10.200.1.0/24\
- --node-labels=controller,worker\
  --ca-cert=$DTKBASE/generated/cert/ca.pem\
  --ca-key=$DTKBASE/generated/cert/ca-key.pem
-
-if [[ $single_node -eq 0 ]]; then
-  cluster_vms+=(ham)
-  cluster_vms+=(monk)
-  xec provision-workers\
-   --worker=ham,8192,2,10.200.2.0/24,$worker1_octet\
-   --worker=monk,8192,2,10.200.3.0/24,$worker2_octet\
-   --host-only-network=$host_only_network\
-   --controller-ip=$controller_ip\
-   --controller-hostname=doc\
-   --template-vmname=$template_name\
-   --vboxdir=$vboxdir\
-   --priv-key=$DTKBASE/generated/kickstart/id_ed25519\
-   --crictl-download=$crictl_download\
-   --crictl-binary=$crictl_binary\
-   --runc-download=$runc_download\
-   --runc-binary=$runc_binary\
-   --cni-plugins-download=$cni_plugins_download\
-   --cni-plugins-binary=$cni_plugins_binary\
-   --containerd-download=$containerd_download\
-   --containerd-binary=$containerd_binary\
-   --kubelet-download=$kubelet_download\
-   --kubelet-binary=$kubelet_binary\
-   --node-labels=worker\
-   --ca-cert=$DTKBASE/generated/cert/ca.pem\
-   --ca-key=$DTKBASE/generated/cert/ca-key.pem
-fi
 
 echo "configuring /etc/hosts in VMs"
 xec configure-etc-hosts $DTKBASE/generated/kickstart/id_ed25519 "${cluster_vms[@]}"

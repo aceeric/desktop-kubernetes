@@ -2,13 +2,13 @@
 
 set -e
 
-long_opts=priv-key:,worker-ip:,crictl-download:,crictl-binary:,runc-download:,runc-binary:,\
+long_opts=priv-key:,vm-ip:,crictl-download:,crictl-binary:,runc-download:,runc-binary:,\
 cni-plugins-download:,cni-plugins-binary:
 script_name=$(basename "$0")
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 priv_key=
-worker_ip=
+vm_ip=
 crictl_download=
 crictl_binary=
 runc_download=
@@ -39,8 +39,8 @@ function parse_args() {
         priv_key=$(opt_val "$2")
         shift 2
         ;;
-      --worker-ip)
-        worker_ip=$(opt_val "$2")
+      --vm-ip)
+        vm_ip=$(opt_val "$2")
         shift 2
         ;;
       --crictl-download)
@@ -86,7 +86,7 @@ cni_plugins_binary_actual=$(xec make-download-path\
 
 # debug
 #echo "priv_key=$priv_key"
-#echo "worker_ip=$worker_ip"
+#echo "vm_ip=$vm_ip"
 #echo "crictl_download=$crictl_download"
 #echo "crictl_binary=$crictl_binary"
 #echo "crictl_binary_actual=$crictl_binary_actual"
@@ -101,16 +101,16 @@ echo "Copying misc kubernetes binaries"
 
 xec download-obj --url="$crictl_download" --dest="$crictl_binary_actual"
 echo "Copying crictl binary to worker"
-cat $crictl_binary_actual | ssh -i $priv_key root@$worker_ip\
+cat $crictl_binary_actual | ssh -i $priv_key root@$vm_ip\
  "tar zxvf - --no-same-owner -C /usr/local/bin/ crictl && chmod +x /usr/local/bin/crictl"
 
 xec download-obj --url="$runc_download" --dest="$runc_binary_actual" --executable
 echo "Copying runc binary to worker"
-scp -i $priv_key $runc_binary_actual root@$worker_ip:/usr/local/bin/
+scp -i $priv_key $runc_binary_actual root@$vm_ip:/usr/local/bin/
 
 xec download-obj --url="$cni_plugins_download" --dest="$cni_plugins_binary_actual"
 echo "Copying cni plugins binary to worker"
-ssh -i $priv_key root@$worker_ip "mkdir -p /opt/cni/bin"
-cat $cni_plugins_binary_actual | ssh -i $priv_key root@$worker_ip "tar zxvf - --no-same-owner -C /opt/cni/bin/"
+ssh -i $priv_key root@$vm_ip "mkdir -p /opt/cni/bin"
+cat $cni_plugins_binary_actual | ssh -i $priv_key root@$vm_ip "tar zxvf - --no-same-owner -C /opt/cni/bin/"
 
 echo "Done copying binaries"

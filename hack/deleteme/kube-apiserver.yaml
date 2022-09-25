@@ -1,0 +1,200 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    component: kube-apiserver
+    tier: control-plane
+  name: kube-apiserver
+  namespace: kube-system
+  uid: a1c3430c118af5fdffb651c5ae2ff24e
+spec:
+  containers:
+  - command:
+    - kube-apiserver
+    - --kubelet-preferred-address-types=InternalIP,ExternalIP,Hostname
+    - --allow-privileged=true
+    - --anonymous-auth=false
+    - --api-audiences=https://kubernetes.default.svc.cluster.local,rke2
+    - --authorization-mode=Node,RBAC
+    - --bind-address=0.0.0.0
+    - --cert-dir=/var/lib/rancher/rke2/server/tls/temporary-certs
+    - --client-ca-file=/var/lib/rancher/rke2/server/tls/client-ca.crt
+    - --egress-selector-config-file=/var/lib/rancher/rke2/server/etc/egress-selector-config.yaml
+    - --enable-admission-plugins=NodeRestriction,PodSecurityPolicy
+    - --enable-aggregator-routing=true
+    - --encryption-provider-config=/var/lib/rancher/rke2/server/cred/encryption-config.json
+    - --etcd-cafile=/var/lib/rancher/rke2/server/tls/etcd/server-ca.crt
+    - --etcd-certfile=/var/lib/rancher/rke2/server/tls/etcd/client.crt
+    - --etcd-keyfile=/var/lib/rancher/rke2/server/tls/etcd/client.key
+    - --etcd-servers=https://127.0.0.1:2379
+    - --feature-gates=JobTrackingWithFinalizers=true
+    - --insecure-port=0
+    - --kubelet-certificate-authority=/var/lib/rancher/rke2/server/tls/server-ca.crt
+    - --kubelet-client-certificate=/var/lib/rancher/rke2/server/tls/client-kube-apiserver.crt
+    - --kubelet-client-key=/var/lib/rancher/rke2/server/tls/client-kube-apiserver.key
+    - --profiling=false
+    - --proxy-client-cert-file=/var/lib/rancher/rke2/server/tls/client-auth-proxy.crt
+    - --proxy-client-key-file=/var/lib/rancher/rke2/server/tls/client-auth-proxy.key
+    - --requestheader-allowed-names=system:auth-proxy
+    - --requestheader-client-ca-file=/var/lib/rancher/rke2/server/tls/request-header-ca.crt
+    - --requestheader-extra-headers-prefix=X-Remote-Extra-
+    - --requestheader-group-headers=X-Remote-Group
+    - --requestheader-username-headers=X-Remote-User
+    - --secure-port=6443
+    - --service-account-issuer=https://kubernetes.default.svc.cluster.local
+    - --service-account-key-file=/var/lib/rancher/rke2/server/tls/service.key
+    - --service-account-signing-key-file=/var/lib/rancher/rke2/server/tls/service.key
+    - --service-cluster-ip-range=10.43.0.0/16
+    - --service-node-port-range=30000-32767
+    - --storage-backend=etcd3
+    - --tls-cert-file=/var/lib/rancher/rke2/server/tls/serving-kube-apiserver.crt
+    - --tls-private-key-file=/var/lib/rancher/rke2/server/tls/serving-kube-apiserver.key
+    env:
+    - name: FILE_HASH
+      value: 5ae877462a2d6ea9d96bc4f26de6b567a6c9a803439004666af22ad21fe43ea6
+    - name: NO_PROXY
+      value: .svc,.cluster.local,10.42.0.0/16,10.43.0.0/16
+    image: index.docker.io/rancher/hardened-kubernetes:v1.23.9-rke2r1-build20220713
+    imagePullPolicy: IfNotPresent
+    name: kube-apiserver
+    resources:
+      requests:
+        cpu: 250m
+    securityContext:
+      privileged: false
+    volumeMounts:
+    - mountPath: /etc/ssl/certs
+      name: dir0
+    - mountPath: /etc/pki/tls/certs
+      name: dir1
+    - mountPath: /var/lib/rancher/rke2/server/logs
+      name: dir2
+    - mountPath: /var/lib/rancher/rke2/server/db/etcd/name
+      name: file0
+      readOnly: true
+    - mountPath: /var/lib/rancher/rke2/server/cred/encryption-config.json
+      name: file1
+      readOnly: true
+    - mountPath: /var/lib/rancher/rke2/server/etc/egress-selector-config.yaml
+      name: file2
+      readOnly: true
+    - mountPath: /var/lib/rancher/rke2/server/tls/client-auth-proxy.crt
+      name: file3
+      readOnly: true
+    - mountPath: /var/lib/rancher/rke2/server/tls/client-auth-proxy.key
+      name: file4
+      readOnly: true
+    - mountPath: /var/lib/rancher/rke2/server/tls/client-ca.crt
+      name: file5
+      readOnly: true
+    - mountPath: /var/lib/rancher/rke2/server/tls/client-kube-apiserver.crt
+      name: file6
+      readOnly: true
+    - mountPath: /var/lib/rancher/rke2/server/tls/client-kube-apiserver.key
+      name: file7
+      readOnly: true
+    - mountPath: /var/lib/rancher/rke2/server/tls/etcd/client.crt
+      name: file8
+      readOnly: true
+    - mountPath: /var/lib/rancher/rke2/server/tls/etcd/client.key
+      name: file9
+      readOnly: true
+    - mountPath: /var/lib/rancher/rke2/server/tls/etcd/server-ca.crt
+      name: file10
+      readOnly: true
+    - mountPath: /var/lib/rancher/rke2/server/tls/request-header-ca.crt
+      name: file11
+      readOnly: true
+    - mountPath: /var/lib/rancher/rke2/server/tls/server-ca.crt
+      name: file12
+      readOnly: true
+    - mountPath: /var/lib/rancher/rke2/server/tls/service.key
+      name: file13
+      readOnly: true
+    - mountPath: /var/lib/rancher/rke2/server/tls/serving-kube-apiserver.crt
+      name: file14
+      readOnly: true
+    - mountPath: /var/lib/rancher/rke2/server/tls/serving-kube-apiserver.key
+      name: file15
+      readOnly: true
+  hostNetwork: true
+  priorityClassName: system-cluster-critical
+  volumes:
+  - hostPath:
+      path: /etc/ssl/certs
+      type: DirectoryOrCreate
+    name: dir0
+  - hostPath:
+      path: /etc/pki/tls/certs
+      type: DirectoryOrCreate
+    name: dir1
+  - hostPath:
+      path: /var/lib/rancher/rke2/server/logs
+      type: DirectoryOrCreate
+    name: dir2
+  - hostPath:
+      path: /var/lib/rancher/rke2/server/db/etcd/name
+      type: File
+    name: file0
+  - hostPath:
+      path: /var/lib/rancher/rke2/server/cred/encryption-config.json
+      type: File
+    name: file1
+  - hostPath:
+      path: /var/lib/rancher/rke2/server/etc/egress-selector-config.yaml
+      type: File
+    name: file2
+  - hostPath:
+      path: /var/lib/rancher/rke2/server/tls/client-auth-proxy.crt
+      type: File
+    name: file3
+  - hostPath:
+      path: /var/lib/rancher/rke2/server/tls/client-auth-proxy.key
+      type: File
+    name: file4
+  - hostPath:
+      path: /var/lib/rancher/rke2/server/tls/client-ca.crt
+      type: File
+    name: file5
+  - hostPath:
+      path: /var/lib/rancher/rke2/server/tls/client-kube-apiserver.crt
+      type: File
+    name: file6
+  - hostPath:
+      path: /var/lib/rancher/rke2/server/tls/client-kube-apiserver.key
+      type: File
+    name: file7
+  - hostPath:
+      path: /var/lib/rancher/rke2/server/tls/etcd/client.crt
+      type: File
+    name: file8
+  - hostPath:
+      path: /var/lib/rancher/rke2/server/tls/etcd/client.key
+      type: File
+    name: file9
+  - hostPath:
+      path: /var/lib/rancher/rke2/server/tls/etcd/server-ca.crt
+      type: File
+    name: file10
+  - hostPath:
+      path: /var/lib/rancher/rke2/server/tls/request-header-ca.crt
+      type: File
+    name: file11
+  - hostPath:
+      path: /var/lib/rancher/rke2/server/tls/server-ca.crt
+      type: File
+    name: file12
+  - hostPath:
+      path: /var/lib/rancher/rke2/server/tls/service.key
+      type: File
+    name: file13
+  - hostPath:
+      path: /var/lib/rancher/rke2/server/tls/serving-kube-apiserver.crt
+      type: File
+    name: file14
+  - hostPath:
+      path: /var/lib/rancher/rke2/server/tls/serving-kube-apiserver.key
+      type: File
+    name: file15
+status: {}

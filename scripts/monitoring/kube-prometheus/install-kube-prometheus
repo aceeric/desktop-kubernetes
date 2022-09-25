@@ -101,4 +101,7 @@ spec:
   type: NodePort
 EOF
 
+echo TODO DONT DO THIS IF CONTROL PLANE IS CONTAINERIZED!!
+exit 1
+
 xec tweak-monitoring $nodes $admin_kubeconfig

@@ -1,0 +1,83 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    component: kube-scheduler
+    tier: control-plane
+  name: kube-scheduler
+  namespace: kube-system
+  uid: cf66e5a83143650d8a05495c93f710e0
+spec:
+  containers:
+  - command:
+    - kube-scheduler
+    - --permit-port-sharing=true
+    - --authentication-kubeconfig=/var/lib/rancher/rke2/server/cred/scheduler.kubeconfig
+    - --authorization-kubeconfig=/var/lib/rancher/rke2/server/cred/scheduler.kubeconfig
+    - --bind-address=127.0.0.1
+    - --kubeconfig=/var/lib/rancher/rke2/server/cred/scheduler.kubeconfig
+    - --profiling=false
+    - --secure-port=10259
+    env:
+    - name: FILE_HASH
+      value: 76f43d153ab370a6e51d5d99c06b7194ef5027ced2686e50d2af7c6e2b0dabc7
+    - name: NO_PROXY
+      value: .svc,.cluster.local,10.42.0.0/16,10.43.0.0/16
+    image: index.docker.io/rancher/hardened-kubernetes:v1.23.9-rke2r1-build20220713
+    imagePullPolicy: IfNotPresent
+    livenessProbe:
+      failureThreshold: 8
+      httpGet:
+        host: localhost
+        path: /healthz
+        port: 10259
+        scheme: HTTPS
+      initialDelaySeconds: 15
+      timeoutSeconds: 15
+    name: kube-scheduler
+    resources:
+      requests:
+        cpu: 100m
+    securityContext:
+      privileged: false
+    volumeMounts:
+    - mountPath: /var/lib/rancher/rke2/server/db/etcd/name
+      name: file0
+      readOnly: true
+    - mountPath: /var/lib/rancher/rke2/server/cred/scheduler.kubeconfig
+      name: file1
+      readOnly: true
+    - mountPath: /var/lib/rancher/rke2/server/tls/client-scheduler.crt
+      name: file2
+      readOnly: true
+    - mountPath: /var/lib/rancher/rke2/server/tls/client-scheduler.key
+      name: file3
+      readOnly: true
+    - mountPath: /var/lib/rancher/rke2/server/tls/server-ca.crt
+      name: file4
+      readOnly: true
+  hostNetwork: true
+  priorityClassName: system-cluster-critical
+  volumes:
+  - hostPath:
+      path: /var/lib/rancher/rke2/server/db/etcd/name
+      type: File
+    name: file0
+  - hostPath:
+      path: /var/lib/rancher/rke2/server/cred/scheduler.kubeconfig
+      type: File
+    name: file1
+  - hostPath:
+      path: /var/lib/rancher/rke2/server/tls/client-scheduler.crt
+      type: File
+    name: file2
+  - hostPath:
+      path: /var/lib/rancher/rke2/server/tls/client-scheduler.key
+      type: File
+    name: file3
+  - hostPath:
+      path: /var/lib/rancher/rke2/server/tls/server-ca.crt
+      type: File
+    name: file4
+status: {}

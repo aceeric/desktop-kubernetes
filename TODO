@@ -1,0 +1,22 @@
+
+0) Separate dashboard install
+1) Don't install kernel-devel in ks.cfg because we just uninstall it in desktop-kubernetes.sh
+2) K8s production-grade containerd runtimes systemd cgroup driver:
+   https://kubernetes.io/docs/tasks/administer-cluster/kubeadm/configure-cgroup-driver/
+3) network service vs. NetworkManager service
+4) control plane as static pods?
+
+
+https://stackoverflow.com/questions/64229221/kubernetes-failed-to-pull-image-k8s-gcr-io
+
+kubeadm config images pull
+W1124 11:46:41.297352   50730 configset.go:348] WARNING: kubeadm cannot validate component configs for API groups [kubelet.config.k8s.io kubeproxy.config.k8s.io]
+[config/images] Pulled k8s.gcr.io/kube-apiserver:v1.19.4
+[config/images] Pulled k8s.gcr.io/kube-controller-manager:v1.19.4
+[config/images] Pulled k8s.gcr.io/kube-scheduler:v1.19.4
+[config/images] Pulled k8s.gcr.io/kube-proxy:v1.19.4
+[config/images] Pulled k8s.gcr.io/pause:3.2
+[config/images] Pulled k8s.gcr.io/etcd:3.4.13-0
+[config/images] Pulled k8s.gcr.io/coredns:1.7.0
+
+https://computingforgeeks.com/manually-pull-container-images-used-by-kubernetes-kubeadm/

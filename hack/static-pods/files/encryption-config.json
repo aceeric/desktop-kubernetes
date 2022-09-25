@@ -1,0 +1,27 @@
+{
+    "kind" : "EncryptionConfiguration",
+    "apiVersion" : "apiserver.config.k8s.io/v1",
+    "resources" : [
+       {
+          "providers" : [
+             {
+                "aescbc" : {
+                   "keys" : [
+                      {
+                         "name" : "aescbckey",
+                         "secret" : "XVJVQ7aNLON8dHdFdPrtpjPoWyglKX1Nx+997CHRm/4="
+                      }
+                   ]
+                }
+             },
+             {
+                "identity" : {}
+             }
+          ],
+          "resources" : [
+             "secrets"
+          ]
+       }
+    ]
+ }
+ 

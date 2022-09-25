@@ -9,7 +9,9 @@ set -e
 long_opts=controller-hostname:,vboxdir:,priv-key:,\
 etcd-download:,etcd-gzip:,kube-apiserver-download:,kube-apiserver-binary:,\
 kube-controller-manager-download:,kube-controller-manager-binary:,\
-kube-scheduler-download:,kube-scheduler-binary:,ca-cert:,ca-key:
+kube-scheduler-download:,kube-scheduler-binary:,containerized:,admin-kubeconfig:,\
+crictl-download:,crictl-binary:,runc-download:,runc-binary:,cni-plugins-download:,\
+cni-plugins-binary:,containerd-download:,containerd-binary:,ca-cert:,ca-key:,
 script_name=$(basename "$0")
 
 # api
@@ -24,6 +26,16 @@ kube_controller_manager_download=
 kube_controller_manager_binary=
 kube_scheduler_download=
 kube_scheduler_binary=
+containerized=
+admin_kubeconfig=
+crictl_download=
+crictl_binary=
+runc_download=
+runc_binary=
+cni_plugins_download=
+cni_plugins_binary=
+containerd_download=
+containerd_binary=
 ca_cert=
 ca_key=
 
@@ -93,6 +105,46 @@ function parse_args() {
         kube_scheduler_binary=$(opt_val "$2")
         shift 2
         ;;
+      --containerized)
+        containerized=$(opt_val "$2")
+        shift 2
+        ;;
+      --admin-kubeconfig)
+        admin_kubeconfig=$(opt_val "$2")
+        shift 2
+        ;;
+      --crictl-download)
+        crictl_download=$(opt_val "$2")
+        shift 2
+        ;;
+      --crictl-binary)
+        crictl_binary=$(opt_val "$2")
+        shift 2
+        ;;
+      --runc-download)
+        runc_download=$(opt_val "$2")
+        shift 2
+        ;;
+      --runc-binary)
+        runc_binary=$(opt_val "$2")
+        shift 2
+        ;;
+      --cni-plugins-download)
+        cni_plugins_download=$(opt_val "$2")
+        shift 2
+        ;;
+      --cni-plugins-binary)
+        cni_plugins_binary=$(opt_val "$2")
+        shift 2
+        ;;
+      --containerd-download)
+        containerd_download=$(opt_val "$2")
+        shift 2
+        ;;
+      --containerd-binary)
+        containerd_binary=$(opt_val "$2")
+        shift 2
+        ;;
       --ca-cert)
         ca_cert=$(opt_val "$2")
         shift 2
@@ -123,14 +175,18 @@ parse_args "$@"
 #echo "kube_controller_manager_binary=$kube_controller_manager_binary"
 #echo "kube_scheduler_download=$kube_scheduler_download"
 #echo "kube_scheduler_binary=$kube_scheduler_binary"
+#echo "containerized=$containerized"
+#echo "admin_kubeconfig=$admin_kubeconfig"
+#echo "crictl_download=$crictl_download"
+#echo "crictl_binary=$crictl_binary"
+#echo "runc_download=$runc_download"
+#echo "runc_binary=$runc_binary"
+#echo "cni_plugins_download=$cni_plugins_download"
+#echo "cni_plugins_binary=$cni_plugins_binary"
+#echo "containerd_download=$containerd_download"
+#echo "containerd_binary=$containerd_binary"
 #echo "ca_cert=$ca_cert"
 #echo "ca_key=$ca_key"
-
-run_count=$(VBoxManage list runningvms | awk '{print $1}' | grep -e'"'$controller_hostname'"' | wc -l)
-if [[ $run_count -eq 0 ]]; then
-  echo "starting controller VM"
-  VBoxManage startvm $controller_hostname
-fi
 
 echo "getting controller IP address from running VM"
 controller_ip=$(xec get-vm-ip $controller_hostname)
@@ -187,6 +243,8 @@ xec install-kube-scheduler\
  --controller-hostname=$controller_hostname\
  --kube-scheduler-download=$kube_scheduler_download\
  --kube-scheduler-binary=$kube_scheduler_binary\
+ --containerized=$containerized\
+ --admin-kubeconfig=$admin_kubeconfig\
  --ca-cert=$ca_cert\
  --ca-key=$ca_key
 
@@ -200,10 +258,56 @@ for i in {1..10}; do
   sleep 1s
 done
 
-if [[ "$healthy_count" -ne 3 ]]; then
-  echo "unable to verify that controller was successfully configured"
-  exit 1
-fi
+# TODO TODO TODO TODO TODO TODO TODO
+#if [[ "$healthy_count" -ne 3 ]]; then
+#  echo "unable to verify that controller was successfully configured"
+#  exit 1
+#fi
 
 echo "no errors detected with controller installation"
 
+echo "generating RBAC for kubelet authorization"
+
+# Per: https://kubernetes.io/docs/reference/command-line-tools-reference/kubelet-authentication-authorization/
+# And, per Hightower: "The Kubernetes API Server authenticates to the Kubelet as the `kubernetes` user using the
+# client certificate as defined by the `--kubelet-client-certificate` flag." So "Bind the
+# 'system:kube-apiserver-to-kubelet' ClusterRole to the 'kubernetes' user" that is embedded in that cert.
+# (See 'CN = ' in 'gen-cluster-tls' script)
+
+cat <<EOF | kubectl --kubeconfig $admin_kubeconfig apply -f -
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  annotations:
+    rbac.authorization.kubernetes.io/autoupdate: "true"
+  labels:
+    kubernetes.io/bootstrapping: rbac-defaults
+  name: system:kube-apiserver-to-kubelet
+rules:
+  - apiGroups:
+      - ""
+    resources:
+      - nodes/proxy
+      - nodes/stats
+      - nodes/log
+      - nodes/spec
+      - nodes/metrics
+    verbs:
+      - "*"
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: system:kube-apiserver
+  namespace: ""
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: system:kube-apiserver-to-kubelet
+subjects:
+  - apiGroup: rbac.authorization.k8s.io
+    kind: User
+    name: kubernetes
+EOF
+
+echo "finished provisioning controller"

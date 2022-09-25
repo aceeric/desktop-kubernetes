@@ -196,7 +196,7 @@ xec gen-worker-tls\
 echo "Copying misc. binaries to the worker"
 xec install-misc-bins\
  --priv-key=$priv_key\
- --worker-ip=$worker_ip\
+ --vm-ip=$worker_ip\
  --crictl-download=$crictl_download\
  --crictl-binary=$crictl_binary\
  --runc-download=$runc_download\
@@ -207,7 +207,7 @@ xec install-misc-bins\
 echo "Installing containerd"
 xec install-containerd\
  --priv-key=$priv_key\
- --worker-ip=$worker_ip\
+ --vm-ip=$worker_ip\
  --containerd-download=$containerd_download\
  --containerd-binary=$containerd_binary\
  --pod-cidr=$pod_cidr
@@ -222,26 +222,3 @@ xec install-kubelet\
  --kubelet-binary=$kubelet_binary\
  --pod-cidr=$pod_cidr\
  --ca-cert=$ca_cert
-
-set +e
-for i in {1..15}; do
-  ready_count=$(kubectl --kubeconfig $admin_kubeconfig get nodes 2>/dev/null | grep $worker_hostname | grep Ready | wc -l)
-  if [[ "$ready_count" -eq 1 ]]; then
-    break
-  fi
-  sleep 1s
-done
-
-if [[ "$ready_count" -ne 1 ]]; then
-  echo "Unable to verify that the worker node was successfully configured"
-  exit 1
-fi
-
-echo "Labeling node"
-
-IFS=',' read -ra labels <<< "$node_labels"
-for label in "${labels[@]}"; do
-  kubectl --kubeconfig $admin_kubeconfig label node $worker_hostname node-role.kubernetes.io/$label=
-done
-
-echo "No errors detected with worker installation"

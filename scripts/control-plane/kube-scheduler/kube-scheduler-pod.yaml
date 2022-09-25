@@ -1,0 +1,47 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    component: kube-scheduler
+    tier: control-plane
+  name: kube-scheduler
+  namespace: kube-system
+spec:
+  containers:
+  - name: kube-scheduler
+    command:
+    - kube-scheduler
+    - --authentication-kubeconfig=/var/lib/kubernetes/kube-scheduler.kubeconfig
+    - --authorization-kubeconfig=/var/lib/kubernetes/kube-scheduler.kubeconfig
+    - --authorization-always-allow-paths=/healthz,/readyz,/livez,/metrics
+    - --bind-address=127.0.0.1
+    - --profiling=false
+    - --secure-port=10259
+    - --v=2
+    image: k8s.gcr.io/kube-scheduler:v1.25.0
+    imagePullPolicy: IfNotPresent
+    livenessProbe:
+      failureThreshold: 8
+      httpGet:
+        host: localhost
+        path: /healthz
+        port: 10259
+        scheme: HTTPS
+      initialDelaySeconds: 15
+      timeoutSeconds: 15
+    resources:
+      requests:
+        cpu: 100m
+    securityContext:
+      privileged: false
+    volumeMounts:
+    - mountPath: /var/lib/kubernetes/kube-scheduler.kubeconfig
+      name: f1
+      readOnly: true
+  hostNetwork: true
+  priorityClassName: system-cluster-critical
+  volumes:
+  - hostPath:
+      path: /var/lib/kubernetes/kube-scheduler.kubeconfig
+      type: File
+    name: f1

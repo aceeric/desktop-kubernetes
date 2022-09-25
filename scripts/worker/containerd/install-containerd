@@ -2,12 +2,12 @@
 
 set -e
 
-long_opts=priv-key:,worker-ip:,containerd-download:,containerd-binary:,pod-cidr:
+long_opts=priv-key:,vm-ip:,containerd-download:,containerd-binary:,pod-cidr:
 script_name=$(basename "$0")
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 priv_key=
-worker_ip=
+vm_ip=
 containerd_download=
 containerd_binary=
 pod_cidr=
@@ -35,8 +35,8 @@ function parse_args() {
         priv_key=$(opt_val "$2")
         shift 2
         ;;
-      --worker-ip)
-        worker_ip=$(opt_val "$2")
+      --vm-ip)
+        vm_ip=$(opt_val "$2")
         shift 2
         ;;
       --containerd-download)
@@ -66,7 +66,7 @@ containerd_binary_actual=$(xec make-download-path\
 
 # debug
 #echo "priv_key=$priv_key"
-#echo "worker_ip=$worker_ip"
+#echo "vm_ip=$vm_ip"
 #echo "containerd_download=$containerd_download"
 #echo "containerd_binary=$containerd_binary"
 #echo "containerd_binary_actual=$containerd_binary_actual"
@@ -74,20 +74,20 @@ containerd_binary_actual=$(xec make-download-path\
 xec download-obj --url="$containerd_download" --dest="$containerd_binary_actual"
 
 echo "Copying containerd binary to worker"
-cat $containerd_binary_actual | ssh -i $priv_key root@$worker_ip\
+cat $containerd_binary_actual | ssh -i $priv_key root@$vm_ip\
  "tar zxvf - --strip-components 1 --no-same-owner -C /bin/ bin"
 
 echo "Copying containerd service and toml files to worker VM"
-scp -i $priv_key $script_dir/containerd.service root@$worker_ip:/etc/systemd/system/
+scp -i $priv_key $script_dir/containerd.service root@$vm_ip:/etc/systemd/system/
 
-ssh -i "$priv_key" root@$worker_ip "mkdir -p /etc/containerd"
+ssh -i "$priv_key" root@$vm_ip "mkdir -p /etc/containerd"
 # this TOML produced by 'containerd config default > containerd-config.toml' AFTER containerd installed,
 # then copy back into this project plus tweak cgroup:
-scp -i $priv_key $script_dir/containerd-config.toml root@$worker_ip:/etc/containerd
+scp -i $priv_key $script_dir/containerd-config.toml root@$vm_ip:/etc/containerd
 
 # July 2022 per https://kubernetes.io/docs/setup/production-environment/container-runtimes/
 echo "Configuring networking"
-ssh -i $priv_key root@$worker_ip << EOF
+ssh -i $priv_key root@$vm_ip << EOF
   echo overlay > /etc/modules-load.d/k8s.conf
   echo br_netfilter >> /etc/modules-load.d/k8s.conf
 
@@ -107,17 +107,17 @@ EOF
 # https://github.com/containerd/containerd/blob/main/script/setup/install-cni
 
 echo "Copying 10-containerd-net.conflist to /etc/cni/net.d/ in worker VM"
-ssh -i "$priv_key" root@$worker_ip "mkdir -p /etc/cni/net.d"
+ssh -i "$priv_key" root@$vm_ip "mkdir -p /etc/cni/net.d"
 sed $script_dir/10-containerd-net.conflist\
- -e "s|PODCIDR|$pod_cidr|g" | ssh -i $priv_key root@$worker_ip "cat > /etc/cni/net.d/10-containerd-net.conflist"
+ -e "s|PODCIDR|$pod_cidr|g" | ssh -i $priv_key root@$vm_ip "cat > /etc/cni/net.d/10-containerd-net.conflist"
 
 echo "Starting containerd service"
-ssh -i "$priv_key" root@$worker_ip "systemctl daemon-reload && systemctl enable containerd && systemctl start containerd"
+ssh -i "$priv_key" root@$vm_ip "systemctl daemon-reload && systemctl enable containerd && systemctl start containerd"
 
 echo "Verifying containerd is running"
 set +e
 for i in {1..10}; do
-  ssh -i "$priv_key" root@$worker_ip "systemctl is-active --quiet containerd" && break
+  ssh -i "$priv_key" root@$vm_ip "systemctl is-active --quiet containerd" && break
   sleep 1s
 done
 

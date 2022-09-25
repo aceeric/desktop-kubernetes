@@ -1,0 +1,92 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    component: cloud-controller-manager
+    tier: control-plane
+  name: cloud-controller-manager
+  namespace: kube-system
+  uid: 97b0c41741309238988ba5c814404fbd
+spec:
+  containers:
+  - command:
+    - cloud-controller-manager
+    - --allocate-node-cidrs=true
+    - --authentication-kubeconfig=/var/lib/rancher/rke2/server/cred/cloud-controller.kubeconfig
+    - --authorization-kubeconfig=/var/lib/rancher/rke2/server/cred/cloud-controller.kubeconfig
+    - --bind-address=127.0.0.1
+    - --cloud-provider=rke2
+    - --cluster-cidr=10.42.0.0/16
+    - --configure-cloud-routes=false
+    - --kubeconfig=/var/lib/rancher/rke2/server/cred/cloud-controller.kubeconfig
+    - --node-status-update-frequency=1m0s
+    - --port=0
+    - --profiling=false
+    env:
+    - name: FILE_HASH
+      value: 33891c7723022388ff9cdcf1290204a19b9c7c6220ef6b341ead44b864759074
+    - name: NO_PROXY
+      value: .svc,.cluster.local,10.42.0.0/16,10.43.0.0/16
+    image: index.docker.io/rancher/rke2-cloud-provider:v0.0.3-build20211118
+    imagePullPolicy: IfNotPresent
+    livenessProbe:
+      failureThreshold: 8
+      httpGet:
+        host: localhost
+        path: /healthz
+        port: 10258
+        scheme: HTTPS
+      initialDelaySeconds: 15
+      timeoutSeconds: 15
+    name: cloud-controller-manager
+    resources:
+      requests:
+        cpu: 200m
+    securityContext:
+      privileged: false
+    volumeMounts:
+    - mountPath: /etc/ssl/certs
+      name: dir0
+    - mountPath: /etc/pki/tls/certs
+      name: dir1
+    - mountPath: /var/lib/rancher/rke2/server/cred/cloud-controller.kubeconfig
+      name: file0
+      readOnly: true
+    - mountPath: /var/lib/rancher/rke2/server/tls/client-rke2-cloud-controller.crt
+      name: file1
+      readOnly: true
+    - mountPath: /var/lib/rancher/rke2/server/tls/client-rke2-cloud-controller.key
+      name: file2
+      readOnly: true
+    - mountPath: /var/lib/rancher/rke2/server/tls/server-ca.crt
+      name: file3
+      readOnly: true
+  hostNetwork: true
+  priorityClassName: system-cluster-critical
+  volumes:
+  - hostPath:
+      path: /etc/ssl/certs
+      type: DirectoryOrCreate
+    name: dir0
+  - hostPath:
+      path: /etc/pki/tls/certs
+      type: DirectoryOrCreate
+    name: dir1
+  - hostPath:
+      path: /var/lib/rancher/rke2/server/cred/cloud-controller.kubeconfig
+      type: File
+    name: file0
+  - hostPath:
+      path: /var/lib/rancher/rke2/server/tls/client-rke2-cloud-controller.crt
+      type: File
+    name: file1
+  - hostPath:
+      path: /var/lib/rancher/rke2/server/tls/client-rke2-cloud-controller.key
+      type: File
+    name: file2
+  - hostPath:
+      path: /var/lib/rancher/rke2/server/tls/server-ca.crt
+      type: File
+    name: file3
+status: {}

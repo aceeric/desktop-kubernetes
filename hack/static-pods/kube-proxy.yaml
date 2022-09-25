@@ -1,0 +1,68 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    component: kube-proxy
+    tier: control-plane
+  name: kube-proxy
+  namespace: kube-system
+  uid: 253e81ae6d6e3a595bc90b9722222f57
+spec:
+  containers:
+  - command:
+    - kube-proxy
+    - --cluster-cidr=10.42.0.0/16
+    - --conntrack-max-per-core=0
+    - --conntrack-tcp-timeout-close-wait=0s
+    - --conntrack-tcp-timeout-established=0s
+    - --healthz-bind-address=127.0.0.1
+    - --hostname-override=rke1
+    - --kubeconfig=/var/lib/rancher/rke2/agent/kubeproxy.kubeconfig
+    - --proxy-mode=iptables
+    env:
+    - name: FILE_HASH
+      value: 2f4d21e01f10862de15fd363b57fcfe432ab5e1cd927053178bf1d45995838a5
+    - name: NO_PROXY
+      value: .svc,.cluster.local,10.42.0.0/16,10.43.0.0/16
+    image: index.docker.io/rancher/hardened-kubernetes:v1.23.9-rke2r1-build20220713
+    imagePullPolicy: IfNotPresent
+    name: kube-proxy
+    resources:
+      requests:
+        cpu: 250m
+    securityContext:
+      privileged: true
+    volumeMounts:
+    - mountPath: /var/lib/rancher/rke2/agent/client-kube-proxy.crt
+      name: file0
+      readOnly: true
+    - mountPath: /var/lib/rancher/rke2/agent/client-kube-proxy.key
+      name: file1
+      readOnly: true
+    - mountPath: /var/lib/rancher/rke2/agent/kubeproxy.kubeconfig
+      name: file2
+      readOnly: true
+    - mountPath: /var/lib/rancher/rke2/agent/server-ca.crt
+      name: file3
+      readOnly: true
+  hostNetwork: true
+  priorityClassName: system-cluster-critical
+  volumes:
+  - hostPath:
+      path: /var/lib/rancher/rke2/agent/client-kube-proxy.crt
+      type: File
+    name: file0
+  - hostPath:
+      path: /var/lib/rancher/rke2/agent/client-kube-proxy.key
+      type: File
+    name: file1
+  - hostPath:
+      path: /var/lib/rancher/rke2/agent/kubeproxy.kubeconfig
+      type: File
+    name: file2
+  - hostPath:
+      path: /var/lib/rancher/rke2/agent/server-ca.crt
+      type: File
+    name: file3
+status: {}

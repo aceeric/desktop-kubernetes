@@ -1,0 +1,9 @@
+
+
+
+kc create ns testing
+kc -n testing run tesing -it --image alpine/curl:latest --command sh
+
+export TOKEN=$(cat /run/secrets/kubernetes.io/serviceaccount/token)
+
+curl -k -H "Accept: application/json" -H "Authorization: Bearer $TOKEN" https://kubernetes.default:443/api/namespaces

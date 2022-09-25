@@ -5,7 +5,8 @@ set -e
 long_opts=priv-key:,template-vmname:,host-only-network:,host-only-octet:,vboxdir:,controller-hostname:,controller-ram:,\
 controller-cpu:,controller-disk:,\vboxdir:,etcd-download:,etcd-gzip:,kube-apiserver-download:,kube-apiserver-binary:,\
 kube-controller-manager-download:,kube-controller-manager-binary:,kube-scheduler-download:,kube-scheduler-binary:,\
-ca-cert:,ca-key:
+containerized:,crictl-download:,crictl-binary:,runc-download:,runc-binary:,cni-plugins-download:,\
+cni-plugins-binary:,containerd-download:,containerd-binary:,ca-cert:,ca-key:
 script_name=$(basename "$0")
 
 priv_key=
@@ -25,6 +26,15 @@ kube_controller_manager_download=
 kube_controller_manager_binary=
 kube_scheduler_download=
 kube_scheduler_binary=
+containerized=0
+crictl_download=
+crictl_binary=
+runc_download=
+runc_binary=
+cni_plugins_download=
+cni_plugins_binary=
+containerd_download=
+containerd_binary=
 ca_cert=
 ca_key=
 
@@ -115,6 +125,42 @@ function parse_args() {
         kube_scheduler_binary=$(opt_val "$2")
         shift 2
         ;;
+      --containerized)
+        containerized=$(opt_val "$2")
+        shift 2
+        ;;
+      --crictl-download)
+        crictl_download=$(opt_val "$2")
+        shift 2
+        ;;
+      --crictl-binary)
+        crictl_binary=$(opt_val "$2")
+        shift 2
+        ;;
+      --runc-download)
+        runc_download=$(opt_val "$2")
+        shift 2
+        ;;
+      --runc-binary)
+        runc_binary=$(opt_val "$2")
+        shift 2
+        ;;
+      --cni-plugins-download)
+        cni_plugins_download=$(opt_val "$2")
+        shift 2
+        ;;
+      --cni-plugins-binary)
+        cni_plugins_binary=$(opt_val "$2")
+        shift 2
+        ;;
+      --containerd-download)
+        containerd_download=$(opt_val "$2")
+        shift 2
+        ;;
+      --containerd-binary)
+        containerd_binary=$(opt_val "$2")
+        shift 2
+        ;;
       --ca-cert)
         ca_cert=$(opt_val "$2")
         shift 2
@@ -130,7 +176,6 @@ function parse_args() {
     esac
   done
 }
-
 parse_args "$@"
 
 # debug
@@ -151,6 +196,15 @@ parse_args "$@"
 #echo "kube_controller_manager_binary=$kube_controller_manager_binary"
 #echo "kube_scheduler_download=$kube_scheduler_download"
 #echo "kube_scheduler_binary=$kube_scheduler_binary"
+#echo "containerized=$containerized"
+#echo "crictl_download=$crictl_download"
+#echo "crictl_binary=$crictl_binary"
+#echo "runc_download=$runc_download"
+#echo "runc_binary=$runc_binary"
+#echo "cni_plugins_download=$cni_plugins_download"
+#echo "cni_plugins_binary=$cni_plugins_binary"
+#echo "containerd_download=$containerd_download"
+#echo "containerd_binary=$containerd_binary"
 #echo "ca_cert=$ca_cert"
 #echo "ca_key=$ca_key"
 
@@ -162,7 +216,16 @@ xec clone-vm\
  --clone-cpu=$controller_cpu\
  --host-only-network=$host_only_network\
  --host-only-octet=$host_only_octet\
- --vboxdir=$vboxdir
+ --vboxdir=$vboxdir\
+ --shutdown=false
+
+# generate an admin kubeconfig which is used for any configuration step that is accomplished using the
+# kubectl command
+controller_ip=$(xec get-vm-ip $controller_hostname)
+xec gen-admin-kubeconfig --controller-ip=$controller_ip --ca-cert=$ca_cert --ca-key=$ca_key
+
+# 'gen-admin-kubeconfig' creates:
+admin_kubeconfig=$DTKBASE/generated/kubeconfig/admin.kubeconfig
 
 xec configure-controller\
  --controller-hostname=$controller_hostname\
@@ -176,17 +239,18 @@ xec configure-controller\
  --kube-controller-manager-binary=$kube_controller_manager_binary\
  --kube-scheduler-download=$kube_scheduler_download\
  --kube-scheduler-binary=$kube_scheduler_binary\
+ --containerized=$containerized\
+ --admin-kubeconfig=$admin_kubeconfig\
+ --crictl-download=$crictl_download\
+ --crictl-binary=$crictl_binary\
+ --runc-download=$runc_download\
+ --runc-binary=$runc_binary\
+ --cni-plugins-download=$cni_plugins_download\
+ --cni-plugins-binary=$cni_plugins_binary\
+ --containerd-download=$containerd_download\
+ --containerd-binary=$containerd_binary\
  --ca-cert=$ca_cert\
  --ca-key=$ca_key
-
-# generate an admin kubeconfig which is used for any configuration step that is accomplished using the
-# kubectl command
-
-controller_ip=$(xec get-vm-ip $controller_hostname)
-xec gen-admin-kubeconfig --controller-ip=$controller_ip --ca-cert=$ca_cert --ca-key=$ca_key
-
-# 'gen-admin-kubeconfig' creates:
-admin_kubeconfig=$DTKBASE/generated/kubeconfig/admin.kubeconfig
 
 echo "generating RBAC for kubelet authorization"
 

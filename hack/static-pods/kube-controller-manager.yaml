@@ -1,0 +1,141 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    component: kube-controller-manager
+    tier: control-plane
+  name: kube-controller-manager
+  namespace: kube-system
+  uid: b9291f0fcbad7c3a07f24fd6082f6ef8
+spec:
+  containers:
+  - command:
+    - kube-controller-manager
+    - --flex-volume-plugin-dir=/var/lib/kubelet/volumeplugins
+    - --terminated-pod-gc-threshold=1000
+    - --permit-port-sharing=true
+    - --allocate-node-cidrs=true
+    - --authentication-kubeconfig=/var/lib/rancher/rke2/server/cred/controller.kubeconfig
+    - --authorization-kubeconfig=/var/lib/rancher/rke2/server/cred/controller.kubeconfig
+    - --bind-address=127.0.0.1
+    - --cluster-cidr=10.42.0.0/16
+    - --cluster-signing-kube-apiserver-client-cert-file=/var/lib/rancher/rke2/server/tls/client-ca.crt
+    - --cluster-signing-kube-apiserver-client-key-file=/var/lib/rancher/rke2/server/tls/client-ca.key
+    - --cluster-signing-kubelet-client-cert-file=/var/lib/rancher/rke2/server/tls/client-ca.crt
+    - --cluster-signing-kubelet-client-key-file=/var/lib/rancher/rke2/server/tls/client-ca.key
+    - --cluster-signing-kubelet-serving-cert-file=/var/lib/rancher/rke2/server/tls/server-ca.crt
+    - --cluster-signing-kubelet-serving-key-file=/var/lib/rancher/rke2/server/tls/server-ca.key
+    - --cluster-signing-legacy-unknown-cert-file=/var/lib/rancher/rke2/server/tls/server-ca.crt
+    - --cluster-signing-legacy-unknown-key-file=/var/lib/rancher/rke2/server/tls/server-ca.key
+    - --configure-cloud-routes=false
+    - --controllers=*,-service,-route,-cloud-node-lifecycle
+    - --feature-gates=JobTrackingWithFinalizers=true
+    - --kubeconfig=/var/lib/rancher/rke2/server/cred/controller.kubeconfig
+    - --profiling=false
+    - --root-ca-file=/var/lib/rancher/rke2/server/tls/server-ca.crt
+    - --secure-port=10257
+    - --service-account-private-key-file=/var/lib/rancher/rke2/server/tls/service.key
+    - --use-service-account-credentials=true
+    env:
+    - name: FILE_HASH
+      value: 393b5e635b66fa10c33b23fe33d5b10aebd29a1feaf6fa1d32b8538260a36f51
+    - name: NO_PROXY
+      value: .svc,.cluster.local,10.42.0.0/16,10.43.0.0/16
+    image: index.docker.io/rancher/hardened-kubernetes:v1.23.9-rke2r1-build20220713
+    imagePullPolicy: IfNotPresent
+    livenessProbe:
+      failureThreshold: 8
+      httpGet:
+        host: localhost
+        path: /healthz
+        port: 10257
+        scheme: HTTPS
+      initialDelaySeconds: 15
+      timeoutSeconds: 15
+    name: kube-controller-manager
+    resources:
+      requests:
+        cpu: 200m
+    securityContext:
+      privileged: false
+    volumeMounts:
+    - mountPath: /etc/ssl/certs
+      name: dir0
+    - mountPath: /etc/pki/tls/certs
+      name: dir1
+    - mountPath: /var/lib/rancher/rke2/server/db/etcd/name
+      name: file0
+      readOnly: true
+    - mountPath: /var/lib/rancher/rke2/server/cred/controller.kubeconfig
+      name: file1
+      readOnly: true
+    - mountPath: /var/lib/rancher/rke2/server/tls/client-ca.crt
+      name: file2
+      readOnly: true
+    - mountPath: /var/lib/rancher/rke2/server/tls/client-ca.key
+      name: file3
+      readOnly: true
+    - mountPath: /var/lib/rancher/rke2/server/tls/client-controller.crt
+      name: file4
+      readOnly: true
+    - mountPath: /var/lib/rancher/rke2/server/tls/client-controller.key
+      name: file5
+      readOnly: true
+    - mountPath: /var/lib/rancher/rke2/server/tls/server-ca.crt
+      name: file6
+      readOnly: true
+    - mountPath: /var/lib/rancher/rke2/server/tls/server-ca.key
+      name: file7
+      readOnly: true
+    - mountPath: /var/lib/rancher/rke2/server/tls/service.key
+      name: file8
+      readOnly: true
+  hostNetwork: true
+  priorityClassName: system-cluster-critical
+  volumes:
+  - hostPath:
+      path: /etc/ssl/certs
+      type: DirectoryOrCreate
+    name: dir0
+  - hostPath:
+      path: /etc/pki/tls/certs
+      type: DirectoryOrCreate
+    name: dir1
+  - hostPath:
+      path: /var/lib/rancher/rke2/server/db/etcd/name
+      type: File
+    name: file0
+  - hostPath:
+      path: /var/lib/rancher/rke2/server/cred/controller.kubeconfig
+      type: File
+    name: file1
+  - hostPath:
+      path: /var/lib/rancher/rke2/server/tls/client-ca.crt
+      type: File
+    name: file2
+  - hostPath:
+      path: /var/lib/rancher/rke2/server/tls/client-ca.key
+      type: File
+    name: file3
+  - hostPath:
+      path: /var/lib/rancher/rke2/server/tls/client-controller.crt
+      type: File
+    name: file4
+  - hostPath:
+      path: /var/lib/rancher/rke2/server/tls/client-controller.key
+      type: File
+    name: file5
+  - hostPath:
+      path: /var/lib/rancher/rke2/server/tls/server-ca.crt
+      type: File
+    name: file6
+  - hostPath:
+      path: /var/lib/rancher/rke2/server/tls/server-ca.key
+      type: File
+    name: file7
+  - hostPath:
+      path: /var/lib/rancher/rke2/server/tls/service.key
+      type: File
+    name: file8
+status: {}
