@@ -135,14 +135,6 @@ admin_kubeconfig=$DTKBASE/generated/kubeconfig/admin.kubeconfig\
 
 for ((i = 0; i < $vmcount; ++i)); do
   vmname="${vmnames[$i]}"
-  if [[ $vmname == $controller_hostname ]]; then
-    xec configure-controller\
-     --controller-hostname=$controller_hostname\
-     --priv-key=$priv_key\
-     --admin-kubeconfig=$admin_kubeconfig\
-     --ca-cert=$ca_cert\
-     --ca-key=$ca_key
-  fi
   xec configure-worker\
    --controller-ip=$controller_ip\
    --controller-hostname=$controller_hostname\
@@ -152,15 +144,23 @@ for ((i = 0; i < $vmcount; ++i)); do
    --pod-cidr="${pod_cidrs[$i]}"\
    --ca-cert=$ca_cert\
    --ca-key=$ca_key
+
+  if [[ $vmname == $controller_hostname ]]; then
+    xec configure-controller\
+     --controller-hostname=$controller_hostname\
+     --priv-key=$priv_key\
+     --admin-kubeconfig=$admin_kubeconfig\
+     --containerized-cplane=$containerized_cplane\
+     --ca-cert=$ca_cert\
+     --ca-key=$ca_key
+  fi
+
 done
 
-echo "Waiting (indefinitely) for all nodes to be Ready"
+echo "Waiting for all nodes to be Ready"
 
 for ((i = 0; i < $vmcount; ++i)); do
-  if ! kubectl wait node "${vmnames[$i]}" --for=condition=Ready --timeout=10s; then
-    sleep 1s
-    continue
-  fi
+  kubectl wait node "${vmnames[$i]}" --for=condition=Ready --timeout=30s
 done
 
 echo "Labeling node(s)"
