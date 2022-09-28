@@ -15,10 +15,6 @@ do
   etc_hosts="$etc_hosts$ip $vm\n"
 done
 
-# debug
-#echo "priv_key=$priv_key"
-#echo -e "etc_hosts=$etc_hosts"
-
 for vm in "$@"
 do
   ip=$(xec get-vm-ip $vm)

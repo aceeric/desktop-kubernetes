@@ -88,17 +88,6 @@ function parse_args() {
 
 parse_args "$@"
 
-# debug
-#echo "priv_key=$priv_key"
-#echo "template_vmname=$template_vmname"
-#echo "clone_vmname=$clone_vmname"
-#echo "clone_ram=$clone_ram"
-#echo "clone_cpus=$clone_cpus"
-#echo "host_only_network=$host_only_network"
-#echo "host_only_octet=$host_only_octet"
-#echo "vboxdir=$vboxdir"
-#echo "shutdown=$shutdown"
-
 echo "cloning VM \"$clone_vmname\" from template VM \"$template_vmname\""
 VBoxManage clonevm $template_vmname\
  --basefolder="$vboxdir"\

@@ -57,12 +57,6 @@ function parse_args() {
 
 parse_args "$@"
 
-# debug
-#echo "worker_ip=$worker_ip"
-#echo "worker_hostname=$worker_hostname"
-#echo "ca_cert=$ca_cert"
-#echo "ca_key=$ca_key"
-
 # generate key
 openssl genrsa -out $DTKBASE/generated/cert/worker-key.pem 2048
 

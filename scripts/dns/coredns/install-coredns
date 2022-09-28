@@ -51,10 +51,6 @@ function parse_args() {
 
 parse_args "$@"
 
-# debug
-#echo "replicas=$replicas"
-#echo "admin_kubeconfig=$admin_kubeconfig"
-
 echo "applying coredns.yaml to the cluster"
 kubectl --kubeconfig $admin_kubeconfig apply -f $script_dir/coredns.yaml
 

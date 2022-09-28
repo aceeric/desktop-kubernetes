@@ -64,13 +64,6 @@ parse_args "$@"
 containerd_binary_actual=$(xec make-download-path\
  --download-url=$containerd_download --download-path=$containerd_binary)
 
-# debug
-#echo "priv_key=$priv_key"
-#echo "worker_ip=$worker_ip"
-#echo "containerd_download=$containerd_download"
-#echo "containerd_binary=$containerd_binary"
-#echo "containerd_binary_actual=$containerd_binary_actual"
-
 xec download-obj --url="$containerd_download" --dest="$containerd_binary_actual"
 
 echo "Copying containerd binary to worker"

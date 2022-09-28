@@ -46,10 +46,6 @@ function parse_args() {
 
 parse_args "$@"
 
-# debug
-#echo "controller_ip=$controller_ip"
-#echo "admin_kubeconfig=$admin_kubeconfig"
-
 sed $script_dir/cilium-1.9.4-quick-install.yaml -e "s|CONTROLLER_IP|$controller_ip|g"\
  | kubectl --kubeconfig $admin_kubeconfig apply -f -
 sleep 3s

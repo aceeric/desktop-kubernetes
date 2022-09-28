@@ -59,13 +59,6 @@ parse_args "$@"
 kube_router_yaml_download_actual="$(xec make-download-path\
  --download-url=$kube_router_yaml_download --download-path=$kube_router_yaml)"
 
-# debug
-#echo "controller_ip=$controller_ip"
-#echo "kube_router_yaml_download=$kube_router_yaml_download"
-#echo "kube_router_yaml=$kube_router_yaml"
-#echo "kube_router_yaml_download_actual=$kube_router_yaml_download_actual"
-#echo "admin_kubeconfig=$admin_kubeconfig"
-
 xec download-obj --url="$kube_router_yaml_download" --dest="$kube_router_yaml_download_actual"
 
 sed\

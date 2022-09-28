@@ -84,19 +84,6 @@ runc_binary_actual=$(xec make-download-path\
 cni_plugins_binary_actual=$(xec make-download-path\
  --download-url=$cni_plugins_download --download-path=$cni_plugins_binary)
 
-# debug
-#echo "priv_key=$priv_key"
-#echo "worker_ip=$worker_ip"
-#echo "crictl_download=$crictl_download"
-#echo "crictl_binary=$crictl_binary"
-#echo "crictl_binary_actual=$crictl_binary_actual"
-#echo "runc_download=$runc_download"
-#echo "runc_binary=$runc_binary"
-#echo "runc_binary_actual=$runc_binary_actual"
-#echo "cni_plugins_download=$cni_plugins_download"
-#echo "cni_plugins_binary=$cni_plugins_binary"
-#echo "cni_plugins_binary_actual=$cni_plugins_binary_actual"
-
 echo "Copying misc kubernetes binaries"
 
 xec download-obj --url="$crictl_download" --dest="$crictl_binary_actual"

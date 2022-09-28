@@ -79,18 +79,6 @@ parse_args "$@"
 kubelet_binary_actual="$(xec make-download-path\
  --download-url=$kubelet_download --download-path=$kubelet_binary)"
 
-# debug
-#echo "priv_key=$priv_key"
-#echo "controller_ip=$controller_ip"
-#echo "worker_ip=$worker_ip"
-#echo "worker_hostname=$worker_hostname"
-#echo "kubelet_download=$kubelet_download"
-#echo "kubelet_binary=$kubelet_binary"
-#echo "kubelet_binary_actual=$kubelet_binary_actual"
-#echo "pod_cidr=$pod_cidr"
-#echo "ca_cert=$ca_cert"
-#echo "ca_key=$ca_key"
-
 xec download-obj --url="$kubelet_download" --dest="$kubelet_binary_actual" --executable
 
 echo "copying binary to worker"

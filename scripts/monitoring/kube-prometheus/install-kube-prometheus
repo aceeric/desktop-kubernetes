@@ -62,13 +62,6 @@ parse_args "$@"
 kube_prometheus_binary_actual=$(xec make-download-path\
  --download-url=$kube_prometheus_download --download-path=$kube_prometheus_binary)
 
-# debug
-#echo "nodes=$nodes"
-#echo "kube_prometheus_download=$kube_prometheus_download"
-#echo "kube_prometheus_binary=$kube_prometheus_binary"
-#echo "kube_prometheus_binary_actual=$kube_prometheus_binary_actual"
-#echo "admin_kubeconfig=$admin_kubeconfig"
-
 xec download-obj --url="$kube_prometheus_download" --dest="$kube_prometheus_binary_actual"
 
 manifest_dir=$(basename "$kube_prometheus_binary_actual" .tar.gz)

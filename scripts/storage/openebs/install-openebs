@@ -72,16 +72,6 @@ openebs_hostpath_operator_manifest_actual=$(xec make-download-path\
 openebs_sc_manifest_actual=$(xec make-download-path\
  --download-url=$openebs_sc_manifest_download --download-path=$openebs_sc_manifest)
 
-# debug
-#echo "priv_key=$priv_key"
-#echo "admin_kubeconfig=$admin_kubeconfig"
-#echo "openebs_hostpath_operator_manifest_download=$openebs_hostpath_operator_manifest_download"
-#echo "openebs_hostpath_operator_manifest=$openebs_hostpath_operator_manifest"
-#echo "openebs_hostpath_operator_manifest_actual=$openebs_hostpath_operator_manifest_actual"
-#echo "openebs_sc_manifest_download=$openebs_sc_manifest_download"
-#echo "openebs_sc_manifest=$openebs_sc_manifest"
-#echo "openebs_sc_manifest_actual=$openebs_sc_manifest_actual"
-
 echo "installing the OpenEBS Hostpath Operator, and associated storage classes"
 
 xec download-obj --url="$openebs_hostpath_operator_manifest_download" --dest="$openebs_hostpath_operator_manifest_actual"

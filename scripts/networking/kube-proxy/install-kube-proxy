@@ -2,7 +2,8 @@
 
 set -e
 
-long_opts=controller-ip:,kube-proxy-download:,kube-proxy-binary:,priv-key:,ca-cert:,ca-key:,nodes:
+long_opts=controller-ip:,kube-proxy-download:,kube-proxy-binary:,priv-key:,\
+containerized-cplane:,admin-kubeconfig:,ca-cert:,ca-key:,nodes:
 script_name=$(basename "$0")
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
@@ -10,9 +11,11 @@ controller_ip=
 kube_proxy_download=
 kube_proxy_binary=
 priv_key=
-nodes=()
+containerize_cplane=0
+admin_kubeconfig=
 ca_cert=
 ca_key=
+nodes=()
 
 function opt_val() {
   opt="$1"
@@ -49,9 +52,12 @@ function parse_args() {
         priv_key=$(opt_val "$2")
         shift 2
         ;;
-      --nodes)
-        nodes=$(opt_val "$2")
-        IFS=',' read -ra nodes <<< "$nodes"
+      --containerized-cplane)
+        containerized_cplane=$(opt_val "$2")
+        shift 2
+        ;;
+      --admin-kubeconfig)
+        admin_kubeconfig=$(opt_val "$2")
         shift 2
         ;;
       --ca-cert)
@@ -60,6 +66,11 @@ function parse_args() {
         ;;
       --ca-key)
         ca_key=$(opt_val "$2")
+        shift 2
+        ;;
+      --nodes)
+        nodes=$(opt_val "$2")
+        IFS=',' read -ra nodes <<< "$nodes"
         shift 2
         ;;
       --)
@@ -74,16 +85,6 @@ parse_args "$@"
 
 kube_proxy_binary_actual=$(xec make-download-path\
  --download-url=$kube_proxy_download --download-path=$kube_proxy_binary)
-
-# debug
-#echo "controller_ip=$controller_ip"
-#echo "kube_proxy_download=$kube_proxy_download"
-#echo "kube_proxy_binary=$kube_proxy_binary"
-#echo "kube_proxy_binary_actual=$kube_proxy_binary_actual"
-#echo "priv_key=$priv_key"
-#echo "nodes=${nodes[@]}"
-#echo "ca_cert=$ca_cert"
-#echo "ca_key=$ca_key"
 
 xec download-obj --url="$kube_proxy_download" --dest="$kube_proxy_binary_actual" --executable
 
@@ -152,13 +153,29 @@ for node in "${nodes[@]}"; do
   scp -i $priv_key $kube_proxy_binary_actual root@$worker_ip:/usr/local/bin/kube-proxy
   scp -i $priv_key $script_dir/kube-proxy-config.yaml root@$worker_ip:/var/lib/kube-proxy/
   scp -i $priv_key $DTKBASE/generated/kubeconfig/kube-proxy.kubeconfig root@$worker_ip:/var/lib/kube-proxy/kubeconfig/
-  scp -i $priv_key $script_dir/kube-proxy.service root@$worker_ip:/etc/systemd/system/kube-proxy.service
-  ssh -i $priv_key root@$worker_ip "systemctl daemon-reload && systemctl enable kube-proxy && systemctl start kube-proxy"
-  echo "verifying kube-proxy is running"
-  set +e
-  for i in {1..10}; do
-    ssh -i "$priv_key" root@$worker_ip "systemctl is-active --quiet kube-proxy" && break
-    sleep 1s
-  done
-  echo "no errors detected with kube-proxy installation"
+
+  if [[ containerized_cplane -eq 0 ]]; then
+    scp -i $priv_key $script_dir/kube-proxy.service root@$worker_ip:/etc/systemd/system/kube-proxy.service
+    ssh -i $priv_key root@$worker_ip "systemctl daemon-reload && systemctl enable kube-proxy && systemctl start kube-proxy"
+    echo "verifying kube-proxy is running"
+    set +e
+    for i in {1..10}; do
+      ssh -i "$priv_key" root@$worker_ip "systemctl is-active --quiet kube-proxy" && break
+      sleep 1s
+    done
+  else
+    echo "copying kube-proxy static pod manifest to controller VM"
+    scp -i $priv_key $script_dir/kube-proxy-pod.yaml root@$worker_ip:/etc/desktop-kubernetes/static-pods/
+    for i in {1..20}; do
+      if kubectl --kubeconfig $admin_kubeconfig -n kube-system wait pod\
+        -lcomponent=kube-proxy --for=condition=ready --timeout=5s; then
+        break
+      elif [[ $i -eq 20 ]]; then
+        echo "Can't verify kube-proxy installation"
+        exit 1
+      fi
+      sleep 5s
+    done
+  fi
+  echo "no errors detected with kube-proxy installation for VM $worker_ip"
 done

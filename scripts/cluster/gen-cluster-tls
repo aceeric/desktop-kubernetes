@@ -54,11 +54,6 @@ function parse_args() {
 
 parse_args "$@"
 
-# debug
-#echo "controller_ip=$controller_ip"
-#echo "ca_cert=$ca_cert"
-#echo "ca_key=$ca_key"
-
 # generate key
 openssl genrsa -out $DTKBASE/generated/cert/kubernetes-key.pem 2048
 

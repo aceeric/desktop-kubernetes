@@ -51,10 +51,6 @@ function parse_args() {
 
 parse_args "$@"
 
-# debug
-#echo "template_vmname=$template_vmname"
-#echo "guest_additions_path=$guest_additions_path"
-
 # attach guest additions ISO and set boot from disk
 VBoxManage storageattach $template_vmname --storagectl IDE --port 0 --device 0 --type dvddrive\
  --medium $guest_additions_path

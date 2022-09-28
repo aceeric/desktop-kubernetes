@@ -27,29 +27,22 @@ dtk
 │
 ├─ scripts/cluster/gen-root-ca (2)
 │
-├─ scripts/control-plane/provision-controller (3)
+├─ scripts/cluster/gen-core-k8s (3)
 │  ├─ scripts/virtualbox/clone-vm
-│  ├─ scripts/control-plane/configure-controller
+│  ├─ scripts/cluster/gen-admin-kubeconfig
+│  ├─ scripts/worker/configure-worker (4)
 │  │  ├─ scripts/os/configure-firewall
-│  │  ├─ scripts/cluster/gen-cluster-tls
-│  │  ├─ scripts/control-plane/etcd/install-etcd
-│  │  ├─ scripts/control-plane/kube-apiserver/install-kube-apiserver
-│  │  ├─ scripts/control-plane/kube-controller-manager/install-kube-controller-manager
-│  │  └─ scripts/control-plane/kube-scheduler/install-kube-scheduler
-│  └─ scripts/cluster/gen-admin-kubeconfig
-│   
-├─ scripts/worker/configure-worker (4)
-│  ├─ scripts/os/configure-firewall
-│  ├─ scripts/worker/kubelet/gen-worker-tls
-│  ├─ scripts/worker/misc/install-misc-bins
-│  ├─ scripts/worker/containerd/install-containerd
-│  └─ scripts/worker/kubelet/install-kubelet
-│
-├─ scripts/worker/provision-workers (5)
-│  └─ scripts/worker/provision-worker
-│     ├─ scripts/virtualbox/clone-vm
-│     └─ scripts/worker/configure-worker
-│        (same scripts, same order, as under #4 above)
+│  │  ├─ scripts/worker/kubelet/gen-worker-tls
+│  │  ├─ scripts/worker/misc/install-misc-bins
+│  │  ├─ scripts/worker/containerd/install-containerd
+│  │  └─ scripts/worker/kubelet/install-kubelet
+|  └─ scripts/control-plane/configure-controller (5)
+│     ├─ scripts/os/configure-firewall
+│     ├─ scripts/cluster/gen-cluster-tls
+│     ├─ scripts/control-plane/etcd/install-etcd
+│     ├─ scripts/control-plane/kube-apiserver/install-kube-apiserver
+│     ├─ scripts/control-plane/kube-controller-manager/install-kube-controller-manager
+│     └─ scripts/control-plane/kube-scheduler/install-kube-scheduler
 │
 ├─ scripts/vm/configure-etc-hosts (6)
 ├─ scripts/networking/kube-proxy/install-kube-proxy
@@ -61,11 +54,11 @@ dtk
 
 ## Narrative
 
-1. If the `--create-template` arg is provided then ssh keys are generated, and a template VM is created using Kickstart and a CentOS or Rocky ISO depending on the `--linux` option. This ssh public key is copied into the VM in the `authorized-keys` file, and Virtual Box Guest Additions is installed. This template VM is cloned in subsequent steps to create the three VMs that comprise the Kubernetes cluster, so each VM has an identical configuration. Guest Additions is used because it enables getting the IP address of a VirtualBox VM.
+1. If the `--create-template` arg is provided then ssh keys are generated, and a template VM is created using Kickstart and a CentOS or Rocky ISO depending on the `--linux` option. This ssh public key is copied into the VM in the `authorized-keys` file, and Virtual Box Guest Additions is installed. This template VM is cloned in subsequent steps to create the VM(s) that comprise the Kubernetes cluster, so each VM has an identical configuration. Guest Additions is used because it enables getting the IP address of a VirtualBox VM.
 2. A root CA is generated for the cluster. This CA is used to sign certs throughout the remainder of the cluster provisioning process.
-3. A controller is provisioned with: cluster TLS, `etcd`, the `api server`, `controller manager`, and `scheduler`. (This project runs with a single controller to minimize the desktop footprint.)
-4. Because the controller is also a worker, the controller is configured as a worker node.
-5. If the `--single-node` flag is **not** specified, then two dedicated workers are provisioned. A worker gets a unique TLS cert/key for its `kubelet`, a few binaries: `crictl`, `runc`, and `cni plugins`, and of course the `kubelet` and `containerd`.
+3. The core Kubernetes cluster is created. This is done by creating one (or three) clones depending on whether `--single-node` was specified. Then, the canonical Kubernetes components are installed on each VM.
+4. Each worker gets a unique TLS cert/key for its `kubelet`, a few binaries: `crictl`, `runc`, and `cni plugins`, and of course the `kubelet` and `containerd`.
+5. The controller is provisioned with cluster TLS, `etcd`, the `api server`, `controller manager`, and `scheduler`. (This project runs with a single controller to minimize the desktop footprint.)
 6. The remainder of the scripts are: Configure `/etc/hosts` on each VM with all the cluster IP addresses. Then, assuming command line arg `--networking=calico`, Kube Proxy and Calico networking are installed. Following that, Core DNS, the Kube Prometheus stack for monitoring, and assuming `--storage=openebs`, the Open EBS storage provisioner is installed to support workloads with persistent volumes and claims.
 
 On completion, you have a functional Kubernetes cluster consisting of three physical VMs, one of which is a controller, and all three of which are workers.

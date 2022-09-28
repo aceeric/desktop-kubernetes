@@ -57,12 +57,6 @@ parse_args "$@"
 metrics_server_actual=$(xec make-download-path\
  --download-url=$metrics_server_download --download-path=$metrics_server_manifest)
 
-# debug
-#echo "admin_kubeconfig=$admin_kubeconfig"
-#echo "metrics_server_download=$metrics_server_download"
-#echo "metrics_server_manifest=$metrics_server_manifest"
-#echo "metrics_server_actual=$metrics_server_actual"
-
 xec download-obj --url="$metrics_server_download" --dest="$metrics_server_actual"
 
 echo

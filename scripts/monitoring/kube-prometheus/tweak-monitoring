@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 #
 # The kube prometheus stack wants to monitor kube-controller-manager and kube-scheduler as
-# Pods. Since we run them as systemd units we have to do some additional work to get prometheus
+# Pods. If we run those as systemd units we have to do some additional work to get prometheus
 # to scrape those two components. Also create resources to monitor kube-proxy which kube-prometheus
 # does not seem to include a monitor for at present.
 #

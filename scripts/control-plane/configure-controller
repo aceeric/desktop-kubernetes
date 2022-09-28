@@ -2,28 +2,17 @@
 
 # Configures a controller node
 
-# todo consider --no-gen-cluster-certs
-
 set -e
 
-long_opts=controller-hostname:,vboxdir:,priv-key:,\
-etcd-download:,etcd-gzip:,kube-apiserver-download:,kube-apiserver-binary:,\
-kube-controller-manager-download:,kube-controller-manager-binary:,\
-kube-scheduler-download:,kube-scheduler-binary:,ca-cert:,ca-key:
+long_opts=controller-hostname:,priv-key:,admin-kubeconfig:,containerized-cplane:,ca-cert:,ca-key:
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 script_name=$(basename "$0")
 
 # api
 controller_hostname=
-vboxdir=
 priv_key=
-etcd_download=
-etcd_gzip=
-kube_apiserver_download=
-kube_apiserver_binary=
-kube_controller_manager_download=
-kube_controller_manager_binary=
-kube_scheduler_download=
-kube_scheduler_binary=
+admin_kubeconfig=
+containerized_cplane=
 ca_cert=
 ca_key=
 
@@ -53,44 +42,16 @@ function parse_args() {
         controller_hostname=$(opt_val "$2")
         shift 2
         ;;
-      --vboxdir)
-        vboxdir=$(opt_val "$2")
-        shift 2
-        ;;
       --priv-key)
         priv_key=$(opt_val "$2")
         shift 2
         ;;
-      --etcd-download)
-        etcd_download=$(opt_val "$2")
+      --admin-kubeconfig)
+        admin_kubeconfig=$(opt_val "$2")
         shift 2
         ;;
-      --etcd-gzip)
-        etcd_gzip=$(opt_val "$2")
-        shift 2
-        ;;
-      --kube-apiserver-download)
-        kube_apiserver_download=$(opt_val "$2")
-        shift 2
-        ;;
-      --kube-apiserver-binary)
-        kube_apiserver_binary=$(opt_val "$2")
-        shift 2
-        ;;
-      --kube-controller-manager-download)
-        kube_controller_manager_download=$(opt_val "$2")
-        shift 2
-        ;;
-      --kube-controller-manager-binary)
-        kube_controller_manager_binary=$(opt_val "$2")
-        shift 2
-        ;;
-      --kube-scheduler-download)
-        kube_scheduler_download=$(opt_val "$2")
-        shift 2
-        ;;
-      --kube-scheduler-binary)
-        kube_scheduler_binary=$(opt_val "$2")
+      --containerized-cplane)
+        containerized_cplane=$(opt_val "$2")
         shift 2
         ;;
       --ca-cert)
@@ -111,26 +72,13 @@ function parse_args() {
 
 parse_args "$@"
 
-# debug
-#echo "controller_hostname=$controller_hostname"
-#echo "vboxdir=$vboxdir"
-#echo "priv_key=$priv_key"
-#echo "etcd_download=$etcd_download"
-#echo "etcd_gzip=$etcd_gzip"
-#echo "kube_apiserver_download=$kube_apiserver_download"
-#echo "kube_apiserver_binary=$kube_apiserver_binary"
-#echo "kube_controller_manager_download=$kube_controller_manager_download"
-#echo "kube_controller_manager_binary=$kube_controller_manager_binary"
-#echo "kube_scheduler_download=$kube_scheduler_download"
-#echo "kube_scheduler_binary=$kube_scheduler_binary"
-#echo "ca_cert=$ca_cert"
-#echo "ca_key=$ca_key"
+source $DTKBASE/artifacts
 
-run_count=$(VBoxManage list runningvms | awk '{print $1}' | grep -e'"'$controller_hostname'"' | wc -l)
-if [[ $run_count -eq 0 ]]; then
-  echo "starting controller VM"
-  VBoxManage startvm $controller_hostname
-fi
+#run_count=$(VBoxManage list runningvms | awk '{print $1}' | grep -e'"'$controller_hostname'"' | wc -l)
+#if [[ $run_count -eq 0 ]]; then
+#  echo "starting controller VM: $controller_hostname"
+#  VBoxManage startvm $controller_hostname
+#fi
 
 echo "getting controller IP address from running VM"
 controller_ip=$(xec get-vm-ip $controller_hostname)
@@ -156,6 +104,8 @@ xec install-etcd\
  --etcd-gzip=$etcd_gzip\
  --kubernetes-cert=$kubernetes_cert\
  --kubernetes-key=$kubernetes_key\
+ --admin-kubeconfig=$admin_kubeconfig\
+ --containerized-cplane=$containerized_cplane\
  --ca-cert=$ca_cert
 
 echo "installing kube-apiserver into controller"
@@ -167,6 +117,8 @@ xec install-kube-apiserver\
  --kube-apiserver-binary=$kube_apiserver_binary\
  --kubernetes-cert=$kubernetes_cert\
  --kubernetes-key=$kubernetes_key\
+ --containerized-cplane=$containerized_cplane\
+ --admin-kubeconfig=$admin_kubeconfig\
  --ca-cert=$ca_cert\
  --ca-key=$ca_key
 
@@ -177,6 +129,8 @@ xec install-kube-controller-manager\
  --controller-hostname=$controller_hostname\
  --kube-controller-manager-download=$kube_controller_manager_download\
  --kube-controller-manager-binary=$kube_controller_manager_binary\
+ --containerized-cplane=$containerized_cplane\
+ --admin-kubeconfig=$admin_kubeconfig\
  --ca-cert=$ca_cert\
  --ca-key=$ca_key
 
@@ -187,6 +141,8 @@ xec install-kube-scheduler\
  --controller-hostname=$controller_hostname\
  --kube-scheduler-download=$kube_scheduler_download\
  --kube-scheduler-binary=$kube_scheduler_binary\
+ --containerized-cplane=$containerized_cplane\
+ --admin-kubeconfig=$admin_kubeconfig\
  --ca-cert=$ca_cert\
  --ca-key=$ca_key
 
@@ -205,5 +161,4 @@ if [[ "$healthy_count" -ne 3 ]]; then
   exit 1
 fi
 
-echo "no errors detected with controller installation"
-
+echo "finished configuring controller"

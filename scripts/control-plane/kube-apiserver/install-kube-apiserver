@@ -8,7 +8,8 @@
 
 set -e
 
-long_opts=priv-key:,controller-ip:,controller-hostname:,kube-apiserver-download:,kube-apiserver-binary:,kubernetes-cert:,kubernetes-key:,ca-cert:,ca-key:
+long_opts=priv-key:,controller-ip:,controller-hostname:,kube-apiserver-download:,kube-apiserver-binary:,kubernetes-cert:,kubernetes-key:,\
+containerized-cplane:,admin-kubeconfig:,ca-cert:,ca-key:
 script_name=$(basename "$0")
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
@@ -19,6 +20,8 @@ kube_apiserver_download=
 kube_apiserver_binary=
 kubernetes_cert=
 kubernetes_key=
+containerize_cplane=0
+admin_kubeconfig=
 ca_cert=
 ca_key=
 
@@ -69,6 +72,14 @@ function parse_args() {
         kubernetes_key=$(opt_val "$2")
         shift 2
         ;;
+      --containerized-cplane)
+        containerized_cplane=$(opt_val "$2")
+        shift 2
+        ;;
+      --admin-kubeconfig)
+        admin_kubeconfig=$(opt_val "$2")
+        shift 2
+        ;;
       --ca-cert)
         ca_cert=$(opt_val "$2")
         shift 2
@@ -90,23 +101,6 @@ parse_args "$@"
 kube_apiserver_binary_actual=$(xec make-download-path\
  --download-url=$kube_apiserver_download --download-path=$kube_apiserver_binary)
 
-# debug
-#echo "priv_key=$priv_key"
-#echo "controller_ip=$controller_ip"
-#echo "controller_hostname=$controller_hostname"
-#echo "kube_apiserver_download=$kube_apiserver_download"
-#echo "kube_apiserver_binary=$kube_apiserver_binary"
-#echo "kube_apiserver_binary_actual=$kube_apiserver_binary_actual"
-#echo "kubernetes_cert=$kubernetes_cert"
-#echo "kubernetes_key=$kubernetes_key"
-#echo "ca_cert=$ca_cert"
-#echo "ca_key=$ca_key"
-
-xec download-obj --url="$kube_apiserver_download" --dest="$kube_apiserver_binary_actual" --executable
-
-echo "copying kube-apiserver binary to controller"
-scp -i $priv_key $kube_apiserver_binary_actual root@$controller_ip:/usr/local/bin/kube-apiserver
-
 echo "generating TLS material for kube-apiserver"
 
 # gen some path refs to make the openssl commands below a little less busy looking
@@ -116,6 +110,7 @@ service_account_csr=$DTKBASE/generated/cert/service-account.csr
 aggregator_cert=$DTKBASE/generated/cert/aggregator.pem
 aggregator_key=$DTKBASE/generated/cert/aggregator-key.pem
 aggregator_csr=$DTKBASE/generated/cert/aggregator.csr
+kube_apiserver_pod_manifest=$script_dir/kube-apiserver-pod.yaml
 
 openssl req -nodes -newkey rsa:2048 -keyout $service_account_key -subj "/CN=service-accounts" -out $service_account_csr
 openssl x509 -req -days 10000 -in $service_account_csr -CA $ca_cert -CAkey $ca_key -CAcreateserial\
@@ -138,27 +133,56 @@ encryption_key=$(head -c 32 /dev/urandom | base64)
 sed $script_dir/encryption-config.yaml -e "s|ENCRYPTION_KEY|$encryption_key|g"\
  | ssh -i $priv_key root@$controller_ip "cat > /var/lib/kubernetes/encryption-config.yaml"
 
-echo "generating kube-apiserver service file"
-sed $script_dir/kube-apiserver.service -e "s|CONTROLLER_IP|$controller_ip|g"\
- | ssh -i $priv_key root@$controller_ip "cat > /etc/systemd/system/kube-apiserver.service"
+if [[ containerized_cplane -eq 0 ]]; then
+  xec download-obj --url="$kube_apiserver_download" --dest="$kube_apiserver_binary_actual" --executable
 
-echo "starting kube-apiserver service"
-ssh -i $priv_key root@$controller_ip\
- "systemctl daemon-reload && systemctl enable kube-apiserver && systemctl start kube-apiserver"
+  echo "copying kube-apiserver binary to controller"
+  scp -i $priv_key $kube_apiserver_binary_actual root@$controller_ip:/usr/local/bin/kube-apiserver
 
-echo "verifying kube-apiserver is running"
-set +e
-for i in {1..10}; do
-  http_code=$(curl -so /dev/null -w "%{http_code}" --cacert $ca_cert https://$controller_ip:6443/version)
-  if [[ "$http_code" == "200" ]]; then
-    break
+  echo "generating kube-apiserver service file"
+  sed $script_dir/kube-apiserver.service -e "s|CONTROLLER_IP|$controller_ip|g"\
+   | ssh -i $priv_key root@$controller_ip "cat > /etc/systemd/system/kube-apiserver.service"
+  
+  echo "starting kube-apiserver service"
+  ssh -i $priv_key root@$controller_ip\
+   "systemctl daemon-reload && systemctl enable kube-apiserver && systemctl start kube-apiserver"
+  
+  echo "verifying kube-apiserver is running"
+  set +e
+  for i in {1..10}; do
+    http_code=$(curl -so /dev/null -w "%{http_code}" --cacert $ca_cert https://$controller_ip:6443/version)
+    if [[ "$http_code" == "200" ]]; then
+      break
+    fi
+    sleep 1s
+  done
+  
+  if [[ "$http_code" != "200" ]]; then
+    echo "ERROR: Unable to verify kube-apiserver installation"
+    exit 1
   fi
-  sleep 1s
-done
-
-if [[ "$http_code" != "200" ]]; then
-  echo "ERROR: Unable to verify kube-apiserver installation"
-  exit 1
+else
+  echo "copying kube-apiserver static pod manifest to controller VM"
+  sed $kube_apiserver_pod_manifest -e "s|CONTROLLER_IP|$controller_ip|g"\
+   | ssh -i $priv_key root@$controller_ip "cat > /etc/desktop-kubernetes/static-pods/kube-apiserver-pod.yaml"
+  for i in {1..20}; do
+    if kubectl --kubeconfig $admin_kubeconfig -n kube-system wait pod\
+      -lcomponent=kube-apiserver --for=condition=ready --timeout=5s; then
+      break
+    elif [[ $i -eq 20 ]]; then
+      echo "Can't verify kube-apiserver installation"
+      exit 1
+    fi
+    sleep 5s
+  done
 fi
+
+echo "generating RBAC for kubelet authorization"
+
+# Per: https://kubernetes.io/docs/reference/access-authn-authz/kubelet-authn-authz/#kubelet-authorization
+# Snip: "...ensure the user identified by the --kubelet-client-certificate and --kubelet-client-key flags passed
+# to the apiserver is authorized..." etc. See 'CN = ' in 'gen-cluster-tls' script. Also see 'authorization.mode'
+# in 'scripts/worker/kubelet/kubelet-config.yaml'. All these configs together implement the guidance.
+kubectl --kubeconfig $admin_kubeconfig create -f $script_dir/rbac.yaml
 
 echo "no errors detected with kube-apiserver installation"

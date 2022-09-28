@@ -2,7 +2,8 @@
 
 set -e
 
-long_opts=priv-key:,controller-ip:,controller-hostname:,kube-scheduler-download:,kube-scheduler-binary:,ca-cert:,ca-key:
+long_opts=priv-key:,controller-ip:,controller-hostname:,kube-scheduler-download:,kube-scheduler-binary:,\
+containerized-cplane:,admin-kubeconfig:,ca-cert:,ca-key:
 script_name=$(basename "$0")
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
@@ -11,6 +12,8 @@ controller_ip=
 controller_hostname=
 kube_scheduler_download=
 kube_scheduler_binary=
+containerize_cplane=0
+admin_kubeconfig=
 ca_cert=
 ca_key=
 
@@ -53,6 +56,14 @@ function parse_args() {
         kube_scheduler_binary=$(opt_val "$2")
         shift 2
         ;;
+      --containerized-cplane)
+        containerized_cplane=$(opt_val "$2")
+        shift 2
+        ;;
+      --admin-kubeconfig)
+        admin_kubeconfig=$(opt_val "$2")
+        shift 2
+        ;;
       --ca-cert)
         ca_cert=$(opt_val "$2")
         shift 2
@@ -74,21 +85,6 @@ parse_args "$@"
 kube_scheduler_binary_actual=$(xec make-download-path\
  --download-url=$kube_scheduler_download --download-path=$kube_scheduler_binary)
 
-# debug
-#echo "priv_key=$priv_key"
-#echo "controller_ip=$controller_ip"
-#echo "controller_hostname=$controller_hostname"
-#echo "kube_scheduler_download=$kube_scheduler_download"
-#echo "kube_scheduler_binary=$kube_scheduler_binary"
-#echo "kube_scheduler_binary_actual=$kube_scheduler_binary_actual"
-#echo "ca_cert=$ca_cert"
-#echo "ca_key=$ca_key"
-
-xec download-obj --url="$kube_scheduler_download" --dest="$kube_scheduler_binary_actual" --executable
-
-echo "copying kube-scheduler binary to controller VM"
-scp -i $priv_key $kube_scheduler_binary_actual root@$controller_ip:/usr/local/bin/kube-scheduler
-
 # gen some path refs to make the commands below a little less busy looking
 kube_scheduler_cert=$DTKBASE/generated/cert/kube-scheduler.pem
 kube_scheduler_key=$DTKBASE/generated/cert/kube-scheduler-key.pem
@@ -96,6 +92,7 @@ kube_scheduler_csr=$DTKBASE/generated/cert/kube-scheduler.csr
 kube_scheduler_kubeconfig=$DTKBASE/generated/kubeconfig/kube-scheduler.kubeconfig
 kube_scheduler_service=$script_dir/kube-scheduler.service
 kube_scheduler_yaml=$script_dir/kube-scheduler.yaml
+kube_scheduler_pod_manifest=$script_dir/kube-scheduler-pod.yaml
 
 echo "generating TLS material for kube-scheduler"
 openssl req -newkey rsa:2048 -nodes -keyout $kube_scheduler_key\
@@ -127,22 +124,42 @@ kubectl config set-context default \
 kubectl config use-context default --kubeconfig=$kube_scheduler_kubeconfig
 
 echo "copying configuration files to controller VM"
-ssh -i "$priv_key" root@$controller_ip "mkdir -p /var/lib/kubernetes /etc/kubernetes/config"
+ssh -i $priv_key root@$controller_ip "mkdir -p /var/lib/kubernetes /etc/kubernetes/config"
 scp -i $priv_key $kube_scheduler_kubeconfig root@$controller_ip:/var/lib/kubernetes/
 scp -i $priv_key $kube_scheduler_yaml root@$controller_ip:/etc/kubernetes/config/
 
-echo "copying kube-scheduler service file to controller VM"
-scp -i $priv_key $kube_scheduler_service root@$controller_ip:/etc/systemd/system/
+if [[ containerized_cplane -eq 0 ]]; then
+  xec download-obj --url="$kube_scheduler_download" --dest="$kube_scheduler_binary_actual" --executable
 
-echo "starting kube-scheduler service"
-ssh -i "$priv_key" root@$controller_ip\
- "systemctl daemon-reload && systemctl enable kube-scheduler && systemctl start kube-scheduler"
+  echo "copying kube-scheduler binary to controller VM"
+  scp -i $priv_key $kube_scheduler_binary_actual root@$controller_ip:/usr/local/bin/kube-scheduler
 
-echo "verifying kube-scheduler is running"
-set +e
-for i in {1..10}; do
-  ssh -i "$priv_key" root@$controller_ip "systemctl is-active --quiet kube-scheduler" && break
-  sleep 1s
-done
+  echo "copying kube-scheduler service file to controller VM"
+  scp -i $priv_key $kube_scheduler_service root@$controller_ip:/etc/systemd/system/
+
+  echo "starting kube-scheduler service"
+  ssh -i $priv_key root@$controller_ip\
+   "systemctl daemon-reload && systemctl enable kube-scheduler && systemctl start kube-scheduler"
+
+  echo "verifying kube-scheduler is running"
+  set +e
+  for i in {1..10}; do
+    ssh -i $priv_key root@$controller_ip "systemctl is-active --quiet kube-scheduler" && break
+    sleep 1s
+  done
+else
+  echo "copying kube-scheduler static pod manifest to controller VM"
+  scp -i $priv_key $kube_scheduler_pod_manifest root@$controller_ip:/etc/desktop-kubernetes/static-pods/
+  for i in {1..20}; do
+    if kubectl --kubeconfig $admin_kubeconfig -n kube-system wait pod\
+      -lcomponent=kube-scheduler --for=condition=ready --timeout=5s; then
+      break
+    elif [[ $i -eq 20 ]]; then
+      echo "Can't verify kube-scheduler installation"
+      exit 1
+    fi
+    sleep 5s
+  done
+fi
 
 echo "no errors detected with kube-scheduler installation"

@@ -1,0 +1,57 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    component: kube-controller-manager
+    tier: control-plane
+  name: kube-controller-manager
+  namespace: kube-system
+spec:
+  containers:
+  - name: kube-controller-manager
+    command:
+    - kube-controller-manager
+    - --allocate-node-cidrs=true
+    - --bind-address=0.0.0.0
+    - --cluster-cidr=10.200.0.0/16
+    - --cluster-name=kubernetes
+    - --cluster-signing-cert-file=/var/lib/kubernetes/ca.pem
+    - --cluster-signing-key-file=/var/lib/kubernetes/ca-key.pem
+    - --kubeconfig=/var/lib/kubernetes/kube-controller-manager.kubeconfig
+    - --leader-elect=true
+    - --root-ca-file=/var/lib/kubernetes/ca.pem
+    - --service-account-private-key-file=/var/lib/kubernetes/service-account-key.pem
+    - --service-cluster-ip-range=10.32.0.0/24
+    - --use-service-account-credentials=true
+    - --authorization-always-allow-paths=/healthz,/readyz,/livez,/metrics
+    - --v=2
+    env:
+    - name: NO_PROXY
+      value: .svc,.cluster.local,10.200.0.0/16,10.32.0.0/24
+    image: k8s.gcr.io/kube-controller-manager:v1.25.0
+    imagePullPolicy: IfNotPresent
+    livenessProbe:
+      failureThreshold: 8
+      httpGet:
+        host: localhost
+        path: /healthz
+        port: 10257
+        scheme: HTTPS
+      initialDelaySeconds: 15
+      timeoutSeconds: 15
+    resources:
+      requests:
+        cpu: 200m
+    securityContext:
+      privileged: false
+    volumeMounts:
+    - name: d1
+      mountPath: /var/lib/kubernetes/
+      readOnly: true
+  hostNetwork: true
+  priorityClassName: system-cluster-critical
+  volumes:
+  - name: d1
+    hostPath:
+      path: /var/lib/kubernetes/
+      type: DirectoryOrCreate

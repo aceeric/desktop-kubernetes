@@ -100,18 +100,6 @@ linux_iso_actual=$(xec make-download-path\
 guest_additions_actual=$(xec make-download-path\
  --download-url=$guest_additions_download --download-path=$guest_additions_path)
 
-# debug
-#echo "template_vmname=$template_vmname"
-#echo "linux_iso_download=$linux_iso_download"
-#echo "linux_iso_path=$linux_iso_path"
-#echo "linux_iso_actual=$linux_iso_actual"
-#echo "guest_additions_download=$guest_additions_download"
-#echo "guest_additions_path=$guest_additions_path"
-#echo "guest_additions_actual=$guest_additions_actual"
-#echo "host_network_interface=$host_network_interface"
-#echo "host_only_network=$host_only_network"
-#echo "vboxdir=$vboxdir"
-
 xec download-obj --url="$linux_iso_download" --dest="$linux_iso_actual"
 xec download-obj --url="$guest_additions_download" --dest="$guest_additions_actual"
 

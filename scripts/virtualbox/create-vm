@@ -75,14 +75,6 @@ function parse_args() {
 
 parse_args "$@"
 
-# debug
-#echo "template_vmname=$template_vmname"
-#echo "linux_iso_path=$linux_iso_path"
-#echo "kickstart_iso_path=$kickstart_iso_path"
-#echo "host_network_interface=$host_network_interface"
-#echo "host_only_network_name=$host_only_network_name"
-#echo "vboxdir=$vboxdir"
-
 if [[ ! -z "$host_network_interface" ]] && [[ ! -z "$host_only_network_name" ]]; then
   echo "specify either --host-only-network-name or --host-network-interface"
   exit 1

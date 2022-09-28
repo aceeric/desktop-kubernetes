@@ -141,26 +141,7 @@ function parse_args() {
 
 parse_args "$@"
 
-# debug
-#echo "controller_ip=$controller_ip"
-#echo "worker_hostname=$worker_hostname"
-#echo "controller_hostname=$controller_hostname"
-#echo "priv_key=$priv_key"
-#echo "admin_kubeconfig=$admin_kubeconfig"
-#echo "crictl_download=$crictl_download"
-#echo "crictl_binary=$crictl_binary"
-#echo "runc_download=$runc_download"
-#echo "runc_binary=$runc_binary"
-#echo "cni_plugins_download=$cni_plugins_download"
-#echo "cni_plugins_binary=$cni_plugins_binary"
-#echo "containerd_download=$containerd_download"
-#echo "containerd_binary=$containerd_binary"
-#echo "kubelet_download=$kubelet_download"
-#echo "kubelet_binary=$kubelet_binary"
-#echo "pod_cidr=$pod_cidr"
-#echo "node_labels=$node_labels"
-#echo "ca_cert=$ca_cert"
-#echo "ca_key=$ca_key"
+source $DTKBASE/artifacts
 
 run_count=$(VBoxManage list runningvms | awk '{print $1}' | grep -e'"'$worker_hostname'"' | wc -l)
 if [[ $run_count -eq 0 ]]; then
@@ -168,7 +149,7 @@ if [[ $run_count -eq 0 ]]; then
   VBoxManage startvm $worker_hostname
 fi
 
-echo "Getting IP address from running VM"
+echo "Getting IP address from running VM for $worker_hostname"
 worker_ip=$(xec get-vm-ip $worker_hostname)
 
 echo "Making worker VM configuration changes"
@@ -222,26 +203,3 @@ xec install-kubelet\
  --kubelet-binary=$kubelet_binary\
  --pod-cidr=$pod_cidr\
  --ca-cert=$ca_cert
-
-set +e
-for i in {1..15}; do
-  ready_count=$(kubectl --kubeconfig $admin_kubeconfig get nodes 2>/dev/null | grep $worker_hostname | grep Ready | wc -l)
-  if [[ "$ready_count" -eq 1 ]]; then
-    break
-  fi
-  sleep 1s
-done
-
-if [[ "$ready_count" -ne 1 ]]; then
-  echo "Unable to verify that the worker node was successfully configured"
-  exit 1
-fi
-
-echo "Labeling node"
-
-IFS=',' read -ra labels <<< "$node_labels"
-for label in "${labels[@]}"; do
-  kubectl --kubeconfig $admin_kubeconfig label node $worker_hostname node-role.kubernetes.io/$label=
-done
-
-echo "No errors detected with worker installation"

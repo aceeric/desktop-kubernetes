@@ -67,11 +67,6 @@ function parse_args() {
 
 parse_args "$@"
 
-# debug
-#echo "download_url=$download_url"
-#echo "download_path=$download_path"
-#echo "default_path=$default_path"
-
 if [[ ! -z "$download_url" ]]; then
   if [[ -z "$download_path" ]]; then
     if [[ -d "$default_path" ]]; then

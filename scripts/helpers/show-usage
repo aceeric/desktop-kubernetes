@@ -1,0 +1,100 @@
+#!/usr/bin/env bash
+
+while IFS= read -r line; do
+  echo "${line:2}"
+done <<< '
+  dtk
+  ---
+  Creates a Kubernetes cluster on the desktop using VirtualBox and kickstart for hands-free CentOS
+  or Rocky Linux installation. The cluster consists of three nodes: one controller and two workers.
+  The nodes are configured with networking support for host-to-guest, guest-to-guest, and
+  guest-to-internet.
+
+  The script creates a "template" VM, and then clones that for each cluster node. The initial
+  template VM creation runs Kickstart to install the OS, and also installs VirtualBox Guest Additions
+  because that provides the ability to get the IP address from a running VM. Note - creating the template
+  VM takes a fair bit of time, including the initial 60 seconds for the boot menu to time out and actually
+  start the install.
+
+  Usage: dtk [--vboxdir=</some/path>] [--host-network-interface=<interface>] [--host-only-network=<network>] 
+             [--networking=<type>] [--monitoring=<type>] [--create-template] [--template-name] [--single-node]
+             [--linux=<centos|rocky>] [--storage=<type>] [--containerized-cplane]
+             [--verify=<files|upstreams>] [--check-compatibility] [--up=<nodelist>] [--down=<nodelist>]
+             [--delete=<nodelist>] [--sshto=<vmname>] [--help]
+
+  Options:
+
+    Cluster creation options:
+
+    --vboxdir                  Required. The directory where you keep your VirtualBox VM files. The script uses
+                               the VBoxManage utility to create the VMs, which will in turn create a sub-directory
+                               under this directory for each VM. The directory must exist. The script will not
+                               create it.
+    --host-network-interface   Specify this, or --host-only-network. If this, then the value is the name of the primary
+                               network interface on your machine. The scripts use this to configure the VirtualBox
+                               bridge network for each node VM. This option must be applied identically to the
+                               template VM and all clones.
+    --host-only-network        Specify this, or --host-network-interface. If this, then the value is the left three
+                               octets of the host only network. This option configures NAT + host only networking
+                               mode. The scripts will create a new host only network and configure the cluster to
+                               use it for intra-cluster networking, and will configure NAT for the cluster to
+                               access the internet. This option must be applied identically to the template VM
+                               and all clones.
+    --networking               Installs k8s networking. Current valid values are "calico", "kube-router", and
+                               "cilium". E.g.: --networking=calico. (Calico also installs kube-proxy. The
+                               other networking configurations are kube-proxyless.)
+    --monitoring               Optional. Installs monitoring. Allowed values are "metrics.k8s.io", and
+                               "kube-prometheus".
+    --create-template          Optional. First creates a template VM from which to clone all the cluster nodes.
+                               (This step by far takes the longest.) You have to do this at least once. Once the
+                               template is created, brings up the cluster by cloning the template for each node.
+                               If not specified, the script expects to find an existing VM to clone from.
+    --template-name            Optional. Specifies the template name to create - or clone from. Default is
+                               "bingo" if not provided.
+    --single-node              Optional. Creates a single node cluster. The default is to create one control
+                               plane node, and two workers. This option is useful to quickly test changes since
+                               it is faster to provision a single node.
+    --linux                    Optional. Valid values are "centos" for CentOS Stream (the default) and "rocky"
+                               for Rocky Linux. Ignored unless --create-template is specified.
+    --storage                  Optional. Installs a dynamic storage provisioner. This supports testing workloads
+                               that use PVs and PVCs. Presently, the only supported value is "openebs". E.g.:
+                               --storage=openebs
+    --containerized-cplane     Optional. If specified (without a value), creates the control plane components as
+                               containers on the controller VM like Kubeadm, RKE2, et. al. By default, creates the
+                               control plane components as as systemd units.
+
+    Other optional options:
+
+    --verify                   Looks for all the upstreams or filesystem objects used by the script. Valid options
+                               are "upstreams" and "files". If "upstreams", then the script does a curl HEAD request
+                               for each upstream (e.g. OS ISO, Kubernetes binaries, etc.). If "files", then
+                               the same check is performed for the downloaded filesystem objects. This is a useful
+                               option to see all the objects that are required to provision a cluster. The list is
+                               influenced by some other options. E.g. if you specify --monitoring=kube-prometheus,
+                               then that will add to the list of objects.
+    --check-compatibility      Checks the installed versions of various utils used by the project (curl, kubectl,
+                               etc) against what the project has been tested on - and then exits, taking no
+                               further action. You should do this at least once.
+    --up                       Takes a comma-separated list of VM names, and starts them all.
+    --down                     Opposite of --up. Note - this is very low-tech at present: Order the args with the
+                               workers first and the controller last.
+    --delete                   Tears down the cluster: Force stops all VMs and removes associated files from
+                               the directory specified in the --vboxdir option.
+    --sshto                    SSHs to the named VM. E.g: "--sshto myvmname"
+    --help                     Displays this help and exits.
+
+  Examples:
+
+    dtk --create-template --host-network-interface=enp0s31f6 --vboxdir=/sdb1/virtualbox --networking=calico
+
+    Wires the VirtualBox bridge network to interface "enp0s31f6", uses the "/sdb1/virtualbox" directory
+    for all VM files. Creates a template to clone the nodes from. Installs calico networking
+
+    dtk --host-only-network=192.168.56 --vboxdir=/sdb1/virtualbox --single-node --networking=calico
+
+    Uses the template VM created by a prior invocation. Configures host-only plus NAT networking. Creates a
+    single-node cluster.
+
+    dtk --up=vm1,vm2,vm3
+
+    Starts the VMs for the default three-node cluster created by the script.'

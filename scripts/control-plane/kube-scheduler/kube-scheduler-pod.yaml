@@ -1,0 +1,46 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  labels:
+    component: kube-scheduler
+    tier: control-plane
+  name: kube-scheduler
+  namespace: kube-system
+spec:
+  containers:
+  - name: kube-scheduler
+    command:
+    - kube-scheduler
+    - --kubeconfig=/var/lib/kubernetes/kube-scheduler.kubeconfig
+    - --authorization-always-allow-paths=/healthz,/readyz,/livez,/metrics
+    - --v=2
+    env:
+    - name: NO_PROXY
+      value: .svc,.cluster.local,10.200.0.0/16,10.32.0.0/24
+    image: k8s.gcr.io/kube-scheduler:v1.25.0
+    imagePullPolicy: IfNotPresent
+    livenessProbe:
+      failureThreshold: 8
+      httpGet:
+        host: localhost
+        path: /healthz
+        port: 10259
+        scheme: HTTPS
+      initialDelaySeconds: 15
+      timeoutSeconds: 15
+    resources:
+      requests:
+        cpu: 100m
+    securityContext:
+      privileged: false
+    volumeMounts:
+    - name: d1
+      mountPath: /var/lib/kubernetes
+      readOnly: true
+  hostNetwork: true
+  priorityClassName: system-cluster-critical
+  volumes:
+  - name: d1
+    hostPath:
+      path: /var/lib/kubernetes
+      type: DirectoryOrCreate

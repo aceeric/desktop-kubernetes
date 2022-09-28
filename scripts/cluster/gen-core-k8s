@@ -1,0 +1,174 @@
+#!/usr/bin/env bash
+#
+# Generates the Kubernetes core cluster by cloning VMs for the controller and
+# nodes, and then installing only the canonical Kubernetes controller and worker
+# components in each VM.
+#
+
+set -e
+
+long_opts=host-only-network:,vboxdir:,single-node:,template-vmname:,containerized-cplane:,priv-key:,ca-cert:,ca-key:
+
+# api
+host_only_network=
+vboxdir=
+single_node=0
+template_vmname=bingo
+containerized_cplane=0
+priv_key=
+ca_cert=
+ca_key=
+
+#
+# option parsing helper
+#
+function opt_val() {
+  opt="$1"
+  if [[ "$opt" == =* ]]; then
+    echo "${opt:1}"
+  else
+    echo "$opt"
+  fi
+}
+
+#
+# parses command line parameters and sets script variables from them
+#
+function parse_args() {
+  if [[ "$#" -eq 0 ]]; then
+    echo "no args provided"
+    exit 1
+  fi
+  local parsed
+  local script_name=$(basename "$0")
+  parsed=$(getopt --options "" --longoptions $long_opts -n $script_name -- "$@")
+  eval set -- "$parsed"
+  while true; do
+    case "$1" in
+      --host-only-network)
+        host_only_network=$(opt_val "$2")
+        shift 2
+        ;;
+      --vboxdir)
+        vboxdir=$(opt_val "$2")
+        shift 2
+        ;;
+      --single-node)
+        single_node=$(opt_val "$2")
+        shift 2
+        ;;
+      --template-vmname)
+        template_vmname=$(opt_val "$2")
+        shift 2
+        ;;
+      --containerized-cplane)
+        containerized_cplane=$(opt_val "$2")
+        shift 2
+        ;;
+      --priv-key)
+        priv_key=$(opt_val "$2")
+        shift 2
+        ;;
+      --ca-cert)
+        ca_cert=$(opt_val "$2")
+        shift 2
+        ;;
+      --ca-key)
+        ca_key=$(opt_val "$2")
+        shift 2
+        ;;
+      --)
+        shift
+        break
+        ;;
+    esac
+  done
+}
+
+parse_args "$@"
+
+source $DTKBASE/artifacts
+
+controller_hostname="doc"
+vmnames=($controller_hostname)
+vmcount=1
+ram=(8192 8192 8192)
+cpu=(3 3 3)
+octets=(200 201 202)
+pod_cidrs=(10.200.1.0/24 10.200.2.0/24 10.200.3.0/24)
+node_labels=(controller,worker worker worker)
+
+if [[ $single_node -eq 0 ]]; then
+  vmcount=3
+  vmnames=($controller_hostname ham monk)
+fi
+
+for ((i = 0; i < $vmcount; ++i)); do
+  xec clone-vm\
+   --priv-key=$priv_key\
+   --template-vmname=$template_vmname\
+   --clone-vmname="${vmnames[$i]}"\
+   --clone-ram="${ram[$i]}"\
+   --clone-cpu="${cpu[$i]}"\
+   --host-only-network=$host_only_network\
+   --host-only-octet="${octets[$i]}"\
+   --vboxdir=$vboxdir\
+   --shutdown=false
+done
+
+# do this now to avoid needing DNS before CoreDNS is installed
+echo "configuring /etc/hosts in VMs"
+xec configure-etc-hosts $priv_key "${vmnames[@]}"
+
+controller_ip=$(xec get-vm-ip $controller_hostname)
+
+# generate an admin kubeconfig that is used for any subsequent configuration step that
+# is accomplished using the kubectl command (and also to access the cluster when it is up)
+
+xec gen-admin-kubeconfig --controller-ip=$controller_ip --ca-cert=$ca_cert --ca-key=$ca_key
+admin_kubeconfig=$DTKBASE/generated/kubeconfig/admin.kubeconfig\
+
+# The control plane node will get the worker components for two reasons: 1) it supports
+# a containerized control plane, and 2) it lets the controller be also a worker
+for ((i = 0; i < $vmcount; ++i)); do
+  vmname="${vmnames[$i]}"
+  vmip=$(xec get-vm-ip $vmname)
+  ssh -i $priv_key root@$vmip mkdir -p /etc/desktop-kubernetes/static-pods
+  xec configure-worker\
+   --controller-ip=$controller_ip\
+   --controller-hostname=$controller_hostname\
+   --worker-hostname=$vmname\
+   --priv-key=$priv_key\
+   --admin-kubeconfig=$admin_kubeconfig\
+   --pod-cidr="${pod_cidrs[$i]}"\
+   --ca-cert=$ca_cert\
+   --ca-key=$ca_key
+
+  if [[ $vmname == $controller_hostname ]]; then
+    xec configure-controller\
+     --controller-hostname=$controller_hostname\
+     --priv-key=$priv_key\
+     --admin-kubeconfig=$admin_kubeconfig\
+     --containerized-cplane=$containerized_cplane\
+     --ca-cert=$ca_cert\
+     --ca-key=$ca_key
+  fi
+done
+
+echo "Waiting for all nodes to be Ready"
+
+for ((i = 0; i < $vmcount; ++i)); do
+  kubectl wait node "${vmnames[$i]}" --for=condition=Ready --timeout=30s
+done
+
+echo "Labeling node(s)"
+
+for ((i = 0; i < $vmcount; ++i)); do
+  IFS=',' read -ra labels <<< "${node_labels[$i]}"
+  echo "LABELS=${labels[@]}"
+  for label in "${labels[@]}"; do
+    kubectl --kubeconfig $admin_kubeconfig label node "${vmnames[$i]}" node-role.kubernetes.io/$label=
+  done
+done
+
+echo "Core Kubernetes cluster creation successful"

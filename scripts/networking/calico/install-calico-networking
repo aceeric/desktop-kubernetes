@@ -82,19 +82,6 @@ calico_tigera_binary_actual=$(xec make-download-path\
 calico_custom_resources_manifest_actual=$(xec make-download-path\
  --download-url=$calico_custom_resources_download --download-path=$calico_custom_resources_manifest)
 
-# debug
-# echo "calico_tigera_download=$calico_tigera_download"
-# echo "calico_tigera_binary=$calico_tigera_binary"
-# echo "calico_tigera_binary_actual=$calico_tigera_binary_actual"
-# echo "calico_custom_resources_download=$calico_custom_resources_download"
-# echo "calico_custom_resources_manifest=$calico_custom_resources_manifest"
-# echo "calico_custom_resources_manifest_actual=$calico_custom_resources_manifest_actual"
-# echo "calico_version=$calico_version"
-# echo "priv_key=$priv_key"
-# echo "admin_kubeconfig=$admin_kubeconfig"
-# echo "cluster_cidr=$cluster_cidr"
-# echo "nodes=${nodes[@]}"
-
 # per https://docs.projectcalico.org/maintenance/troubleshoot/troubleshooting#configure-networkmanager
 # last eyeballed on 14-Jul-2022
 for node in "${nodes[@]}"; do
@@ -130,16 +117,11 @@ sed "s|cidr: 192.168.0.0/16|cidr: $cluster_cidr|" $calico_custom_resources_manif
   | kubectl --kubeconfig $admin_kubeconfig create -f -
 
 echo "waiting (indefinitely) for calico daemonset"
-
-desired=0
-ready=1
-while [[ $ready -ne $desired ]]; do
-  sleep 1s
-  calicods=$(kubectl --kubeconfig $admin_kubeconfig -n calico-system get ds/calico-node --no-headers\
-   -ocustom-columns='DESIRED:status.desiredNumberScheduled,READY:status.numberReady')
-  IFS=' ' read -ra cols <<< "$calicods"
-  desired="${cols[0]}"
-  ready="${cols[1]}"
+while true; do
+  if kubectl --kubeconfig $admin_kubeconfig -n calico-system rollout status ds calico-node; then
+    break
+  fi
+  sleep 10s
 done
 
 echo "calico installation complete"

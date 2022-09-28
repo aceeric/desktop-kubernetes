@@ -58,13 +58,6 @@ parse_args "$@"
 kubernetes_dashboard_actual=$(xec make-download-path\
  --download-url=$kubernetes_dashboard_download --download-path=$kubernetes_dashboard_manifest)
 
-# debug
-#echo "admin_kubeconfig=$admin_kubeconfig"
-#echo "controller_ip=$controller_ip"
-#echo "kubernetes_dashboard_download=$kubernetes_dashboard_download"
-#echo "kubernetes_dashboard_manifest=$kubernetes_dashboard_manifest"
-#echo "kubernetes_dashboard_actual=$kubernetes_dashboard_actual"
-
 xec download-obj --url="$kubernetes_dashboard_download" --dest="$kubernetes_dashboard_actual"
 
 echo "installing kubernetes dashboard"
