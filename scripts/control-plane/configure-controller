@@ -2,20 +2,20 @@
 
 # Configures a controller node
 
-# todo consider --no-gen-cluster-certs
-
 set -e
 
-long_opts=controller-hostname:,vboxdir:,priv-key:,\
+long_opts=controller-hostname:,vboxdir:,priv-key:,admin-kubeconfig:,\
 etcd-download:,etcd-gzip:,kube-apiserver-download:,kube-apiserver-binary:,\
 kube-controller-manager-download:,kube-controller-manager-binary:,\
 kube-scheduler-download:,kube-scheduler-binary:,ca-cert:,ca-key:
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 script_name=$(basename "$0")
 
 # api
 controller_hostname=
 vboxdir=
 priv_key=
+admin_kubeconfig=
 etcd_download=
 etcd_gzip=
 kube_apiserver_download=
@@ -59,6 +59,10 @@ function parse_args() {
         ;;
       --priv-key)
         priv_key=$(opt_val "$2")
+        shift 2
+        ;;
+      --admin-kubeconfig)
+        admin_kubeconfig=$(opt_val "$2")
         shift 2
         ;;
       --etcd-download)
@@ -115,6 +119,7 @@ parse_args "$@"
 #echo "controller_hostname=$controller_hostname"
 #echo "vboxdir=$vboxdir"
 #echo "priv_key=$priv_key"
+#echo "admin_kubeconfig=$admin_kubeconfig"
 #echo "etcd_download=$etcd_download"
 #echo "etcd_gzip=$etcd_gzip"
 #echo "kube_apiserver_download=$kube_apiserver_download"
@@ -125,6 +130,8 @@ parse_args "$@"
 #echo "kube_scheduler_binary=$kube_scheduler_binary"
 #echo "ca_cert=$ca_cert"
 #echo "ca_key=$ca_key"
+
+source $DTKBASE/artifacts
 
 run_count=$(VBoxManage list runningvms | awk '{print $1}' | grep -e'"'$controller_hostname'"' | wc -l)
 if [[ $run_count -eq 0 ]]; then
@@ -205,5 +212,15 @@ if [[ "$healthy_count" -ne 3 ]]; then
   exit 1
 fi
 
-echo "no errors detected with controller installation"
+echo "no errors detected with controller components"
 
+# Per: https://kubernetes.io/docs/reference/command-line-tools-reference/kubelet-authentication-authorization/
+# And, per Hightower: "The Kubernetes API Server authenticates to the Kubelet as the `kubernetes` user using the
+# client certificate as defined by the `--kubelet-client-certificate` flag." So "Bind the
+# 'system:kube-apiserver-to-kubelet' ClusterRole to the 'kubernetes' user" that is embedded in that cert.
+# (See 'CN = ' in 'gen-cluster-tls' script)
+
+echo "generating RBAC for kubelet authorization"
+kubectl --kubeconfig $admin_kubeconfig create -f $script_dir/rbac.yaml
+
+echo "finished configuring controller"

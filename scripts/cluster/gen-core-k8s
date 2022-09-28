@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 #
-# Generates the Kubernetes core cluster by cloning VMs and then installing
-# only the canonical Kubernetes controller and worker components in each VM.
+# Generates the Kubernetes core cluster by cloning VMs for the controller and
+# nodes, and then installing only the canonical Kubernetes controller and worker
+# components in each VM.
 #
 
 set -e
@@ -135,21 +136,22 @@ admin_kubeconfig=$DTKBASE/generated/kubeconfig/admin.kubeconfig\
 for ((i = 0; i < $vmcount; ++i)); do
   vmname="${vmnames[$i]}"
   if [[ $vmname == $controller_hostname ]]; then
-    xec provision-controller\
+    xec configure-controller\
      --controller-hostname=$controller_hostname\
-     --priv-key=$DTKBASE/generated/kickstart/id_ed25519\
-     --ca-cert=$DTKBASE/generated/cert/ca.pem\
-     --ca-key=$DTKBASE/generated/cert/ca-key.pem
+     --priv-key=$priv_key\
+     --admin-kubeconfig=$admin_kubeconfig\
+     --ca-cert=$ca_cert\
+     --ca-key=$ca_key
   fi
   xec configure-worker\
    --controller-ip=$controller_ip\
    --controller-hostname=$controller_hostname\
    --worker-hostname=$vmname\
-   --priv-key=$DTKBASE/generated/kickstart/id_ed25519\
-   --admin-kubeconfig=$DTKBASE/generated/kubeconfig/admin.kubeconfig\
+   --priv-key=$priv_key\
+   --admin-kubeconfig=$admin_kubeconfig\
    --pod-cidr="${pod_cidrs[$i]}"\
-   --ca-cert=$DTKBASE/generated/cert/ca.pem\
-   --ca-key=$DTKBASE/generated/cert/ca-key.pem
+   --ca-cert=$ca_cert\
+   --ca-key=$ca_key
 done
 
 echo "Waiting (indefinitely) for all nodes to be Ready"
@@ -171,4 +173,4 @@ for ((i = 0; i < $vmcount; ++i)); do
   done
 done
 
-echo "Cluster creation succeessful"
+echo "Cluster creation successful"
