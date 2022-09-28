@@ -154,15 +154,17 @@ parse_args "$@"
 #echo "ca_cert=$ca_cert"
 #echo "ca_key=$ca_key"
 
-xec clone-vm\
- --priv-key=$priv_key\
- --template-vmname=$template_vmname\
- --clone-vmname=$controller_hostname\
- --clone-ram=$controller_ram\
- --clone-cpu=$controller_cpu\
- --host-only-network=$host_only_network\
- --host-only-octet=$host_only_octet\
- --vboxdir=$vboxdir
+# xec clone-vm\
+#  --priv-key=$priv_key\
+#  --template-vmname=$template_vmname\
+#  --clone-vmname=$controller_hostname\
+#  --clone-ram=$controller_ram\
+#  --clone-cpu=$controller_cpu\
+#  --host-only-network=$host_only_network\
+#  --host-only-octet=$host_only_octet\
+#  --vboxdir=$vboxdir
+
+source $DTKBASE/artifacts
 
 xec configure-controller\
  --controller-hostname=$controller_hostname\

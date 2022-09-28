@@ -1,0 +1,56 @@
+# These are the various binaries and manifests that are downloaded by the scripts in the project. Two
+# elements are defined for each upstream: the URL to get it from, and the filesystem location. This way,
+# once the script is run once, subsequent invocations can just use the downloaded objects. All downloads
+# are placed into in the 'binaries' directory and can just be reused. This script is intended to be
+# sourced by the various scripts that need it.
+
+# core
+centos_iso_download=https://mirror.umd.edu/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-latest-dvd1.iso
+centos_iso_path=$DTKBASE/binaries/CentOS-Stream-8-x86_64-latest-dvd1.iso
+rocky_iso_download=https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9.0-x86_64-dvd.iso
+rocky_iso_path=$DTKBASE/binaries/Rocky-9.0-x86_64-dvd.iso
+guest_additions_download=https://download.virtualbox.org/virtualbox/6.1.36/VBoxGuestAdditions_6.1.36.iso
+guest_additions_path=$DTKBASE/binaries/VBoxGuestAdditions_6.1.36.iso
+etcd_download=https://github.com/etcd-io/etcd/releases/download/v3.5.4/etcd-v3.5.4-linux-amd64.tar.gz
+etcd_gzip=$DTKBASE/binaries/etcd-v3.5.4-linux-amd64.tar.gz
+kube_apiserver_download=https://dl.k8s.io/v1.25.0/bin/linux/amd64/kube-apiserver
+kube_apiserver_binary=$DTKBASE/binaries/kube-apiserver-v1.25.0
+kube_controller_manager_download=https://dl.k8s.io/v1.25.0/bin/linux/amd64/kube-controller-manager
+kube_controller_manager_binary=$DTKBASE/binaries/kube-controller-manager-v1.25.0
+kube_scheduler_download=https://dl.k8s.io/v1.25.0/bin/linux/amd64/kube-scheduler
+kube_scheduler_binary=$DTKBASE/binaries/kube-scheduler-v1.25.0
+crictl_download=https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.24.2/crictl-v1.24.2-linux-amd64.tar.gz
+crictl_binary=$DTKBASE/binaries/crictl-v1.24.2-linux-amd64.tar.gz
+runc_download=https://github.com/opencontainers/runc/releases/download/v1.1.1/runc.amd64
+runc_binary=$DTKBASE/binaries/runc
+cni_plugins_download=https://github.com/containernetworking/plugins/releases/download/v1.1.1/cni-plugins-linux-amd64-v1.1.1.tgz
+cni_plugins_binary=$DTKBASE/binaries/cni-plugins-linux-amd64-v1.1.1.tgz
+containerd_download=https://github.com/containerd/containerd/releases/download/v1.6.4/containerd-1.6.4-linux-amd64.tar.gz
+containerd_binary=$DTKBASE/binaries/containerd-1.6.4-linux-amd64.tar.gz
+kubelet_download=https://dl.k8s.io/v1.25.0/bin/linux/amd64/kubelet
+kubelet_binary=$DTKBASE/binaries/kubelet-v1.25.0
+kube_router_yaml_download=https://raw.githubusercontent.com/cloudnativelabs/kube-router/v1.3.1/daemonset/generic-kuberouter-all-features.yaml
+kube_router_yaml=$DTKBASE/binaries/generic-kuberouter-all-features.yaml
+kube_proxy_download=https://dl.k8s.io/v1.25.0/bin/linux/amd64/kube-proxy
+kube_proxy_binary=$DTKBASE/binaries/kube-proxy-v1.25.0
+
+# extras
+metrics_server_download=https://github.com/kubernetes-sigs/metrics-server/releases/download/v0.4.2/components.yaml
+metrics_server_manifest=$DTKBASE/binaries/metrics-server-components.yaml
+kubernetes_dashboard_download=https://raw.githubusercontent.com/kubernetes/dashboard/v2.7.0/aio/deploy/recommended.yaml
+kubernetes_dashboard_manifest=$DTKBASE/binaries/kubernetes-dashboard-recommended-v2.7.0.yaml
+# do cilium/hubble differently - see the README with the install script
+#cilium_yaml_download=https://raw.githubusercontent.com/cilium/cilium/1.9.4/install/kubernetes/quick-install.yaml
+#cilium_yaml=cilium-1.9.4-quick-install.yaml
+#hubble_yaml_download=https://raw.githubusercontent.com/cilium/cilium/1.9.4/install/kubernetes/quick-hubble-install.yaml
+#hubble_yaml=cilium-1.9.4-quick-hubble-install.yaml
+kube_prometheus_download=https://github.com/prometheus-operator/kube-prometheus/archive/v0.10.0.tar.gz
+kube_prometheus_binary=$DTKBASE/binaries/kube-prometheus-0.10.0.tar.gz
+calico_tigera_download=https://raw.githubusercontent.com/projectcalico/calico/v3.24.1/manifests/tigera-operator.yaml
+calico_tigera_manifest=$DTKBASE/binaries/calico-v3.24.1-tigera-operator.yaml
+calico_custom_resources_download=https://raw.githubusercontent.com/projectcalico/calico/v3.24.1/manifests/custom-resources.yaml
+calico_custom_resources_manifest=$DTKBASE/binaries/calico-v3.24.1-custom-resources.yaml
+openebs_hostpath_operator_manifest_download=https://raw.githubusercontent.com/openebs/charts/gh-pages/hostpath-operator.yaml
+openebs_hostpath_operator_manifest=$DTKBASE/binaries/openebs-hostpath-operator.yaml
+openebs_sc_manifest_download=https://openebs.github.io/charts/openebs-lite-sc.yaml
+openebs_sc_manifest=$DTKBASE/binaries/openebs-lite-sc.yaml

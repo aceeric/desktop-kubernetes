@@ -162,13 +162,15 @@ parse_args "$@"
 #echo "ca_cert=$ca_cert"
 #echo "ca_key=$ca_key"
 
+source $DTKBASE/artifacts
+
 run_count=$(VBoxManage list runningvms | awk '{print $1}' | grep -e'"'$worker_hostname'"' | wc -l)
 if [[ $run_count -eq 0 ]]; then
   echo "Starting worker VM"
   VBoxManage startvm $worker_hostname
 fi
 
-echo "Getting IP address from running VM"
+echo "Getting IP address from running VM for $worker_hostname"
 worker_ip=$(xec get-vm-ip $worker_hostname)
 
 echo "Making worker VM configuration changes"

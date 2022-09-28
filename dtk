@@ -3,7 +3,7 @@
 set -e
 
 long_opts=help,host-network-interface:,host-only-network:,vboxdir:,check-compatibility,create-template,networking:,\
-monitoring:,storage:,single-node,up:,down:,delete:,verify:,sshto:,template-name:,linux:
+monitoring:,storage:,single-node,up:,down:,delete:,verify:,sshto:,template-name:,linux:,containerized-cplane
 
 # api
 host_network_interface=
@@ -22,6 +22,7 @@ verify=
 sshto=
 template_name=bingo
 linux=centos
+containerized_cplane=0
 
 # internal
 cluster_vms=(doc)
@@ -364,6 +365,10 @@ function parse_args() {
         fi
         shift 2
         ;;
+      --containerized-cplane)
+        containerized_cplane=1
+        shift
+        ;;
       --single-node)
         single_node=1
         shift
@@ -535,54 +540,67 @@ fi
 echo "generating root CA"
 xec gen-root-ca
 
-echo "provisioning a controller node"
-
-xec provision-controller\
- --priv-key=$DTKBASE/generated/kickstart/id_ed25519\
- --template-vmname=$template_name\
+echo "Generating Kubernetes core cluster"
+xec gen-core-k8s\
  --host-only-network=$host_only_network\
- --host-only-octet=$controller_octet\
  --vboxdir=$vboxdir\
- --controller-hostname=doc\
- --controller-ram=8192\
- --controller-cpu=4\
- --controller-disk=20000\
- --etcd-download=$etcd_download\
- --etcd-gzip=$etcd_gzip\
- --kube-apiserver-download=$kube_apiserver_download\
- --kube-apiserver-binary=$kube_apiserver_binary\
- --kube-controller-manager-download=$kube_controller_manager_download\
- --kube-controller-manager-binary=$kube_controller_manager_binary\
- --kube-scheduler-download=$kube_scheduler_download\
- --kube-scheduler-binary=$kube_scheduler_binary\
+ --single-node=$single_node\
+ --template-vmname=$template_name\
+ --containerized-cplane=$containerized_cplane\
+ --priv-key=$DTKBASE/generated/kickstart/id_ed25519\
  --ca-cert=$DTKBASE/generated/cert/ca.pem\
  --ca-key=$DTKBASE/generated/cert/ca-key.pem
 
-echo "provisioning worker nodes"
+# echo "provisioning a controller node"
+# 
+# xec provision-controller\
+#  --priv-key=$DTKBASE/generated/kickstart/id_ed25519\
+#  --template-vmname=$template_name\
+#  --host-only-network=$host_only_network\
+#  --host-only-octet=$controller_octet\
+#  --vboxdir=$vboxdir\
+#  --controller-hostname=doc\
+#  --controller-ram=8192\
+#  --controller-cpu=4\
+#  --controller-disk=20000\
+#  --etcd-download=$etcd_download\
+#  --etcd-gzip=$etcd_gzip\
+#  --kube-apiserver-download=$kube_apiserver_download\
+#  --kube-apiserver-binary=$kube_apiserver_binary\
+#  --kube-controller-manager-download=$kube_controller_manager_download\
+#  --kube-controller-manager-binary=$kube_controller_manager_binary\
+#  --kube-scheduler-download=$kube_scheduler_download\
+#  --kube-scheduler-binary=$kube_scheduler_binary\
+#  --ca-cert=$DTKBASE/generated/cert/ca.pem\
+#  --ca-key=$DTKBASE/generated/cert/ca-key.pem
+# 
+# echo "provisioning worker nodes"
+# 
+controller_ip=$(xec get-vm-ip doc)
+# 
+# make the controller a worker as well (use admin.kubeconfig created by provision-controller
+# xec configure-worker\
+#  --controller-ip=$controller_ip\
+#  --controller-hostname=doc\
+#  --worker-hostname=doc\
+#  --priv-key=$DTKBASE/generated/kickstart/id_ed25519\
+#  --admin-kubeconfig=$DTKBASE/generated/kubeconfig/admin.kubeconfig\
+#  --crictl-download=$crictl_download\
+#  --crictl-binary=$crictl_binary\
+#  --runc-download=$runc_download\
+#  --runc-binary=$runc_binary\
+#  --cni-plugins-download=$cni_plugins_download\
+#  --cni-plugins-binary=$cni_plugins_binary\
+#  --containerd-download=$containerd_download\
+#  --containerd-binary=$containerd_binary\
+#  --kubelet-download=$kubelet_download\
+#  --kubelet-binary=$kubelet_binary\
+#  --pod-cidr=10.200.1.0/24\
+#  --node-labels=controller,worker\
+#  --ca-cert=$DTKBASE/generated/cert/ca.pem\
+#  --ca-key=$DTKBASE/generated/cert/ca-key.pem
 
 controller_ip=$(xec get-vm-ip doc)
-
-# make the controller a worker as well (use admin.kubeconfig created by provision-controller
-xec configure-worker\
- --controller-ip=$controller_ip\
- --controller-hostname=doc\
- --worker-hostname=doc\
- --priv-key=$DTKBASE/generated/kickstart/id_ed25519\
- --admin-kubeconfig=$DTKBASE/generated/kubeconfig/admin.kubeconfig\
- --crictl-download=$crictl_download\
- --crictl-binary=$crictl_binary\
- --runc-download=$runc_download\
- --runc-binary=$runc_binary\
- --cni-plugins-download=$cni_plugins_download\
- --cni-plugins-binary=$cni_plugins_binary\
- --containerd-download=$containerd_download\
- --containerd-binary=$containerd_binary\
- --kubelet-download=$kubelet_download\
- --kubelet-binary=$kubelet_binary\
- --pod-cidr=10.200.1.0/24\
- --node-labels=controller,worker\
- --ca-cert=$DTKBASE/generated/cert/ca.pem\
- --ca-key=$DTKBASE/generated/cert/ca-key.pem
 
 if [[ $single_node -eq 0 ]]; then
   cluster_vms+=(ham)

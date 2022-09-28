@@ -128,7 +128,7 @@ parse_args "$@"
 
 run_count=$(VBoxManage list runningvms | awk '{print $1}' | grep -e'"'$controller_hostname'"' | wc -l)
 if [[ $run_count -eq 0 ]]; then
-  echo "starting controller VM"
+  echo "starting controller VM: $controller_hostname"
   VBoxManage startvm $controller_hostname
 fi
 
