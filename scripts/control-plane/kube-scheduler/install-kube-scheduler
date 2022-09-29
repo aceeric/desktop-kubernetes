@@ -149,7 +149,6 @@ if [[ containerized_cplane -eq 0 ]]; then
   done
 else
   echo "copying kube-scheduler static pod manifest to controller VM"
-  ssh -i $priv_key root@$controller_ip "mkdir -p /etc/desktop-kubernetes/static-pods"
   scp -i $priv_key $kube_scheduler_pod_manifest root@$controller_ip:/etc/desktop-kubernetes/static-pods/
   for i in 1 2 3; do
     if kubectl --kubeconfig $admin_kubeconfig -n kube-system wait pod\

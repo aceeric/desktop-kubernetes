@@ -3,8 +3,6 @@
 ## In Progress
 
 - Support containerized control plane
-  - Controller sequence: containerd > kubelet > then control plane components
-  - If dedicated worker, as is. If dual-purpose controller+worker && containerized, skip containerd + kubelet
   - Don't tweak kube-prometheus if containerized
 
 ## Next
@@ -21,10 +19,8 @@
 ## Background
 
 https://computingforgeeks.com/manually-pull-container-images-used-by-kubernetes-kubeadm/
-[config/images] Pulled k8s.gcr.io/kube-apiserver:v1.19.4
-[config/images] Pulled k8s.gcr.io/kube-controller-manager:v1.19.4
-[config/images] Pulled k8s.gcr.io/kube-scheduler:v1.19.4
-[config/images] Pulled k8s.gcr.io/kube-proxy:v1.19.4
-[config/images] Pulled k8s.gcr.io/pause:3.2
-[config/images] Pulled k8s.gcr.io/etcd:3.4.13-0
-[config/images] Pulled k8s.gcr.io/coredns:1.7.0
+[config/images] Pulled k8s.gcr.io/kube-apiserver:v1.25.0
+[config/images] Pulled k8s.gcr.io/kube-controller-manager:v1.25.0
+[config/images] Pulled k8s.gcr.io/kube-scheduler:v1.25.0
+[config/images] Pulled k8s.gcr.io/kube-proxy:v1.25.0
+[config/images] Pulled k8s.gcr.io/etcd:v3.5.4

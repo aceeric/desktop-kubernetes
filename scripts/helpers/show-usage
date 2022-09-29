@@ -18,7 +18,8 @@ done <<< '
 
   Usage: dtk [--host-network-interface=<interface>] [--host-only-network=<network>] [--vboxdir=</some/path>]
              [--networking=<type>] [--monitoring=<type>] [--create-template] [--single-node] [--template-name]
-             [--linux=<centos|rocky>] [--storage=<type>] [--help] [--check-compatibility] [--verify=<files|upstreams>]
+             [--linux=<centos|rocky>] [--storage=<type>] [--containerized-cplane]
+             [--help] [--check-compatibility] [--verify=<files|upstreams>]
              [--up=<nodelist>] [--down=<nodelist>] [--delete=<nodelist>] [--sshto=<vmname>]
 
   Options:
@@ -59,6 +60,9 @@ done <<< '
     --storage                  Optional. Installs a dynamic storage provisioner. This supports testing workloads
                                that use PVs and PVCs. Presently, the only supported value is "openebs". E.g.:
                                --storage=openebs
+    --containerized-cplane     Optional. If specified (without a value), creates the control plane components as
+                               containers on the controller VM like kubeadm et. al. By default, creates the control
+                               plane components as as systemd units.
 
     Other optional options:
 

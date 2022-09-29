@@ -115,6 +115,8 @@ xec install-kube-apiserver\
  --kube-apiserver-binary=$kube_apiserver_binary\
  --kubernetes-cert=$kubernetes_cert\
  --kubernetes-key=$kubernetes_key\
+ --containerized-cplane=$containerized_cplane\
+ --admin-kubeconfig=$admin_kubeconfig\
  --ca-cert=$ca_cert\
  --ca-key=$ca_key
 
@@ -125,6 +127,8 @@ xec install-kube-controller-manager\
  --controller-hostname=$controller_hostname\
  --kube-controller-manager-download=$kube_controller_manager_download\
  --kube-controller-manager-binary=$kube_controller_manager_binary\
+ --containerized-cplane=$containerized_cplane\
+ --admin-kubeconfig=$admin_kubeconfig\
  --ca-cert=$ca_cert\
  --ca-key=$ca_key
 
@@ -162,6 +166,18 @@ echo "no errors detected with controller components"
 # client certificate as defined by the `--kubelet-client-certificate` flag." So "Bind the
 # 'system:kube-apiserver-to-kubelet' ClusterRole to the 'kubernetes' user" that is embedded in that cert.
 # (See 'CN = ' in 'gen-cluster-tls' script)
+
+
+
+
+---------------------- TODO MOVE TO RIGHT AFTER API SERVER IS "READY"
+---------------------- THEN LOOK AT APISERVER NOT READY ERR
+
+
+
+
+
+
 
 echo "generating RBAC for kubelet authorization"
 kubectl --kubeconfig $admin_kubeconfig create -f $script_dir/rbac.yaml

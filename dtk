@@ -397,8 +397,8 @@ if [[ $single_node -eq 0 ]]; then
   cluster_vms+=(monk)
 fi
 
-echo "configuring /etc/hosts in VMs"
-xec configure-etc-hosts $DTKBASE/generated/kickstart/id_ed25519 "${cluster_vms[@]}"
+#echo "configuring /etc/hosts in VMs"
+#xec configure-etc-hosts $DTKBASE/generated/kickstart/id_ed25519 "${cluster_vms[@]}"
 
 echo "installing pod networking"
 

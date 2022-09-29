@@ -100,16 +100,17 @@ parse_args "$@"
 source $DTKBASE/artifacts
 
 controller_hostname="doc"
-vmnames=($controller_hostname ham monk)
+vmnames=($controller_hostname)
+vmcount=1
 ram=(8192 8192 8192)
 cpu=(3 3 3)
 octets=(200 201 202)
 pod_cidrs=(10.200.1.0/24 10.200.2.0/24 10.200.3.0/24)
 node_labels=(controller,worker worker worker)
 
-vmcount=3
-if [[ $single_node -eq 1 ]]; then
-  vmcount=1
+if [[ $single_node -eq 0 ]]; then
+  vmcount=3
+  vmnames=($controller_hostname ham monk)
 fi
 
 for ((i = 0; i < $vmcount; ++i)); do
@@ -124,6 +125,10 @@ for ((i = 0; i < $vmcount; ++i)); do
    --vboxdir=$vboxdir\
    --shutdown=false
 done
+
+# do this now to avoid needing DNS before CoreDNS is installed
+echo "configuring /etc/hosts in VMs"
+xec configure-etc-hosts $priv_key "${vmnames[@]}"
 
 controller_ip=$(xec get-vm-ip $controller_hostname)
 
