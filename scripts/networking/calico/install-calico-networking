@@ -130,16 +130,11 @@ sed "s|cidr: 192.168.0.0/16|cidr: $cluster_cidr|" $calico_custom_resources_manif
   | kubectl --kubeconfig $admin_kubeconfig create -f -
 
 echo "waiting (indefinitely) for calico daemonset"
-
-desired=0
-ready=1
-while [[ $ready -ne $desired ]]; do
-  sleep 1s
-  calicods=$(kubectl --kubeconfig $admin_kubeconfig -n calico-system get ds/calico-node --no-headers\
-   -ocustom-columns='DESIRED:status.desiredNumberScheduled,READY:status.numberReady')
-  IFS=' ' read -ra cols <<< "$calicods"
-  desired="${cols[0]}"
-  ready="${cols[1]}"
+while true; do
+  if kubectl --kubeconfig $admin_kubeconfig -n calico-system rollout status ds calico-node; then
+    break
+  fi
+  sleep 10s
 done
 
 echo "calico installation complete"
