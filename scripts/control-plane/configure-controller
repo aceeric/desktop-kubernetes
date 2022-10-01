@@ -104,6 +104,8 @@ xec install-etcd\
  --etcd-gzip=$etcd_gzip\
  --kubernetes-cert=$kubernetes_cert\
  --kubernetes-key=$kubernetes_key\
+ --admin-kubeconfig=$admin_kubeconfig\
+ --containerized-cplane=$containerized_cplane\
  --ca-cert=$ca_cert
 
 echo "installing kube-apiserver into controller"
