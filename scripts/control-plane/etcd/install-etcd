@@ -122,7 +122,7 @@ for i in {1..10}; do
     "etcdctl --cert=/etc/etcd/kubernetes.pem --key=/etc/etcd/kubernetes-key.pem --cacert=/etc/etcd/ca.pem member list"; then
     break
   elif [[ $i -eq 10 ]]; then
-    echo "Can't verify etc installation"
+    echo "Can't verify etcd installation"
     exit 1
   fi
   sleep 10s

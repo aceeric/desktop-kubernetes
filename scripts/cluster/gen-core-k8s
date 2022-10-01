@@ -87,16 +87,6 @@ function parse_args() {
 
 parse_args "$@"
 
-# debug
-#echo "host_only_network=$host_only_network"
-#echo "vboxdir=$vboxdir"
-#echo "single_node=$single_node"
-#echo "template_vmname=$template_vmname"
-#echo "containerized_cplane=$containerized_cplane"
-#echo "priv_key=$priv_key"
-#echo "ca_cert=$ca_cert"
-#echo "ca_key=$ca_key"
-
 source $DTKBASE/artifacts
 
 controller_hostname="doc"
@@ -138,8 +128,12 @@ controller_ip=$(xec get-vm-ip $controller_hostname)
 xec gen-admin-kubeconfig --controller-ip=$controller_ip --ca-cert=$ca_cert --ca-key=$ca_key
 admin_kubeconfig=$DTKBASE/generated/kubeconfig/admin.kubeconfig\
 
+# The control plane node will get the worker components for two reasons: 1) it supports
+# a containerized control plane, and 2) it lets the controller be also a worker
 for ((i = 0; i < $vmcount; ++i)); do
   vmname="${vmnames[$i]}"
+  vmip=$(xec get-vm-ip $vmname)
+  ssh -i $priv_key root@$vmip mkdir -p /etc/desktop-kubernetes/static-pods
   xec configure-worker\
    --controller-ip=$controller_ip\
    --controller-hostname=$controller_hostname\
@@ -159,7 +153,6 @@ for ((i = 0; i < $vmcount; ++i)); do
      --ca-cert=$ca_cert\
      --ca-key=$ca_key
   fi
-
 done
 
 echo "Waiting for all nodes to be Ready"
@@ -178,4 +171,4 @@ for ((i = 0; i < $vmcount; ++i)); do
   done
 done
 
-echo "Cluster creation successful"
+echo "Core Kubernetes cluster creation successful"

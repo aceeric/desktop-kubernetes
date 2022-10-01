@@ -260,20 +260,6 @@ function parse_args() {
     esac
   done
 
-  #debug
-  #echo "host_network_interface=$host_network_interface"
-  #echo "host_only_network=$host_only_network"
-  #echo "vboxdir=$vboxdir"
-  #echo "check_compatibility=$check_compatibility"
-  #echo "create_template=$create_template"
-  #echo "networking=$networking"
-  #echo "monitoring=$monitoring"
-  #echo "storage=$storage"
-  #echo "single_node=$single_node"
-  #echo "verify=$verify"
-  #echo "template_name=$template_name"
-  #echo "linux=$linux"
-
   if [[ $# -ne 0 ]]; then
     echo "Unsupported command line option(s): $@"
     exit 1
@@ -397,9 +383,6 @@ if [[ $single_node -eq 0 ]]; then
   cluster_vms+=(monk)
 fi
 
-#echo "configuring /etc/hosts in VMs"
-#xec configure-etc-hosts $DTKBASE/generated/kickstart/id_ed25519 "${cluster_vms[@]}"
-
 echo "installing pod networking"
 
 if [[ "$networking" == "kube-router" ]]; then
@@ -421,9 +404,11 @@ elif [[ "$networking" == "calico" ]]; then
    --kube-proxy-download=$kube_proxy_download\
    --kube-proxy-binary=$kube_proxy_binary\
    --priv-key=$DTKBASE/generated/kickstart/id_ed25519\
-   --nodes=$nodes\
+   --admin-kubeconfig=$DTKBASE/generated/kubeconfig/admin.kubeconfig\
+   --containerized-cplane=$containerized_cplane\
    --ca-cert=$DTKBASE/generated/cert/ca.pem\
-   --ca-key=$DTKBASE/generated/cert/ca-key.pem
+   --ca-key=$DTKBASE/generated/cert/ca-key.pem\
+   --nodes=$nodes
   xec install-calico-networking\
    --calico-tigera-download=$calico_tigera_download\
    --calico-tigera-binary=$calico_tigera_manifest\

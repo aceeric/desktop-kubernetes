@@ -150,15 +150,15 @@ if [[ containerized_cplane -eq 0 ]]; then
 else
   echo "copying kube-scheduler static pod manifest to controller VM"
   scp -i $priv_key $kube_scheduler_pod_manifest root@$controller_ip:/etc/desktop-kubernetes/static-pods/
-  for i in 1 2 3; do
+  for i in {1..20}; do
     if kubectl --kubeconfig $admin_kubeconfig -n kube-system wait pod\
-      -lcomponent=kube-scheduler --for=condition=ready --timeout=1m; then
+      -lcomponent=kube-scheduler --for=condition=ready --timeout=5s; then
       break
-    elif [[ $i -eq 3 ]]; then
+    elif [[ $i -eq 20 ]]; then
       echo "Can't verify kube-scheduler installation"
       exit 1
     fi
-    sleep 1s
+    sleep 5s
   done
 fi
 

@@ -165,15 +165,15 @@ else
   echo "copying kube-apiserver static pod manifest to controller VM"
   sed $kube_apiserver_pod_manifest -e "s|CONTROLLER_IP|$controller_ip|g"\
    | ssh -i $priv_key root@$controller_ip "cat > /etc/desktop-kubernetes/static-pods/kube-apiserver-pod.yaml"
-  for i in {0..20}; do
+  for i in {1..20}; do
     if kubectl --kubeconfig $admin_kubeconfig -n kube-system wait pod\
-      -lcomponent=kube-apiserver --for=condition=ready --timeout=10s; then
+      -lcomponent=kube-apiserver --for=condition=ready --timeout=5s; then
       break
-    elif [[ $i -eq 10 ]]; then
+    elif [[ $i -eq 20 ]]; then
       echo "Can't verify kube-apiserver installation"
       exit 1
     fi
-    sleep 10s
+    sleep 5s
   done
 fi
 

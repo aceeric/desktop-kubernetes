@@ -124,7 +124,6 @@ scp -i $priv_key $DTKBASE/generated/cert/worker.pem root@$worker_ip:/var/lib/kub
 scp -i $priv_key $DTKBASE/generated/cert/worker-key.pem root@$worker_ip:/var/lib/kubelet/
 scp -i $priv_key $DTKBASE/generated/kubeconfig/worker.kubeconfig root@$worker_ip:/var/lib/kubelet/kubeconfig
 scp -i $priv_key $ca_cert root@$worker_ip:/var/lib/kubernetes/
-ssh -i $priv_key root@$controller_ip "mkdir -p /etc/desktop-kubernetes/static-pods"
 
 echo "Copying kubelet service and config files to worker VM"
 

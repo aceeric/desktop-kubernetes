@@ -17,10 +17,3 @@
 - Separate dashboard install - always install Kubernetes dash
 
 ## Background
-
-https://computingforgeeks.com/manually-pull-container-images-used-by-kubernetes-kubeadm/
-[config/images] Pulled k8s.gcr.io/kube-apiserver:v1.25.0
-[config/images] Pulled k8s.gcr.io/kube-controller-manager:v1.25.0
-[config/images] Pulled k8s.gcr.io/kube-scheduler:v1.25.0
-[config/images] Pulled k8s.gcr.io/kube-proxy:v1.25.0
-[config/images] Pulled k8s.gcr.io/etcd:v3.5.4
