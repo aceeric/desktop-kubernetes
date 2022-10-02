@@ -53,8 +53,11 @@ function parse_args() {
         shift 2
         ;;
       --containerized-cplane)
-        containerized_cplane=$(opt_val "$2")
+        tmpvar=$(opt_val "$2")
         shift 2
+        if [[ "$tmpvar" == *kube-proxy* || "$tmpvar" == all ]]; then
+          containerized_cplane=1
+        fi
         ;;
       --admin-kubeconfig)
         admin_kubeconfig=$(opt_val "$2")

@@ -64,7 +64,7 @@ The following command-line options are supported for the `dtk` script:
 | `--host-only-network`| or `--host-network-interface` | The left three octets of the network. E.g. `192.168.56`. (*For some additional information on this address, see*: [the VirtualBox docs](https://www.virtualbox.org/manual/ch06.html) *section on "Host-Only Networking"*.) This option configures NAT + host only networking mode. The scripts will create a new host only network and configure the cluster to use it for intra-cluster networking, and will configure NAT for the cluster to access the internet. *See important note in the table entry immediately above regarding VBox networking type.* |
 | `--vboxdir` | Required | The directory where you keep your VirtualBox VM files. The script uses the `VBoxManage` utility to create the VMs, which will in turn create a sub-directory under this directory for each VM. The directory must exist. The script will not create it. |
 | `--networking` | Optional | Installs Pod networking. Current valid values are `calico` (which also installs kube-proxy), `kube-router` and `cilium`. E.g.: `--networking=calico`. I use calico. And: calico is the pod networking that I used to get the k8s conformance tests passing. |
-| `--containerized-cplane` | Optional | If specified (without a value), creates the control plane components as static pods on the controller VM like Kubeadm, RKE2, et. al. By default, creates the control plane components as as systemd units. |
+| `--containerized-cplane` | Optional | If specified, creates the control plane components as static pods on the controller VM like Kubeadm, RKE2, et. al. By default, creates the control plane components as as systemd units. Allowed values: `all`, or any of: `etcd`, `kube-apiserver`, `kube-proxy`, `kube-scheduler`, `kube-controller-manager` (comma-separated.) E.g.: `--containerized-cplane=etcd,kube-proxy` |
 | `--create-template` | Optional | First creates a template VM to clone all the cluster nodes from before bringing up the cluster. (This step by far takes the longest.) If not specified, the script expects to find an existing VM to clone from. This option installs the OS using Kickstart, then installs Guest Additions. **You must provide this option for the very first cluster you create.** |
 | `--template-name` | Optional | Specifies the template name to create - or clone from. Default is *bingo* if not provided. |
 | `--linux` | Optional | Valid values are *centos* for CentOS Stream (the default) and *rocky* for Rocky Linux. Ignored unless `--create-template` is specified. |
@@ -132,14 +132,16 @@ Using the cluster creation options, checks the upstream URLS with a HEAD request
 | Graceful shutdown           | Configure graceful shutdown |
 | Management Cluster          | Support the ability to configure as a management cluster |
 | Minimal OS                  | Provision with minimal OS |
-| Load Balancer               | Implement [MetalLB](https://github.com/google/metallb) ?|
+| Kube Bench                  | https://github.com/aquasecurity/kube-bench |
+| Load Balancer               | [MetalLB](https://github.com/google/metallb)? [Kube VIP](https://kube-vip.io/)?|
 | Firewall                    | There are plenty of posts discussing how to configure the firewall settings for Kubernetes. The documented settings do not appear to work with CoreDNS. (In fact, many posters recommend to disable `firewalld`.) So presently, the firewall is disabled but my goal is to run the cluster with the firewall enabled and the correct rules defined |
 | Ubuntu                      | Support Ubuntu Server as the Guest OS |
+| SELinux                     | Enable SELinux |
 | Headless                    | Support running the VMs headless. At present, each VM comes up on the desktop, which can be somewhat intrusive it you're doing other work. (OTOH it does provide positive feedback on what's happening) |
 | Nodes                       | Consider making the number of controllers configurable, as well as node characteristics such as storage, RAM, and CPU. Right now, only one controller and two workers are supported, their names are hard-coded, etc. |
 | Hands-free install improvement | The current version builds a Kickstart ISO, and mounts the ISO on the VM to do the hands-free install. Unfortunately, this method does not allow you to change the boot menu timeout on the *initial* startup of the VM. So, unless you intervene, the boot menu takes 60 seconds to time out before the Kickstart installation begins. The alternate way to do this is to break apart the ISO, modify the boot menu timeout, and then re-build the ISO. I may consider this at some future point, although that would not easily lend itself to automation |
 | Linux               | Consider other Linux variants (Currently support CentOS Stream and Rocky) |
-| Other VM provisioning       | Experiment with other VM provisioning tooling (Terraform? Vagrant? CloudInit?) |
+| Other VM provisioning       | Experiment with other VM provisioning tooling (Terraform? Vagrant? CloudInit? Packer?) |
 | Virtualization | Consider other virtualization tools (KVM) |
 
 ## Versions

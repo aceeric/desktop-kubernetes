@@ -20,8 +20,9 @@ spec:
     - --initial-cluster-state=new
     - --initial-cluster-token=etcd-cluster-0
     - --key-file=/etc/etcd/kubernetes-key.pem
-    - --listen-client-urls=https://INTERNAL_IP:2379,https://127.0.0.1:2379
-    - --listen-peer-urls=https://INTERNAL_IP:2380,https://127.0.0.1:2380
+    - --listen-client-urls=https://0.0.0.0:2379
+    - --listen-metrics-urls=http://0.0.0.0:2381
+    - --listen-peer-urls=https://0.0.0.0:2380
     - --logger=zap
     - --log-level=info
     - --log-outputs=stderr
@@ -31,9 +32,6 @@ spec:
     - --peer-key-file=/etc/etcd/kubernetes-key.pem
     - --peer-trusted-ca-file=/etc/etcd/ca.pem
     - --trusted-ca-file=/etc/etcd/ca.pem
-    env:
-    - name: NO_PROXY
-      value: .svc,.cluster.local,10.200.0.0/16,10.32.0.0/24
     image: k8s.gcr.io/etcd:3.5.4-0
     imagePullPolicy: IfNotPresent
     livenessProbe:

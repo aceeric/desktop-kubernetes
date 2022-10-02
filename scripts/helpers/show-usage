@@ -18,7 +18,7 @@ done <<< '
 
   Usage: dtk [--vboxdir=</some/path>] [--host-network-interface=<interface>] [--host-only-network=<network>] 
              [--networking=<type>] [--monitoring=<type>] [--create-template] [--template-name] [--single-node]
-             [--linux=<centos|rocky>] [--storage=<type>] [--containerized-cplane]
+             [--linux=<centos|rocky>] [--storage=<type>] [--containerized-cplane=<list>]
              [--verify=<files|upstreams>] [--check-compatibility] [--up=<nodelist>] [--down=<nodelist>]
              [--delete=<nodelist>] [--sshto=<vmname>] [--help]
 
@@ -59,9 +59,11 @@ done <<< '
     --storage                  Optional. Installs a dynamic storage provisioner. This supports testing workloads
                                that use PVs and PVCs. Presently, the only supported value is "openebs". E.g.:
                                --storage=openebs
-    --containerized-cplane     Optional. If specified (without a value), creates the control plane components as
-                               containers on the controller VM like Kubeadm, RKE2, et. al. By default, creates the
-                               control plane components as as systemd units.
+    --containerized-cplane     Optional. If specified, creates the control plane components as static pods on the
+                               controller VM like Kubeadm, RKE2, et. al. By default, creates the control plane
+                               components as as systemd units. Allowed values: "all", or any of comma-separated:
+                               "etcd", "kube-apiserver", "kube-proxy", "kube-scheduler", "kube-controller-manager".
+                               E.g.: "--containerized-cplane=etcd,kube-proxy"
 
     Other optional options:
 

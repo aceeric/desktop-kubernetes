@@ -15,6 +15,7 @@ ExecStart=/usr/local/bin/etcd\
   --initial-cluster-token=etcd-cluster-0\
   --key-file=/etc/etcd/kubernetes-key.pem\
   --listen-client-urls=https://INTERNAL_IP:2379,https://127.0.0.1:2379\
+  --listen-metrics-urls=http://INTERNAL_IP:2381,http://127.0.0.1:2331\
   --listen-peer-urls=https://INTERNAL_IP:2380,https://127.0.0.1:2380\
   --logger=zap\
   --log-level=info\

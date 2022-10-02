@@ -48,9 +48,6 @@ spec:
     - --tls-cert-file=/var/lib/kubernetes/kubernetes.pem
     - --tls-private-key-file=/var/lib/kubernetes/kubernetes-key.pem
     - --v=2
-    env:
-    - name: NO_PROXY
-      value: .svc,.cluster.local,10.200.0.0/16,10.32.0.0/24
     image: k8s.gcr.io/kube-apiserver:v1.25.0
     imagePullPolicy: IfNotPresent
     resources:

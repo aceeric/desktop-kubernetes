@@ -12,9 +12,6 @@ spec:
     command:
     - /usr/local/bin/kube-proxy
     - --config=/var/lib/kube-proxy/kube-proxy-config.yaml
-    env:
-    - name: NO_PROXY
-      value: .svc,.cluster.local,10.42.0.0/16,10.43.0.0/16
     image: k8s.gcr.io/kube-proxy:v1.25.0
     imagePullPolicy: IfNotPresent
     resources:

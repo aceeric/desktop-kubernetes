@@ -3,7 +3,7 @@
 set -e
 
 long_opts=help,host-network-interface:,host-only-network:,vboxdir:,check-compatibility,create-template,networking:,\
-monitoring:,storage:,single-node,up:,down:,delete:,verify:,sshto:,template-name:,linux:,containerized-cplane
+monitoring:,storage:,single-node,up:,down:,delete:,verify:,sshto:,template-name:,linux:,containerized-cplane:
 
 # api
 host_network_interface=
@@ -22,7 +22,7 @@ verify=
 sshto=
 template_name=bingo
 linux=centos
-containerized_cplane=0
+containerized_cplane=
 
 # internal
 cluster_vms=(doc)
@@ -210,8 +210,8 @@ function parse_args() {
         shift 2
         ;;
       --containerized-cplane)
-        containerized_cplane=1
-        shift
+        containerized_cplane=$(opt_val "$2")
+        shift 2
         ;;
       --single-node)
         single_node=1
