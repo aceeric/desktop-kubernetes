@@ -5,26 +5,26 @@ Documentation=https://github.com/coreos
 [Service]
 Type=notify
 ExecStart=/usr/local/bin/etcd\
-  --name=ETCD_NAME\
-  --cert-file=/etc/etcd/kubernetes.pem\
-  --key-file=/etc/etcd/kubernetes-key.pem\
-  --peer-cert-file=/etc/etcd/kubernetes.pem\
-  --peer-key-file=/etc/etcd/kubernetes-key.pem\
-  --trusted-ca-file=/etc/etcd/ca.pem\
-  --peer-trusted-ca-file=/etc/etcd/ca.pem\
-  --peer-client-cert-auth\
-  --client-cert-auth\
-  --initial-advertise-peer-urls=https://INTERNAL_IP:2380\
-  --listen-peer-urls=https://INTERNAL_IP:2380\
-  --listen-client-urls=https://INTERNAL_IP:2379,https://127.0.0.1:2379\
   --advertise-client-urls=https://INTERNAL_IP:2379\
-  --initial-cluster-token=etcd-cluster-0\
+  --cert-file=/etc/etcd/kubernetes.pem\
+  --client-cert-auth\
+  --data-dir=/var/lib/etcd\
+  --initial-advertise-peer-urls=https://INTERNAL_IP:2380\
   --initial-cluster=ETCD_NAME=https://INTERNAL_IP:2380\
   --initial-cluster-state new\
-  --data-dir=/var/lib/etcd\
-  --log-level=info\
+  --initial-cluster-token=etcd-cluster-0\
+  --key-file=/etc/etcd/kubernetes-key.pem\
+  --listen-client-urls=https://INTERNAL_IP:2379,https://127.0.0.1:2379\
+  --listen-peer-urls=https://INTERNAL_IP:2380,https://127.0.0.1:2380\
   --logger=zap\
-  --log-outputs=stderr
+  --log-level=info\
+  --log-outputs=stderr\
+  --name=ETCD_NAME\
+  --peer-cert-file=/etc/etcd/kubernetes.pem\
+  --peer-client-cert-auth\
+  --peer-key-file=/etc/etcd/kubernetes-key.pem\
+  --peer-trusted-ca-file=/etc/etcd/ca.pem\
+  --trusted-ca-file=/etc/etcd/ca.pem
 Restart=on-failure
 RestartSec=5
 
