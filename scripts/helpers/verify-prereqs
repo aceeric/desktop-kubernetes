@@ -1,13 +1,13 @@
 #!/usr/bin/env bash
 
 mismatch=0
-tested_openssl_version="1.1.1f"
+tested_openssl_version="3.0.2"
 tested_genisoimage_version="1.1.11"
-tested_vboxmanage_version="6.1.36"
-tested_ssh_version="OpenSSH_8.2p1"
-tested_host_os_version="Ubuntu 20.04.5 LTS"
-tested_kubectl_version="v1.25.0"
-tested_curl_version="7.68.0"
+tested_vboxmanage_version="7.0.8_Ubuntur156879"
+tested_ssh_version="OpenSSH_8.9p1"
+tested_host_os_version="Ubuntu 22.04.3 LTS"
+tested_kubectl_version="v1.28.0"
+tested_curl_version="7.81.0"
 
 if which openssl &>/dev/null; then
   openssl_version=$(openssl version | awk '{print $2}')
@@ -45,7 +45,7 @@ else
 fi
 
 if which kubectl &>/dev/null; then
-  kubectl_version=$(kubectl version 2>/dev/null --short --client | grep 'Client Version' | cut -d: -f2- | xargs)
+  kubectl_version=$(kubectl version 2>/dev/null --client | grep 'Client Version' | cut -d: -f2- | xargs)
   [[ $kubectl_version == "$tested_kubectl_version" ]] && kubectl_ok=Yes || { kubectl_ok=No; mismatch=1; }
 else
   kubectl_version="not found"

@@ -93,7 +93,7 @@ function check_files() {
 function check_urls() {
   local result=0
   local objects=($etcd_download $kube_apiserver_download $kube_controller_manager_download $kube_scheduler_download\
-    $crictl_download $runc_download $cni_plugins_download $containerd_download $kubelet_download, $kubernetes_dashboard_download)
+    $crictl_download $runc_download $cni_plugins_download $containerd_download $kubelet_download $kubernetes_dashboard_download)
   if [[ "$1" == 1 ]]; then
     objects+=($guest_additions_download)
     if [[ $linux == "centos" ]]; then

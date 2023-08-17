@@ -2,9 +2,9 @@
 
 ## Prerequisites / compatibility
 
-- This project has been tested under Ubuntu Focal 20.04.5 LTS with 12 hyper-threaded cores and 64 gigs of RAM
-- It uses Virtual Box, and has been tested under Virtual Box 6.1.36. The Virtual Box version is important because the script installs Guest Additions into the guests and the version is hard-coded into the `dtk` script. If you're running a different release of Virtual Box, probably the version incompatibility with Guest Additions would be a problem. (Guest additions allows getting the IP address of a VM.)
-- It is a Kubernetes 1.25.0 distribution and has been tested with kubectl v1.25.0
+- This project has been tested under Ubuntu Focal 22.04.3 LTS with 12 hyper-threaded cores and 64 gigs of RAM
+- It uses Virtual Box, and has been tested under Virtual Box 7.0.8. The Virtual Box version is important because the script installs Guest Additions into the guests and the version is hard-coded into the `dtk` script. If you're running a different release of Virtual Box, probably the version incompatibility with Guest Additions would be a problem. (Guest additions allows getting the IP address of a VM.)
+- It is a Kubernetes 1.28.0 distribution and has been tested with kubectl v1.28.0
 - This project creates a k8s cluster consisting of three CentOS Stream guest VMs: one 4-CPU control plane + worker guest and two 2-CPU worker node guests
 - Each vm has 8 gigs of RAM
 - So you need sufficient CPU and RAM on the desktop environment to stand up the cluster 
@@ -12,11 +12,11 @@
 ## Get Desktop Kubernetes
 
 ```shell
-$ git clone --branch v1.25.0 https://github.com/aceeric/desktop-kubernetes.git
+$ git clone --branch v1.28.0 https://github.com/aceeric/desktop-kubernetes.git
 $ cd desktop-kubernetes
 ```
 
-Tag v1.25.0 is the current release tested, which mirrors the release of Kubernetes that the project deploys.
+Tag v1.28.0 is the current release tested, which mirrors the release of Kubernetes that the project deploys.
 
 ## Check requirements
 
@@ -25,18 +25,18 @@ This is a Bash shell script project and requires certain command-line utilities 
 ```shell
 $ ./dtk --check-compatibility
 Checking version compatibility
-component              tested              found                 matches?
----------              ------              -----                 --------
-openssl                1.1.1f              1.1.1f                Yes
-openssh                OpenSSH_8.2p1       OpenSSH_8.2p1         Yes
-genisoimage            1.1.11              1.1.11                Yes
-virtual box            6.1.36              6.1.36_Ubuntur150636  Yes
-host operating system  Ubuntu 20.04.5 LTS  Ubuntu 20.04.5 LTS    Yes
-kubectl (client only)  v1.25.0             v1.25.0               Yes
-curl                   7.68.0              7.68.0                Yes
+component              tested               found                matches?
+---------              ------               -----                --------
+openssl                3.0.2                3.0.2                Yes
+openssh                OpenSSH_8.9p1        OpenSSH_8.9p1        Yes
+genisoimage            1.1.11               1.1.11               Yes
+virtual box            7.0.8_Ubuntur156879  7.0.8_Ubuntur156879  Yes
+host operating system  Ubuntu 22.04.3 LTS   Ubuntu 22.04.3 LTS   Yes
+kubectl (client only)  v1.28.0              v1.28.0              Yes
+curl                   7.81.0               7.81.0               Yes
 ```
 
-Virtualbox needs to be 6.1.36. The other components must exist, but version incompatibilities may not be an issue. You have to use your judgement. But, for example, the script uses the `genisoimage` utility to create ISOs to mount into the CentOS VMs during initialization. So if that utility is missing, the script will fail to gen the cluster. 
+Virtualbox needs to be 7.0.8. The other components must exist, but version incompatibilities may not be an issue. You have to use your judgement. But, for example, the script uses the `genisoimage` utility to create ISOs to mount into the CentOS VMs during initialization. So if that utility is missing, the script will fail to gen the cluster. 
 
 ## Create the cluster
 
