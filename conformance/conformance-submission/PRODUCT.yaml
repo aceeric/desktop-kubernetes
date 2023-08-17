@@ -1,6 +1,6 @@
 vendor: Eric Ace
 name: Desktop Kubernetes
-version: v1.25.0
+version: v1.28.0
 website_url: https://github.com/aceeric/desktop-kubernetes
 repo_url: https://github.com/aceeric/desktop-kubernetes
 documentation_url: https://github.com/aceeric/desktop-kubernetes

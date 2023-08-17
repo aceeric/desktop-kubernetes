@@ -31,7 +31,7 @@ To create a cluster for the first time, run the script as shown below (using you
 **Host only + NAT networking:** This option enables the cluster to run on different networks. It's good for a laptop installation where you want to run the cluster in various locations. Any IP address is fine for the host network (subject to constraints imposed by VirtualBox.) Supply the left three octets - the script will assign the rightmost octet:
 
 ```bash
-$ ./dtk --host-only-network=192.168.56 --vboxdir=/sdb1/virtualbox --create-template\
+$ ./dtk --host-only-network=192.168.56 --vboxdir=/sdb1/virtualboxvms --create-template\
   --networking=calico --monitoring=kube-prometheus
 ```
 
@@ -39,7 +39,7 @@ $ ./dtk --host-only-network=192.168.56 --vboxdir=/sdb1/virtualbox --create-templ
 
 ```shell
 $ ./dtk --host-network-interface=enp0s31f6 --create-template\
-  --vboxdir=/sdb1/virtualbox --networking=calico --monitoring=kube-prometheus
+  --vboxdir=/sdb1/virtualboxvms --networking=calico --monitoring=kube-prometheus
 ```
 
 The `--networking` option installs cluster networking. In the example: Calico (and kube-proxy.)
@@ -86,13 +86,13 @@ The following command-line options are supported for the `dtk` script:
 
 **Example 1**
 
-`./dtk --create-template --host-only-network=192.168.56 --vboxdir=/sdb1/virtualbox/ --networking=calico --monitoring=kube-prometheus --storage=openebs`
+`./dtk --create-template --host-only-network=192.168.56 --vboxdir=/sdb1/virtualboxvms --networking=calico --monitoring=kube-prometheus --storage=openebs`
 
 Creates a template VM configured with host-only networking and NAT. The host network is 192.168.56. The script will create a host-only network in VirtualBox for the template. For the k8s cluster, it installs Calico networking, Kube-Prometheus monitoring, and the OpenEBS HostPath Provisioner. Each VM gets a sequential IP address (192.168.56.200, 192.168.56.201, 192.168.56.202). This is what you run - with `--create-template` - the very first time.
 
 **Example 2**
 
-`./dtk --host-only-network=192.168.56 --vboxdir=/sdb1/virtualbox/ --networking=calico --monitoring=kube-prometheus --storage=openebs`
+`./dtk --host-only-network=192.168.56 --vboxdir=/sdb1/virtualboxvms --networking=calico --monitoring=kube-prometheus --storage=openebs`
 
 Creates a k8s cluster exactly as above, except uses the template created by the prior invocation. **Notice** that the `--host-only-network` option matches the option that was specified when the template was created. This is what you run if you're happy with the template: you just keep tearing down your cluster and re-creating it from the template. If ever you change something about the template generation, then you would delete the template, and go back to the first form of the script invocation.
 
@@ -103,21 +103,22 @@ The value you choose for the octets is up to you but - once you pick those value
 ```shell
 $ ./dtk --verify=upstreams --create-template --monitoring=kube-prometheus\
   --networking=calico --storage=openebs
-OK: https://github.com/etcd-io/etcd/releases/download/v3.5.4/etcd-v3.5.4-linux-amd64.tar.gz
-OK: https://dl.k8s.io/v1.25.0/bin/linux/amd64/kube-apiserver
-OK: https://dl.k8s.io/v1.25.0/bin/linux/amd64/kube-controller-manager
-OK: https://dl.k8s.io/v1.25.0/bin/linux/amd64/kube-scheduler
-OK: https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.24.2/crictl-v1.24.2-linux-amd64.tar.gz
-OK: https://github.com/opencontainers/runc/releases/download/v1.1.1/runc.amd64
-OK: https://github.com/containernetworking/plugins/releases/download/v1.1.1/cni-plugins-linux-amd64-v1.1.1.tgz
-OK: https://github.com/containerd/containerd/releases/download/v1.6.4/containerd-1.6.4-linux-amd64.tar.gz
-OK: https://dl.k8s.io/v1.25.0/bin/linux/amd64/kubelet
+OK: https://github.com/etcd-io/etcd/releases/download/v3.5.9/etcd-v3.5.9-linux-amd64.tar.gz
+OK: https://dl.k8s.io/v1.28.0/bin/linux/amd64/kube-apiserver
+OK: https://dl.k8s.io/v1.28.0/bin/linux/amd64/kube-controller-manager
+OK: https://dl.k8s.io/v1.28.0/bin/linux/amd64/kube-scheduler
+OK: https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.28.0/crictl-v1.28.0-linux-amd64.tar.gz
+OK: https://github.com/opencontainers/runc/releases/download/v1.1.9/runc.amd64
+OK: https://github.com/containernetworking/plugins/releases/download/v1.3.0/cni-plugins-linux-amd64-v1.3.0.tgz
+OK: https://github.com/containerd/containerd/releases/download/v1.6.23/containerd-1.6.23-linux-amd64.tar.gz
+OK: https://dl.k8s.io/v1.28.0/bin/linux/amd64/kubelet
+OK: https://raw.githubusercontent.com/kubernetes/dashboard/v2.7.0/aio/deploy/recommended.yaml
 OK: https://download.virtualbox.org/virtualbox/6.1.36/VBoxGuestAdditions_6.1.36.iso
 OK: https://mirror.umd.edu/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-latest-dvd1.iso
-OK: https://github.com/prometheus-operator/kube-prometheus/archive/v0.10.0.tar.gz
-OK: https://dl.k8s.io/v1.25.0/bin/linux/amd64/kube-proxy
-OK: https://raw.githubusercontent.com/projectcalico/calico/v3.24.1/manifests/tigera-operator.yaml
-OK: https://raw.githubusercontent.com/projectcalico/calico/v3.24.1/manifests/custom-resources.yaml
+OK: https://github.com/prometheus-operator/kube-prometheus/archive/v0.12.0.tar.gz
+OK: https://dl.k8s.io/v1.28.0/bin/linux/amd64/kube-proxy
+OK: https://raw.githubusercontent.com/projectcalico/calico/v3.26.1/manifests/tigera-operator.yaml
+OK: https://raw.githubusercontent.com/projectcalico/calico/v3.26.1/manifests/custom-resources.yaml
 OK: https://raw.githubusercontent.com/openebs/charts/gh-pages/hostpath-operator.yaml
 OK: https://openebs.github.io/charts/openebs-lite-sc.yaml
 ```
@@ -150,32 +151,34 @@ This project has been tested with the following tools, components and versions. 
 
 | Where    | Component                                                      | Version                | Updated    |
 | -------- | -------------------------------------------------------------- |------------------------| ---------- |
-| host     | Linux desktop                                                  | Ubuntu 20.04.5 LTS     | 2022-09-17 |
-| host     | openssl                                                        | 1.1.1f                 |            |
-| host     | openssh                                                        | OpenSSH_8.2p1          |            |
+| host     | Linux desktop                                                  | Ubuntu 22.04.3 LTS     | 2023-08-16 |
+| host     | openssl                                                        | 3.0.2                  | 2023-08-16 |
+| host     | openssh                                                        | OpenSSH_8.9p1          | 2023-08-16 |
 | host     | genisoimage (used to create the Kickstart ISO)                 | 1.1.11                 |            |
-| host     | Virtual Box / VBoxManage                                       | 6.1.36                 | 2022-07-30 |
-| host     | kubectl (client only)                                          | v1.25.0                | 2022-08-24 |
-| host     | curl                                                           | 7.68.0                 |            |
-| guest VM | Centos ISO                                                     | Stream-8-x86_64-latest | 2022-07-11 |
+| host     | Virtual Box / VBoxManage                                       | 7.0.8_Ubuntur156879    | 2023-08-16 |
+| host     | kubectl (client only)                                          | v1.28.0                | 2023-08-16 |
+| host     | curl                                                           | 7.81.0                 | 2023-08-16 |
+| guest VM | Centos ISO                                                     | Stream-8-x86_64-latest | 2023-08-16 |
 | guest VM | Rocky Linux ISO                                                | Rocky-9.0-x86_64-dvd   | 2022-08-06 |
-| guest VM | Virtual Box Guest Additions ISO                                | 6.1.36                 | 2022-07-30 |
-| k8s      | etcd                                                           | v3.5.4                 | 2022-05-05 |
-| k8s      | kube-apiserver                                                 | v1.25.0                | 2022-08-24 |
-| k8s      | kube-controller-manager                                        | v1.25.0                | 2022-08-24 |
-| k8s      | kube-scheduler                                                 | v1.25.0                | 2022-08-24 |
-| k8s      | kubelet                                                        | v1.25.0                | 2022-08-24 |
-| k8s      | crictl                                                         | v1.24.2                | 2022-07-14 |
-| k8s      | runc                                                           | v1.1.1                 | 2022-05-05 |
-| k8s      | cni plugins                                                    | v1.1.1                 | 2022-07-14 |
-| k8s      | containerd                                                     | v1.6.4                 | 2022-05-05 |
-| k8s      | CoreDNS                                                        | 1.9.0                  | 2022-02-26 |
+| guest VM | Virtual Box Guest Additions ISO                                | 7.0.8                  | 2023-08-16 |
+| k8s      | etcd                                                           | v3.5.9                 | 2023-08-16 |
+| k8s      | kube-apiserver                                                 | v1.28.0                | 2023-08-16 |
+| k8s      | kube-controller-manager                                        | v1.28.0                | 2023-08-16 |
+| k8s      | kube-scheduler                                                 | v1.28.0                | 2023-08-16 |
+| k8s      | kubelet                                                        | v1.28.0                | 2023-08-16 |
+| k8s      | crictl                                                         | v1.28.0                | 2023-08-16 |
+| k8s      | runc                                                           | v1.1.9                 | 2023-08-16 |
+| k8s      | cni plugins                                                    | v1.3.0                 | 2023-08-16 |
+| k8s      | containerd                                                     | v1.6.23                | 2023-08-16 |
+| k8s      | CoreDNS                                                        | 1.11.1                 | 2023-08-16 |
 | k8s      | Kubernetes Dashboard                                           | v2.7.0                 | 2022-09-23 |
-| k8s      | kube-proxy (if installed)                                      | v1.25.0                | 2022-08-24 |
+| k8s      | kube-proxy (if installed)                                      | v1.28.0                | 2023-08-16 |
 | k8s      | kube-router (if installed)                                     | v1.3.1                 | 2021-08-14 |
-| k8s      | Metrics Server (if installed)                                  | 0.4.2                  |            |
-| k8s      | Calico networking (if installed)                               | 3.24.1                 | 2022-09-16 |
+| k8s      | Metrics Server (if installed)                                  | v0.6.4                 | 2023-08-16 |
+| k8s      | Calico networking (if installed)                               | v3.26.1                | 2023-08-16 |
 | k8s      | Cilium networking and Hubble network monitoring (if installed) | 1.9.4                  |            |
-| k8s      | kube-prometheus stack (if installed)                           | 0.10.0                 | 2022-02-26 |
-| k8s      | OpenEBS (if installed)                                         | 2.11.1                 | 2022-02-26 |
-| k8s      | Sonobuoy conformance (passed)                                  | 0.56.10                | 2022-09-17 |
+| k8s      | kube-prometheus stack (if installed)                           | v0.12.0                | 2023-08-16 |
+| k8s      | OpenEBS (if installed)                                         | 3.4.0                  | 2023-08-16 |
+| k8s      | Sonobuoy conformance (passed)                                  | TODO                   | TODO |
+
+> Static pod container images per: https://kubernetes.io/releases/download/
