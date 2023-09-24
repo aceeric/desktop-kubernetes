@@ -77,6 +77,11 @@ tar zxvf $kube_prometheus_binary_actual --exclude setup --wildcards "$manifest_d
 
 echo "creating NodePort service 'grafana-nodeport' to enble Grafana access without port-forwarding"
 
+# As of kube prometheus v0.12.0 the manifests started including network policies which break the
+# NodePort service. As an easy work-around, this script creates an "allow all" network policy per
+# the Kubernetes docs here:
+# https://kubernetes.io/docs/concepts/services-networking/network-policies/#allow-all-ingress-traffic
+
 cat <<EOF | kubectl --kubeconfig $admin_kubeconfig -n monitoring apply -f -
 apiVersion: v1
 kind: Service
@@ -90,8 +95,21 @@ spec:
     protocol: TCP
     targetPort: 3000
   selector:
+    app.kubernetes.io/component: grafana
     app.kubernetes.io/name: grafana
+    app.kubernetes.io/part-of: kube-prometheus
   type: NodePort
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+  name: allow-all-ingress
+spec:
+  podSelector: {}
+  ingress:
+  - {}
+  policyTypes:
+  - Ingress
 EOF
 
 xec tweak-monitoring $nodes $admin_kubeconfig
