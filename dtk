@@ -44,7 +44,7 @@ source $DTKBASE/artifacts
 function check_files() {
   local result=0
   local objects=($containerd_binary $cni_plugins_binary $runc_binary $crictl_binary\
-    $etcd_gzip $kube_apiserver_binary $kube_controller_manager_binary $kube_scheduler_binary $kubelet_binary,$kubernetes_dashboard_manifest)
+    $etcd_gzip $kube_apiserver_binary $kube_controller_manager_binary $kube_scheduler_binary $kubelet_binary $kubernetes_dashboard_manifest)
   if [[ "$1" == 1 ]]; then
     objects+=($guest_additions_path)
     if [[ $linux == "centos" ]]; then
