@@ -179,6 +179,6 @@ This project has been tested with the following tools, components and versions. 
 | k8s      | Cilium networking and Hubble network monitoring (if installed) | 1.9.4                  |            |
 | k8s      | kube-prometheus stack (if installed)                           | v0.12.0                | 2023-08-16 |
 | k8s      | OpenEBS (if installed)                                         | 3.4.0                  | 2023-08-16 |
-| k8s      | Sonobuoy conformance (passed)                                  | TODO                   | TODO |
+| k8s      | Sonobuoy conformance (passed)                                  | v0.56.16               | 2023-08-27 |
 
 > Static pod container images per: https://kubernetes.io/releases/download/
