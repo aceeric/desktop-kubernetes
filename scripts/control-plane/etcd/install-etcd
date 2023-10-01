@@ -92,7 +92,6 @@ parse_args "$@"
 
 etcd_gzip_actual=$(xec make-download-path --download-url=$etcd_download --download-path=$etcd_gzip)
 subdir=$(basename -s .tar.gz $etcd_gzip_actual)
-etcd_pod_manifest=$script_dir/etcd-pod.yaml
 
 echo "copying etcd TLS material"
 ssh -i $priv_key root@$controller_ip "mkdir -p /etc/etcd /var/lib/etcd && chmod 700 /var/lib/etcd"
@@ -106,15 +105,18 @@ cat "$etcd_gzip_actual" | ssh -i $priv_key root@$controller_ip \
 if [[ containerized_cplane -eq 0 ]]; then
   echo "generating etcd service file"
   sed $script_dir/etcd.service\
-   -e "s|ETCD_NAME|$controller_hostname|g" -e "s|INTERNAL_IP|$controller_ip|g"\
+   -e "s|ETCD_NAME|$controller_hostname|g"\
+   -e "s|INTERNAL_IP|$controller_ip|g"\
    | ssh -i $priv_key root@$controller_ip "cat > /etc/systemd/system/etcd.service"
   
   echo "starting etcd service"
   ssh -i $priv_key root@$controller_ip "systemctl daemon-reload && systemctl enable etcd && systemctl start etcd"
 else
   echo "copying etcd static pod manifest to controller VM"
-  sed $etcd_pod_manifest\
-   -e "s|ETCD_NAME|$controller_hostname|g" -e "s|INTERNAL_IP|$controller_ip|g"\
+  sed $script_dir/etcd-pod.yaml\
+   -e "s|ETCD_VER|$ETCD_VER|g"\
+   -e "s|ETCD_NAME|$controller_hostname|g"\
+   -e "s|INTERNAL_IP|$controller_ip|g"\
    | ssh -i $priv_key root@$controller_ip "cat > /etc/desktop-kubernetes/static-pods/etcd-pod.yaml"
 fi
 

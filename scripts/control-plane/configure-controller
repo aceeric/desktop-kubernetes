@@ -72,14 +72,6 @@ function parse_args() {
 
 parse_args "$@"
 
-source $DTKBASE/artifacts
-
-#run_count=$(VBoxManage list runningvms | awk '{print $1}' | grep -e'"'$controller_hostname'"' | wc -l)
-#if [[ $run_count -eq 0 ]]; then
-#  echo "starting controller VM: $controller_hostname"
-#  VBoxManage startvm $controller_hostname
-#fi
-
 echo "getting controller IP address from running VM"
 controller_ip=$(xec get-vm-ip $controller_hostname)
 
@@ -100,8 +92,8 @@ xec install-etcd\
  --priv-key=$priv_key\
  --controller-ip=$controller_ip\
  --controller-hostname=$controller_hostname\
- --etcd-download=$etcd_download\
- --etcd-gzip=$etcd_gzip\
+ --etcd-download=$ETCD_DOWNLOAD\
+ --etcd-gzip=$ETCD_GZIP\
  --kubernetes-cert=$kubernetes_cert\
  --kubernetes-key=$kubernetes_key\
  --admin-kubeconfig=$admin_kubeconfig\
@@ -113,8 +105,8 @@ xec install-kube-apiserver\
  --priv-key=$priv_key\
  --controller-ip=$controller_ip\
  --controller-hostname=$controller_hostname\
- --kube-apiserver-download=$kube_apiserver_download\
- --kube-apiserver-binary=$kube_apiserver_binary\
+ --kube-apiserver-download=$KUBE_APISERVER_DOWNLOAD\
+ --kube-apiserver-binary=$KUBE_APISERVER_BINARY\
  --kubernetes-cert=$kubernetes_cert\
  --kubernetes-key=$kubernetes_key\
  --containerized-cplane=$containerized_cplane\
@@ -127,8 +119,8 @@ xec install-kube-controller-manager\
  --priv-key=$priv_key\
  --controller-ip=$controller_ip\
  --controller-hostname=$controller_hostname\
- --kube-controller-manager-download=$kube_controller_manager_download\
- --kube-controller-manager-binary=$kube_controller_manager_binary\
+ --kube-controller-manager-download=$KUBE_CONTROLLER_MANAGER_DOWNLOAD\
+ --kube-controller-manager-binary=$KUBE_CONTROLLER_MANAGER_BINARY\
  --containerized-cplane=$containerized_cplane\
  --admin-kubeconfig=$admin_kubeconfig\
  --ca-cert=$ca_cert\
@@ -139,8 +131,8 @@ xec install-kube-scheduler\
  --priv-key=$priv_key\
  --controller-ip=$controller_ip\
  --controller-hostname=$controller_hostname\
- --kube-scheduler-download=$kube_scheduler_download\
- --kube-scheduler-binary=$kube_scheduler_binary\
+ --kube-scheduler-download=$KUBE_SCHEDULER_DOWNLOAD\
+ --kube-scheduler-binary=$KUBE_SCHEDULER_BINARY\
  --containerized-cplane=$containerized_cplane\
  --admin-kubeconfig=$admin_kubeconfig\
  --ca-cert=$ca_cert\

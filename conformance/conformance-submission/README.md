@@ -30,7 +30,7 @@ component              tested               found                matches?
 openssl                3.0.2                3.0.2                Yes
 openssh                OpenSSH_8.9p1        OpenSSH_8.9p1        Yes
 genisoimage            1.1.11               1.1.11               Yes
-virtual box            7.0.8_Ubuntur156879  7.0.8_Ubuntur156879  Yes
+virtual box            7.0.10_Ubuntur158379 7.0.10_Ubuntur158379 Yes
 host operating system  Ubuntu 22.04.3 LTS   Ubuntu 22.04.3 LTS   Yes
 kubectl (client only)  v1.28.0              v1.28.0              Yes
 curl                   7.81.0               7.81.0               Yes

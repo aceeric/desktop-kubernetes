@@ -38,7 +38,7 @@ xec gen-hostonly-ifcfg-iso $network_octets $host_octet
 
 # mount ISO to VM
 echo "attaching ifcfg-enp0s8 ISO to VM $vmname"
-VBoxManage storageattach $vmname --storagectl IDE --port 0 --device 0 --type dvddrive\
+sleep 5s && VBoxManage storageattach $vmname --storagectl IDE --port 0 --device 0 --type dvddrive\
  --medium $DTKBASE/generated/iso/ifcfg-enp0s8.iso
 
 # start VM - this will cause the desktop-kubernetes systemd service to copy the config file 'ifcfg-enp0s8' from
@@ -59,9 +59,7 @@ done
 echo "stopping VM $vmname"
 VBoxManage controlvm $vmname acpipowerbutton
 
-# for virtual box or the detach calls below fail
-sleep 5s
-
 # unmount
 echo "VM $vmname stopped - detaching ifcfg-enp0s8 ISO"
-VBoxManage storageattach $vmname --storagectl IDE --port 0 --device 0 --medium none
+
+sleep 10s && VBoxManage storageattach $vmname --storagectl IDE --port 0 --device 0 --medium none

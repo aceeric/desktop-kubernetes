@@ -113,7 +113,6 @@ service_account_csr=$DTKBASE/generated/cert/service-account.csr
 aggregator_cert=$DTKBASE/generated/cert/aggregator.pem
 aggregator_key=$DTKBASE/generated/cert/aggregator-key.pem
 aggregator_csr=$DTKBASE/generated/cert/aggregator.csr
-kube_apiserver_pod_manifest=$script_dir/kube-apiserver-pod.yaml
 
 openssl req -nodes -newkey rsa:2048 -keyout $service_account_key -subj "/CN=service-accounts" -out $service_account_csr
 openssl x509 -req -days 10000 -in $service_account_csr -CA $ca_cert -CAkey $ca_key -CAcreateserial\
@@ -166,8 +165,9 @@ if [[ containerized_cplane -eq 0 ]]; then
   fi
 else
   echo "copying kube-apiserver static pod manifest to controller VM"
-  sed $kube_apiserver_pod_manifest -e "s|CONTROLLER_IP|$controller_ip|g"\
-   | ssh -i $priv_key root@$controller_ip "cat > /etc/desktop-kubernetes/static-pods/kube-apiserver-pod.yaml"
+  sed $script_dir/kube-apiserver-pod.yaml -e "s|CONTROLLER_IP|$controller_ip|g"\
+    -e "s|K8S_VER|$K8S_VER|g"\
+    | ssh -i $priv_key root@$controller_ip "cat > /etc/desktop-kubernetes/static-pods/kube-apiserver-pod.yaml"
   for i in {1..20}; do
     if kubectl --kubeconfig $admin_kubeconfig -n kube-system wait pod\
       -lcomponent=kube-apiserver --for=condition=ready --timeout=5s; then

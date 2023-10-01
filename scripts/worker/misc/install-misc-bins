@@ -85,7 +85,6 @@ cni_plugins_binary_actual=$(xec make-download-path\
  --download-url=$cni_plugins_download --download-path=$cni_plugins_binary)
 
 echo "Copying misc kubernetes binaries"
-
 xec download-obj --url="$crictl_download" --dest="$crictl_binary_actual"
 echo "Copying crictl binary to worker"
 cat $crictl_binary_actual | ssh -i $priv_key root@$worker_ip\
@@ -93,7 +92,7 @@ cat $crictl_binary_actual | ssh -i $priv_key root@$worker_ip\
 
 xec download-obj --url="$runc_download" --dest="$runc_binary_actual" --executable
 echo "Copying runc binary to worker"
-scp -i $priv_key $runc_binary_actual root@$worker_ip:/usr/local/bin/
+scp -i $priv_key $runc_binary_actual root@$worker_ip:/usr/local/bin/runc
 
 xec download-obj --url="$cni_plugins_download" --dest="$cni_plugins_binary_actual"
 echo "Copying cni plugins binary to worker"

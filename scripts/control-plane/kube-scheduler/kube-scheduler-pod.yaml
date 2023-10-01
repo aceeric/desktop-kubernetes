@@ -14,7 +14,7 @@ spec:
     - --kubeconfig=/var/lib/kubernetes/kube-scheduler.kubeconfig
     - --authorization-always-allow-paths=/healthz,/readyz,/livez,/metrics
     - --v=2
-    image: registry.k8s.io/kube-scheduler:v1.28.0
+    image: registry.k8s.io/kube-scheduler:K8S_VER
     imagePullPolicy: IfNotPresent
     livenessProbe:
       failureThreshold: 8

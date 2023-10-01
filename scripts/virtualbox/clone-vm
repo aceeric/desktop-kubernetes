@@ -97,13 +97,11 @@ VBoxManage clonevm $template_vmname\
 
 if [[ ! -z $host_only_network ]]; then
   echo "configure hostonly networking"
-  xec configure-hostonly-networking $clone_vmname $host_only_network $host_only_octet $clone_vmname
+  sleep 10s && xec configure-hostonly-networking $clone_vmname $host_only_network $host_only_octet $clone_vmname
 fi
 
 echo "setting VM characteristics"
-VBoxManage modifyvm $clone_vmname\
- --cpus $clone_cpus\
- --memory $clone_ram
+sleep 10s && VBoxManage modifyvm $clone_vmname --cpus $clone_cpus --memory $clone_ram
 
 # this script section clears the IP address guest property after the cloned VM starts. What I experienced was - if
 # I started the template (i.e. for troubleshooting), it would pick up an IP address property and the clone would
@@ -114,15 +112,21 @@ VBoxManage modifyvm $clone_vmname\
 # the script clears two addresses and ignores any errors.
 
 echo "starting cloned VM"
-VBoxManage startvm $clone_vmname
+sleep 10s && VBoxManage startvm $clone_vmname
 xec wait-vm $clone_vmname --started
 
 echo "clearing existing IP address"
 VBoxManage guestproperty delete $clone_vmname "/VirtualBox/GuestInfo/Net/0/V4/IP" || :
 VBoxManage guestproperty delete $clone_vmname "/VirtualBox/GuestInfo/Net/1/V4/IP" || :
 
-echo "waiting for VM IP assignment"
-clone_ip=$(xec get-vm-ip $clone_vmname)
+echo "waiting for VM IP assignment - $host_only_network.$host_only_octet"
+while true; do
+  clone_ip=$(xec get-vm-ip $clone_vmname)
+  if [[ $clone_ip == "$host_only_network.$host_only_octet" ]]; then
+    break
+  fi
+  sleep 3s
+done
 
 # this will be the very first occurrence of SSH'ing into the VM
 
@@ -132,11 +136,9 @@ ssh -o "StrictHostKeyChecking no" -i $priv_key root@$clone_ip "hostnamectl set-h
 
 if [[ $shutdown == true ]]; then
   echo "shutting down cloned VM"
-  VBoxManage controlvm $clone_vmname acpipowerbutton
+  sleep 10s && VBoxManage controlvm $clone_vmname acpipowerbutton
   xec wait-vm $clone_vmname --stopped
-  # virtual box needs a moment or subsequent vboxmanage commands will
-  # intermittently error
-  sleep 5s
+  sleep 10s
 fi
 
 echo "done cloning \"$clone_vmname\""

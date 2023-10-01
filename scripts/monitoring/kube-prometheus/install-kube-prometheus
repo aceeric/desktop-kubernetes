@@ -64,15 +64,13 @@ kube_prometheus_binary_actual=$(xec make-download-path\
 
 xec download-obj --url="$kube_prometheus_download" --dest="$kube_prometheus_binary_actual"
 
-manifest_dir=$(basename "$kube_prometheus_binary_actual" .tar.gz)
-
-tar zxvf $kube_prometheus_binary_actual --wildcards "$manifest_dir"'/manifests/setup/*.yaml'\
+tar zxvf $kube_prometheus_binary_actual --wildcards kube-prometheus-$KUBE_PROMETHEUS_VER'/manifests/setup/*.yaml'\
  --to-command "kubectl --kubeconfig $admin_kubeconfig create -f -"
 
 until kubectl --kubeconfig $admin_kubeconfig get servicemonitors --all-namespaces &>/dev/null; do date; sleep 1;\
   echo "Waiting for kube-prometheus CRDs"; done
 
-tar zxvf $kube_prometheus_binary_actual --exclude setup --wildcards "$manifest_dir"'/manifests/*.yaml'\
+tar zxvf $kube_prometheus_binary_actual --exclude setup --wildcards kube-prometheus-$KUBE_PROMETHEUS_VER'/manifests/*.yaml'\
  --to-command "kubectl --kubeconfig $admin_kubeconfig create -f -"
 
 echo "creating NodePort service 'grafana-nodeport' to enble Grafana access without port-forwarding"

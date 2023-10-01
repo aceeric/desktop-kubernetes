@@ -168,7 +168,8 @@ for node in "${nodes[@]}"; do
     done
   else
     echo "copying kube-proxy static pod manifest to controller VM"
-    scp -i $priv_key $script_dir/kube-proxy-pod.yaml root@$worker_ip:/etc/desktop-kubernetes/static-pods/
+    sed $script_dir/kube-proxy-pod.yaml -e "s|K8S_VER|$K8S_VER|g"\
+      | ssh -i $priv_key root@$controller_ip "cat > /etc/desktop-kubernetes/static-pods/kube-proxy-pod.yaml"
     for i in {1..20}; do
       if kubectl --kubeconfig $admin_kubeconfig -n kube-system wait pod\
         -lcomponent=kube-proxy --for=condition=ready --timeout=5s; then

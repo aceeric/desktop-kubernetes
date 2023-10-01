@@ -54,7 +54,7 @@ dtk
 
 ## Narrative
 
-1. If the `--create-template` arg is provided then ssh keys are generated, and a template VM is created using Kickstart and a CentOS or Rocky ISO depending on the `--linux` option. This ssh public key is copied into the VM in the `authorized-keys` file, and Virtual Box Guest Additions is installed. This template VM is cloned in subsequent steps to create the VM(s) that comprise the Kubernetes cluster, so each VM has an identical configuration. Guest Additions is used because it enables getting the IP address of a VirtualBox VM.
+1. If the `--create-template` arg is provided then ssh keys are generated, and a template VM is created using Kickstart and a CentOS/Alma/Rocky ISO depending on the `--linux` option. This ssh public key is copied into the VM in the `authorized-keys` file, and Virtual Box Guest Additions is installed. This template VM is cloned in subsequent steps to create the VM(s) that comprise the Kubernetes cluster, so each VM has an identical configuration. Guest Additions is used because it enables getting the IP address of a VirtualBox VM.
 2. A root CA is generated for the cluster. This CA is used to sign certs throughout the remainder of the cluster provisioning process.
 3. The core Kubernetes cluster is created. This is done by creating one (or three) clones depending on whether `--single-node` was specified. Then, the canonical Kubernetes components are installed on each VM.
 4. Each worker gets a unique TLS cert/key for its `kubelet`, a few binaries: `crictl`, `runc`, and `cni plugins`, and of course the `kubelet` and `containerd`.

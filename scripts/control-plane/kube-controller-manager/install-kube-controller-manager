@@ -1,13 +1,10 @@
 #!/usr/bin/env bash
 
-# installs the kube-controller-manager. The service definition configures kube-controller-manager to allocate
-# pod CIDRs to nodes as documented here: https://github.com/cloudnativelabs/kube-router/blob/master/docs/generic.md
-# This integrates with kube-router.
+# installs the kube-controller-manager.
 
 set -e
 
-long_opts=priv-key:,controller-ip:,controller-hostname:,\
-kube-controller-manager-download:,kube-controller-manager-binary:,\
+long_opts=priv-key:,controller-ip:,controller-hostname:,kube-controller-manager-download:,kube-controller-manager-binary:,\
 containerized-cplane:,admin-kubeconfig:,ca-cert:,ca-key:
 script_name=$(basename "$0")
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -99,7 +96,6 @@ controller_mgr_key=$DTKBASE/generated/cert/kube-controller-manager-key.pem
 controller_mgr_csr=$DTKBASE/generated/cert/kube-controller-manager.csr
 controller_mgr_kubeconfig=$DTKBASE/generated/kubeconfig/kube-controller-manager.kubeconfig
 controller_mgr_service=$script_dir/kube-controller-manager.service
-controller_mgr_pod_manifest=$script_dir/kube-controller-manager-pod.yaml
 
 echo "generating TLS material for kube-controller-manager"
 openssl req -newkey rsa:2048 -nodes -keyout $controller_mgr_key\
@@ -156,7 +152,8 @@ if [[ containerized_cplane -eq 0 ]]; then
   done
 else
   echo "copying kube-controller-manager static pod manifest to controller VM"
-  scp -i $priv_key $controller_mgr_pod_manifest root@$controller_ip:/etc/desktop-kubernetes/static-pods/
+  sed $script_dir/kube-controller-manager-pod.yaml -e "s|K8S_VER|$K8S_VER|g"\
+    | ssh -i $priv_key root@$controller_ip "cat > /etc/desktop-kubernetes/static-pods/kube-controller-manager-pod.yaml"
   for i in {1..20}; do
     if kubectl --kubeconfig $admin_kubeconfig -n kube-system wait pod\
       -lcomponent=kube-controller-manager --for=condition=ready --timeout=5s; then

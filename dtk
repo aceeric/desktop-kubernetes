@@ -21,7 +21,7 @@ delete=
 verify=
 sshto=
 template_name=bingo
-linux=centos
+linux=centos8
 containerized_cplane=
 
 # internal
@@ -31,108 +31,81 @@ cluster_vms=(doc)
 # other script's path, as long all the scripts (except this one) are children
 # of the 'scripts' directory. In the case where you're directly testing child scripts,
 # you must define DTKBASE and the xec function in your console first.
+
 export DTKBASE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 function xec() { f=$(find $DTKBASE/scripts -name $1) && $f "${@:2}"; }
 export -f xec
 
+set -a
 source $DTKBASE/artifacts
+set +a
 
 #
-# Verifies the existence of all the filesystem objects required to provision a cluster. If arg1 is '1' then that means
-# we are creating a template VM. In that case the OS and VBox Guest Additions ISOs are included in the check
+# Verifies the existence of all the possible filesystem objects required to provision a cluster.
 #
 function check_files() {
-  local result=0
-  local objects=($containerd_binary $cni_plugins_binary $runc_binary $crictl_binary\
-    $etcd_gzip $kube_apiserver_binary $kube_controller_manager_binary $kube_scheduler_binary $kubelet_binary $kubernetes_dashboard_manifest)
-  if [[ "$1" == 1 ]]; then
-    objects+=($guest_additions_path)
-    if [[ $linux == "centos" ]]; then
-      objects+=($centos_iso_path)
-    else
-      objects+=($rocky_iso_path)
-    fi
-  fi
-  if [[ "$monitoring" == "metrics.k8s.io" ]]; then
-    objects+=($metrics_server_manifest)
-  fi
-  if [[ "$monitoring" == "kube-prometheus" ]]; then
-    objects+=($kube_prometheus_binary)
-  fi
-  if [[ "$networking" == "kube-router" ]]; then
-    objects+=($kube_router_yaml)
-  fi
-  if [[ "$networking" == "calico" ]]; then
-    objects+=($kube_proxy_binary)
-    objects+=($calico_tigera_manifest)
-    objects+=($calico_custom_resources_manifest)
-  fi
-  if [[ "$storage" == "openebs" ]]; then
-    objects+=($openebs_hostpath_operator_manifest)
-    objects+=($openebs_sc_manifest)
-  fi
-#  if [[ "$networking" == "cilium" ]]; then
-#    objects+=($cilium_yaml_download)
-#    objects+=($hubble_yaml_download)
-#  fi
-  for f in "${objects[@]}"; do
-    if ! [[ -f $f ]]; then
-      echo "missing filesystem object: $f" >&2
-      result=1
-    else
-      echo "OK: $f"
-    fi
-  done
-  echo "$result"
+  for f in $CALICO_CUSTOM_RESOURCES_MANIFEST\
+    $CALICO_TIGERA_MANIFEST\
+    $CENTOS8_ISO_FILE\
+    $CNI_PLUGINS_BINARY\
+    $CONTAINERD_BINARY\
+    $CRICTL_BINARY\
+    $ETCD_GZIP\
+    $GUEST_ADDITIONS_ISO_FILE\
+    $KUBE_APISERVER_BINARY\
+    $KUBE_CONTROLLER_MANAGER_BINARY\
+    $KUBELET_BINARY\
+    $KUBE_PROMETHEUS_BINARY\
+    $KUBE_PROXY_BINARY\
+    $KUBERNETES_DASHBOARD_MANIFEST\
+    $KUBE_SCHEDULER_BINARY\
+    $METRICS_SERVER_MANIFEST\
+    $OPENEBS_HOSTPATH_OPERATOR_MANIFEST\
+    $OPENEBS_SC_MANIFEST\
+    $ROCKY_ISO_FILE\
+    $RUNC_BINARY;
+    do
+      if ! [[ -f $f ]]; then
+        echo "missing: $f" >&2
+        result=1
+      else
+        echo "OK: $f"
+      fi
+    done
 }
 
 #
-# Verifies the existence of all the downloads required to provision a cluster. If arg1 is '1' then
-# the OS and VBox Guest Additions ISOs are included in the check
+# Verifies the existence of all possible downloads required to provision a cluster.
 #
 function check_urls() {
-  local result=0
-  local objects=($etcd_download $kube_apiserver_download $kube_controller_manager_download $kube_scheduler_download\
-    $crictl_download $runc_download $cni_plugins_download $containerd_download $kubelet_download $kubernetes_dashboard_download)
-  if [[ "$1" == 1 ]]; then
-    objects+=($guest_additions_download)
-    if [[ $linux == "centos" ]]; then
-      objects+=($centos_iso_download)
-    else
-      objects+=($rocky_iso_download)
-    fi
-  fi
-  if [[ "$monitoring" == "metrics.k8s.io" ]]; then
-    objects+=($metrics_server_download)
-  fi
-  if [[ "$monitoring" == "kube-prometheus" ]]; then
-    objects+=($kube_prometheus_download)
-  fi
-  if [[ "$networking" == "kube-router" ]]; then
-    objects+=($kube_router_yaml_download)
-  fi
-  if [[ "$networking" == "calico" ]]; then
-    objects+=($kube_proxy_download)
-    objects+=($calico_tigera_download)
-    objects+=($calico_custom_resources_download)
-  fi
-  if [[ "$storage" == "openebs" ]]; then
-    objects+=($openebs_hostpath_operator_manifest_download)
-    objects+=($openebs_sc_manifest_download)
-  fi
-#  if [[ "$networking" == "cilium" ]]; then
-#    objects+=($cilium_yaml)
-#    objects+=($hubble_yaml)
-#  fi
-  for f in "${objects[@]}"; do
-    if ! curl -sL $f -o /dev/null --head --fail; then
-      echo "missing upstream resource: $f" >&2
-      result=1
-    else
-      echo "OK: $f"
-    fi
-  done
-  echo "$result"
+  for f in $CALICO_CUSTOM_RESOURCES_DOWNLOAD\
+    $CALICO_TIGERA_DOWNLOAD\
+    $CENTOS8_ISO_DOWNLOAD\
+    $CNI_PLUGINS_DOWNLOAD\
+    $CONTAINERD_DOWNLOAD\
+    $CRICTL_DOWNLOAD\
+    $ETCD_DOWNLOAD\
+    $GUEST_ADDITIONS_ISO_DOWNLOAD\
+    $KUBE_APISERVER_DOWNLOAD\
+    $KUBE_CONTROLLER_MANAGER_DOWNLOAD\
+    $KUBELET_DOWNLOAD\
+    $KUBE_PROMETHEUS_DOWNLOAD\
+    $KUBE_PROXY_DOWNLOAD\
+    $KUBERNETES_DASHBOARD_DOWNLOAD\
+    $KUBE_SCHEDULER_DOWNLOAD\
+    $METRICS_SERVER_DOWNLOAD\
+    $OPENEBS_HOSTPATH_OPERATOR_MANIFEST_DOWNLOAD\
+    $OPENEBS_SC_MANIFEST_DOWNLOAD\
+    $ROCKY_ISO_DOWNLOAD\
+    $RUNC_DOWNLOAD;
+    do
+      if ! curl -sL $f -o /dev/null --head --fail; then
+        echo "missing: $f" >&2
+        result=1
+      else
+        echo "OK: $f"
+      fi
+    done
 }
 
 #
@@ -179,7 +152,7 @@ function parse_args() {
         ;;
       --networking)
         networking=$(opt_val "$2")
-        if [[ "$networking" != "kube-router" ]] && [[ "$networking" != "cilium" ]] && [[ "$networking" != "calico" ]]; then
+        if [[ "$networking" != "cilium" ]] && [[ "$networking" != "calico" ]]; then
           echo "unsupported parameter value for --networking option: $networking"
           exit 1
         fi
@@ -247,7 +220,7 @@ function parse_args() {
         ;;
       --linux)
         linux=$(opt_val "$2")
-        if [[ "$linux" != "centos" ]] && [[ "$linux" != "rocky" ]]; then
+        if [[ "$linux" != "centos8" ]] && [[ "$linux" != "centos9" ]] && [[ "$linux" != "rocky" ]]  && [[ "$linux" != "alma" ]]; then
           echo "unsupported parameter value for --linux option: $linux"
           exit 1
         fi
@@ -275,10 +248,10 @@ if [[ $check_compatibility -eq 1 ]]; then
   xec verify-prereqs
   exit 0
 elif [[ "$verify" == "upstreams" ]]; then
-  check_urls $create_template
+  check_urls
   exit 0
 elif [[ "$verify" == "files" ]]; then
-  check_files $create_template
+  check_files
   exit 0
 elif [[ ! -z "$up" ]]; then
   IFS=',' read -ra vms <<< "$up"
@@ -341,19 +314,26 @@ mkdir -p $DTKBASE/generated/kickstart $DTKBASE/generated/kubeconfig\
 if [[ $create_template -eq 1 ]] ; then
   echo "creating a template VM"
 
-  if [[ $linux == "centos" ]]; then
-    linux_iso_download=$centos_iso_download
-    linux_iso_path=$centos_iso_path
+  if [[ $linux == "centos8" ]]; then
+    linux_iso_download=$CENTOS8_ISO_DOWNLOAD
+    linux_iso_path=$CENTOS8_ISO_FILE
+  elif [[ $linux == "centos9" ]]; then
+    linux_iso_download=$CENTOS9_ISO_DOWNLOAD
+    linux_iso_path=$CENTOS9_ISO_FILE
+  elif [[ $linux == "alma" ]]; then
+    linux_iso_download=$ALMA_ISO_DOWNLOAD
+    linux_iso_path=$ALMA_ISO_FILE
   else
-    linux_iso_download=$rocky_iso_download
-    linux_iso_path=$rocky_iso_path
+    linux_iso_download=$ROCKY_ISO_DOWNLOAD
+    linux_iso_path=$ROCKY_ISO_FILE
   fi
+
   xec create-template-vm\
    --template-vmname=$template_name\
    --linux-iso-download=$linux_iso_download\
    --linux-iso-path=$linux_iso_path\
-   --guest-additions-download=$guest_additions_download\
-   --guest-additions-path=$guest_additions_path\
+   --guest-additions-download=$GUEST_ADDITIONS_ISO_DOWNLOAD\
+   --guest-additions-path=$GUEST_ADDITIONS_ISO_FILE\
    --host-network-interface=$host_network_interface\
    --host-only-network=$host_only_network\
    --vboxdir=$vboxdir
@@ -385,13 +365,7 @@ fi
 
 echo "installing pod networking"
 
-if [[ "$networking" == "kube-router" ]]; then
-  xec install-kube-router\
-   --controller-ip=$controller_ip\
-   --kube-router-yaml-download=$kube_router_yaml_download\
-   --kube-router-yaml=$kube_router_yaml\
-   --admin-kubeconfig=$DTKBASE/generated/kubeconfig/admin.kubeconfig
-elif [[ "$networking" == "cilium" ]]; then
+if [[ "$networking" == "cilium" ]]; then
   xec install-cilium-networking\
    --controller-ip=$controller_ip\
    --admin-kubeconfig=$DTKBASE/generated/kubeconfig/admin.kubeconfig
@@ -401,8 +375,8 @@ elif [[ "$networking" == "calico" ]]; then
   nodes=${nodes// /,}
   xec install-kube-proxy\
    --controller-ip=$controller_ip\
-   --kube-proxy-download=$kube_proxy_download\
-   --kube-proxy-binary=$kube_proxy_binary\
+   --kube-proxy-download=$KUBE_PROXY_DOWNLOAD\
+   --kube-proxy-binary=$KUBE_PROXY_BINARY\
    --priv-key=$DTKBASE/generated/kickstart/id_ed25519\
    --admin-kubeconfig=$DTKBASE/generated/kubeconfig/admin.kubeconfig\
    --containerized-cplane=$containerized_cplane\
@@ -410,10 +384,10 @@ elif [[ "$networking" == "calico" ]]; then
    --ca-key=$DTKBASE/generated/cert/ca-key.pem\
    --nodes=$nodes
   xec install-calico-networking\
-   --calico-tigera-download=$calico_tigera_download\
-   --calico-tigera-binary=$calico_tigera_manifest\
-   --calico-custom-resources-download=$calico_custom_resources_download\
-   --calico-custom-resources-manifest=$calico_custom_resources_manifest\
+   --calico-tigera-download=$CALICO_TIGERA_DOWNLOAD\
+   --calico-tigera-binary=$CALICO_TIGERA_MANIFEST\
+   --calico-custom-resources-download=$CALICO_CUSTOM_RESOURCES_DOWNLOAD\
+   --calico-custom-resources-manifest=$CALICO_CUSTOM_RESOURCES_MANIFEST\
    --priv-key=$DTKBASE/generated/kickstart/id_ed25519\
    --admin-kubeconfig=$DTKBASE/generated/kubeconfig/admin.kubeconfig\
    --cluster-cidr=10.200.0.0/16\
@@ -431,15 +405,15 @@ if [[ -n "$monitoring" ]]; then
   if [[ "$monitoring" == "metrics.k8s.io" ]]; then
     xec install-metrics-server\
      --admin-kubeconfig=$DTKBASE/generated/kubeconfig/admin.kubeconfig\
-     --metrics-server-download=$metrics_server_download\
-     --metrics-server-manifest=$metrics_server_manifest
+     --metrics-server-download=$METRICS_SERVER_DOWNLOAD\
+     --metrics-server-manifest=$METRICS_SERVER_MANIFEST
   elif [[ "$monitoring" == "kube-prometheus" ]]; then
     nodes="${cluster_vms[@]}"
     nodes=${nodes// /,}
     xec install-kube-prometheus\
      --nodes=$nodes\
-     --kube-prometheus-download=$kube_prometheus_download\
-     --kube-prometheus-binary=$kube_prometheus_binary\
+     --kube-prometheus-download=$KUBE_PROMETHEUS_DOWNLOAD\
+     --kube-prometheus-binary=$KUBE_PROMETHEUS_BINARY\
      --admin-kubeconfig=$DTKBASE/generated/kubeconfig/admin.kubeconfig
   fi
 fi
@@ -450,10 +424,10 @@ if [[ -n "$storage" ]]; then
     xec install-openebs\
      --priv-key=$DTKBASE/generated/kickstart/id_ed25519\
      --admin-kubeconfig=$DTKBASE/generated/kubeconfig/admin.kubeconfig\
-     --openebs-hostpath-operator-manifest-download=$openebs_hostpath_operator_manifest_download\
-     --openebs-hostpath-operator-manifest=$openebs_hostpath_operator_manifest\
-     --openebs-sc-manifest-download=$openebs_sc_manifest_download\
-     --openebs-sc-manifest=$openebs_sc_manifest
+     --openebs-hostpath-operator-manifest-download=$OPENEBS_HOSTPATH_OPERATOR_MANIFEST_DOWNLOAD\
+     --openebs-hostpath-operator-manifest=$OPENEBS_HOSTPATH_OPERATOR_MANIFEST\
+     --openebs-sc-manifest-download=$OPENEBS_SC_MANIFEST_DOWNLOAD\
+     --openebs-sc-manifest=$OPENEBS_SC_MANIFEST
   fi
 fi
 
@@ -462,8 +436,8 @@ echo "installing Kubernetes Dashboard"
 xec install-kubernetes-dashboard\
  --controller-ip=$controller_ip\
  --admin-kubeconfig=$DTKBASE/generated/kubeconfig/admin.kubeconfig\
- --kubernetes-dashboard-download=$kubernetes_dashboard_download\
- --kubernetes-dashboard-manifest=$kubernetes_dashboard_manifest
+ --kubernetes-dashboard-download=$KUBERNETES_DASHBOARD_DOWNLOAD\
+ --kubernetes-dashboard-manifest=$KUBERNETES_DASHBOARD_MANIFEST
 
 echo
 echo "finished provisioning cluster. To interact with the cluster:"

@@ -95,7 +95,6 @@ kube_scheduler_csr=$DTKBASE/generated/cert/kube-scheduler.csr
 kube_scheduler_kubeconfig=$DTKBASE/generated/kubeconfig/kube-scheduler.kubeconfig
 kube_scheduler_service=$script_dir/kube-scheduler.service
 kube_scheduler_yaml=$script_dir/kube-scheduler.yaml
-kube_scheduler_pod_manifest=$script_dir/kube-scheduler-pod.yaml
 
 echo "generating TLS material for kube-scheduler"
 openssl req -newkey rsa:2048 -nodes -keyout $kube_scheduler_key\
@@ -152,7 +151,8 @@ if [[ containerized_cplane -eq 0 ]]; then
   done
 else
   echo "copying kube-scheduler static pod manifest to controller VM"
-  scp -i $priv_key $kube_scheduler_pod_manifest root@$controller_ip:/etc/desktop-kubernetes/static-pods/
+  sed $script_dir/kube-scheduler-pod.yaml -e "s|K8S_VER|$K8S_VER|g"\
+    | ssh -i $priv_key root@$controller_ip "cat > /etc/desktop-kubernetes/static-pods/kube-scheduler-pod.yaml"
   for i in {1..20}; do
     if kubectl --kubeconfig $admin_kubeconfig -n kube-system wait pod\
       -lcomponent=kube-scheduler --for=condition=ready --timeout=5s; then

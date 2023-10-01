@@ -1,56 +1,63 @@
-# These are the various binaries and manifests that are downloaded by the scripts in the project. Two
-# elements are defined for each upstream: the URL to get it from, and the filesystem location. This way,
-# once the script is run once, subsequent invocations can just use the downloaded objects. All downloads
-# are placed into in the 'binaries' directory and can just be reused. This script is intended to be
-# sourced by the various scripts that need it.
+# Change versions here and they will propagate
 
-# core
-centos_iso_download=https://mirror.umd.edu/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-latest-dvd1.iso
-centos_iso_path=$DTKBASE/binaries/CentOS-Stream-8-x86_64-latest-dvd1.iso
-cni_plugins_binary=$DTKBASE/binaries/cni-plugins-linux-amd64-v1.3.0.tgz
-cni_plugins_download=https://github.com/containernetworking/plugins/releases/download/v1.3.0/cni-plugins-linux-amd64-v1.3.0.tgz
-containerd_binary=$DTKBASE/binaries/containerd-1.6.23-linux-amd64.tar.gz
-containerd_download=https://github.com/containerd/containerd/releases/download/v1.6.23/containerd-1.6.23-linux-amd64.tar.gz
-crictl_binary=$DTKBASE/binaries/crictl-v1.28.0-linux-amd64.tar.gz
-crictl_download=https://github.com/kubernetes-sigs/cri-tools/releases/download/v1.28.0/crictl-v1.28.0-linux-amd64.tar.gz
-etcd_download=https://github.com/etcd-io/etcd/releases/download/v3.5.9/etcd-v3.5.9-linux-amd64.tar.gz
-etcd_gzip=$DTKBASE/binaries/etcd-v3.5.9-linux-amd64.tar.gz
-guest_additions_download=https://download.virtualbox.org/virtualbox/7.0.8/VBoxGuestAdditions_7.0.8.iso
-guest_additions_path=$DTKBASE/binaries/VBoxGuestAdditions_7.0.8.iso
-kube_apiserver_binary=$DTKBASE/binaries/kube-apiserver-v1.28.0
-kube_apiserver_download=https://dl.k8s.io/v1.28.0/bin/linux/amd64/kube-apiserver
-kube_controller_manager_binary=$DTKBASE/binaries/kube-controller-manager-v1.28.0
-kube_controller_manager_download=https://dl.k8s.io/v1.28.0/bin/linux/amd64/kube-controller-manager
-kubelet_binary=$DTKBASE/binaries/kubelet-v1.28.0
-kubelet_download=https://dl.k8s.io/v1.28.0/bin/linux/amd64/kubelet
-kube_proxy_binary=$DTKBASE/binaries/kube-proxy-v1.28.0
-kube_proxy_download=https://dl.k8s.io/v1.28.0/bin/linux/amd64/kube-proxy
-kube_router_yaml=$DTKBASE/binaries/generic-kuberouter-all-features.yaml
-kube_router_yaml_download=https://raw.githubusercontent.com/cloudnativelabs/kube-router/v1.3.1/daemonset/generic-kuberouter-all-features.yaml
-kube_scheduler_binary=$DTKBASE/binaries/kube-scheduler-v1.28.0
-kube_scheduler_download=https://dl.k8s.io/v1.28.0/bin/linux/amd64/kube-scheduler
-rocky_iso_download=https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9.0-x86_64-dvd.iso
-rocky_iso_path=$DTKBASE/binaries/Rocky-9.0-x86_64-dvd.iso
-runc_binary=$DTKBASE/binaries/runc
-runc_download=https://github.com/opencontainers/runc/releases/download/v1.1.9/runc.amd64
+ALMA_VER=9.2
+CALICO_VER=v3.26.1
+CNI_PLUGINS_VER=v1.3.0
+CONTAINERD_VER=1.7.6
+CRICTL_VER=v1.28.0
+ETCD_VER=v3.5.9
+GUEST_ADDITIONS_VER=7.0.8
+K8S_DASHBOARD_VER=v2.7.0
+K8S_VER=v1.28.1
+KUBE_PROMETHEUS_VER=0.12.0
+METRICS_SERVER_VER=v0.6.4
+OPENEBS_VER=3.9.0
+ROCKY_VER=9.2
+RUNC_VER=v1.1.9
 
-# extras
-metrics_server_download=https://github.com/kubernetes-sigs/metrics-server/releases/download/v0.6.4/components.yaml
-metrics_server_manifest=$DTKBASE/binaries/metrics-server-components.yaml
-kubernetes_dashboard_download=https://raw.githubusercontent.com/kubernetes/dashboard/v2.7.0/aio/deploy/recommended.yaml
-kubernetes_dashboard_manifest=$DTKBASE/binaries/kubernetes-dashboard-recommended-v2.7.0.yaml
-# do cilium/hubble differently - see the README with the install script
-#cilium_yaml_download=https://raw.githubusercontent.com/cilium/cilium/1.9.4/install/kubernetes/quick-install.yaml
-#cilium_yaml=cilium-1.9.4-quick-install.yaml
-#hubble_yaml_download=https://raw.githubusercontent.com/cilium/cilium/1.9.4/install/kubernetes/quick-hubble-install.yaml
-#hubble_yaml=cilium-1.9.4-quick-hubble-install.yaml
-kube_prometheus_download=https://github.com/prometheus-operator/kube-prometheus/archive/v0.12.0.tar.gz
-kube_prometheus_binary=$DTKBASE/binaries/kube-prometheus-0.12.0.tar.gz
-calico_tigera_download=https://raw.githubusercontent.com/projectcalico/calico/v3.26.1/manifests/tigera-operator.yaml
-calico_tigera_manifest=$DTKBASE/binaries/calico-v3.26.1-tigera-operator.yaml
-calico_custom_resources_download=https://raw.githubusercontent.com/projectcalico/calico/v3.26.1/manifests/custom-resources.yaml
-calico_custom_resources_manifest=$DTKBASE/binaries/calico-v3.26.1-custom-resources.yaml
-openebs_hostpath_operator_manifest_download=https://raw.githubusercontent.com/openebs/charts/gh-pages/hostpath-operator.yaml
-openebs_hostpath_operator_manifest=$DTKBASE/binaries/openebs-hostpath-operator.yaml
-openebs_sc_manifest_download=https://openebs.github.io/charts/openebs-lite-sc.yaml
-openebs_sc_manifest=$DTKBASE/binaries/openebs-lite-sc.yaml
+# These are the items used to provision the cluster
+
+ALMA_ISO_DOWNLOAD=https://repo.almalinux.org/almalinux/$ALMA_VER/isos/x86_64/AlmaLinux-$ALMA_VER-x86_64-dvd.iso
+ALMA_ISO_FILE=$DTKBASE/binaries/AlmaLinux-$ALMA_VER-x86_64-dvd.iso
+CALICO_CUSTOM_RESOURCES_DOWNLOAD=https://raw.githubusercontent.com/projectcalico/calico/$CALICO_VER/manifests/custom-resources.yaml
+CALICO_CUSTOM_RESOURCES_MANIFEST=$DTKBASE/binaries/calico-$CALICO_VER-custom-resources.yaml
+CALICO_TIGERA_DOWNLOAD=https://raw.githubusercontent.com/projectcalico/calico/$CALICO_VER/manifests/tigera-operator.yaml
+CALICO_TIGERA_MANIFEST=$DTKBASE/binaries/calico-$CALICO_VER-tigera-operator.yaml
+CENTOS8_ISO_DOWNLOAD=https://mirror.umd.edu/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-latest-dvd1.iso
+CENTOS8_ISO_FILE=$DTKBASE/binaries/CentOS-Stream-8-x86_64-latest-dvd1.iso
+CENTOS9_ISO_DOWNLOAD="https://mirrors.centos.org/mirrorlist?path=/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-dvd1.iso&redirect=1&protocol=https"
+CENTOS9_ISO_FILE=$DTKBASE/binaries/CentOS-Stream-9-latest-x86_64-dvd1.iso
+CNI_PLUGINS_BINARY=$DTKBASE/binaries/cni-plugins-linux-amd64-$CNI_PLUGINS_VER.tgz
+CNI_PLUGINS_DOWNLOAD=https://github.com/containernetworking/plugins/releases/download/$CNI_PLUGINS_VER/cni-plugins-linux-amd64-$CNI_PLUGINS_VER.tgz
+CONTAINERD_BINARY=$DTKBASE/binaries/containerd-v$CONTAINERD_VER-linux-amd64.tar.gz
+CONTAINERD_DOWNLOAD=https://github.com/containerd/containerd/releases/download/v$CONTAINERD_VER/containerd-$CONTAINERD_VER-linux-amd64.tar.gz
+CRICTL_BINARY=$DTKBASE/binaries/crictl-$CRICTL_VER-linux-amd64.tar.gz
+CRICTL_DOWNLOAD=https://github.com/kubernetes-sigs/cri-tools/releases/download/$CRICTL_VER/crictl-$CRICTL_VER-linux-amd64.tar.gz
+ETCD_DOWNLOAD=https://github.com/etcd-io/etcd/releases/download/$ETCD_VER/etcd-$ETCD_VER-linux-amd64.tar.gz
+ETCD_GZIP=$DTKBASE/binaries/etcd-$ETCD_VER-linux-amd64.tar.gz
+GUEST_ADDITIONS_ISO_DOWNLOAD=https://download.virtualbox.org/virtualbox/$GUEST_ADDITIONS_VER/VBoxGuestAdditions_$GUEST_ADDITIONS_VER.iso
+GUEST_ADDITIONS_ISO_FILE=$DTKBASE/binaries/VBoxGuestAdditions_$GUEST_ADDITIONS_VER.iso
+KUBE_APISERVER_BINARY=$DTKBASE/binaries/kube-apiserver-$K8S_VER
+KUBE_APISERVER_DOWNLOAD=https://dl.k8s.io/$K8S_VER/bin/linux/amd64/kube-apiserver
+KUBE_CONTROLLER_MANAGER_BINARY=$DTKBASE/binaries/kube-controller-manager-$K8S_VER
+KUBE_CONTROLLER_MANAGER_DOWNLOAD=https://dl.k8s.io/$K8S_VER/bin/linux/amd64/kube-controller-manager
+KUBELET_BINARY=$DTKBASE/binaries/kubelet-$K8S_VER
+KUBELET_DOWNLOAD=https://dl.k8s.io/$K8S_VER/bin/linux/amd64/kubelet
+KUBE_PROMETHEUS_BINARY=$DTKBASE/binaries/kube-prometheus-v$KUBE_PROMETHEUS_VER.tar.gz
+KUBE_PROMETHEUS_DOWNLOAD=https://github.com/prometheus-operator/kube-prometheus/archive/v$KUBE_PROMETHEUS_VER.tar.gz
+KUBE_PROXY_BINARY=$DTKBASE/binaries/kube-proxy-$K8S_VER
+KUBE_PROXY_DOWNLOAD=https://dl.k8s.io/$K8S_VER/bin/linux/amd64/kube-proxy
+KUBERNETES_DASHBOARD_DOWNLOAD=https://raw.githubusercontent.com/kubernetes/dashboard/$K8S_DASHBOARD_VER/aio/deploy/recommended.yaml
+KUBERNETES_DASHBOARD_MANIFEST=$DTKBASE/binaries/kubernetes-dashboard-recommended-$K8S_DASHBOARD_VER.yaml
+KUBE_SCHEDULER_BINARY=$DTKBASE/binaries/kube-scheduler-$K8S_VER
+KUBE_SCHEDULER_DOWNLOAD=https://dl.k8s.io/$K8S_VER/bin/linux/amd64/kube-scheduler
+METRICS_SERVER_DOWNLOAD=https://github.com/kubernetes-sigs/metrics-server/releases/download/$METRICS_SERVER_VER/components.yaml
+METRICS_SERVER_MANIFEST=$DTKBASE/binaries/metrics-server-components-$METRICS_SERVER_VER.yaml
+OPENEBS_HOSTPATH_OPERATOR_MANIFEST=$DTKBASE/binaries/openebs-hostpath-operator-$OPENEBS_VER.yaml
+OPENEBS_HOSTPATH_OPERATOR_MANIFEST_DOWNLOAD=https://raw.githubusercontent.com/openebs/charts/gh-pages/versioned/$OPENEBS_VER/hostpath-operator.yaml
+OPENEBS_SC_MANIFEST=$DTKBASE/binaries/openebs-lite-sc-$OPENEBS_VER.yaml
+OPENEBS_SC_MANIFEST_DOWNLOAD=https://raw.githubusercontent.com/openebs/charts/gh-pages/versioned/$OPENEBS_VER/openebs-lite-sc.yaml
+ROCKY_ISO_DOWNLOAD=https://download.rockylinux.org/pub/rocky/${ROCKY_VER%%\.*}/isos/x86_64/Rocky-$ROCKY_VER-x86_64-dvd.iso
+ROCKY_ISO_FILE=$DTKBASE/binaries/Rocky-$ROCKY_VER-x86_64-dvd.iso
+RUNC_BINARY=$DTKBASE/binaries/runc-$RUNC_VER
+RUNC_DOWNLOAD=https://github.com/opencontainers/runc/releases/download/$RUNC_VER/runc.amd64

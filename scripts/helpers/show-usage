@@ -18,7 +18,7 @@ done <<< '
 
   Usage: dtk [--vboxdir=</some/path>] [--host-network-interface=<interface>] [--host-only-network=<network>] 
              [--networking=<type>] [--monitoring=<type>] [--create-template] [--template-name] [--single-node]
-             [--linux=<centos|rocky>] [--storage=<type>] [--containerized-cplane=<list>]
+             [--linux=<centos8/9|rocky|alma>] [--storage=<type>] [--containerized-cplane=<list>]
              [--verify=<files|upstreams>] [--check-compatibility] [--up=<nodelist>] [--down=<nodelist>]
              [--delete=<nodelist>] [--sshto=<vmname>] [--help]
 
@@ -40,9 +40,8 @@ done <<< '
                                use it for intra-cluster networking, and will configure NAT for the cluster to
                                access the internet. This option must be applied identically to the template VM
                                and all clones.
-    --networking               Installs k8s networking. Current valid values are "calico", "kube-router", and
-                               "cilium". E.g.: --networking=calico. (Calico also installs kube-proxy. The
-                               other networking configurations are kube-proxyless.)
+    --networking               Installs k8s networking. Current valid values are "calico", and "cilium". E.g.:
+                               --networking=calico. (Calico also installs kube-proxy.)
     --monitoring               Optional. Installs monitoring. Allowed values are "metrics.k8s.io", and
                                "kube-prometheus".
     --create-template          Optional. First creates a template VM from which to clone all the cluster nodes.
@@ -54,14 +53,14 @@ done <<< '
     --single-node              Optional. Creates a single node cluster. The default is to create one control
                                plane node, and two workers. This option is useful to quickly test changes since
                                it is faster to provision a single node.
-    --linux                    Optional. Valid values are "centos" for CentOS Stream (the default) and "rocky"
-                               for Rocky Linux. Ignored unless --create-template is specified.
+    --linux                    Optional. Valid values are "centos8/9" for CentOS Stream (default is 8), "alma" for
+                               Alma Linux,  and "rocky" for Rocky Linux. Ignored unless --create-template is provided.
     --storage                  Optional. Installs a dynamic storage provisioner. This supports testing workloads
                                that use PVs and PVCs. Presently, the only supported value is "openebs". E.g.:
                                --storage=openebs
     --containerized-cplane     Optional. If specified, creates the control plane components as static pods on the
-                               controller VM like Kubeadm, RKE2, et. al. By default, creates the control plane
-                               components as as systemd units. Allowed values: "all", or any of comma-separated:
+                               controller VM like Kubeadm, RKE2, et. al. (By default, creates the control plane
+                               components as as systemd units.) Allowed values: "all", or any of comma-separated:
                                "etcd", "kube-apiserver", "kube-proxy", "kube-scheduler", "kube-controller-manager".
                                E.g.: "--containerized-cplane=etcd,kube-proxy"
 
@@ -71,9 +70,7 @@ done <<< '
                                are "upstreams" and "files". If "upstreams", then the script does a curl HEAD request
                                for each upstream (e.g. OS ISO, Kubernetes binaries, etc.). If "files", then
                                the same check is performed for the downloaded filesystem objects. This is a useful
-                               option to see all the objects that are required to provision a cluster. The list is
-                               influenced by some other options. E.g. if you specify --monitoring=kube-prometheus,
-                               then that will add to the list of objects.
+                               option to see all the objects that are required to provision a cluster.
     --check-compatibility      Checks the installed versions of various utils used by the project (curl, kubectl,
                                etc) against what the project has been tested on - and then exits, taking no
                                further action. You should do this at least once.
@@ -94,8 +91,7 @@ done <<< '
 
     dtk --host-only-network=192.168.56 --vboxdir=/sdb1/virtualboxvms --single-node --networking=calico
 
-    Uses the template VM created by a prior invocation. Configures host-only plus NAT networking. Creates a
-    single-node cluster.
+    Uses an existing template VM. Configures host-only plus NAT networking. Creates a single-node cluster.
 
     dtk --up=vm1,vm2,vm3
 

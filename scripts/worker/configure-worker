@@ -4,32 +4,18 @@
 
 set -e
 
-long_opts=controller-ip:,controller-hostname:,worker-hostname:,priv-key:,admin-kubeconfig:,crictl-download:,crictl-binary:,\
-runc-download:,runc-binary:,cni-plugins-download:,cni-plugins-binary:,containerd-download:,containerd-binary:,\
-kubelet-download:,kubelet-binary:,pod-cidr:,node-labels:,ca-cert:,ca-key:
+long_opts=controller-ip:,worker-hostname:,priv-key:,admin-kubeconfig:,pod-cidr:,ca-cert:,ca-key:
 script_name=$(basename "$0")
 
 # api
 controller_ip=
-# hostname doubles for VM name here. The script will find a clone VM with this VirtualBox VM name
+# worker hostname doubles for VM name here. The script will find a clone VM with this VirtualBox VM name
 # and change the hostname to match, then gen all the worker components wired up to that host name (which then
 # becomes a kubernetes node name)
 worker_hostname=
-controller_hostname=
 priv_key=
 admin_kubeconfig=
-crictl_download=
-crictl_binary=
-runc_download=
-runc_binary=
-cni_plugins_download=
-cni_plugins_binary=
-containerd_download=
-containerd_binary=
-kubelet_download=
-kubelet_binary=
 pod_cidr=
-node_labels=
 ca_cert=
 ca_key=
 
@@ -63,10 +49,6 @@ function parse_args() {
         worker_hostname=$(opt_val "$2")
         shift 2
         ;;
-      --controller-hostname)
-        controller_hostname=$(opt_val "$2")
-        shift 2
-        ;;
       --priv-key)
         priv_key=$(opt_val "$2")
         shift 2
@@ -75,52 +57,8 @@ function parse_args() {
         admin_kubeconfig=$(opt_val "$2")
         shift 2
         ;;
-      --crictl-download)
-        crictl_download=$(opt_val "$2")
-        shift 2
-        ;;
-      --crictl-binary)
-        crictl_binary=$(opt_val "$2")
-        shift 2
-        ;;
-      --runc-download)
-        runc_download=$(opt_val "$2")
-        shift 2
-        ;;
-      --runc-binary)
-        runc_binary=$(opt_val "$2")
-        shift 2
-        ;;
-      --cni-plugins-download)
-        cni_plugins_download=$(opt_val "$2")
-        shift 2
-        ;;
-      --cni-plugins-binary)
-        cni_plugins_binary=$(opt_val "$2")
-        shift 2
-        ;;
-      --containerd-download)
-        containerd_download=$(opt_val "$2")
-        shift 2
-        ;;
-      --containerd-binary)
-        containerd_binary=$(opt_val "$2")
-        shift 2
-        ;;
-      --kubelet-download)
-        kubelet_download=$(opt_val "$2")
-        shift 2
-        ;;
-      --kubelet-binary)
-        kubelet_binary=$(opt_val "$2")
-        shift 2
-        ;;
       --pod-cidr)
         pod_cidr=$(opt_val "$2")
-        shift 2
-        ;;
-      --node-labels)
-        node_labels=$(opt_val "$2")
         shift 2
         ;;
       --ca-cert)
@@ -140,8 +78,6 @@ function parse_args() {
 }
 
 parse_args "$@"
-
-source $DTKBASE/artifacts
 
 run_count=$(VBoxManage list runningvms | awk '{print $1}' | grep -e'"'$worker_hostname'"' | wc -l)
 if [[ $run_count -eq 0 ]]; then
@@ -178,19 +114,19 @@ echo "Copying misc. binaries to the worker"
 xec install-misc-bins\
  --priv-key=$priv_key\
  --worker-ip=$worker_ip\
- --crictl-download=$crictl_download\
- --crictl-binary=$crictl_binary\
- --runc-download=$runc_download\
- --runc-binary=$runc_binary\
- --cni-plugins-download=$cni_plugins_download\
- --cni-plugins-binary=$cni_plugins_binary
+ --crictl-download=$CRICTL_DOWNLOAD\
+ --crictl-binary=$CRICTL_BINARY\
+ --runc-download=$RUNC_DOWNLOAD\
+ --runc-binary=$RUNC_BINARY\
+ --cni-plugins-download=$CNI_PLUGINS_DOWNLOAD\
+ --cni-plugins-binary=$CNI_PLUGINS_BINARY
 
 echo "Installing containerd"
 xec install-containerd\
  --priv-key=$priv_key\
  --worker-ip=$worker_ip\
- --containerd-download=$containerd_download\
- --containerd-binary=$containerd_binary\
+ --containerd-download=$CONTAINERD_DOWNLOAD\
+ --containerd-binary=$CONTAINERD_BINARY\
  --pod-cidr=$pod_cidr
 
 echo "Installing the kubelet"
@@ -199,7 +135,7 @@ xec install-kubelet\
  --controller-ip=$controller_ip\
  --worker-ip=$worker_ip\
  --worker-hostname=$worker_hostname\
- --kubelet-download=$kubelet_download\
- --kubelet-binary=$kubelet_binary\
+ --kubelet-download=$KUBELET_DOWNLOAD\
+ --kubelet-binary=$KUBELET_BINARY\
  --pod-cidr=$pod_cidr\
  --ca-cert=$ca_cert

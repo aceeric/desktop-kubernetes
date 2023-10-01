@@ -12,7 +12,7 @@ spec:
     command:
     - /usr/local/bin/kube-proxy
     - --config=/var/lib/kube-proxy/kube-proxy-config.yaml
-    image: registry.k8s.io/kube-proxy:v1.28.0
+    image: registry.k8s.io/kube-proxy:K8S_VER
     imagePullPolicy: IfNotPresent
     resources:
       requests:
