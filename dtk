@@ -44,9 +44,11 @@ set +a
 # Verifies the existence of all the possible filesystem objects required to provision a cluster.
 #
 function check_files() {
-  for f in $CALICO_CUSTOM_RESOURCES_MANIFEST\
+  for f in $ALMA_ISO_FILE\
+    $CALICO_CUSTOM_RESOURCES_MANIFEST\
     $CALICO_TIGERA_MANIFEST\
     $CENTOS8_ISO_FILE\
+    $CENTOS9_ISO_FILE\
     $CNI_PLUGINS_BINARY\
     $CONTAINERD_BINARY\
     $CRICTL_BINARY\
@@ -78,9 +80,11 @@ function check_files() {
 # Verifies the existence of all possible downloads required to provision a cluster.
 #
 function check_urls() {
-  for f in $CALICO_CUSTOM_RESOURCES_DOWNLOAD\
+  for f in $ALMA_ISO_DOWNLOAD\
+    $CALICO_CUSTOM_RESOURCES_DOWNLOAD\
     $CALICO_TIGERA_DOWNLOAD\
     $CENTOS8_ISO_DOWNLOAD\
+    $CENTOS9_ISO_DOWNLOAD\
     $CNI_PLUGINS_DOWNLOAD\
     $CONTAINERD_DOWNLOAD\
     $CRICTL_DOWNLOAD\
