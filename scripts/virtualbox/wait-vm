@@ -37,8 +37,8 @@ if ! vboxmanage showvminfo "$vm" &>/dev/null; then
 fi
 
 while true; do
-  actual=$(vboxmanage list runningvms | grep '"'"$vm"'"' | wc -l)
-  if [[ $expected -eq $actual ]]; then
+  running=$(vboxmanage list runningvms | grep '"'"$vm"'"' | wc -l)
+  if [[ $expected -eq $running ]]; then
     exit 0
   fi
 done

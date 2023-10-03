@@ -92,7 +92,6 @@ xec install-etcd\
  --priv-key=$priv_key\
  --controller-ip=$controller_ip\
  --controller-hostname=$controller_hostname\
- --etcd-download=$ETCD_DOWNLOAD\
  --etcd-gzip=$ETCD_GZIP\
  --kubernetes-cert=$kubernetes_cert\
  --kubernetes-key=$kubernetes_key\
@@ -105,7 +104,6 @@ xec install-kube-apiserver\
  --priv-key=$priv_key\
  --controller-ip=$controller_ip\
  --controller-hostname=$controller_hostname\
- --kube-apiserver-download=$KUBE_APISERVER_DOWNLOAD\
  --kube-apiserver-binary=$KUBE_APISERVER_BINARY\
  --kubernetes-cert=$kubernetes_cert\
  --kubernetes-key=$kubernetes_key\
@@ -119,7 +117,6 @@ xec install-kube-controller-manager\
  --priv-key=$priv_key\
  --controller-ip=$controller_ip\
  --controller-hostname=$controller_hostname\
- --kube-controller-manager-download=$KUBE_CONTROLLER_MANAGER_DOWNLOAD\
  --kube-controller-manager-binary=$KUBE_CONTROLLER_MANAGER_BINARY\
  --containerized-cplane=$containerized_cplane\
  --admin-kubeconfig=$admin_kubeconfig\
@@ -131,7 +128,6 @@ xec install-kube-scheduler\
  --priv-key=$priv_key\
  --controller-ip=$controller_ip\
  --controller-hostname=$controller_hostname\
- --kube-scheduler-download=$KUBE_SCHEDULER_DOWNLOAD\
  --kube-scheduler-binary=$KUBE_SCHEDULER_BINARY\
  --containerized-cplane=$containerized_cplane\
  --admin-kubeconfig=$admin_kubeconfig\

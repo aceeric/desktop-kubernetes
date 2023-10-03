@@ -4,7 +4,7 @@
 
 set -e
 
-long_opts=priv-key:,controller-ip:,controller-hostname:,kube-controller-manager-download:,kube-controller-manager-binary:,\
+long_opts=priv-key:,controller-ip:,controller-hostname:,kube-controller-manager-binary:,\
 containerized-cplane:,admin-kubeconfig:,ca-cert:,ca-key:
 script_name=$(basename "$0")
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -12,7 +12,6 @@ script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 priv_key=
 controller_ip=
 controller_hostname=
-kube_controller_manager_download=
 kube_controller_manager_binary=
 containerize_cplane=0
 admin_kubeconfig=
@@ -50,10 +49,6 @@ function parse_args() {
         controller_hostname=$(opt_val "$2")
         shift 2
         ;;
-      --kube-controller-manager-download)
-        kube_controller_manager_download=$(opt_val "$2")
-        shift 2
-        ;;
       --kube-controller-manager-binary)
         kube_controller_manager_binary=$(opt_val "$2")
         shift 2
@@ -86,9 +81,6 @@ function parse_args() {
 }
 
 parse_args "$@"
-
-kube_controller_manager_binary_actual=$(xec make-download-path\
- --download-url=$kube_controller_manager_download --download-path=$kube_controller_manager_binary)
 
 # gen some path refs to make the commands below a little less busy looking
 controller_mgr_cert=$DTKBASE/generated/cert/kube-controller-manager.pem
@@ -131,10 +123,8 @@ echo "copying kube-controller-manager kubeconfig file to controller VM"
 scp -i $priv_key $controller_mgr_kubeconfig root@$controller_ip:/var/lib/kubernetes/
 
 if [[ containerized_cplane -eq 0 ]]; then
-  xec download-obj --url="$kube_controller_manager_download" --dest="$kube_controller_manager_binary_actual" --executable
-
   echo "copying kube-controller-manager binary to controller VM"
-  scp -i $priv_key $kube_controller_manager_binary_actual root@$controller_ip:/usr/local/bin/kube-controller-manager
+  scp -i $priv_key $kube_controller_manager_binary root@$controller_ip:/usr/local/bin/kube-controller-manager
 
   echo "copying kube-controller-manager service file to controller VM"
   scp -i $priv_key $controller_mgr_service root@$controller_ip:/etc/systemd/system/

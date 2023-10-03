@@ -2,7 +2,7 @@
 
 set -e
 
-long_opts=priv-key:,controller-ip:,controller-hostname:,etcd-download:,etcd-gzip:,kubernetes-cert:,kubernetes-key:,\
+long_opts=priv-key:,controller-ip:,controller-hostname:,etcd-gzip:,kubernetes-cert:,kubernetes-key:,\
 containerized-cplane:,admin-kubeconfig:,ca-cert:
 script_name=$(basename "$0")
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -10,7 +10,6 @@ script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 priv_key=
 controller_ip=
 controller_hostname=
-etcd_download=
 etcd_gzip=
 kubernetes_cert=
 kubernetes_key=
@@ -47,10 +46,6 @@ function parse_args() {
         ;;
       --controller-hostname)
         controller_hostname=$(opt_val "$2")
-        shift 2
-        ;;
-      --etcd-download)
-        etcd_download=$(opt_val "$2")
         shift 2
         ;;
       --etcd-gzip)
@@ -90,16 +85,13 @@ function parse_args() {
 
 parse_args "$@"
 
-etcd_gzip_actual=$(xec make-download-path --download-url=$etcd_download --download-path=$etcd_gzip)
-subdir=$(basename -s .tar.gz $etcd_gzip_actual)
-
 echo "copying etcd TLS material"
 ssh -i $priv_key root@$controller_ip "mkdir -p /etc/etcd /var/lib/etcd && chmod 700 /var/lib/etcd"
 scp -i $priv_key $kubernetes_cert $kubernetes_key $ca_cert root@$controller_ip:/etc/etcd
 
+subdir=$(basename -s .tar.gz $etcd_gzip)
 echo "extracting etcd binaries to controller"
-xec download-obj --url="$etcd_download" --dest=$etcd_gzip_actual
-cat "$etcd_gzip_actual" | ssh -i $priv_key root@$controller_ip \
+cat "$etcd_gzip" | ssh -i $priv_key root@$controller_ip \
  "tar zxvf - --no-same-owner --strip-components 1 -C /usr/local/bin/ $subdir/etcd $subdir/etcdctl"
 
 if [[ containerized_cplane -eq 0 ]]; then

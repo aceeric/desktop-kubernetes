@@ -2,7 +2,7 @@
 
 set -e
 
-long_opts=priv-key:,controller-ip:,worker-ip:,worker-hostname:,kubelet-download:,kubelet-binary:,pod-cidr:,ca-cert:
+long_opts=priv-key:,controller-ip:,worker-ip:,worker-hostname:,kubelet-binary:,pod-cidr:,ca-cert:
 script_name=$(basename "$0")
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
@@ -10,7 +10,6 @@ priv_key=
 controller_ip=
 worker_ip=
 worker_hostname=
-kubelet_download=
 kubelet_binary=
 pod_cidr=
 ca_cert=
@@ -50,10 +49,6 @@ function parse_args() {
         worker_hostname=$(opt_val "$2")
         shift 2
         ;;
-      --kubelet-download)
-        kubelet_download=$(opt_val "$2")
-        shift 2
-        ;;
       --kubelet-binary)
         kubelet_binary=$(opt_val "$2")
         shift 2
@@ -76,13 +71,8 @@ function parse_args() {
 
 parse_args "$@"
 
-kubelet_binary_actual="$(xec make-download-path\
- --download-url=$kubelet_download --download-path=$kubelet_binary)"
-
-xec download-obj --url="$kubelet_download" --dest="$kubelet_binary_actual" --executable
-
 echo "copying binary to worker"
-scp -i $priv_key $kubelet_binary_actual root@$worker_ip:/usr/local/bin/kubelet
+scp -i $priv_key $kubelet_binary root@$worker_ip:/usr/local/bin/kubelet
 
 # TODO name the kubeconfig file with the worker hostname in it?
 echo "Generating a kubeconfig file for the kubelet"

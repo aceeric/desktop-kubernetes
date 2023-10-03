@@ -110,18 +110,14 @@ echo "Copying misc. binaries to the worker"
 xec install-misc-bins\
  --priv-key=$priv_key\
  --worker-ip=$worker_ip\
- --crictl-download=$CRICTL_DOWNLOAD\
  --crictl-binary=$CRICTL_BINARY\
- --runc-download=$RUNC_DOWNLOAD\
  --runc-binary=$RUNC_BINARY\
- --cni-plugins-download=$CNI_PLUGINS_DOWNLOAD\
  --cni-plugins-binary=$CNI_PLUGINS_BINARY
 
 echo "Installing containerd"
 xec install-containerd\
  --priv-key=$priv_key\
  --worker-ip=$worker_ip\
- --containerd-download=$CONTAINERD_DOWNLOAD\
  --containerd-binary=$CONTAINERD_BINARY\
  --pod-cidr=$pod_cidr
 
@@ -131,7 +127,6 @@ xec install-kubelet\
  --controller-ip=$controller_ip\
  --worker-ip=$worker_ip\
  --worker-hostname=$worker_hostname\
- --kubelet-download=$KUBELET_DOWNLOAD\
  --kubelet-binary=$KUBELET_BINARY\
  --pod-cidr=$pod_cidr\
  --ca-cert=$ca_cert

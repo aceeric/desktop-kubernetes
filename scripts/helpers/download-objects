@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+#
+# Download all objects needed to privision the cluster. Based on options. (E.g.
+# selects the appropriate linux, etc.)
+#
 
 set -e
 
@@ -72,7 +76,6 @@ if [[ -n $create_template ]] && [[ -n $linux ]]; then
   xec download-obj --url=$GUEST_ADDITIONS_ISO_DOWNLOAD --dest=$GUEST_ADDITIONS_ISO_FILE
 fi
 
-
 if [[ -n $monitoring ]]; then
   [[ $monitoring == "kube-prometheus" ]] && xec download-obj --url=$KUBE_PROMETHEUS_DOWNLOAD --dest=$KUBE_PROMETHEUS_BINARY
   [[ $monitoring == "metrics.k8s.io"  ]] && xec download-obj --url=$METRICS_SERVER_DOWNLOAD --dest=$METRICS_SERVER_MANIFEST
@@ -100,9 +103,9 @@ fi
 xec download-obj --url=$CNI_PLUGINS_DOWNLOAD --dest=$CNI_PLUGINS_BINARY
 xec download-obj --url=$CONTAINERD_DOWNLOAD --dest=$CONTAINERD_BINARY
 xec download-obj --url=$CRICTL_DOWNLOAD --dest=$CRICTL_BINARY
-xec download-obj --url=$ETCD_DOWNLOAD  --dest=$ETCD_GZIP
+xec download-obj --url=$ETCD_DOWNLOAD --dest=$ETCD_GZIP
 xec download-obj --url=$KUBE_APISERVER_DOWNLOAD --dest=$KUBE_APISERVER_BINARY --executable
 xec download-obj --url=$KUBE_CONTROLLER_MANAGER_DOWNLOAD --dest=$KUBE_CONTROLLER_MANAGER_BINARY --executable
 xec download-obj --url=$KUBELET_DOWNLOAD --dest=$KUBELET_BINARY --executable
 xec download-obj --url=$KUBE_SCHEDULER_DOWNLOAD --dest=$KUBE_SCHEDULER_BINARY --executable
-xec download-obj --url=$RUNC_DOWNLOAD  --dest=$RUNC_BINARY --executable
+xec download-obj --url=$RUNC_DOWNLOAD --dest=$RUNC_BINARY --executable

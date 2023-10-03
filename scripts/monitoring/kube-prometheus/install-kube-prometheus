@@ -6,11 +6,10 @@
 
 set -e
 
-long_opts=nodes:,kube-prometheus-download:,kube-prometheus-binary:,admin-kubeconfig:
+long_opts=nodes:,kube-prometheus-binary:,admin-kubeconfig:
 script_name=$(basename "$0")
 
 nodes=
-kube_prometheus_download=
 kube_prometheus_binary=
 admin_kubeconfig=
 
@@ -37,10 +36,6 @@ function parse_args() {
         nodes=$(opt_val "$2")
         shift 2
         ;;
-	    --kube-prometheus-download)
-        kube_prometheus_download=$(opt_val "$2")
-        shift 2
-        ;;
 	    --kube-prometheus-binary)
         kube_prometheus_binary=$(opt_val "$2")
         shift 2
@@ -59,18 +54,13 @@ function parse_args() {
 
 parse_args "$@"
 
-kube_prometheus_binary_actual=$(xec make-download-path\
- --download-url=$kube_prometheus_download --download-path=$kube_prometheus_binary)
-
-xec download-obj --url="$kube_prometheus_download" --dest="$kube_prometheus_binary_actual"
-
-tar zxvf $kube_prometheus_binary_actual --wildcards kube-prometheus-$KUBE_PROMETHEUS_VER'/manifests/setup/*.yaml'\
+tar zxvf $kube_prometheus_binary --wildcards kube-prometheus-$KUBE_PROMETHEUS_VER'/manifests/setup/*.yaml'\
  --to-command "kubectl --kubeconfig $admin_kubeconfig create -f -"
 
 until kubectl --kubeconfig $admin_kubeconfig get servicemonitors --all-namespaces &>/dev/null; do date; sleep 1;\
   echo "Waiting for kube-prometheus CRDs"; done
 
-tar zxvf $kube_prometheus_binary_actual --exclude setup --wildcards kube-prometheus-$KUBE_PROMETHEUS_VER'/manifests/*.yaml'\
+tar zxvf $kube_prometheus_binary --exclude setup --wildcards kube-prometheus-$KUBE_PROMETHEUS_VER'/manifests/*.yaml'\
  --to-command "kubectl --kubeconfig $admin_kubeconfig create -f -"
 
 echo "creating NodePort service 'grafana-nodeport' to enble Grafana access without port-forwarding"

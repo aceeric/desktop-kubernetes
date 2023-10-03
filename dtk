@@ -187,15 +187,14 @@ function parse_args() {
 
 parse_args "$@"
 
-# create directories to generate various files into
+echo "creating directories to generate various files into"
 mkdir -p $DTKBASE/generated/kickstart\
          $DTKBASE/generated/kubeconfig\
          $DTKBASE/generated/cert\
          $DTKBASE/generated/hostonly-netcfg\
          $DTKBASE/generated/iso
 
-# TEST TEST TEST
-
+echo "downloading all objects needed to provision the cluster"
 xec download-objects\
   --create-template=$create_template\
   --linux=$linux\
@@ -203,8 +202,6 @@ xec download-objects\
   --storage=$storage\
   --networking=$networking\
   --kubernetes-dashboard=true
-
-exit 0
 
 # Create a template VM to clone the nodes from. This step also generates the SSH keys into the 'generated/kickstart'
 # directory that are used all over the place to interact with the node VMs via ssh/scp as they are being bootstrapped,
@@ -220,24 +217,18 @@ if [[ $create_template -eq 1 ]] ; then
   echo "creating a template VM"
 
   if [[ $linux == "centos8" ]]; then
-    linux_iso_download=$CENTOS8_ISO_DOWNLOAD
     linux_iso_path=$CENTOS8_ISO_FILE
   elif [[ $linux == "centos9" ]]; then
-    linux_iso_download=$CENTOS9_ISO_DOWNLOAD
     linux_iso_path=$CENTOS9_ISO_FILE
   elif [[ $linux == "alma" ]]; then
-    linux_iso_download=$ALMA_ISO_DOWNLOAD
     linux_iso_path=$ALMA_ISO_FILE
   else
-    linux_iso_download=$ROCKY_ISO_DOWNLOAD
     linux_iso_path=$ROCKY_ISO_FILE
   fi
 
   xec create-template-vm\
    --template-vmname=$template_name\
-   --linux-iso-download=$linux_iso_download\
    --linux-iso-path=$linux_iso_path\
-   --guest-additions-download=$GUEST_ADDITIONS_ISO_DOWNLOAD\
    --guest-additions-path=$GUEST_ADDITIONS_ISO_FILE\
    --host-network-interface=$host_network_interface\
    --host-only-network=$host_only_network\
@@ -280,7 +271,6 @@ elif [[ "$networking" == "calico" ]]; then
   nodes=${nodes// /,}
   xec install-kube-proxy\
    --controller-ip=$controller_ip\
-   --kube-proxy-download=$KUBE_PROXY_DOWNLOAD\
    --kube-proxy-binary=$KUBE_PROXY_BINARY\
    --priv-key=$DTKBASE/generated/kickstart/id_ed25519\
    --admin-kubeconfig=$DTKBASE/generated/kubeconfig/admin.kubeconfig\
@@ -289,9 +279,7 @@ elif [[ "$networking" == "calico" ]]; then
    --ca-key=$DTKBASE/generated/cert/ca-key.pem\
    --nodes=$nodes
   xec install-calico-networking\
-   --calico-tigera-download=$CALICO_TIGERA_DOWNLOAD\
    --calico-tigera-binary=$CALICO_TIGERA_MANIFEST\
-   --calico-custom-resources-download=$CALICO_CUSTOM_RESOURCES_DOWNLOAD\
    --calico-custom-resources-manifest=$CALICO_CUSTOM_RESOURCES_MANIFEST\
    --priv-key=$DTKBASE/generated/kickstart/id_ed25519\
    --admin-kubeconfig=$DTKBASE/generated/kubeconfig/admin.kubeconfig\
@@ -310,14 +298,12 @@ if [[ -n "$monitoring" ]]; then
   if [[ "$monitoring" == "metrics.k8s.io" ]]; then
     xec install-metrics-server\
      --admin-kubeconfig=$DTKBASE/generated/kubeconfig/admin.kubeconfig\
-     --metrics-server-download=$METRICS_SERVER_DOWNLOAD\
      --metrics-server-manifest=$METRICS_SERVER_MANIFEST
   elif [[ "$monitoring" == "kube-prometheus" ]]; then
     nodes="${cluster_vms[@]}"
     nodes=${nodes// /,}
     xec install-kube-prometheus\
      --nodes=$nodes\
-     --kube-prometheus-download=$KUBE_PROMETHEUS_DOWNLOAD\
      --kube-prometheus-binary=$KUBE_PROMETHEUS_BINARY\
      --admin-kubeconfig=$DTKBASE/generated/kubeconfig/admin.kubeconfig
   fi
@@ -329,9 +315,7 @@ if [[ -n "$storage" ]]; then
     xec install-openebs\
      --priv-key=$DTKBASE/generated/kickstart/id_ed25519\
      --admin-kubeconfig=$DTKBASE/generated/kubeconfig/admin.kubeconfig\
-     --openebs-hostpath-operator-manifest-download=$OPENEBS_HOSTPATH_OPERATOR_MANIFEST_DOWNLOAD\
      --openebs-hostpath-operator-manifest=$OPENEBS_HOSTPATH_OPERATOR_MANIFEST\
-     --openebs-sc-manifest-download=$OPENEBS_SC_MANIFEST_DOWNLOAD\
      --openebs-sc-manifest=$OPENEBS_SC_MANIFEST
   fi
 fi
@@ -341,7 +325,6 @@ echo "installing Kubernetes Dashboard"
 xec install-kubernetes-dashboard\
  --controller-ip=$controller_ip\
  --admin-kubeconfig=$DTKBASE/generated/kubeconfig/admin.kubeconfig\
- --kubernetes-dashboard-download=$KUBERNETES_DASHBOARD_DOWNLOAD\
  --kubernetes-dashboard-manifest=$KUBERNETES_DASHBOARD_MANIFEST
 
 echo

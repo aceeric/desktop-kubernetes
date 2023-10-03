@@ -2,13 +2,12 @@
 
 set -e
 
-long_opts=priv-key:,worker-ip:,containerd-download:,containerd-binary:,pod-cidr:
+long_opts=priv-key:,worker-ip:,containerd-binary:,pod-cidr:
 script_name=$(basename "$0")
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 priv_key=
 worker_ip=
-containerd_download=
 containerd_binary=
 pod_cidr=
 
@@ -39,10 +38,6 @@ function parse_args() {
         worker_ip=$(opt_val "$2")
         shift 2
         ;;
-      --containerd-download)
-        containerd_download=$(opt_val "$2")
-        shift 2
-        ;;
       --containerd-binary)
         containerd_binary=$(opt_val "$2")
         shift 2
@@ -61,13 +56,8 @@ function parse_args() {
 
 parse_args "$@"
 
-containerd_binary_actual=$(xec make-download-path\
- --download-url=$containerd_download --download-path=$containerd_binary)
-
-xec download-obj --url="$containerd_download" --dest="$containerd_binary_actual"
-
 echo "Copying containerd binary to worker"
-cat $containerd_binary_actual | ssh -i $priv_key root@$worker_ip\
+cat $containerd_binary | ssh -i $priv_key root@$worker_ip\
  "tar zxvf - --strip-components 1 --no-same-owner -C /bin/ bin"
 
 echo "Copying containerd service and toml files to worker VM"
