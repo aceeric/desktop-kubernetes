@@ -1,0 +1,3 @@
+#!/usr/bin/env bash
+ip=$(scripts/virtualbox/get-vm-ip $1)
+ssh -i ./generated/kickstart/id_ed25519 root@$ip

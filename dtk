@@ -3,23 +3,18 @@
 set -e
 
 long_opts=help,host-network-interface:,host-only-network:,vboxdir:,check-compatibility,create-template,networking:,\
-monitoring:,storage:,single-node,up:,down:,delete:,verify:,sshto:,template-name:,linux:,containerized-cplane:
+monitoring:,storage:,single-node,up:,down:,delete:,verify:,template-name:,linux:,containerized-cplane:
 
 # api
 host_network_interface=
 host_only_network=
 vboxdir=
-check_compatibility=0
 create_template=0
 networking=
 monitoring=
 storage=
 single_node=0
-up=
-down=
-delete=
 verify=
-sshto=
 template_name=bingo
 linux=centos8
 containerized_cplane=
@@ -41,78 +36,6 @@ source $DTKBASE/artifacts
 set +a
 
 #
-# Verifies the existence of all the possible filesystem objects required to provision a cluster.
-#
-function check_files() {
-  for f in $ALMA_ISO_FILE\
-    $CALICO_CUSTOM_RESOURCES_MANIFEST\
-    $CALICO_TIGERA_MANIFEST\
-    $CENTOS8_ISO_FILE\
-    $CENTOS9_ISO_FILE\
-    $CNI_PLUGINS_BINARY\
-    $CONTAINERD_BINARY\
-    $CRICTL_BINARY\
-    $ETCD_GZIP\
-    $GUEST_ADDITIONS_ISO_FILE\
-    $KUBE_APISERVER_BINARY\
-    $KUBE_CONTROLLER_MANAGER_BINARY\
-    $KUBELET_BINARY\
-    $KUBE_PROMETHEUS_BINARY\
-    $KUBE_PROXY_BINARY\
-    $KUBERNETES_DASHBOARD_MANIFEST\
-    $KUBE_SCHEDULER_BINARY\
-    $METRICS_SERVER_MANIFEST\
-    $OPENEBS_HOSTPATH_OPERATOR_MANIFEST\
-    $OPENEBS_SC_MANIFEST\
-    $ROCKY_ISO_FILE\
-    $RUNC_BINARY;
-    do
-      if ! [[ -f $f ]]; then
-        echo "missing: $f" >&2
-        result=1
-      else
-        echo "OK: $f"
-      fi
-    done
-}
-
-#
-# Verifies the existence of all possible downloads required to provision a cluster.
-#
-function check_urls() {
-  for f in $ALMA_ISO_DOWNLOAD\
-    $CALICO_CUSTOM_RESOURCES_DOWNLOAD\
-    $CALICO_TIGERA_DOWNLOAD\
-    $CENTOS8_ISO_DOWNLOAD\
-    $CENTOS9_ISO_DOWNLOAD\
-    $CNI_PLUGINS_DOWNLOAD\
-    $CONTAINERD_DOWNLOAD\
-    $CRICTL_DOWNLOAD\
-    $ETCD_DOWNLOAD\
-    $GUEST_ADDITIONS_ISO_DOWNLOAD\
-    $KUBE_APISERVER_DOWNLOAD\
-    $KUBE_CONTROLLER_MANAGER_DOWNLOAD\
-    $KUBELET_DOWNLOAD\
-    $KUBE_PROMETHEUS_DOWNLOAD\
-    $KUBE_PROXY_DOWNLOAD\
-    $KUBERNETES_DASHBOARD_DOWNLOAD\
-    $KUBE_SCHEDULER_DOWNLOAD\
-    $METRICS_SERVER_DOWNLOAD\
-    $OPENEBS_HOSTPATH_OPERATOR_MANIFEST_DOWNLOAD\
-    $OPENEBS_SC_MANIFEST_DOWNLOAD\
-    $ROCKY_ISO_DOWNLOAD\
-    $RUNC_DOWNLOAD;
-    do
-      if ! curl -sL $f -o /dev/null --head --fail; then
-        echo "missing: $f" >&2
-        result=1
-      else
-        echo "OK: $f"
-      fi
-    done
-}
-
-#
 # option parsing helper
 #
 function opt_val() {
@@ -125,7 +48,8 @@ function opt_val() {
 }
 
 #
-# parses command line parameters and sets script variables from them
+# parses command line parameters and sets script variables from them, executes helper
+# commands, like --up for example.
 #
 function parse_args() {
   if [[ "$#" -eq 0 ]]; then
@@ -163,8 +87,9 @@ function parse_args() {
         shift 2
         ;;
       --check-compatibility)
-        check_compatibility=1
-        shift
+        echo "Checking version compatibility"
+        xec check-compatibility
+        exit 0
         ;;
       --create-template)
         create_template=1
@@ -195,16 +120,19 @@ function parse_args() {
         shift
         ;;
       --up)
-        up=$(opt_val "$2")
-        shift 2
+        vms=$(opt_val "$2")
+        xec up-down-del "up" $vms
+        exit 0
         ;;
       --down)
-        down=$(opt_val "$2")
-        shift 2
+        vms=$(opt_val "$2")
+        xec up-down-del "down" $vms
+        exit 0
         ;;
       --delete)
-        delete=$(opt_val "$2")
-        shift 2
+        vms=$(opt_val "$2")
+        xec up-down-del "delete" $vms
+        exit 0
         ;;
       --verify)
         verify=$(opt_val "$2")
@@ -212,11 +140,8 @@ function parse_args() {
           echo "unsupported parameter value for --verify option: $verify"
           exit 1
         fi
-        shift 2
-        ;;
-      --sshto)
-        sshto=$(opt_val "$2")
-        shift 2
+        xec check-objects "$verify"
+        exit 0
         ;;
       --template-name)
         template_name=$(opt_val "$2")
@@ -241,69 +166,41 @@ function parse_args() {
     echo "Unsupported command line option(s): $@"
     exit 1
   fi
+
+  if [[ -z "$host_network_interface" ]] && [[ -z "$host_only_network" ]]; then
+    echo "either --host-network-interface or --host-only-network is required"
+    exit 1
+  elif [[ ! -z "$host_network_interface" ]] && [[ ! -z "$host_only_network" ]]; then
+    echo "--host-network-interface and --host-only-network are exclusive of each other"
+    exit 1
+  elif [[ -z "$vboxdir" ]]; then
+    echo "--vboxdir is a required option"
+    exit 1
+  elif [[ ! -d $vboxdir ]]; then
+    echo "directory for virtualbox VMs does not exist: $vboxdir"
+    exit 1
+  fi
 }
 
 # entry point
 
 parse_args "$@"
 
-if [[ $check_compatibility -eq 1 ]]; then
-  echo "Checking version compatibility"
-  xec verify-prereqs
-  exit 0
-elif [[ "$verify" == "upstreams" ]]; then
-  check_urls
-  exit 0
-elif [[ "$verify" == "files" ]]; then
-  check_files
-  exit 0
-elif [[ ! -z "$up" ]]; then
-  IFS=',' read -ra vms <<< "$up"
-  for vm in "${vms[@]}"; do
-    VBoxManage startvm $vm
-  done
-  xec show-ssh $DTKBASE/generated/kickstart/id_ed25519 "${vms[@]}"
-  exit 0
-elif [[ ! -z "$down" ]]; then
-  IFS=',' read -ra vms <<< "$down"
-  for vm in "${vms[@]}"; do
-    echo "shutting down $vm"
-    VBoxManage controlvm $vm acpipowerbutton
-    xec wait-vm $vm --stopped
-  done
-  exit 0
-elif [[ ! -z "$delete" ]]; then
-  IFS=',' read -ra vms <<< "$delete"
-  for vm in "${vms[@]}"; do
-    echo "shutting down $vm if running"
-    VBoxManage controlvm $vm poweroff &>/dev/null && xec wait-vm $vm --stopped || echo "(not running)"
-    echo "removing $vm"
-    sleep 2s
-    VBoxManage unregistervm $vm --delete
-  done
-  exit 0
-elif [[ ! -z "$sshto" ]]; then
-  ip=$(xec get-vm-ip $sshto)
-  ssh -i $DTKBASE/generated/kickstart/id_ed25519 root@$ip
-fi
+echo "creating directories to generate various files into"
+mkdir -p $DTKBASE/generated/kickstart\
+         $DTKBASE/generated/kubeconfig\
+         $DTKBASE/generated/cert\
+         $DTKBASE/generated/hostonly-netcfg\
+         $DTKBASE/generated/iso
 
-if [[ -z "$host_network_interface" ]] && [[ -z "$host_only_network" ]]; then
-  echo "either --host-network-interface or --host-only-network is required"
-  exit 1
-elif [[ ! -z "$host_network_interface" ]] && [[ ! -z "$host_only_network" ]]; then
-  echo "--host-network-interface and --host-only-network are exclusive of each other"
-  exit 1
-elif [[ -z "$vboxdir" ]]; then
-  echo "--vboxdir is a required option"
-  exit 1
-elif [[ ! -d $vboxdir ]]; then
-  echo "directory for virtualbox VMs does not exist: $vboxdir"
-  exit 1
-fi
-
-# create directories to generate various files into
-mkdir -p $DTKBASE/generated/kickstart $DTKBASE/generated/kubeconfig\
-         $DTKBASE/generated/cert $DTKBASE/generated/hostonly-netcfg $DTKBASE/generated/iso
+echo "downloading all objects needed to provision the cluster"
+xec download-objects\
+  --create-template=$create_template\
+  --linux=$linux\
+  --monitoring=$monitoring\
+  --storage=$storage\
+  --networking=$networking\
+  --kubernetes-dashboard=true
 
 # Create a template VM to clone the nodes from. This step also generates the SSH keys into the 'generated/kickstart'
 # directory that are used all over the place to interact with the node VMs via ssh/scp as they are being bootstrapped,
@@ -319,24 +216,18 @@ if [[ $create_template -eq 1 ]] ; then
   echo "creating a template VM"
 
   if [[ $linux == "centos8" ]]; then
-    linux_iso_download=$CENTOS8_ISO_DOWNLOAD
     linux_iso_path=$CENTOS8_ISO_FILE
   elif [[ $linux == "centos9" ]]; then
-    linux_iso_download=$CENTOS9_ISO_DOWNLOAD
     linux_iso_path=$CENTOS9_ISO_FILE
   elif [[ $linux == "alma" ]]; then
-    linux_iso_download=$ALMA_ISO_DOWNLOAD
     linux_iso_path=$ALMA_ISO_FILE
   else
-    linux_iso_download=$ROCKY_ISO_DOWNLOAD
     linux_iso_path=$ROCKY_ISO_FILE
   fi
 
   xec create-template-vm\
    --template-vmname=$template_name\
-   --linux-iso-download=$linux_iso_download\
    --linux-iso-path=$linux_iso_path\
-   --guest-additions-download=$GUEST_ADDITIONS_ISO_DOWNLOAD\
    --guest-additions-path=$GUEST_ADDITIONS_ISO_FILE\
    --host-network-interface=$host_network_interface\
    --host-only-network=$host_only_network\
@@ -379,7 +270,6 @@ elif [[ "$networking" == "calico" ]]; then
   nodes=${nodes// /,}
   xec install-kube-proxy\
    --controller-ip=$controller_ip\
-   --kube-proxy-download=$KUBE_PROXY_DOWNLOAD\
    --kube-proxy-binary=$KUBE_PROXY_BINARY\
    --priv-key=$DTKBASE/generated/kickstart/id_ed25519\
    --admin-kubeconfig=$DTKBASE/generated/kubeconfig/admin.kubeconfig\
@@ -388,9 +278,7 @@ elif [[ "$networking" == "calico" ]]; then
    --ca-key=$DTKBASE/generated/cert/ca-key.pem\
    --nodes=$nodes
   xec install-calico-networking\
-   --calico-tigera-download=$CALICO_TIGERA_DOWNLOAD\
    --calico-tigera-binary=$CALICO_TIGERA_MANIFEST\
-   --calico-custom-resources-download=$CALICO_CUSTOM_RESOURCES_DOWNLOAD\
    --calico-custom-resources-manifest=$CALICO_CUSTOM_RESOURCES_MANIFEST\
    --priv-key=$DTKBASE/generated/kickstart/id_ed25519\
    --admin-kubeconfig=$DTKBASE/generated/kubeconfig/admin.kubeconfig\
@@ -409,14 +297,12 @@ if [[ -n "$monitoring" ]]; then
   if [[ "$monitoring" == "metrics.k8s.io" ]]; then
     xec install-metrics-server\
      --admin-kubeconfig=$DTKBASE/generated/kubeconfig/admin.kubeconfig\
-     --metrics-server-download=$METRICS_SERVER_DOWNLOAD\
      --metrics-server-manifest=$METRICS_SERVER_MANIFEST
   elif [[ "$monitoring" == "kube-prometheus" ]]; then
     nodes="${cluster_vms[@]}"
     nodes=${nodes// /,}
     xec install-kube-prometheus\
      --nodes=$nodes\
-     --kube-prometheus-download=$KUBE_PROMETHEUS_DOWNLOAD\
      --kube-prometheus-binary=$KUBE_PROMETHEUS_BINARY\
      --admin-kubeconfig=$DTKBASE/generated/kubeconfig/admin.kubeconfig
   fi
@@ -428,9 +314,7 @@ if [[ -n "$storage" ]]; then
     xec install-openebs\
      --priv-key=$DTKBASE/generated/kickstart/id_ed25519\
      --admin-kubeconfig=$DTKBASE/generated/kubeconfig/admin.kubeconfig\
-     --openebs-hostpath-operator-manifest-download=$OPENEBS_HOSTPATH_OPERATOR_MANIFEST_DOWNLOAD\
      --openebs-hostpath-operator-manifest=$OPENEBS_HOSTPATH_OPERATOR_MANIFEST\
-     --openebs-sc-manifest-download=$OPENEBS_SC_MANIFEST_DOWNLOAD\
      --openebs-sc-manifest=$OPENEBS_SC_MANIFEST
   fi
 fi
@@ -440,7 +324,6 @@ echo "installing Kubernetes Dashboard"
 xec install-kubernetes-dashboard\
  --controller-ip=$controller_ip\
  --admin-kubeconfig=$DTKBASE/generated/kubeconfig/admin.kubeconfig\
- --kubernetes-dashboard-download=$KUBERNETES_DASHBOARD_DOWNLOAD\
  --kubernetes-dashboard-manifest=$KUBERNETES_DASHBOARD_MANIFEST
 
 echo

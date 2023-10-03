@@ -20,16 +20,14 @@ done <<< '
              [--networking=<type>] [--monitoring=<type>] [--create-template] [--template-name] [--single-node]
              [--linux=<centos8/9|rocky|alma>] [--storage=<type>] [--containerized-cplane=<list>]
              [--verify=<files|upstreams>] [--check-compatibility] [--up=<nodelist>] [--down=<nodelist>]
-             [--delete=<nodelist>] [--sshto=<vmname>] [--help]
+             [--delete=<nodelist>] [--help]
 
   Options:
 
     Cluster creation options:
 
-    --vboxdir                  Required. The directory where you keep your VirtualBox VM files. The script uses
-                               the VBoxManage utility to create the VMs, which will in turn create a sub-directory
-                               under this directory for each VM. The directory must exist. The script will not
-                               create it.
+    --vboxdir                  Required. The directory where you keep your VirtualBox VM files. The directory must
+                               exist. The script will not create it.
     --host-network-interface   Specify this, or --host-only-network. If this, then the value is the name of the primary
                                network interface on your machine. The scripts use this to configure the VirtualBox
                                bridge network for each node VM. This option must be applied identically to the
@@ -79,7 +77,6 @@ done <<< '
                                workers first and the controller last.
     --delete                   Tears down the cluster: Force stops all VMs and removes associated files from
                                the directory specified in the --vboxdir option.
-    --sshto                    SSHs to the named VM. E.g: "--sshto myvmname"
     --help                     Displays this help and exits.
 
   Examples:

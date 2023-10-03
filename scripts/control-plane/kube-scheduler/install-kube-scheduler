@@ -2,7 +2,7 @@
 
 set -e
 
-long_opts=priv-key:,controller-ip:,controller-hostname:,kube-scheduler-download:,kube-scheduler-binary:,\
+long_opts=priv-key:,controller-ip:,controller-hostname:,kube-scheduler-binary:,\
 containerized-cplane:,admin-kubeconfig:,ca-cert:,ca-key:
 script_name=$(basename "$0")
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -10,7 +10,6 @@ script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 priv_key=
 controller_ip=
 controller_hostname=
-kube_scheduler_download=
 kube_scheduler_binary=
 containerize_cplane=0
 admin_kubeconfig=
@@ -48,10 +47,6 @@ function parse_args() {
         controller_hostname=$(opt_val "$2")
         shift 2
         ;;
-      --kube-scheduler-download)
-        kube_scheduler_download=$(opt_val "$2")
-        shift 2
-        ;;
       --kube-scheduler-binary)
         kube_scheduler_binary=$(opt_val "$2")
         shift 2
@@ -84,9 +79,6 @@ function parse_args() {
 }
 
 parse_args "$@"
-
-kube_scheduler_binary_actual=$(xec make-download-path\
- --download-url=$kube_scheduler_download --download-path=$kube_scheduler_binary)
 
 # gen some path refs to make the commands below a little less busy looking
 kube_scheduler_cert=$DTKBASE/generated/cert/kube-scheduler.pem
@@ -131,10 +123,8 @@ scp -i $priv_key $kube_scheduler_kubeconfig root@$controller_ip:/var/lib/kuberne
 scp -i $priv_key $kube_scheduler_yaml root@$controller_ip:/etc/kubernetes/config/
 
 if [[ containerized_cplane -eq 0 ]]; then
-  xec download-obj --url="$kube_scheduler_download" --dest="$kube_scheduler_binary_actual" --executable
-
   echo "copying kube-scheduler binary to controller VM"
-  scp -i $priv_key $kube_scheduler_binary_actual root@$controller_ip:/usr/local/bin/kube-scheduler
+  scp -i $priv_key $kube_scheduler_binary root@$controller_ip:/usr/local/bin/kube-scheduler
 
   echo "copying kube-scheduler service file to controller VM"
   scp -i $priv_key $kube_scheduler_service root@$controller_ip:/etc/systemd/system/

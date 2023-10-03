@@ -2,12 +2,11 @@
 
 set -e
 
-long_opts=controller-ip:,admin-kubeconfig:,kubernetes-dashboard-download:,kubernetes-dashboard-manifest:
+long_opts=controller-ip:,admin-kubeconfig:,kubernetes-dashboard-manifest:
 script_name=$(basename "$0")
 
 controller_ip=
 admin_kubeconfig=
-kubernetes_dashboard_download=
 kubernetes_dashboard_manifest=
 
 function opt_val() {
@@ -37,10 +36,6 @@ function parse_args() {
         admin_kubeconfig=$(opt_val "$2")
         shift 2
         ;;
-      --kubernetes-dashboard-download)
-        kubernetes_dashboard_download=$(opt_val "$2")
-        shift 2
-        ;;
       --kubernetes-dashboard-manifest)
         kubernetes_dashboard_manifest=$(opt_val "$2")
         shift 2
@@ -55,13 +50,7 @@ function parse_args() {
 
 parse_args "$@"
 
-kubernetes_dashboard_actual=$(xec make-download-path\
- --download-url=$kubernetes_dashboard_download --download-path=$kubernetes_dashboard_manifest)
-
-xec download-obj --url="$kubernetes_dashboard_download" --dest="$kubernetes_dashboard_actual"
-
-echo "installing kubernetes dashboard"
-kubectl --kubeconfig $admin_kubeconfig apply -f $kubernetes_dashboard_actual
+kubectl --kubeconfig $admin_kubeconfig apply -f $kubernetes_dashboard_manifest
 
 cat <<EOF | kubectl --kubeconfig $admin_kubeconfig create -f -
 apiVersion: v1

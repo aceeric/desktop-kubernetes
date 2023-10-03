@@ -11,16 +11,12 @@
 
 set -e
 
-long_opts=template-vmname:,linux-iso-download:,linux-iso-path:,\
-guest-additions-download:,guest-additions-path:,host-network-interface:,host-only-network:,vboxdir:
-
+long_opts=template-vmname:,linux-iso-path:,guest-additions-path:,host-network-interface:,host-only-network:,vboxdir:
 script_name=$(basename "$0")
 
 # api
 template_vmname=
-linux_iso_download=
 linux_iso_path=
-guest_additions_download=
 guest_additions_path=
 host_network_interface=
 host_only_network=
@@ -56,16 +52,8 @@ function parse_args() {
         template_vmname=$(opt_val "$2")
         shift 2
         ;;
-      --linux-iso-download)
-        linux_iso_download=$(opt_val "$2")
-        shift 2
-        ;;
       --linux-iso-path)
         linux_iso_path=$(opt_val "$2")
-        shift 2
-        ;;
-      --guest-additions-download)
-        guest_additions_download=$(opt_val "$2")
         shift 2
         ;;
       --guest-additions-path)
@@ -94,15 +82,6 @@ function parse_args() {
 
 parse_args "$@"
 
-linux_iso_actual=$(xec make-download-path\
- --download-url=$linux_iso_download --download-path=$linux_iso_path)
-
-guest_additions_actual=$(xec make-download-path\
- --download-url=$guest_additions_download --download-path=$guest_additions_path)
-
-xec download-obj --url="$linux_iso_download" --dest="$linux_iso_actual"
-xec download-obj --url="$guest_additions_download" --dest="$guest_additions_actual"
-
 echo "checking/generating SSH keys -- the public key will be copied to the VM by the kickstart script"
 xec gen-ssh-keyfiles
 
@@ -118,7 +97,7 @@ fi
 
 echo "creating VM"
 xec create-vm --template-vmname=$template_vmname\
-  --linux-iso-path=$linux_iso_actual\
+  --linux-iso-path=$linux_iso_path\
   --kickstart-iso-path=$kickstart_iso_path\
   --host-network-interface=$host_network_interface\
   --host-only-network-name=$host_only_network_name\
@@ -127,6 +106,6 @@ xec create-vm --template-vmname=$template_vmname\
 echo "installing guest additions"
 xec install-guest-additions\
  --template-vmname=$template_vmname\
- --guest-additions-path=$guest_additions_actual
+ --guest-additions-path=$guest_additions_path
 
 echo "guest additions installation completed - template VM fully provisioned"

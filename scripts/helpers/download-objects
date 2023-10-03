@@ -1,0 +1,111 @@
+#!/usr/bin/env bash
+#
+# Download all objects needed to privision the cluster. Based on options. (E.g.
+# selects the appropriate linux, etc.)
+#
+
+set -e
+
+long_opts=create-template:,linux:,monitoring:,storage:,networking:,kubernetes-dashboard:
+script_name=$(basename "$0")
+
+create_template=
+linux=
+monitoring=
+storage=
+kubernetes_dashboard=
+
+function opt_val() {
+  opt="$1"
+  if [[ "$opt" == =* ]]; then
+    echo "${opt:1}"
+  else
+    echo "$opt"
+  fi
+}
+
+function parse_args() {
+  if [[ "$#" -eq 0 ]]; then
+    echo "no args provided"
+    exit 1
+  fi
+  local parsed
+  parsed=$(getopt --options "" --longoptions $long_opts -n $script_name -- "$@")
+  eval set -- "$parsed"
+  while true; do
+    case "$1" in
+      --create-template)
+        create_template=$(opt_val "$2")
+        shift 2
+        ;;
+      --linux)
+        linux=$(opt_val "$2")
+        shift 2
+        ;;
+      --monitoring)
+        monitoring=$(opt_val "$2")
+        shift 2
+        ;;
+      --storage)
+        storage=$(opt_val "$2")
+        shift 2
+        ;;
+      --networking)
+        networking=$(opt_val "$2")
+        shift 2
+        ;;
+      --kubernetes-dashboard)
+        kubernetes_dashboard=$(opt_val "$2")
+        shift 2
+        ;;
+      --)
+        shift
+        break
+        ;;
+    esac
+  done
+}
+
+parse_args "$@"
+
+if [[ $create_template -eq 1 ]] && [[ -n $linux ]]; then
+  [[ $linux == "alma"    ]] && xec download-obj --url=$ALMA_ISO_DOWNLOAD --dest=$ALMA_ISO_FILE
+  [[ $linux == "centos8" ]] && xec download-obj --url=$CENTOS8_ISO_DOWNLOAD --dest=$CENTOS8_ISO_FILE
+  [[ $linux == "centos9" ]] && xec download-obj --url=$CENTOS9_ISO_DOWNLOAD --dest=$CENTOS9_ISO_FILE
+  [[ $linux == "rocky"   ]] && xec download-obj --url=$ROCKY_ISO_DOWNLOAD --dest=$ROCKY_ISO_FILE
+  xec download-obj --url=$GUEST_ADDITIONS_ISO_DOWNLOAD --dest=$GUEST_ADDITIONS_ISO_FILE
+fi
+
+if [[ -n $monitoring ]]; then
+  [[ $monitoring == "kube-prometheus" ]] && xec download-obj --url=$KUBE_PROMETHEUS_DOWNLOAD --dest=$KUBE_PROMETHEUS_BINARY
+  [[ $monitoring == "metrics.k8s.io"  ]] && xec download-obj --url=$METRICS_SERVER_DOWNLOAD --dest=$METRICS_SERVER_MANIFEST
+fi
+
+if [[ -n $storage ]]; then
+  xec download-obj --url=$OPENEBS_HOSTPATH_OPERATOR_MANIFEST_DOWNLOAD --dest=$OPENEBS_HOSTPATH_OPERATOR_MANIFEST
+  xec download-obj --url=$OPENEBS_SC_MANIFEST_DOWNLOAD --dest=$OPENEBS_SC_MANIFEST
+fi
+
+if [[ -n $networking ]]; then
+  if [[ "$networking" == "calico" ]]; then
+    xec download-obj --url=$CALICO_CUSTOM_RESOURCES_DOWNLOAD --dest=$CALICO_CUSTOM_RESOURCES_MANIFEST
+    xec download-obj --url=$CALICO_TIGERA_DOWNLOAD --dest=$CALICO_TIGERA_MANIFEST
+    xec download-obj --url=$KUBE_PROXY_DOWNLOAD --dest=$KUBE_PROXY_BINARY --executable
+  fi
+fi
+
+if [[ -n $kubernetes_dashboard ]]; then
+  xec download-obj --url=$KUBERNETES_DASHBOARD_DOWNLOAD --dest=$KUBERNETES_DASHBOARD_MANIFEST
+fi
+
+# always do k8s components
+
+xec download-obj --url=$CNI_PLUGINS_DOWNLOAD --dest=$CNI_PLUGINS_BINARY
+xec download-obj --url=$CONTAINERD_DOWNLOAD --dest=$CONTAINERD_BINARY
+xec download-obj --url=$CRICTL_DOWNLOAD --dest=$CRICTL_BINARY
+xec download-obj --url=$ETCD_DOWNLOAD --dest=$ETCD_GZIP
+xec download-obj --url=$KUBE_APISERVER_DOWNLOAD --dest=$KUBE_APISERVER_BINARY --executable
+xec download-obj --url=$KUBE_CONTROLLER_MANAGER_DOWNLOAD --dest=$KUBE_CONTROLLER_MANAGER_BINARY --executable
+xec download-obj --url=$KUBELET_DOWNLOAD --dest=$KUBELET_BINARY --executable
+xec download-obj --url=$KUBE_SCHEDULER_DOWNLOAD --dest=$KUBE_SCHEDULER_BINARY --executable
+xec download-obj --url=$RUNC_DOWNLOAD --dest=$RUNC_BINARY --executable

@@ -6,11 +6,10 @@
 
 set -e
 
-long_opts=admin-kubeconfig:,metrics-server-download:,metrics-server-manifest:
+long_opts=admin-kubeconfig:,metrics-server-manifest:
 script_name=$(basename "$0")
 
 admin_kubeconfig=
-metrics_server_download=
 metrics_server_manifest=
 
 function opt_val() {
@@ -36,10 +35,6 @@ function parse_args() {
         admin_kubeconfig=$(opt_val "$2")
         shift 2
         ;;
-      --metrics-server-download)
-        metrics_server_download=$(opt_val "$2")
-        shift 2
-        ;;
       --metrics-server-manifest)
         metrics_server_manifest=$(opt_val "$2")
         shift 2
@@ -54,11 +49,6 @@ function parse_args() {
 
 parse_args "$@"
 
-metrics_server_actual=$(xec make-download-path\
- --download-url=$metrics_server_download --download-path=$metrics_server_manifest)
-
-xec download-obj --url="$metrics_server_download" --dest="$metrics_server_actual"
-
 echo
 echo "installing kubernetes-sigs/metrics-server"
-kubectl --kubeconfig $admin_kubeconfig apply -f $metrics_server_actual
+kubectl --kubeconfig $admin_kubeconfig apply -f $metrics_server

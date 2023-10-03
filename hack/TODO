@@ -1,0 +1,20 @@
+# consider variables as yaml rather than cmdline args
+
+#host-network-interface
+host-only-network: 192.168.56
+vboxdir: /sdb1/virtualboxvms
+create-template: true
+networking: calico
+monitoring: kube-prometheus
+storage: openebs
+template-name: centos
+linux: centos8
+containerized-cplane: None
+vms:
+- name: doc
+  cpu: 3
+  mem: 8192
+  ip: 200
+  pod-cidr: 10.200.1.0/24
+  node-labels: controller,worker
+  role: controller (or worker)

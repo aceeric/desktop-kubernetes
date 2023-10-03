@@ -2,13 +2,12 @@
 
 set -e
 
-long_opts=controller-ip:,kube-proxy-download:,kube-proxy-binary:,priv-key:,\
+long_opts=controller-ip:,kube-proxy-binary:,priv-key:,\
 containerized-cplane:,admin-kubeconfig:,ca-cert:,ca-key:,nodes:
 script_name=$(basename "$0")
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 controller_ip=
-kube_proxy_download=
 kube_proxy_binary=
 priv_key=
 containerize_cplane=0
@@ -38,10 +37,6 @@ function parse_args() {
     case "$1" in
       --controller-ip)
         controller_ip=$(opt_val "$2")
-        shift 2
-        ;;
-      --kube-proxy-download)
-        kube_proxy_download=$(opt_val "$2")
         shift 2
         ;;
       --kube-proxy-binary)
@@ -85,11 +80,6 @@ function parse_args() {
 }
 
 parse_args "$@"
-
-kube_proxy_binary_actual=$(xec make-download-path\
- --download-url=$kube_proxy_download --download-path=$kube_proxy_binary)
-
-xec download-obj --url="$kube_proxy_download" --dest="$kube_proxy_binary_actual" --executable
 
 # gen kube-proxy certificate
 
@@ -153,11 +143,11 @@ for node in "${nodes[@]}"; do
   worker_ip=$(xec get-vm-ip $node)
   echo "configurig kube-proxy for node $node (ip $worker_ip)"
   ssh -i $priv_key root@$worker_ip "mkdir -p /var/lib/kube-proxy/kubeconfig"
-  scp -i $priv_key $kube_proxy_binary_actual root@$worker_ip:/usr/local/bin/kube-proxy
   scp -i $priv_key $script_dir/kube-proxy-config.yaml root@$worker_ip:/var/lib/kube-proxy/
   scp -i $priv_key $DTKBASE/generated/kubeconfig/kube-proxy.kubeconfig root@$worker_ip:/var/lib/kube-proxy/kubeconfig/
 
   if [[ containerized_cplane -eq 0 ]]; then
+    scp -i $priv_key $kube_proxy_binary root@$worker_ip:/usr/local/bin/kube-proxy
     scp -i $priv_key $script_dir/kube-proxy.service root@$worker_ip:/etc/systemd/system/kube-proxy.service
     ssh -i $priv_key root@$worker_ip "systemctl daemon-reload && systemctl enable kube-proxy && systemctl start kube-proxy"
     echo "verifying kube-proxy is running"
@@ -169,7 +159,7 @@ for node in "${nodes[@]}"; do
   else
     echo "copying kube-proxy static pod manifest to controller VM"
     sed $script_dir/kube-proxy-pod.yaml -e "s|K8S_VER|$K8S_VER|g"\
-      | ssh -i $priv_key root@$controller_ip "cat > /etc/desktop-kubernetes/static-pods/kube-proxy-pod.yaml"
+      | ssh -i $priv_key root@$worker_ip "cat > /etc/desktop-kubernetes/static-pods/kube-proxy-pod.yaml"
     for i in {1..20}; do
       if kubectl --kubeconfig $admin_kubeconfig -n kube-system wait pod\
         -lcomponent=kube-proxy --for=condition=ready --timeout=5s; then
