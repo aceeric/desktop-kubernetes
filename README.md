@@ -77,9 +77,8 @@ The following command-line options are supported for the `dtk` script:
 | Option | Description |
 | ------ | ----------- |
 | `--verify` | Looks for all the upstreams or filesystem objects used by the script. Valid options are `upstreams` and `files`. If `upstreams`, then the script does a curl HEAD request for each upstream (e.g. OS ISO, Kubernetes binaries, etc.). If `files`, then the same check is performed for the downloaded filesystem objects. This is a useful option to see all the objects that are required to provision a cluster. |
-| `--check-compatibility` | Checks the installed versions of various desktop tools used by the project (curl, kubectl, etc) against what the project has been tested on - and then exits, taking no further action. You should do this at least once. Or just run `verify-prereqs` in the `scripts` directory. Note - there will likely be differences between your desktop and what I tested with - you will have to determine whether the differences are relevant. |
+| `--check-compatibility` | Checks the installed versions of various desktop tools used by the project (curl, kubectl, etc) against what the project has been tested on - and then exits, taking no further action. You should do this at least once. Note - there will likely be differences between your desktop and what I tested with - you will have to determine whether the differences are relevant. |
 | `--up`, `--down`, `--delete` | Takes a comma-separated list of VM names, and starts (`--up`), stops (`--down`), or deletes (`--delete`) them all. The `--down` option is a graceful shutdown. The `--delete` is a fast shutdown and also removes the Virtual Box VM files from the file system. |
-| `--sshto` | A Convenience option to SSH to the named VM. E.g: `--sshto myvmname` |
 | `--help` | Displays this help and exits. |
 
 ## Examples

@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+#
+# Start a VM if it is not already running. VM name in arg 1.
+#
+# Usage
+#
+# start-vm <vmname>
+#
+
+vmname=$1
+
+run_count=$(VBoxManage list runningvms | awk '{print $1}' | grep -e'"'$vmname'"' | wc -l)
+
+if [[ $run_count -eq 0 ]]; then
+  echo "Starting worker VM"
+  VBoxManage startvm $vmname
+fi

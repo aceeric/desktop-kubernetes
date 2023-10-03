@@ -79,11 +79,7 @@ function parse_args() {
 
 parse_args "$@"
 
-run_count=$(VBoxManage list runningvms | awk '{print $1}' | grep -e'"'$worker_hostname'"' | wc -l)
-if [[ $run_count -eq 0 ]]; then
-  echo "Starting worker VM"
-  VBoxManage startvm $worker_hostname
-fi
+xec start-vm $worker_hostname
 
 echo "Getting IP address from running VM for $worker_hostname"
 worker_ip=$(xec get-vm-ip $worker_hostname)

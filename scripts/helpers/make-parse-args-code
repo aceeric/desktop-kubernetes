@@ -5,7 +5,7 @@
 # lines of code - needed by a script to parse options. Assumes variable my_frobozz_val is passed as long opt
 # --my-frobozz-val. E.g.:
 #
-# cat <<EOF | scripts/make-parse-args-code
+# cat <<EOF | scripts/helpers/make-parse-args-code
 # my_var_1=
 # some_other_var=
 # ting_tang=
