@@ -1,0 +1,135 @@
+#!/usr/bin/env bash
+#
+# Provisions VBox VMs. If --create-template then creates a template. Otherwise expects a
+# VM named by the --template-vmname param to exist. Clones that template VM into one or
+# three VMs based on the presence or absence of the --single-node parameter.
+#
+
+set -e
+
+long_opts=create-template:,linux:,host-network-interface:,host-only-network:,vboxdir:,single-node:,template-vmname:
+script_name=$(basename "$0")
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+create_template=0
+linux=
+host_network_interface=
+host_only_network=
+vboxdir=
+single_node=0
+template_vmname=
+
+#
+# option parsing helper
+#
+function opt_val() {
+  opt="$1"
+  if [[ "$opt" == =* ]]; then
+    echo "${opt:1}"
+  else
+    echo "$opt"
+  fi
+}
+
+#
+# parses command line parameters and sets script variables from them
+#
+function parse_args() {
+  if [[ "$#" -eq 0 ]]; then
+    echo "no args provided"
+    exit 1
+  fi
+  local parsed
+  parsed=$(getopt --options "" --longoptions $long_opts -n $script_name -- "$@")
+  eval set -- "$parsed"
+  while true; do
+    case "$1" in
+      --create-template)
+        create_template=$(opt_val "$2")
+        shift 2
+        ;;
+      --linux)
+        linux=$(opt_val "$2")
+        shift 2
+        ;;
+      --host-network-interface)
+        host_network_interface=$(opt_val "$2")
+        shift 2
+        ;;
+      --host-only-network)
+        host_only_network=$(opt_val "$2")
+        shift 2
+        ;;
+      --vboxdir)
+        vboxdir=$(opt_val "$2")
+        shift 2
+        ;;
+      --single-node)
+        single_node=$(opt_val "$2")
+        shift 2
+        ;;
+      --template-vmname)
+        template_vmname=$(opt_val "$2")
+        shift 2
+        ;;
+      --)
+        shift
+        break
+        ;;
+    esac
+  done
+}
+
+parse_args "$@"
+
+linux_iso_path=$CENTOS8_ISO_FILE
+[[ $linux == "centos9" ]] && linux_iso_path=$CENTOS9_ISO_FILE
+[[ $linux == "alma"    ]] && linux_iso_path=$ALMA_ISO_FILE
+[[ $linux == "rocky"   ]] && linux_iso_path=$ROCKY_ISO_FILE
+
+# create-template-vm gens SSH keypair $DTKBASE/generated/kickstart/id_ed25519
+# if it does not already exist
+
+if [[ $create_template -eq 1 ]] ; then
+  echo "creating a template VM"
+  xec create-template-vm\
+   --template-vmname=$template_vmname\
+   --linux-iso-path=$linux_iso_path\
+   --guest-additions-path=$GUEST_ADDITIONS_ISO_FILE\
+   --host-network-interface=$host_network_interface\
+   --host-only-network=$host_only_network\
+   --vboxdir=$vboxdir
+fi
+
+controller_hostname="doc"
+vmnames=($controller_hostname)
+vmcount=1
+ram=(8192 8192 8192)
+cpu=(3 3 3)
+octets=(200 201 202)
+pod_cidrs=(10.200.1.0/24 10.200.2.0/24 10.200.3.0/24)
+node_labels=(controller,worker worker worker)
+
+if [[ $single_node -eq 0 ]]; then
+  vmcount=3
+  vmnames=($controller_hostname ham monk)
+fi
+
+for ((i = 0; i < $vmcount; ++i)); do
+  xec clone-vm\
+   --priv-key=$DTKBASE/generated/kickstart/id_ed25519\
+   --template-vmname=$template_vmname\
+   --clone-vmname="${vmnames[$i]}"\
+   --clone-ram="${ram[$i]}"\
+   --clone-cpu="${cpu[$i]}"\
+   --host-only-network=$host_only_network\
+   --host-only-octet="${octets[$i]}"\
+   --vboxdir=$vboxdir\
+   --shutdown=false
+done
+
+# do this now to avoid needing DNS before CoreDNS is installed
+echo "configuring /etc/hosts in VMs"
+xec configure-etc-hosts $DTKBASE/generated/kickstart/id_ed25519 "${vmnames[@]}"
+
+controller_ip=$(xec get-vm-ip $controller_hostname)

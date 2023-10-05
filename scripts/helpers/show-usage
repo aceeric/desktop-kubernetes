@@ -17,7 +17,7 @@ done <<< '
   start the install.
 
   Usage: dtk [--vboxdir=</some/path>] [--host-network-interface=<interface>] [--host-only-network=<network>] 
-             [--networking=<type>] [--monitoring=<type>] [--create-template] [--template-name] [--single-node]
+             [--networking=<type>] [--monitoring=<type>] [--create-template] [--template-vmname] [--single-node]
              [--linux=<centos8/9|rocky|alma>] [--storage=<type>] [--containerized-cplane=<list>]
              [--verify=<files|upstreams>] [--check-compatibility] [--up=<nodelist>] [--down=<nodelist>]
              [--delete=<nodelist>] [--help]
@@ -46,7 +46,7 @@ done <<< '
                                (This step by far takes the longest.) You have to do this at least once. Once the
                                template is created, brings up the cluster by cloning the template for each node.
                                If not specified, the script expects to find an existing VM to clone from.
-    --template-name            Optional. Specifies the template name to create - or clone from. Default is
+    --template-vmname          Optional. Specifies the template name to create - or clone from. Default is
                                "bingo" if not provided.
     --single-node              Optional. Creates a single node cluster. The default is to create one control
                                plane node, and two workers. This option is useful to quickly test changes since

@@ -7,7 +7,7 @@ create-template: true
 networking: calico
 monitoring: kube-prometheus
 storage: openebs
-template-name: centos
+template-vmname: centos
 linux: centos8
 containerized-cplane: None
 vms:
