@@ -3,6 +3,9 @@
 # Creates a template VM the way the 'dtk' script does it.
 #
 
+echo TODO THESE HAVE TO BE REWORKED
+exit 1
+
 if [[ -z "$DTKBASE" ]]; then
   echo 'requires environment variable DTKBASE. E.g.: export DTKBASE=~/projects/desktop-kubernetes'
   exit 0
@@ -48,9 +51,6 @@ if [[ $ROCKY -eq 1 ]]; then
   linux_iso_download=https://download.rockylinux.org/pub/rocky/9/isos/x86_64/Rocky-9.0-x86_64-dvd.iso
   linux_iso_path=$DTKBASE/binaries/Rocky-9.0-x86_64-dvd.iso
 fi
-
-echo "TODO THIS IS BROKEN UNTIL WE ENSURE THE ISOs ARE ON THE FILESYSTEM"
-exit 1
 
 if [[ ! -z "$HOSTONLY" ]]; then
   xec create-template-vm\

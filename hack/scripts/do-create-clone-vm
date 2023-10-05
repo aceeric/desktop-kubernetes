@@ -4,6 +4,9 @@
 # changes, manual Kubernetes component installs, etc.
 #
 
+echo TODO THESE HAVE TO BE REWORKED
+exit 1
+
 if [[ -z "$DTKBASE" ]]; then
   echo 'requires environment variable DTKBASE. E.g.: export DTKBASE=~/projects/desktop-kubernetes'
   exit 0

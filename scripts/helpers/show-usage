@@ -17,7 +17,7 @@ done <<< '
   start the install.
 
   Usage: dtk [--vboxdir=</some/path>] [--host-network-interface=<interface>] [--host-only-network=<network>] 
-             [--networking=<type>] [--monitoring=<type>] [--create-template] [--template-name] [--single-node]
+             [--networking=<type>] [--monitoring=<type>] [--create-template] [--template-vmname] [--single-node]
              [--linux=<centos8/9|rocky|alma>] [--storage=<type>] [--containerized-cplane=<list>]
              [--verify=<files|upstreams>] [--check-compatibility] [--up=<nodelist>] [--down=<nodelist>]
              [--delete=<nodelist>] [--help]
@@ -46,21 +46,22 @@ done <<< '
                                (This step by far takes the longest.) You have to do this at least once. Once the
                                template is created, brings up the cluster by cloning the template for each node.
                                If not specified, the script expects to find an existing VM to clone from.
-    --template-name            Optional. Specifies the template name to create - or clone from. Default is
+    --template-vmname          Optional. Specifies the template name to create - or clone from. Default is
                                "bingo" if not provided.
     --single-node              Optional. Creates a single node cluster. The default is to create one control
                                plane node, and two workers. This option is useful to quickly test changes since
                                it is faster to provision a single node.
-    --linux                    Optional. Valid values are "centos8/9" for CentOS Stream (default is 8), "alma" for
+    --linux                    Optional. Valid values are "centos8" (or 9) for CentOS Stream (default is 8), "alma" for
                                Alma Linux,  and "rocky" for Rocky Linux. Ignored unless --create-template is provided.
     --storage                  Optional. Installs a dynamic storage provisioner. This supports testing workloads
                                that use PVs and PVCs. Presently, the only supported value is "openebs". E.g.:
-                               --storage=openebs
+                               "--storage=openebs".
     --containerized-cplane     Optional. If specified, creates the control plane components as static pods on the
                                controller VM like Kubeadm, RKE2, et. al. (By default, creates the control plane
                                components as as systemd units.) Allowed values: "all", or any of comma-separated:
                                "etcd", "kube-apiserver", "kube-proxy", "kube-scheduler", "kube-controller-manager".
-                               E.g.: "--containerized-cplane=etcd,kube-proxy"
+                               E.g.: "--containerized-cplane=etcd,kube-proxy". (At present, kube-proxy is only
+                               installed if Calico networking is selected.)
 
     Other optional options:
 
@@ -84,12 +85,14 @@ done <<< '
     dtk --create-template --host-network-interface=enp0s31f6 --vboxdir=/sdb1/virtualboxvms --networking=calico
 
     Wires the VirtualBox bridge network to interface "enp0s31f6", uses the "/sdb1/virtualboxvms" directory
-    for all VM files. Creates a template to clone the nodes from. Installs calico networking
+    for all VM files. Creates a template to clone the nodes from. Installs calico networking.
 
-    dtk --host-only-network=192.168.56 --vboxdir=/sdb1/virtualboxvms --single-node --networking=calico
+    dtk --template-vmname=rocky92 --host-only-network=192.168.56 --vboxdir=/sdb1/virtualboxvms\
+      --single-node --networking=calico
 
-    Uses an existing template VM. Configures host-only plus NAT networking. Creates a single-node cluster.
+    Uses an existing template VM named "rocky92". Configures host-only plus NAT networking. Creates a single-node
+    cluster with Calico.
 
-    dtk --up=vm1,vm2,vm3
+    dtk --up=doc,ham,monk
 
     Starts the VMs for the default three-node cluster created by the script.'

@@ -1,4 +1,4 @@
-# Change versions here and they will propagate
+# Change versions here and they will propagate throughout the project
 
 ALMA_VER=9.2
 CALICO_VER=v3.26.1

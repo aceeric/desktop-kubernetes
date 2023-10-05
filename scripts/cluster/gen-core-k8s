@@ -1,19 +1,16 @@
 #!/usr/bin/env bash
 #
-# Generates the Kubernetes core cluster by cloning VMs for the controller and
-# nodes, and then installing only the canonical Kubernetes controller and worker
-# components in each VM.
+# Generates the Kubernetes core cluster by installing only the canonical
+# Kubernetes controller and worker components in each VM. Assumes one or
+# three VMs are running.
 #
 
 set -e
 
-long_opts=host-only-network:,vboxdir:,single-node:,template-vmname:,containerized-cplane:,priv-key:,ca-cert:,ca-key:
+long_opts=single-node:,containerized-cplane:,priv-key:,ca-cert:,ca-key:
 
 # api
-host_only_network=
-vboxdir=
 single_node=0
-template_vmname=bingo
 containerized_cplane=
 priv_key=
 ca_cert=
@@ -45,20 +42,8 @@ function parse_args() {
   eval set -- "$parsed"
   while true; do
     case "$1" in
-      --host-only-network)
-        host_only_network=$(opt_val "$2")
-        shift 2
-        ;;
-      --vboxdir)
-        vboxdir=$(opt_val "$2")
-        shift 2
-        ;;
       --single-node)
         single_node=$(opt_val "$2")
-        shift 2
-        ;;
-      --template-vmname)
-        template_vmname=$(opt_val "$2")
         shift 2
         ;;
       --containerized-cplane)
@@ -90,9 +75,6 @@ parse_args "$@"
 controller_hostname="doc"
 vmnames=($controller_hostname)
 vmcount=1
-ram=(8192 8192 8192)
-cpu=(3 3 3)
-octets=(200 201 202)
 pod_cidrs=(10.200.1.0/24 10.200.2.0/24 10.200.3.0/24)
 node_labels=(controller,worker worker worker)
 
@@ -100,23 +82,6 @@ if [[ $single_node -eq 0 ]]; then
   vmcount=3
   vmnames=($controller_hostname ham monk)
 fi
-
-for ((i = 0; i < $vmcount; ++i)); do
-  xec clone-vm\
-   --priv-key=$priv_key\
-   --template-vmname=$template_vmname\
-   --clone-vmname="${vmnames[$i]}"\
-   --clone-ram="${ram[$i]}"\
-   --clone-cpu="${cpu[$i]}"\
-   --host-only-network=$host_only_network\
-   --host-only-octet="${octets[$i]}"\
-   --vboxdir=$vboxdir\
-   --shutdown=false
-done
-
-# do this now to avoid needing DNS before CoreDNS is installed
-echo "configuring /etc/hosts in VMs"
-xec configure-etc-hosts $priv_key "${vmnames[@]}"
 
 controller_ip=$(xec get-vm-ip $controller_hostname)
 
