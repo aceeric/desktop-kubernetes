@@ -1,0 +1,59 @@
+
+
+
+
+
+libXtst
+
+
+libXt
+
+# yum update
+# yum install binutils patch libgomp glibc-headers glibc-devel elfutils-libelf-devel
+# mkdir -p /media/cdrom
+# mount /dev/scd0 /media/cdrom
+
+
+virtualbox guest additions drm/ttm/ttm_bo_api.h no such file
+
+https://linuxg.net/how-to-install-qt-5-3-1-and-qt-creator-3-1-2-on-linux-systems/
+
+curl -LO https://download.qt-project.org/official_releases/qt/6.6/6.6.0/qt-opensource-linux-x64-6.6.0.run
+chmod +x qt-opensource-linux-x64-6.6.0.run
+./qt-opensource-linux-x64-6.6.0.run
+
+
+yum install build-essential libXtst libXt
+binutils patch libgomp glibc-headers glibc-devel elfutils-libelf-devel
+
+
+SDL
+
+qt5-qtbase
+
+drm-devel
+
+qt5-qtbase-devel
+histor
+
+
+TOTAL
+build-essential
+libXtst
+linXt
+libXmu
+binutils patch libgomp glibc-headers glibc-devel elfutils-libelf-devel
+SDL
+qt5-qtbase
+libdrm-devel
+qt5-qtbase
+qt5-qtbase-devel
+
+
+
+
+
+https://www.virtualbox.org/download/testcase/VBoxGuestAdditions_7.0.11-159406.iso <<<<<<<<<<<<<<<<<<<<-------------- SUCCEEDED!
+
+
+

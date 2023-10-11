@@ -55,7 +55,8 @@ if ! grep -q 'completed guest additions step 1' /root/desktop-kubernetes.log; th
   msg "begin guest additions step 1"
   dnf -y install epel-release
   dnf -y remove kernel-devel
-  dnf -y install gcc make perl kernel-devel kernel-headers bzip2 dkms
+  dnf -y install gcc make perl kernel-devel kernel-headers bzip2 dkms\
+         binutils patch libgomp glibc-headers glibc-devel elfutils-libelf-devel                <<<<<<<<<<< all already except patch
   dnf -y update kernel-*
   msg "completed guest additions step 1 - rebooting"
   reboot -f

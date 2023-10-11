@@ -1,0 +1,15 @@
+#!/usr/bin/env python3
+
+# e.g.:
+# ./yp k8s-options/containerized-cplane
+# ./yp virtualbox/foo/bar/baz
+
+import yaml,sys
+
+with open('/home/eace/projects/desktop-kubernetes/hack/TODO', 'r') as file:
+    y = yaml.safe_load(file)
+
+for segment in sys.argv[1].split('/'):
+    y = y[segment]
+
+print(y)
