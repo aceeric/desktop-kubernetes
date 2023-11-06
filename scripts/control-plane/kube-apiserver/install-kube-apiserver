@@ -127,7 +127,7 @@ encryption_key=$(head -c 32 /dev/urandom | base64)
 sed $script_dir/encryption-config.yaml -e "s|ENCRYPTION_KEY|$encryption_key|g"\
  | ssh -i $priv_key root@$controller_ip "cat > /var/lib/kubernetes/encryption-config.yaml"
 
-if [[ containerized_cplane -eq 0 ]]; then
+if [[ $containerized_cplane -eq 0 ]]; then
   echo "copying kube-apiserver binary to controller"
   scp -i $priv_key $kube_apiserver_binary root@$controller_ip:/usr/local/bin/kube-apiserver
 

@@ -1,0 +1,162 @@
+#!/usr/bin/env bash
+
+set -e
+
+long_opts=admin-kubeconfig:,ca-cert:,ca-key:,cluster-cidr:,containerized-cplane:,controller-ip:,nodes:,priv-key:,\
+networking:,monitoring:,storage:,kubernetes-dashboard:
+
+script_name=$(basename "$0")
+
+admin_kubeconfig=
+ca_cert=
+ca_key=
+cluster_cidr=
+containerized_cplane=
+controller_ip=
+nodes=
+priv_key=
+networking=
+monitoring=
+storage=
+kubernetes_dashboard=
+
+function opt_val() {
+  opt="$1"
+  if [[ "$opt" == =* ]]; then
+    echo "${opt:1}"
+  else
+    echo "$opt"
+  fi
+}
+
+function parse_args() {
+  if [[ "$#" -eq 0 ]]; then
+    echo "no args provided"
+    exit 1
+  fi
+  local parsed
+  parsed=$(getopt --options "" --longoptions $long_opts -n $script_name -- "$@")
+  eval set -- "$parsed"
+  while true; do
+    case "$1" in
+      --admin-kubeconfig)
+        admin_kubeconfig=$(opt_val "$2")
+        shift 2
+        ;;
+      --ca-cert)
+        ca_cert=$(opt_val "$2")
+        shift 2
+        ;;
+      --ca-key)
+        ca_key=$(opt_val "$2")
+        shift 2
+        ;;
+      --cluster-cidr)
+        cluster_cidr=$(opt_val "$2")
+        shift 2
+        ;;
+      --containerized-cplane)
+        containerized_cplane=$(opt_val "$2")
+        shift 2
+        ;;
+      --controller-ip)
+        controller_ip=$(opt_val "$2")
+        shift 2
+        ;;
+      --nodes)
+        nodes=$(opt_val "$2")
+        shift 2
+        ;;
+      --priv-key)
+        priv_key=$(opt_val "$2")
+        shift 2
+        ;;
+      --networking)
+        networking=$(opt_val "$2")
+        shift 2
+        ;;
+      --monitoring)
+        monitoring=$(opt_val "$2")
+        shift 2
+        ;;
+      --storage)
+        storage=$(opt_val "$2")
+        shift 2
+        ;;
+      --kubernetes-dashboard)
+        kubernetes_dashboard=$(opt_val "$2")
+        shift 2
+        ;;
+      --)
+        shift
+        break
+        ;;
+    esac
+  done
+}
+
+parse_args "$@"
+
+echo "installing pod networking"
+
+if [[ "$networking" == "cilium" ]]; then
+  xec install-cilium-networking\
+   --controller-ip=$controller_ip\
+   --admin-kubeconfig=$admin_kubeconfig
+elif [[ "$networking" == "calico" ]]; then
+  xec install-kube-proxy\
+   --controller-ip=$controller_ip\
+   --kube-proxy-binary=$KUBE_PROXY_BINARY\
+   --priv-key=$priv_key\
+   --admin-kubeconfig=$admin_kubeconfig\
+   --containerized-cplane=$containerized_cplane\
+   --ca-cert=$ca_cert\
+   --ca-key=$ca_key\
+   --nodes=$nodes
+  xec install-calico-networking\
+   --calico-tigera-binary=$CALICO_TIGERA_MANIFEST\
+   --calico-custom-resources-manifest=$CALICO_CUSTOM_RESOURCES_MANIFEST\
+   --priv-key=$priv_key\
+   --admin-kubeconfig=$admin_kubeconfig\
+   --cluster-cidr=10.200.0.0/16\
+   --nodes=$nodes
+fi
+
+echo "installing cluster DNS"
+
+xec install-coredns\
+ --replicas=1\
+ --admin-kubeconfig=$admin_kubeconfig
+
+if [[ -n "$monitoring" ]]; then
+  echo "installing Monitoring"
+  if [[ "$monitoring" == "metrics.k8s.io" ]]; then
+    xec install-metrics-server\
+     --admin-kubeconfig=$admin_kubeconfig\
+     --metrics-server-manifest=$METRICS_SERVER_MANIFEST
+  elif [[ "$monitoring" == "kube-prometheus" ]]; then
+    xec install-kube-prometheus\
+     --nodes=$nodes\
+     --kube-prometheus-binary=$KUBE_PROMETHEUS_BINARY\
+     --admin-kubeconfig=$admin_kubeconfig
+  fi
+fi
+
+if [[ -n "$storage" ]]; then
+  echo "installing a storage provisioner"
+  if [[ "$storage" == "openebs" ]]; then
+    xec install-openebs\
+     --priv-key=$priv_key\
+     --admin-kubeconfig=$admin_kubeconfig\
+     --openebs-hostpath-operator-manifest=$OPENEBS_HOSTPATH_OPERATOR_MANIFEST\
+     --openebs-sc-manifest=$OPENEBS_SC_MANIFEST
+  fi
+fi
+
+if [[ "$kubernetes_dashboard" -eq 1 ]]; then
+  echo "installing Kubernetes Dashboard"
+  xec install-kubernetes-dashboard\
+   --controller-ip=$controller_ip\
+   --admin-kubeconfig=$admin_kubeconfig\
+   --kubernetes-dashboard-manifest=$KUBERNETES_DASHBOARD_MANIFEST
+fi

@@ -146,7 +146,7 @@ for node in "${nodes[@]}"; do
   scp -i $priv_key $script_dir/kube-proxy-config.yaml root@$worker_ip:/var/lib/kube-proxy/
   scp -i $priv_key $DTKBASE/generated/kubeconfig/kube-proxy.kubeconfig root@$worker_ip:/var/lib/kube-proxy/kubeconfig/
 
-  if [[ containerized_cplane -eq 0 ]]; then
+  if [[ $containerized_cplane -eq 0 ]]; then
     scp -i $priv_key $kube_proxy_binary root@$worker_ip:/usr/local/bin/kube-proxy
     scp -i $priv_key $script_dir/kube-proxy.service root@$worker_ip:/etc/systemd/system/kube-proxy.service
     ssh -i $priv_key root@$worker_ip "systemctl daemon-reload && systemctl enable kube-proxy && systemctl start kube-proxy"

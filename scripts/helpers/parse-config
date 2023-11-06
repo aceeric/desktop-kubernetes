@@ -1,0 +1,62 @@
+#!/usr/bin/env bash
+#
+# Parse the yaml configuration for k8s, vbox, and vm keys and convert to
+# variables and assignments. E.g.: 'vbox.host-only-network: 192.168.56'
+# in the config yaml becomes 'vbox_host_only_network=192.168.56' in the
+# current shell environment. In other words, flatten each config param
+# and then dots and dashes to underscores and colon to equal sign.
+# Intended to be sourced, so the script defines the vars in the
+# callers environment. Note - boolean vals are parsed as "1" and "0"
+# which is more natural for shell.
+#
+# example:
+#
+# eval $(parse-config config.yaml)
+# echo $vm_linux
+# centos8
+
+CFGFILE="$1" python3 <<END
+import yaml, sys, os
+
+valid_configs = [
+    "k8s.networking",
+    "k8s.monitoring",
+    "k8s.storage",
+    "k8s.containerized-cplane",
+    "k8s.cluster-cidr",
+    "k8s.cluster-dns",
+    "k8s.kubernetes-dashboard",
+    "vbox.host-network-interface",
+    "vbox.host-only-network",
+    "vbox.vboxdir",
+    "vm.linux",
+    "vm.create-template",
+    "vm.template-vmname"
+]
+
+config_file = os.environ['CFGFILE']
+
+with open(config_file, "r") as file:
+    cfg = yaml.safe_load(file)
+
+vars = ""
+newline = ""
+
+for key in list(cfg.keys()):
+   if key == "vms":
+        continue
+   for subkey in list(cfg[key].keys()):
+        config = "%s.%s" % (key, subkey)
+        if not config in valid_configs:
+            print("error: unsupported configuration: " + config)
+            exit(1)
+        val = "" if cfg[key][subkey] is None else cfg[key][subkey]
+        if str(val) == "True":
+            val = "1"
+        elif str(val) == "False":
+            val = "0"
+        var = (key + "-" + subkey).replace("-", "_")
+        vars = vars + "%s%s=%s" % (newline, var, val)
+        newline = "\n"
+print(vars)
+END

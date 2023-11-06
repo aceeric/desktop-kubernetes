@@ -1,6 +1,6 @@
 # Change versions here and they will propagate throughout the project
 
-ALMA_VER=9.2
+ALMA_VER=9.3
 CALICO_VER=v3.26.1
 CILIUM_VER=1.15.0-pre.2
 CNI_PLUGINS_VER=v1.3.0

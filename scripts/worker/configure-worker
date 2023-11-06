@@ -85,10 +85,7 @@ echo "Getting IP address from running VM for $worker_hostname"
 worker_ip=$(xec get-vm-ip $worker_hostname)
 
 echo "Making worker VM configuration changes"
-# The socat binary enables support for the kubectl port-forward command. By default the kubelet
-# will fail to start if swap is enabled so disable swap
 ssh -i $priv_key root@$worker_ip << EOF
-  yum -y install socat conntrack ipset
   [[ -z "$(swapon --show)" ]] || { swapoff -a; sed -i '/ swap /d' /etc/fstab; }
 EOF
 

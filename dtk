@@ -2,34 +2,30 @@
 
 set -e
 
-long_opts=help,host-network-interface:,host-only-network:,vboxdir:,check-compatibility,create-template,networking:,\
-monitoring:,storage:,single-node,up:,down:,delete:,verify:,template-vmname:,linux:,containerized-cplane:
-
-# api
-host_network_interface=
-host_only_network=
-vboxdir=
-create_template=0
-networking=
-monitoring=
-storage=
-single_node=0
-verify=
-template_vmname=bingo
-linux=centos8
-containerized_cplane=
-
-# internal
-cluster_vms=(doc)
+long_opts=help,check-compatibility,up:,down:,delete:,verify:,config:,create-template:
 
 # This snippet enables all scripts to exec all other scripts without knowing any
 # other script's path, as long all the scripts (except this one) are children
-# of the 'scripts' directory. In the case where you're directly testing child scripts,
-# you must define DTKBASE and the xec function in your console first.
+# of the 'scripts' directory.
 
 export DTKBASE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 function xec() { f=$(find $DTKBASE/scripts -name $1) && $f "${@:2}"; }
 export -f xec
+
+# api
+config=$DTKBASE/config.yaml
+k8s_networking=
+k8s_monitoring=
+k8s_storage=
+k8s_containerized_cplane=
+k8s_kubernetes_dashboard=
+vbox_host_network_interface=
+vbox_host_only_network=
+vbox_vboxdir=
+vm_linux=
+vm_create_template=
+vm_create_template_override=
+vm_template_vmname=
 
 set -a
 source $DTKBASE/artifacts
@@ -52,10 +48,6 @@ function opt_val() {
 # commands, like --up for example.
 #
 function parse_args() {
-  if [[ "$#" -eq 0 ]]; then
-    xec show-usage
-    exit 1
-  fi
   local parsed
   local script_name=$(basename "$0")
   parsed=$(getopt --options "" --longoptions $long_opts -n $script_name -- "$@")
@@ -66,58 +58,19 @@ function parse_args() {
         xec show-usage
         exit 0
         ;;
-      --host-network-interface)
-        host_network_interface=$(opt_val "$2")
-        shift 2
-        ;;
-      --host-only-network)
-        host_only_network=$(opt_val "$2")
-        shift 2
-        ;;
-      --vboxdir)
-        vboxdir=$(opt_val "$2")
-        shift 2
-        ;;
-      --networking)
-        networking=$(opt_val "$2")
-        if [[ "$networking" != "cilium" ]] && [[ "$networking" != "calico" ]]; then
-          echo "unsupported parameter value for --networking option: $networking"
+      --config)
+        config=$(opt_val "$2")
+        config=$(realpath $config)
+        if [[ ! -f "$config" ]]; then
+          echo "config file not found: $config"
           exit 1
         fi
         shift 2
         ;;
       --check-compatibility)
-        echo "Checking version compatibility"
+        echo "checking version compatibility"
         xec check-compatibility
         exit 0
-        ;;
-      --create-template)
-        create_template=1
-        shift
-        ;;
-      --monitoring)
-        monitoring=$(opt_val "$2")
-        if [[ "$monitoring" != "metrics.k8s.io" ]] && [[ "$monitoring" != "kube-prometheus" ]]; then
-          echo "unsupported parameter value for --monitoring option: $monitoring"
-          exit 1
-        fi
-        shift 2
-        ;;
-      --storage)
-        storage=$(opt_val "$2")
-        if [[ "$storage" != "openebs" ]]; then
-          echo "unsupported parameter value for --storage option: $storage"
-          exit 1
-        fi
-        shift 2
-        ;;
-      --containerized-cplane)
-        containerized_cplane=$(opt_val "$2")
-        shift 2
-        ;;
-      --single-node)
-        single_node=1
-        shift
         ;;
       --up)
         vms=$(opt_val "$2")
@@ -143,14 +96,10 @@ function parse_args() {
         xec check-objects "$verify"
         exit 0
         ;;
-      --template-vmname)
-        template_vmname=$(opt_val "$2")
-        shift 2
-        ;;
-      --linux)
-        linux=$(opt_val "$2")
-        if [[ "$linux" != "centos8" ]] && [[ "$linux" != "centos9" ]] && [[ "$linux" != "rocky" ]]  && [[ "$linux" != "alma" ]]; then
-          echo "unsupported parameter value for --linux option: $linux"
+      --create-template)
+        vm_create_template_override=$(opt_val "$2")
+        if [[ "$vm_create_template_override" != "true" ]] && [[ "$vm_create_template_override" != "false" ]]; then
+          echo "--create-template arg needs true or false"
           exit 1
         fi
         shift 2
@@ -163,28 +112,58 @@ function parse_args() {
   done
 
   if [[ $# -ne 0 ]]; then
-    echo "Unsupported command line option(s): $@"
-    exit 1
-  fi
-
-  if [[ -z "$host_network_interface" ]] && [[ -z "$host_only_network" ]]; then
-    echo "either --host-network-interface or --host-only-network is required"
-    exit 1
-  elif [[ ! -z "$host_network_interface" ]] && [[ ! -z "$host_only_network" ]]; then
-    echo "--host-network-interface and --host-only-network are exclusive of each other"
-    exit 1
-  elif [[ -z "$vboxdir" ]]; then
-    echo "--vboxdir is a required option"
-    exit 1
-  elif [[ ! -d $vboxdir ]]; then
-    echo "directory for virtualbox VMs does not exist: $vboxdir"
+    echo "unsupported command line option(s): $@"
     exit 1
   fi
 }
 
 # entry point
 
+# parse cmdline
 parse_args "$@"
+
+# parse config.yaml
+eval $(xec parse-config $config)
+
+if [[ -n "$vm_create_template_override" ]]; then
+  if [[ "$vm_create_template_override" == "true" ]]; then
+    vm_create_template=1
+  else
+    vm_create_template=0
+  fi
+fi
+
+if [[ -z "$vbox_vboxdir" ]]; then
+  vbox_vboxdir=$(vboxmanage list systemproperties | grep folder | awk -F: '{print $2}' | xargs)
+fi
+
+# validate configuration
+if [[ -z "$vbox_host_network_interface" ]] && [[ -z "$vbox_host_only_network" ]]; then
+  echo "either --host-network-interface or --host-only-network is required"
+  exit 1
+elif [[ ! -z "$vbox_host_network_interface" ]] && [[ ! -z "$vbox_host_only_network" ]]; then
+  echo "--host-network-interface and --host-only-network are exclusive of each other"
+  exit 1
+elif [[ -z "$vbox_vboxdir" ]]; then
+  echo "directory for virtualbox VMs is not defined"
+  exit 1
+elif [[ ! -d $vbox_vboxdir ]]; then
+  echo "directory for virtualbox VMs does not exist: $vbox_vboxdir"
+  exit 1
+elif [[ "$k8s_networking" != "cilium" ]] && [[ "$k8s_networking" != "calico" ]]; then
+  echo "unsupported parameter value for k8s.networking config: $k8s_networking"
+  exit 1
+elif [[ "$k8s_monitoring" != "metrics.k8s.io" ]] && [[ "$k8s_monitoring" != "kube-prometheus" ]]; then
+  echo "unsupported parameter value for k8s.monitoring config: $k8s_monitoring"
+  exit 1
+elif [[ "$k8s_storage" != "openebs" ]]; then
+  echo "unsupported parameter value for storage config: $k8s_storage"
+  exit 1
+# removing centos9 for now - can't get it working [[ "$vm_linux" != "centos9" ]] && 
+elif [[ "$vm_linux" != "centos8" ]] && [[ "$vm_linux" != "rocky" ]]  && [[ "$vm_linux" != "alma" ]]; then
+  echo "unsupported parameter value for linux config: $vm_linux"
+  exit 1
+fi
 
 echo "creating directories to generate various files into"
 mkdir -p $DTKBASE/generated/kickstart\
@@ -195,126 +174,60 @@ mkdir -p $DTKBASE/generated/kickstart\
 
 echo "downloading all objects needed to provision the cluster"
 xec download-objects\
-  --create-template=$create_template\
-  --linux=$linux\
-  --monitoring=$monitoring\
-  --storage=$storage\
-  --networking=$networking\
-  --kubernetes-dashboard=true
-
-# Provision VMs. Optionally also a template VM to clone the nodes from. This step
-# also generates the SSH keys into the 'generated/kickstart' directory that are used all
-# over the place to interact with the node VMs via ssh/scp as they are being bootstrapped,
-# and that you will use to SSH into the VMs after the cluster is provisioned. If using host
-# only networking, the 'create-template-vm' script will also create a host only VirtualBox
-# network which will be used to initialize the template. This host only network name will
-# be copied into every VM cloned from the template. So every cloned VM will be on the same
-# host only network. Script args are validated above so caller never specifies both bridge
-# (by virtue of the --host-network-interface option) AND host only (by virtue of the
-# --host-only-network option)
+  --create-template=$vm_create_template\
+  --linux=$vm_linux\
+  --monitoring=$k8s_monitoring\
+  --storage=$k8s_storage\
+  --networking=$k8s_networking\
+  --kubernetes-dashboard=$k8s_kubernetes_dashboard
 
 echo "provisioning vms"
 xec provision-vms\
- --create-template=$create_template\
- --linux=$linux\
- --host-network-interface=$host_network_interface\
- --host-only-network=$host_only_network\
- --vboxdir=$vboxdir\
- --single-node=$single_node\
- --template-vmname=$template_vmname
+  --create-template=$vm_create_template\
+  --linux=$vm_linux\
+  --host-network-interface=$vbox_host_network_interface\
+  --host-only-network=$vbox_host_only_network\
+  --vboxdir=$vbox_vboxdir\
+  --template-vmname=$vm_template_vmname\
+  --config=$config
 
-# gen-root-ca generates $DTKBASE/generated/cert/ca.pem and ca-key.pem used throughout to configure TLS
-
-echo "generating root CA"
+echo "generating root CA to $DTKBASE/generated/cert/ca.pem (and ca-key.pem)"
 xec gen-root-ca
 
-echo "Generating Kubernetes core cluster"
+echo "generating Kubernetes core cluster"
 xec gen-core-k8s\
- --single-node=$single_node\
- --containerized-cplane=$containerized_cplane\
- --priv-key=$DTKBASE/generated/kickstart/id_ed25519\
- --ca-cert=$DTKBASE/generated/cert/ca.pem\
- --ca-key=$DTKBASE/generated/cert/ca-key.pem
+  --containerized-cplane=$k8s_containerized_cplane\
+  --priv-key=$DTKBASE/generated/kickstart/id_ed25519\
+  --ca-cert=$DTKBASE/generated/cert/ca.pem\
+  --ca-key=$DTKBASE/generated/cert/ca-key.pem\
+  --config=$config
 
-controller_ip=$(xec get-vm-ip doc)
+# build a comma-separated list of VMs
+for ((i = 0; i < $(xec yp $config ?vms); ++i)); do
+  nodes="$nodes,$(xec yp $config vms/$i/name)"
+done
+nodes=${nodes:1}
 
-# todo these names are also specified in gen-core-k8s
-if [[ $single_node -eq 0 ]]; then
-  cluster_vms+=(ham)
-  cluster_vms+=(monk)
-fi
+# host zero is always the controller
+controller_ip=$(xec get-vm-ip $(xec yp $config vms/0/name))
 
-echo "installing pod networking"
-
-if [[ "$networking" == "cilium" ]]; then
-  xec install-cilium-networking\
-   --controller-ip=$controller_ip\
-   --admin-kubeconfig=$DTKBASE/generated/kubeconfig/admin.kubeconfig
-elif [[ "$networking" == "calico" ]]; then
-  nodes="${cluster_vms[@]}"
-  # convert array (x y z) to comma-delimited string "x,y,z":
-  nodes=${nodes// /,}
-  xec install-kube-proxy\
-   --controller-ip=$controller_ip\
-   --kube-proxy-binary=$KUBE_PROXY_BINARY\
-   --priv-key=$DTKBASE/generated/kickstart/id_ed25519\
-   --admin-kubeconfig=$DTKBASE/generated/kubeconfig/admin.kubeconfig\
-   --containerized-cplane=$containerized_cplane\
-   --ca-cert=$DTKBASE/generated/cert/ca.pem\
-   --ca-key=$DTKBASE/generated/cert/ca-key.pem\
-   --nodes=$nodes
-  xec install-calico-networking\
-   --calico-tigera-binary=$CALICO_TIGERA_MANIFEST\
-   --calico-custom-resources-manifest=$CALICO_CUSTOM_RESOURCES_MANIFEST\
-   --priv-key=$DTKBASE/generated/kickstart/id_ed25519\
-   --admin-kubeconfig=$DTKBASE/generated/kubeconfig/admin.kubeconfig\
-   --cluster-cidr=10.200.0.0/16\
-   --nodes=$nodes
-fi
-
-echo "installing cluster DNS"
-
-xec install-coredns\
- --replicas=${#workers[@]}\
- --admin-kubeconfig=$DTKBASE/generated/kubeconfig/admin.kubeconfig
-
-if [[ -n "$monitoring" ]]; then
-  echo "installing Monitoring"
-  if [[ "$monitoring" == "metrics.k8s.io" ]]; then
-    xec install-metrics-server\
-     --admin-kubeconfig=$DTKBASE/generated/kubeconfig/admin.kubeconfig\
-     --metrics-server-manifest=$METRICS_SERVER_MANIFEST
-  elif [[ "$monitoring" == "kube-prometheus" ]]; then
-    nodes="${cluster_vms[@]}"
-    nodes=${nodes// /,}
-    xec install-kube-prometheus\
-     --nodes=$nodes\
-     --kube-prometheus-binary=$KUBE_PROMETHEUS_BINARY\
-     --admin-kubeconfig=$DTKBASE/generated/kubeconfig/admin.kubeconfig
-  fi
-fi
-
-if [[ -n "$storage" ]]; then
-  echo "installing a storage provisioner"
-  if [[ "$storage" == "openebs" ]]; then
-    xec install-openebs\
-     --priv-key=$DTKBASE/generated/kickstart/id_ed25519\
-     --admin-kubeconfig=$DTKBASE/generated/kubeconfig/admin.kubeconfig\
-     --openebs-hostpath-operator-manifest=$OPENEBS_HOSTPATH_OPERATOR_MANIFEST\
-     --openebs-sc-manifest=$OPENEBS_SC_MANIFEST
-  fi
-fi
-
-echo "installing Kubernetes Dashboard"
-
-xec install-kubernetes-dashboard\
- --controller-ip=$controller_ip\
- --admin-kubeconfig=$DTKBASE/generated/kubeconfig/admin.kubeconfig\
- --kubernetes-dashboard-manifest=$KUBERNETES_DASHBOARD_MANIFEST
+xec install-addons\
+  --admin-kubeconfig=$DTKBASE/generated/kubeconfig/admin.kubeconfig\
+  --ca-cert=$DTKBASE/generated/cert/ca.pem\
+  --ca-key=$DTKBASE/generated/cert/ca-key.pem\
+  --cluster-cidr=10.200.0.0/16\
+  --containerized-cplane=$containerized_cplane\
+  --controller-ip=$controller_ip\
+  --nodes=$nodes\
+  --priv-key=$DTKBASE/generated/kickstart/id_ed25519\
+  --networking=$k8s_networking\
+  --monitoring=$k8s_monitoring\
+  --storage=$k8s_storage\
+  --kubernetes-dashboard=$k8s_kubernetes_dashboard
 
 echo
 echo "finished provisioning cluster. To interact with the cluster:"
 echo "  export KUBECONFIG=$DTKBASE/generated/kubeconfig/admin.kubeconfig"
 echo
 
-xec show-ssh $DTKBASE/generated/kickstart/id_ed25519 "${cluster_vms[@]}"
+xec show-ssh $DTKBASE/generated/kickstart/id_ed25519 $nodes

@@ -1,0 +1,50 @@
+#!/usr/bin/env python3
+#
+# Super-simple yaml config-file value getter. Three capabilities:
+#
+# 1) (base use case): return a value at a path:
+#
+# ./yp <config file> k8s/containerized-cplane
+# ./yp <config file> vbox/template-vmname
+#
+# 2) Return length of a list (prefix path with "?"):
+# ./yp <config file> ?vms
+#
+# 3) Variant of #1 - get a value from the nth dict in a list.
+# Any path segment that is an int is assumed to be a 0-rel index
+# into the list represented by the path segment to the immediate
+# left of the index:
+#
+# Usage:
+#
+# ./yp <config file> vms/1/name
+#
+# Note - Boolean values are returned as "1" or "0"
+#
+
+import yaml, sys
+
+config_file = sys.argv[1]
+
+with open(config_file, 'r') as file:
+    y = yaml.safe_load(file)
+
+want_len = False
+
+if sys.argv[2][:1] == "?":
+    want_len = True
+    sys.argv[2] = sys.argv[2][1:]
+
+for segment in sys.argv[2].split('/'):
+    try:
+        idx = int(segment)
+        y = y[idx]
+    except:
+        y = y[segment]
+
+if str(y) == "True":
+    y = "1"
+elif str(y) == "False":
+    y = "0"
+
+print(len(y) if want_len else y)

@@ -2,12 +2,12 @@
 #
 # Provisions VBox VMs. If --create-template then creates a template. Otherwise expects a
 # VM named by the --template-vmname param to exist. Clones that template VM into one or
-# three VMs based on the presence or absence of the --single-node parameter.
+# more VMs based on the config.yaml per --config arg.
 #
 
 set -e
 
-long_opts=create-template:,linux:,host-network-interface:,host-only-network:,vboxdir:,single-node:,template-vmname:
+long_opts=create-template:,linux:,host-network-interface:,host-only-network:,vboxdir:,template-vmname:,config:
 script_name=$(basename "$0")
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
@@ -16,8 +16,8 @@ linux=
 host_network_interface=
 host_only_network=
 vboxdir=
-single_node=0
 template_vmname=
+config=
 
 #
 # option parsing helper
@@ -64,12 +64,12 @@ function parse_args() {
         vboxdir=$(opt_val "$2")
         shift 2
         ;;
-      --single-node)
-        single_node=$(opt_val "$2")
-        shift 2
-        ;;
       --template-vmname)
         template_vmname=$(opt_val "$2")
+        shift 2
+        ;;
+      --config)
+        config=$(opt_val "$2")
         shift 2
         ;;
       --)
@@ -88,7 +88,7 @@ linux_iso_path=$CENTOS8_ISO_FILE
 [[ $linux == "rocky"   ]] && linux_iso_path=$ROCKY_ISO_FILE
 
 # create-template-vm gens SSH keypair $DTKBASE/generated/kickstart/id_ed25519
-# if it does not already exist
+# if it does not already exist - which is used below when cloning the VM
 
 if [[ $create_template -eq 1 ]] ; then
   echo "creating a template VM"
@@ -101,35 +101,32 @@ if [[ $create_template -eq 1 ]] ; then
    --vboxdir=$vboxdir
 fi
 
-controller_hostname="doc"
-vmnames=($controller_hostname)
-vmcount=1
-ram=(8192 8192 8192)
-cpu=(3 3 3)
-octets=(200 201 202)
-pod_cidrs=(10.200.1.0/24 10.200.2.0/24 10.200.3.0/24)
-node_labels=(controller,worker worker worker)
+vmcnt=$(xec yp $config ?vms)
+vm_names=()
 
-if [[ $single_node -eq 0 ]]; then
-  vmcount=3
-  vmnames=($controller_hostname ham monk)
-fi
+for ((i = 0; i < $vmcnt; ++i)); do
+  vm_name=$(xec yp $config vms/$i/name)
+  vm_cpu=$(xec yp $config vms/$i/cpu)
+  vm_mem=$(xec yp $config vms/$i/mem)
+  vm_ip=$(xec yp $config vms/$i/ip)
 
-for ((i = 0; i < $vmcount; ++i)); do
   xec clone-vm\
    --priv-key=$DTKBASE/generated/kickstart/id_ed25519\
    --template-vmname=$template_vmname\
-   --clone-vmname="${vmnames[$i]}"\
-   --clone-ram="${ram[$i]}"\
-   --clone-cpu="${cpu[$i]}"\
+   --clone-vmname=$vm_name\
+   --clone-ram=$vm_mem\
+   --clone-cpu=$vm_cpu\
    --host-only-network=$host_only_network\
-   --host-only-octet="${octets[$i]}"\
+   --host-only-octet=$vm_ip\
    --vboxdir=$vboxdir\
    --shutdown=false
+
+  vm_names+=($vm_name)
 done
 
 # do this now to avoid needing DNS before CoreDNS is installed
 echo "configuring /etc/hosts in VMs"
-xec configure-etc-hosts $DTKBASE/generated/kickstart/id_ed25519 "${vmnames[@]}"
+xec configure-etc-hosts $DTKBASE/generated/kickstart/id_ed25519 "${vm_names[@]}"
 
-controller_ip=$(xec get-vm-ip $controller_hostname)
+# why am I doing this?
+#controller_ip=$(xec get-vm-ip $controller_hostname)

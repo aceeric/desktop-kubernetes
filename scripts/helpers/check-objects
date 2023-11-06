@@ -23,8 +23,7 @@ if [[ "$1" == "files" ]]; then
     $OPENEBS_HOSTPATH_OPERATOR_MANIFEST\
     $OPENEBS_SC_MANIFEST\
     $ROCKY_ISO_FILE\
-    $RUNC_BINARY;
-    do
+    $RUNC_BINARY; do
     if ! [[ -f $f ]]; then
       echo "missing: $f" >&2
     else
@@ -54,8 +53,7 @@ else
     $OPENEBS_HOSTPATH_OPERATOR_MANIFEST_DOWNLOAD\
     $OPENEBS_SC_MANIFEST_DOWNLOAD\
     $ROCKY_ISO_DOWNLOAD\
-    $RUNC_DOWNLOAD;
-    do
+    $RUNC_DOWNLOAD; do
     if ! curl -sL $f -o /dev/null --head --fail; then
       echo "missing: $f" >&2
     else

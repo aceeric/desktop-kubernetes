@@ -122,7 +122,7 @@ ssh -i $priv_key root@$controller_ip "mkdir -p /var/lib/kubernetes /etc/kubernet
 scp -i $priv_key $kube_scheduler_kubeconfig root@$controller_ip:/var/lib/kubernetes/
 scp -i $priv_key $kube_scheduler_yaml root@$controller_ip:/etc/kubernetes/config/
 
-if [[ containerized_cplane -eq 0 ]]; then
+if [[ $containerized_cplane -eq 0 ]]; then
   echo "copying kube-scheduler binary to controller VM"
   scp -i $priv_key $kube_scheduler_binary root@$controller_ip:/usr/local/bin/kube-scheduler
 

@@ -122,7 +122,7 @@ kubectl config use-context default --kubeconfig=$controller_mgr_kubeconfig
 echo "copying kube-controller-manager kubeconfig file to controller VM"
 scp -i $priv_key $controller_mgr_kubeconfig root@$controller_ip:/var/lib/kubernetes/
 
-if [[ containerized_cplane -eq 0 ]]; then
+if [[ $containerized_cplane -eq 0 ]]; then
   echo "copying kube-controller-manager binary to controller VM"
   scp -i $priv_key $kube_controller_manager_binary root@$controller_ip:/usr/local/bin/kube-controller-manager
 

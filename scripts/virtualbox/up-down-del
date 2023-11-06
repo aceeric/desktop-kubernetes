@@ -6,7 +6,7 @@
 #
 # E.g.:
 #
-# up-down-del up doc,ham,monk
+# up-down-del up vm1,vm2,vm3
 #
 
 if [[ $1 == "up" ]]; then

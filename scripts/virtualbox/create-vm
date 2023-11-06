@@ -91,6 +91,7 @@ VBoxManage createvm\
  --register\
  --basefolder $vboxdir
 
+# create the VM within minimal CPU & RAM
 VBoxManage modifyvm $template_vmname\
  --ioapic on\
  --cpus 2\

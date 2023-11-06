@@ -1,0 +1,63 @@
+# The configuration file has four sections: 'k8s', 'vbox', 'vm', and 'vms'.
+#
+# - k8s:  Kubernetes cluster options
+# - vbox: VirtualBox options
+# - vm:   Virtual Machine options
+# - vms:  List of VMs to create. The first VM will be the control plane. Others
+#         will be workers. Each item in the list requires:
+#         - name:     VM name
+#         - cpu:      Number of CPUs
+#         - mem:      RAM in gigs
+#         - ip:       Rightmost octet of the IP address. Ignored unless host-only-network
+#                     is specified and in that case appended to the host-only-network
+#                     value to create the VM IP address
+#         - pod-cidr: Pod CIDR range on the Node
+#
+
+k8s:
+  # options: calico and cilium
+  networking: calico
+  # options: kube-prometheus and metrics.k8s.io
+  monitoring: kube-prometheus
+  # options: openebs
+  storage: openebs
+  # options: "all", or any of comma-separated: "etcd", "kube-apiserver", "kube-proxy",
+  # "kube-scheduler", and "kube-controller-manager". If empty, components run as systemd units
+  containerized-cplane:
+  # CIDR Range for Pods in cluster (ignored - not implemented yet)
+  cluster-cidr: 10.200.0.0/16
+  # Core DNS Service IP (ignored - not implemented yet)
+  cluster-dns: 10.32.0.10
+  # t/f install the Kubernetes Dashboard
+  kubernetes-dashboard: true
+vbox:
+  # results in bridged networking: enter the name of your primary network interface
+  host-network-interface:
+  # results in host-only + NAT: specify the first three octets (see vbox limitations)
+  host-only-network: 192.168.56
+  # directory for vbox VMs. If empty, the script will get it from VirtualBox
+  vboxdir:
+vm:
+  # options: centos8, centos9, rocky, alma. (Ignored unless 'create-template: true')
+  linux: centos8
+  # t/f to create a template VM - if false the template VM named below must exist
+  create-template: true
+  # template VM name to clone the cluster VMs from
+  template-vmname: centos8
+vms:
+# first node is control plane+worker. Other nodes are workers
+- name: doc
+  cpu: 3
+  mem: 8192
+  ip: 200
+  pod-cidr: 10.200.1.0/24
+- name: ham
+  cpu: 3
+  mem: 8192
+  ip: 201
+  pod-cidr: 10.200.2.0/24
+- name: monk
+  cpu: 3
+  mem: 8192
+  ip: 202
+  pod-cidr: 10.200.3.0/24

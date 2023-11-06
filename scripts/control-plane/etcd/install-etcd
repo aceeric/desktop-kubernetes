@@ -94,7 +94,7 @@ echo "extracting etcd binaries to controller"
 cat "$etcd_gzip" | ssh -i $priv_key root@$controller_ip \
  "tar zxvf - --no-same-owner --strip-components 1 -C /usr/local/bin/ $subdir/etcd $subdir/etcdctl"
 
-if [[ containerized_cplane -eq 0 ]]; then
+if [[ $containerized_cplane -eq 0 ]]; then
   echo "generating etcd service file"
   sed $script_dir/etcd.service\
    -e "s|ETCD_NAME|$controller_hostname|g"\

@@ -96,7 +96,7 @@ if [[ -n $networking ]]; then
   fi
 fi
 
-if [[ -n $kubernetes_dashboard ]]; then
+if [[ $kubernetes_dashboard -eq 1 ]]; then
   xec download-obj --url=$KUBERNETES_DASHBOARD_DOWNLOAD --dest=$KUBERNETES_DASHBOARD_MANIFEST
 fi
 

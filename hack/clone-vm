@@ -1,0 +1,97 @@
+#!/usr/bin/env bash
+#
+# Clones a template VM the way the 'dtk' script does it.
+#
+# Args:
+#
+# --host-only-network <octets>
+# --host-network-interface <interface name>
+# --os-iso <path to OS iso>
+# --ga-iso <path to guest additions ISO>
+# --vm-name <name>
+# --vbox-dir <dir>
+#
+# Examples:
+#
+# If the template is host only networking:
+#
+# hack/clone-vm\
+#   --host-only-network 192.168.56\
+#   --ip 202\
+#   --cpu 3\
+#   --ram 4096\
+#   --template-vm-name alma93\
+#   --vm-name alma93clone
+# 
+# If the template is bridged networking:
+#
+# hack/clone-vm\
+#   --host-network-interface enp0s31f6\
+#   --cpu 3\
+#   --ram 4096\
+#   --template-vm-name alma93\
+#   --vm-name alma93clone
+# 
+
+export DTKBASE="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+function xec() { f=$(find $DTKBASE/scripts -name $1) && $f "${@:2}"; }
+export -f xec
+
+hostonly=
+hni=
+cpu=
+ram=
+ip=
+template_vmname=
+vmname=
+vboxdir=$(vboxmanage list systemproperties | grep folder | awk -F: '{print $2}' | xargs)
+
+for ((i = 1; i <= $#; i++ )); do
+  if [[ ${!i} == "--cpu" ]]; then
+    ((i++))
+    cpu=${!i}
+  elif [[ ${!i} == "--ram" ]]; then
+    ((i++))
+    ram=${!i}
+  elif [[ ${!i} == "--ip" ]]; then
+    ((i++))
+    ip=${!i}
+  elif [[ ${!i} == "--host-only-network" ]]; then
+    ((i++))
+    hostonly=${!i}
+  elif [[ ${!i} == "--host-network-interface" ]]; then
+    ((i++))
+    hni=${!i}
+  elif [[ ${!i} == "--template-vm-name" ]]; then
+    ((i++))
+    template_vmname=${!i}
+  elif [[ ${!i} == "--vm-name" ]]; then
+    ((i++))
+    vmname=${!i}
+  elif [[ ${!i} == "--vbox-dir" ]]; then
+    ((i++))
+    vboxdir=${!i}
+  else
+    echo unknown param: ${!i}
+    exit 1
+  fi
+done
+
+xec clone-vm\
+  --priv-key=$DTKBASE/generated/kickstart/id_ed25519\
+  --template-vmname=$template_vmname\
+  --clone-vmname=$vmname\
+  --clone-ram=$ram\
+  --clone-cpu=$cpu\
+  --host-only-network=$hostonly\
+  --host-only-octet=$ip\
+  --vboxdir=$vboxdir\
+  --shutdown=false
+
+# Configure etc/hosts in the VM
+
+xec configure-etc-hosts $DTKBASE/generated/kickstart/id_ed25519 $vmname
+
+# Display to the console how to ssh into the VM
+
+xec show-ssh $DTKBASE/generated/kickstart/id_ed25519 $vmname

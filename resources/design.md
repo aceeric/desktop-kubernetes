@@ -8,7 +8,7 @@ The script directory structure is organized around related areas of functionalit
 
 | File | Purpose |
 | ---- | ------- |
-| generated/kickstart/id_ed25519 | This is the private key corresponding to the public key that Desktop Kubernetes adds to the template VM `authorized_keys` file. As long as the template VM is used to provision new Desktop Kubernetes clusters, this private key must be retained for ssh'ing into the cluster VMs. Desktop Kubernetes only generates the SSH keys when a template is created using the `--create-template` arg. |
+| generated/kickstart/id_ed25519 | This is the private key corresponding to the public key that Desktop Kubernetes adds to the template VM `authorized_keys` file. As long as the template VM is used to provision new Desktop Kubernetes clusters, this private key must be retained for ssh'ing into the cluster VMs. Desktop Kubernetes only generates the SSH keys when a template is created. |
 | generated/kubeconfig/admin.kubeconfig | This is the admin kubeconfig that is generated each time a new cluster is created. You need this kubeconfig to run `kubectl` commands against the cluster. |
 
 ## Call structure
@@ -50,32 +50,33 @@ dtk
 │     ├─ scripts/control-plane/kube-apiserver/install-kube-apiserver
 │     ├─ scripts/control-plane/kube-controller-manager/install-kube-controller-manager
 │     └─ scripts/control-plane/kube-scheduler/install-kube-scheduler
-│
-├─ scripts/networking/kube-proxy/install-kube-proxy (8)
-├─ scripts/networking/calico/install-calico-networking
-├─ scripts/dns/coredns/install-coredns
-├─ scripts/monitoring/kube-prometheus/install-kube-prometheus
-│  └─ scripts/monitoring/kube-prometheus/tweak-monitoring
-├─ scripts/storage/openebs/install-openebs
-└─ scripts/monitoring/kubernetes-dashboard/install-kubernetes-dashboard
+|
+└─ scripts/helpers/install-addons (8)
+   ├─ scripts/networking/kube-proxy/install-kube-proxy
+   ├─ scripts/networking/calico/install-calico-networking
+   ├─ scripts/dns/coredns/install-coredns
+   ├─ scripts/monitoring/kube-prometheus/install-kube-prometheus
+   │  └─ scripts/monitoring/kube-prometheus/tweak-monitoring
+   ├─ scripts/storage/openebs/install-openebs
+   └─ scripts/monitoring/kubernetes-dashboard/install-kubernetes-dashboard
 ```
 
 ## Narrative
 
 1. The `artifacts` file is sourced, which defines all the upstream URLs and local filesystem locations for the objects needed to provision the cluster.
-2. All the binaries, ISOs, manifests, and tarballs needed to provision the cluster are downloaded into the `binaries` directory based on command line args. E.g. if `--linux=rocky` then `Rocky-X.X-x86_64-dvd.iso` (X.X based on whatever is hard-coded in the `artifacts` file.)
+2. All the binaries, ISOs, manifests, and tarballs needed to provision the cluster are downloaded into the `binaries` directory based on configuration options. E.g. if config specifies `linux: rocky` then `Rocky-X.X-x86_64-dvd.iso` (X.X based on whatever is hard-coded in the `artifacts` file.)
 3. All the VMs are created:
-    - If the `--create-template` arg is provided then ssh keys are generated, and a template VM is created using Kickstart and a CentOS / Alma / Rocky ISO depending on the `--linux` option. The ssh public key is copied into the VM in the `authorized-keys` file, and Virtual Box Guest Additions is installed because it enables getting the IP address of a VirtualBox VM.
-    - The template VM (the one created in the prior step, or one that was already there identified by the `--template-vmname` arg) is cloned to create the VM(s) that comprise the Kubernetes cluster, so each VM has an identical configuration.
+    - If config specifies `create-template: true` then ssh keys are generated, and a template VM is created using Kickstart and a CentOS / Alma / Rocky ISO depending on the `linux` selection. The ssh public key is copied into the VM in the `authorized-keys` file, and Virtual Box Guest Additions is installed because it enables getting the IP address of a VirtualBox VM.
+    - The template VM (the one created in the prior step, or one that was already there identified by the `template-vmname` config) is cloned to create the VM(s) that comprise the Kubernetes cluster, so each VM has an identical configuration.
 4. A root CA is generated for the cluster. This CA is used to sign cluster certs throughout the remainder of the cluster provisioning process.
 5. The core Kubernetes cluster is created by installing the canonical Kubernetes components on each VM.
 6. Each worker gets a unique TLS cert/key for its `kubelet`, a few binaries: `crictl`, `runc`, and `cni plugins`, and of course the `kubelet` and `containerd`.
 7. The controller is provisioned with cluster TLS, `etcd`, the `api server`, `controller manager`, and `scheduler`. This project runs with a single controller to minimize the desktop footprint.
 8. The remainder of the scripts are:
-    - Assuming command line arg `--networking=calico`, Kube Proxy and Calico networking are installed.
+    - Kube Proxy and Calico networking are installed if specified in the config file.
     - Core DNS (always).
-    - The Kube Prometheus stack assuming `--monitoring=kube-prometheus`.
-    - Assuming `--storage=openebs` the Open EBS storage provisioner is installed to support workloads with persistent volumes and claims.
-    - The Kubernetes dashboard is always installed.
+    - The Kube Prometheus stack assuming if specified in the config file.
+    - The OpenEBS storage provisioner is installed to support workloads with persistent volumes and claims if specified in the config file.
+    - The Kubernetes dashboard is installed if specified in the config file.
 
-On completion, you have a functional Kubernetes cluster consisting of one or  three physical VMs, one of which is a controller, and all of which are workers.
+On completion, you have a functional Kubernetes cluster consisting of one or one or more physical VMs, the first of which is always a controller, and the remainder of which are workers.

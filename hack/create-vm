@@ -1,0 +1,71 @@
+#!/usr/bin/env bash
+#
+# Creates a template VM the way the 'dtk' script does it.
+#
+# Args:
+#
+# --host-only-network <octets>
+# --host-network-interface <interface name>
+# --os-iso <path to OS iso>
+# --ga-iso <path to guest additions ISO>
+# --vm-name <name>
+# --vbox-dir <dir>
+#
+# Examples:
+#
+# hack/create-vm\
+#   --host-only-network 192.168.56\
+#   --os-iso ~/projects/desktop-kubernetes/binaries/AlmaLinux-9.3-x86_64-dvd.iso\
+#   --ga-iso ~/projects/desktop-kubernetes/binaries/VBoxGuestAdditions_7.0.8.iso\
+#   --vm-name alma93
+# 
+# hack/create-vm\
+#   --host-network-interface enp0s31f6\
+#   --os-iso ~/projects/desktop-kubernetes/binaries/AlmaLinux-9.3-x86_64-dvd.iso\
+#   --ga-iso ~/projects/desktop-kubernetes/binaries/VBoxGuestAdditions_7.0.8.iso\
+#   --vm-name alma93
+# 
+
+export DTKBASE="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+function xec() { f=$(find $DTKBASE/scripts -name $1) && $f "${@:2}"; }
+export -f xec
+
+hostonly=
+hni=
+os_iso=
+ga_iso=
+vmname=
+vboxdir=$(vboxmanage list systemproperties | grep folder | awk -F: '{print $2}' | xargs)
+
+for ((i = 1; i <= $#; i++ )); do
+  if [[ ${!i} == "--os-iso" ]]; then
+    ((i++))
+    os_iso=${!i}
+  elif [[ ${!i} == "--ga-iso" ]]; then
+    ((i++))
+    ga_iso=${!i}
+  elif [[ ${!i} == "--host-only-network" ]]; then
+    ((i++))
+    hostonly=${!i}
+  elif [[ ${!i} == "--host-network-interface" ]]; then
+    ((i++))
+    hni=${!i}
+  elif [[ ${!i} == "--vm-name" ]]; then
+    ((i++))
+    vmname=${!i}
+  elif [[ ${!i} == "--vbox-dir" ]]; then
+    ((i++))
+    vboxdir=${!i}
+  else
+    echo unknown param: ${!i}
+    exit 1
+  fi
+done
+
+xec create-template-vm\
+  --template-vmname=$vmname\
+  --linux-iso-path=$os_iso\
+  --guest-additions-path=$ga_iso\
+  --host-network-interface=$hni\
+  --host-only-network=$hostonly\
+  --vboxdir=$vboxdir
