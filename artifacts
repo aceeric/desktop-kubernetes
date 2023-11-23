@@ -2,6 +2,7 @@
 
 ALMA_VER=9.2
 CALICO_VER=v3.26.1
+CILIUM_VER=1.15.0-pre.2
 CNI_PLUGINS_VER=v1.3.0
 CONTAINERD_VER=1.7.6
 CRICTL_VER=v1.28.0
@@ -12,7 +13,7 @@ K8S_VER=v1.28.1
 KUBE_PROMETHEUS_VER=0.12.0
 METRICS_SERVER_VER=v0.6.4
 OPENEBS_VER=3.9.0
-ROCKY_VER=9.2
+ROCKY_VER=9.3
 RUNC_VER=v1.1.9
 
 # These are the items used to provision the cluster
@@ -27,6 +28,8 @@ CENTOS8_ISO_DOWNLOAD=https://mirror.umd.edu/centos/8-stream/isos/x86_64/CentOS-S
 CENTOS8_ISO_FILE=$DTKBASE/binaries/CentOS-Stream-8-x86_64-latest-dvd1.iso
 CENTOS9_ISO_DOWNLOAD="https://mirrors.centos.org/mirrorlist?path=/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-dvd1.iso&redirect=1&protocol=https"
 CENTOS9_ISO_FILE=$DTKBASE/binaries/CentOS-Stream-9-latest-x86_64-dvd1.iso
+CILIUM_DOWNLOAD=https://helm.cilium.io/cilium-$CILIUM_VER.tgz
+CILIUM_BINARY=$DTKBASE/binaries/cilium-$CILIUM_VER.tgz
 CNI_PLUGINS_BINARY=$DTKBASE/binaries/cni-plugins-linux-amd64-$CNI_PLUGINS_VER.tgz
 CNI_PLUGINS_DOWNLOAD=https://github.com/containernetworking/plugins/releases/download/$CNI_PLUGINS_VER/cni-plugins-linux-amd64-$CNI_PLUGINS_VER.tgz
 CONTAINERD_BINARY=$DTKBASE/binaries/containerd-v$CONTAINERD_VER-linux-amd64.tar.gz

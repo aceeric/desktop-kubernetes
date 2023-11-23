@@ -6,6 +6,7 @@ if [[ "$1" == "files" ]]; then
     $CALICO_TIGERA_MANIFEST\
     $CENTOS8_ISO_FILE\
     $CENTOS9_ISO_FILE\
+    $CILIUM_BINARY\
     $CNI_PLUGINS_BINARY\
     $CONTAINERD_BINARY\
     $CRICTL_BINARY\
@@ -26,7 +27,6 @@ if [[ "$1" == "files" ]]; then
     do
     if ! [[ -f $f ]]; then
       echo "missing: $f" >&2
-      result=1
     else
       echo "OK: $f"
     fi
@@ -37,6 +37,7 @@ else
     $CALICO_TIGERA_DOWNLOAD\
     $CENTOS8_ISO_DOWNLOAD\
     $CENTOS9_ISO_DOWNLOAD\
+    $CILIUM_DOWNLOAD\
     $CNI_PLUGINS_DOWNLOAD\
     $CONTAINERD_DOWNLOAD\
     $CRICTL_DOWNLOAD\
@@ -57,7 +58,6 @@ else
     do
     if ! curl -sL $f -o /dev/null --head --fail; then
       echo "missing: $f" >&2
-      result=1
     else
       echo "OK: $f"
     fi

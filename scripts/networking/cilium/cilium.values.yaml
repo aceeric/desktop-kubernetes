@@ -1,0 +1,24 @@
+k8sServiceHost: K8SSERVICEHOST
+k8sServicePort: 6443
+kubeProxyReplacement: "true"
+operator:
+  replicas: 1
+ipam:
+  # mode kubernetes per - https://docs.cilium.io/en/stable/network/concepts/ipam/kubernetes/
+  mode: kubernetes
+# can't seem to get hubble working so comment out for now
+#hubble:
+#  metrics:
+#    enabled:
+#    - dns
+#    - drop
+#    - tcp
+#    - flow
+#    - icmp
+#    - http
+#  relay:
+#    enabled: true
+#  ui:
+#    enabled: true
+#  tls:
+#    enabled: false

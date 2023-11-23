@@ -4,7 +4,7 @@
 
 Desktop Kubernetes is a Linux *Bash* project that provisions a desktop Kubernetes cluster using VirtualBox - with each cluster node consisting of a CentOS Stream, Alma, or Rocky Linux guest VM. The purpose is to create a local development and testing environment that is 100% compatible with a production-grade Kubernetes environment.
 
-Desktop Kubernetes is the *57 Chevy* of Kubernetes distros: you can take it apart and put it back together with just a few Linux console tools: bash, curl, genisoimage, ssh, scp, tar, openssl, vboxmanage, and kubectl. That being said, **v1.28.0** of this distribution is Kubernetes Certified. See: [CNCF Interactive Landscape](https://landscape.cncf.io/card-mode?category=platform&amp;grouping=category&amp;selected=desktop-kubernetes).
+Desktop Kubernetes is the *57 Chevy* of Kubernetes distros: you can take it apart and put it back together with just a few Linux console tools: bash, curl, genisoimage, ssh, scp, tar, openssl, vboxmanage, helm, and kubectl. That being said, **v1.28.0** of this distribution is Kubernetes Certified. See: [CNCF Interactive Landscape](https://landscape.cncf.io/card-mode?category=platform&amp;grouping=category&amp;selected=desktop-kubernetes).
 
 [<img src="https://www.cncf.io/wp-content/uploads/2020/07/certified_kubernetes_color-1.png" width="90"/>](https://github.com/cncf/k8s-conformance/tree/master/v1.28/desktop-kubernetes)
 
@@ -124,11 +124,12 @@ This project has been tested with the tools, components and versions shown in th
 | host     | openssl                                                | 3.0.2                  |
 | host     | openssh                                                | OpenSSH_8.9p1          |
 | host     | genisoimage (used to create the Kickstart ISO)         | 1.1.11                 |
-| host     | Virtual Box / VBoxManage                               | 7.0.10_Ubuntur158379   |
+| host     | Virtual Box / VBoxManage                               | 7.0.10                 |
+| host     | Helm                                                   | v3.13.1                |
 | host     | kubectl (client only)                                  | v1.28.0                |
 | host     | curl                                                   | 7.81.0                 |
 | guest VM | Centos ISO (X= 8 or 9)                                 | Stream-X-x86_64-latest |
-| guest VM | Rocky Linux ISO                                        | Rocky-9.2-x86_64-dvd   |
+| guest VM | Rocky Linux ISO                                        | Rocky-9.3-x86_64-dvd   |
 | guest VM | Virtual Box Guest Additions ISO                        | 7.0.8                  |
 | k8s      | etcd                                                   | v3.5.9                 |
 | k8s      | kube-apiserver                                         | v1.28.1                |
@@ -144,7 +145,7 @@ This project has been tested with the tools, components and versions shown in th
 | k8s      | kube-proxy (if installed)                              | v1.28.1                |
 | k8s      | Metrics Server (if installed)                          | v0.6.4                 |
 | k8s      | Calico networking (if installed)                       | v3.26.1                |
-| k8s      | Cilium networking and Hubble monitoring (if installed) | 1.9.4                  |
+| k8s      | Cilium networking and Hubble monitoring (if installed) | 1.15.0-pre.2           |
 | k8s      | kube-prometheus stack (if installed)                   | v0.12.0                |
 | k8s      | OpenEBS (if installed)                                 | 3.9.0                  |
 | k8s      | Sonobuoy conformance                                   | v0.56.16               |

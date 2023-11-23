@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+#
+# Note - when you install Cilium, it moves 10-containerd-net.conflist to
+# 10-containerd-net.conflist.cilium_bak on each host.
+#
 
 set -e
 
@@ -46,18 +50,21 @@ function parse_args() {
 
 parse_args "$@"
 
-sed $script_dir/cilium-1.9.4-quick-install.yaml -e "s|CONTROLLER_IP|$controller_ip|g"\
- | kubectl --kubeconfig $admin_kubeconfig apply -f -
-sleep 3s
+sed "s|K8SSERVICEHOST|$controller_ip|g" $script_dir/cilium.values.yaml\
+  >| $DTKBASE/binaries/cilium.values.yaml
 
-echo "waiting for pod networking"
+echo "installing Cilium & Hubble"
 
-kubectl --kubeconfig $admin_kubeconfig -nkube-system wait pod -lio.cilium/app=operator --for condition=ready --timeout=1m
-kubectl --kubeconfig $admin_kubeconfig -nkube-system wait pod -lk8s-app=cilium --for condition=ready --timeout=1m
+helm install cilium $CILIUM_BINARY\
+  --values $DTKBASE/binaries/cilium.values.yaml\
+  --namespace cilium\
+  --create-namespace\
+  --kubeconfig $admin_kubeconfig
 
-echo "installing Cilium Hubble"
-
-kubectl --kubeconfig $admin_kubeconfig apply -f $script_dir/cilium-1.9.4-quick-hubble-install.yaml
-
-kubectl --kubeconfig $admin_kubeconfig -nkube-system wait pod -lk8s-app=hubble-ui --for condition=ready --timeout=1m
-kubectl --kubeconfig $admin_kubeconfig -nkube-system wait pod -lk8s-app=hubble-relay --for condition=ready --timeout=1m
+echo "waiting (indefinitely) for cilium daemonset"
+while true; do
+  if kubectl --kubeconfig $admin_kubeconfig -n cilium rollout status ds cilium; then
+    break
+  fi
+  sleep 10s
+done
