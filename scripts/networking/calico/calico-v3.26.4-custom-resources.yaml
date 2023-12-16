@@ -16,10 +16,3 @@ spec:
       nodeSelector: all()
   # disable Calico CSI plugin
   kubeletVolumePluginPath: None
----
-apiVersion: operator.tigera.io/v1
-kind: APIServer
-metadata:
-  name: default
-spec: {}
-

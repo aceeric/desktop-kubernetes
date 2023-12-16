@@ -75,18 +75,16 @@ done
 
 calico_custom_resources_manifest=$script_dir/calico-$CALICO_VER-custom-resources.yaml
 if [[ ! -f $calico_custom_resources_manifest ]]; then
-  echo "did not find Calico CR manifest: $calico_custom_resources_manifest ]]"
+  echo "did not find Calico CR manifest: $calico_custom_resources_manifest"
   exit 1
 fi
 
-echo "deploying calico tigera and custom resources"
-kubectl --kubeconfig $admin_kubeconfig create -f $calico_tigera_binary
+echo "Helm installing calico tigera"
+helm --kubeconfig $admin_kubeconfig install tigera $calico_tigera_binary\
+  --namespace tigera-operator --create-namespace --set installation.enabled=false
 
-kubectl --kubeconfig $admin_kubeconfig  wait --for condition=established\
-  crd/installations.operator.tigera.io crd/apiservers.operator.tigera.io --timeout=1m
-
-# these are cluster-scoped, hence no namespace
-echo "deploying calico Installation and APIServer resources"
+# The CR is cluster-scoped, hence no namespace
+echo "deploying calico Installation resource"
 sed "s|CLUSTERCIDR|$cluster_cidr|" $calico_custom_resources_manifest\
   | kubectl --kubeconfig $admin_kubeconfig create -f -
 

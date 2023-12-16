@@ -124,7 +124,7 @@ fi
 echo "installing cluster DNS"
 
 xec install-coredns\
- --replicas=1\
+ --coredns-binary=$COREDNS_BINARY\
  --admin-kubeconfig=$admin_kubeconfig
 
 if [[ -n "$monitoring" ]]; then

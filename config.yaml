@@ -15,7 +15,7 @@
 
 k8s:
   # options: calico and cilium
-  networking: cilium
+  networking: calico
   # options: kube-prometheus and metrics.k8s.io
   monitoring: kube-prometheus
   # options: openebs

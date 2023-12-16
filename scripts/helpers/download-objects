@@ -104,6 +104,7 @@ fi
 
 xec download-obj --url=$CNI_PLUGINS_DOWNLOAD --dest=$CNI_PLUGINS_BINARY
 xec download-obj --url=$CONTAINERD_DOWNLOAD --dest=$CONTAINERD_BINARY
+xec download-obj --url=$COREDNS_DOWNLOAD --dest=$COREDNS_BINARY
 xec download-obj --url=$CRICTL_DOWNLOAD --dest=$CRICTL_BINARY
 xec download-obj --url=$ETCD_DOWNLOAD --dest=$ETCD_GZIP
 xec download-obj --url=$KUBE_APISERVER_DOWNLOAD --dest=$KUBE_APISERVER_BINARY --executable
