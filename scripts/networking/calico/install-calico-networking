@@ -2,12 +2,11 @@
 
 set -e
 
-long_opts=calico-tigera-binary:,calico-custom-resources-manifest:,priv-key:,admin-kubeconfig:,cluster-cidr:,nodes:
+long_opts=calico-tigera-binary:,priv-key:,admin-kubeconfig:,cluster-cidr:,nodes:
 script_name=$(basename "$0")
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 calico_tigera_binary=
-calico_custom_resources_manifest=
 priv_key=
 admin_kubeconfig=
 cluster_cidr=
@@ -34,10 +33,6 @@ function parse_args() {
     case "$1" in
       --calico-tigera-binary)
         calico_tigera_binary=$(opt_val "$2")
-        shift 2
-        ;;
-      --calico-custom-resources-manifest)
-        calico_custom_resources_manifest=$(opt_val "$2")
         shift 2
         ;;
       --priv-key)
@@ -78,12 +73,9 @@ for node in "${nodes[@]}"; do
 EOF
 done
 
-# Goal is to patch the upstream manifest and leave the upstream un-touched. As of v3.24.1
-# the ipPools value in the upstream was "cidr: 192.168.0.0/16". If that changes, then error,
-# otherwise calico will be mis-configured because the sed expression won't be correct for
-# the manifest
-if ! grep -q 'cidr: 192.168.0.0/16' $calico_custom_resources_manifest; then
-  echo "Calico manifest $calico_tigera_binary not as expected"
+calico_custom_resources_manifest=$script_dir/calico-$CALICO_VER-custom-resources.yaml
+if [[ ! -f $calico_custom_resources_manifest ]]; then
+  echo "did not find Calico CR manifest: $calico_custom_resources_manifest ]]"
   exit 1
 fi
 
@@ -95,7 +87,7 @@ kubectl --kubeconfig $admin_kubeconfig  wait --for condition=established\
 
 # these are cluster-scoped, hence no namespace
 echo "deploying calico Installation and APIServer resources"
-sed "s|cidr: 192.168.0.0/16|cidr: $cluster_cidr|" $calico_custom_resources_manifest\
+sed "s|CLUSTERCIDR|$cluster_cidr|" $calico_custom_resources_manifest\
   | kubectl --kubeconfig $admin_kubeconfig create -f -
 
 echo "waiting (indefinitely) for calico daemonset"

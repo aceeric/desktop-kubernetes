@@ -81,7 +81,6 @@ vm_names=()
 
 for ((i = 0; i < $vmcnt; ++i)); do
   vm_name=$(xec yp $config vms/$i/name)
-  pod_cidr=$(xec yp $config vms/$i/pod-cidr)
   vm_ip=$(xec get-vm-ip $vm_name)
 
   if [[ $i -eq 0 ]]; then
@@ -97,7 +96,6 @@ for ((i = 0; i < $vmcnt; ++i)); do
    --worker-hostname=$vm_name\
    --priv-key=$priv_key\
    --admin-kubeconfig=$admin_kubeconfig\
-   --pod-cidr=$pod_cidr\
    --ca-cert=$ca_cert\
    --ca-key=$ca_key
 

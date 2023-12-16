@@ -20,8 +20,6 @@ RUNC_VER=v1.1.9
 
 ALMA_ISO_DOWNLOAD=https://repo.almalinux.org/almalinux/$ALMA_VER/isos/x86_64/AlmaLinux-$ALMA_VER-x86_64-dvd.iso
 ALMA_ISO_FILE=$DTKBASE/binaries/AlmaLinux-$ALMA_VER-x86_64-dvd.iso
-CALICO_CUSTOM_RESOURCES_DOWNLOAD=https://raw.githubusercontent.com/projectcalico/calico/$CALICO_VER/manifests/custom-resources.yaml
-CALICO_CUSTOM_RESOURCES_MANIFEST=$DTKBASE/binaries/calico-$CALICO_VER-custom-resources.yaml
 CALICO_TIGERA_DOWNLOAD=https://raw.githubusercontent.com/projectcalico/calico/$CALICO_VER/manifests/tigera-operator.yaml
 CALICO_TIGERA_MANIFEST=$DTKBASE/binaries/calico-$CALICO_VER-tigera-operator.yaml
 CENTOS8_ISO_DOWNLOAD=https://mirror.umd.edu/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-latest-dvd1.iso

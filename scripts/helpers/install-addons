@@ -115,10 +115,9 @@ elif [[ "$networking" == "calico" ]]; then
    --nodes=$nodes
   xec install-calico-networking\
    --calico-tigera-binary=$CALICO_TIGERA_MANIFEST\
-   --calico-custom-resources-manifest=$CALICO_CUSTOM_RESOURCES_MANIFEST\
    --priv-key=$priv_key\
    --admin-kubeconfig=$admin_kubeconfig\
-   --cluster-cidr=10.200.0.0/16\
+   --cluster-cidr=$cluster_cidr\
    --nodes=$nodes
 fi
 

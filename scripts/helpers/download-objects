@@ -88,7 +88,7 @@ fi
 
 if [[ -n $networking ]]; then
   if [[ "$networking" == "calico" ]]; then
-    xec download-obj --url=$CALICO_CUSTOM_RESOURCES_DOWNLOAD --dest=$CALICO_CUSTOM_RESOURCES_MANIFEST
+    #xec download-obj --url=$CALICO_CUSTOM_RESOURCES_DOWNLOAD --dest=$CALICO_CUSTOM_RESOURCES_MANIFEST
     xec download-obj --url=$CALICO_TIGERA_DOWNLOAD --dest=$CALICO_TIGERA_MANIFEST
     xec download-obj --url=$KUBE_PROXY_DOWNLOAD --dest=$KUBE_PROXY_BINARY --executable
   elif [[ "$networking" == "cilium" ]]; then

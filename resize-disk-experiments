@@ -1,0 +1,181 @@
+
+
+
+
+2) allow disk resize of clone
+2) kickstart https://docs.fedoraproject.org/en-US/fedora/f36/install-guide/appendixes/Kickstart_Syntax_Reference/#sect-kickstart-commands-autopart
+   --type plain??
+
+
+
+
+vboxdir=/sdb1/vboxvms
+vmname=doc
+$vboxdir/$vmname/$vmname.vdi
+
+
+
+vboxmanage modifymedium disk\
+  $vboxdir/$vmname/$vmname.vdi\
+  --resize 80000
+
+observe no change:
+
+[root@doc ~]# lsblk
+NAME                MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+sda                   8:0    0 39.1G  0 disk 
+├─sda1                8:1    0    1G  0 part /boot
+└─sda2                8:2    0 38.1G  0 part 
+  ├─cs_cloneme-root 253:0    0 34.2G  0 lvm  /
+  └─cs_cloneme-swap 253:1    0  3.9G  0 lvm  
+
+but parted says:
+
+[root@doc ~]# parted /dev/sda print free
+Model: ATA VBOX HARDDISK (scsi)
+Disk /dev/sda: 83.9GB
+Sector size (logical/physical): 512B/512B
+Partition Table: msdos
+Disk Flags: 
+
+Number  Start   End     Size    Type     File system  Flags
+        1024B   1049kB  1048kB           Free Space
+ 1      1049kB  1075MB  1074MB  primary  xfs          boot
+ 2      1075MB  41.9GB  40.9GB  primary               lvm
+        41.9GB  83.9GB  41.9GB           Free Space <----------------------------- HERE
+
+
+
+
+
+parted -s -a optimal /dev/sda "resizepart 2 100%"
+
+[root@doc ~]# parted /dev/sda print free
+Model: ATA VBOX HARDDISK (scsi)
+Disk /dev/sda: 83.9GB
+Sector size (logical/physical): 512B/512B
+Partition Table: msdos
+Disk Flags: 
+
+Number  Start   End     Size    Type     File system  Flags
+        1024B   1049kB  1048kB           Free Space
+ 1      1049kB  1075MB  1074MB  primary  xfs          boot
+ 2      1075MB  83.9GB  82.8GB  primary               lvm
+
+[root@doc ~]# pvdisplay /dev/sda2
+  --- Physical volume ---
+  PV Name               /dev/sda2
+  VG Name               cs_cloneme
+  PV Size               38.06 GiB / not usable 3.00 MiB
+  Allocatable           yes (but full)
+  PE Size               4.00 MiB
+  Total PE              9743
+  Free PE               0
+  Allocated PE          9743
+  PV UUID               NlwDG0-MkZC-lXgL-NiLZ-tPf4-jEKa-2LkfWD
+
+
+echo 1 > /sys/block/sda/device/rescan
+
+[root@doc ~]# fdisk -l | grep -i sda
+Disk /dev/sda: 78.1 GiB, 83886080000 bytes, 163840000 sectors
+/dev/sda1  *       2048   2099199   2097152    1G 83 Linux
+/dev/sda2       2099200 163839999 161740800 77.1G 8e Linux LVM
+ 
+ 
+pvdisplay /dev/sda2
+  --- Physical volume ---
+  PV Name               /dev/sda2
+  VG Name               cs_cloneme
+  PV Size               77.12 GiB / not usable 2.00 MiB <---------------------------- CHANGED!
+  Allocatable           yes 
+  PE Size               4.00 MiB
+  Total PE              19743
+  Free PE               10000
+  Allocated PE          9743
+  PV UUID               NlwDG0-MkZC-lXgL-NiLZ-tPf4-jEKa-2LkfWD
+ 
+ 
+[root@doc ~]# lsblk
+NAME                MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+sda                   8:0    0 78.1G  0 disk 
+├─sda1                8:1    0    1G  0 part /boot
+└─sda2                8:2    0 77.1G  0 part  <---------------------------- CHANGED!
+  ├─cs_cloneme-root 253:0    0 34.2G  0 lvm  /
+  └─cs_cloneme-swap 253:1    0  3.9G  0 lvm  
+ 
+ but:
+ 
+ df -h /
+Filesystem                   Size  Used Avail Use% Mounted on
+/dev/mapper/cs_cloneme-root   35G  8.4G   26G  25% /          <----------------- did NOT change
+
+
+[root@doc ~]# pvresize /dev/sda2
+  Physical volume "/dev/sda2" changed
+  1 physical volume(s) resized or updated / 0 physical volume(s) not resized
+
+
+lvextend -l +100%FREE /dev/cs_cloneme/root
+
+[root@doc ~]# df -h  /
+Filesystem                   Size  Used Avail Use% Mounted on
+/dev/mapper/cs_cloneme-root   35G  8.4G   26G  25% /
+
+[root@doc ~]# lsblk -f
+NAME                FSTYPE      LABEL UUID                                   MOUNTPOINT
+sda                                                                          
+├─sda1              xfs               8d337ee3-f025-483d-ad27-e8e8f375cb67   /boot
+└─sda2              LVM2_member       NlwDG0-MkZC-lXgL-NiLZ-tPf4-jEKa-2LkfWD 
+  ├─cs_cloneme-root xfs               d329d47b-b7a7-4dc4-bf8d-f2b243e5b0e3   /
+  └─cs_cloneme-swap swap              62f6cb99-1061-428b-a33d-04517112fa1c   
+
+  
+[root@doc ~]# xfs_growfs /dev/mapper/cs_cloneme-root
+meta-data=/dev/mapper/cs_cloneme-root isize=512    agcount=4, agsize=2238208 blks
+         =                       sectsz=512   attr=2, projid32bit=1
+         =                       crc=1        finobt=1, sparse=1, rmapbt=0
+         =                       reflink=1    bigtime=0 inobtcount=0
+data     =                       bsize=4096   blocks=8952832, imaxpct=25
+         =                       sunit=0      swidth=0 blks
+naming   =version 2              bsize=4096   ascii-ci=0, ftype=1
+log      =internal log           bsize=4096   blocks=4371, version=2
+         =                       sectsz=512   sunit=0 blks, lazy-count=1
+realtime =none                   extsz=4096   blocks=0, rtextents=0
+data blocks changed from 8952832 to 19192832
+
+
+[root@doc ~]# df -h /
+Filesystem                   Size  Used Avail Use% Mounted on
+/dev/mapper/cs_cloneme-root   74G  8.7G   65G  12% /
+
+
+
+SUMMARY IN HAM FIVE STEPS!
+
+parted -s -a optimal /dev/sda "resizepart 2 100%"
+echo 1 > /sys/block/sda/device/rescan
+pvresize /dev/sda2
+lvextend -l +100%FREE /dev/cs_cloneme/root
+xfs_growfs /dev/cs_cloneme/root
+
+[root@ham ~]# lsblk
+NAME                MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+sda                   8:0    0 78.1G  0 disk 
+├─sda1                8:1    0    1G  0 part /boot
+└─sda2                8:2    0 77.1G  0 part 
+  ├─cs_cloneme-root 253:0    0 73.2G  0 lvm  /
+  └─cs_cloneme-swap 253:1    0  3.9G  0 lvm  
+[root@ham ~]# df -h /
+Filesystem                   Size  Used Avail Use% Mounted on
+/dev/mapper/cs_cloneme-root   74G  8.4G   65G  12% /
+
+
+
+
+
+
+
+
+
+

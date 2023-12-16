@@ -33,7 +33,7 @@
 #   --vm-name alma93clone
 # 
 
-export DTKBASE="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
+export DTKBASE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 function xec() { f=$(find $DTKBASE/scripts -name $1) && $f "${@:2}"; }
 export -f xec
 

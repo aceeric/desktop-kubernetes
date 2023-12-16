@@ -1,0 +1,11 @@
+TODO
+
+1) Cluster CIDR from config
+1_ Search for 10.32.0.0/24 and 10.23.0.10 and 10.32.0.1
+1) Retest with Cilium
+1) Helm install Calico?
+2) Helm install Core DNS
+3) Helm install Kubernetes Dashboard
+
+
+

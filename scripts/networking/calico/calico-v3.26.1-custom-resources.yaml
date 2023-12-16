@@ -1,0 +1,25 @@
+# Downloaded from https://raw.githubusercontent.com/projectcalico/calico/$CALICO_VER/manifests/custom-resources.yaml
+# and then modified. If you upgrade Calico you may need to modify this file.
+apiVersion: operator.tigera.io/v1
+kind: Installation
+metadata:
+  name: default
+spec:
+  # Configures Calico networking.
+  calicoNetwork:
+    # Note: The ipPools section cannot be modified post-install.
+    ipPools:
+    - blockSize: 26
+      cidr: CLUSTERCIDR
+      encapsulation: VXLANCrossSubnet
+      natOutgoing: Enabled
+      nodeSelector: all()
+  # disable Calico CSI plugin
+  kubeletVolumePluginPath: None
+---
+apiVersion: operator.tigera.io/v1
+kind: APIServer
+metadata:
+  name: default
+spec: {}
+
