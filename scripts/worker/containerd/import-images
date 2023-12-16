@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 #
 # Looks in hard-coded path '/tmp/images'. First untar any .tgz files if they
-# exist. This enables to bundle up imate tar files into a single tgx. Then
-# for each .tar file in the directory, import into containeryard.
+# exist. This enables to bundle up many tar files into a single tgz. Then
+# for each .tar file in the directory, import into the containerd cache.
 #
 
 image_path=/tmp/images
