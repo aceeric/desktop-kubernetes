@@ -4,7 +4,7 @@
 
 set -e
 
-long_opts=controller-ip:,worker-hostname:,priv-key:,admin-kubeconfig:,pod-cidr:,ca-cert:,ca-key:
+long_opts=controller-ip:,worker-hostname:,priv-key:,admin-kubeconfig:,ca-cert:,ca-key:
 script_name=$(basename "$0")
 
 # api
@@ -15,7 +15,6 @@ controller_ip=
 worker_hostname=
 priv_key=
 admin_kubeconfig=
-pod_cidr=
 ca_cert=
 ca_key=
 
@@ -55,10 +54,6 @@ function parse_args() {
         ;;
       --admin-kubeconfig)
         admin_kubeconfig=$(opt_val "$2")
-        shift 2
-        ;;
-      --pod-cidr)
-        pod_cidr=$(opt_val "$2")
         shift 2
         ;;
       --ca-cert)
@@ -115,8 +110,7 @@ echo "Installing containerd"
 xec install-containerd\
  --priv-key=$priv_key\
  --worker-ip=$worker_ip\
- --containerd-binary=$CONTAINERD_BINARY\
- --pod-cidr=$pod_cidr
+ --containerd-binary=$CONTAINERD_BINARY
 
 echo "Installing the kubelet"
 xec install-kubelet\
@@ -125,5 +119,4 @@ xec install-kubelet\
  --worker-ip=$worker_ip\
  --worker-hostname=$worker_hostname\
  --kubelet-binary=$KUBELET_BINARY\
- --pod-cidr=$pod_cidr\
  --ca-cert=$ca_cert

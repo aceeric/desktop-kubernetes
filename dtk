@@ -150,13 +150,13 @@ elif [[ -z "$vbox_vboxdir" ]]; then
 elif [[ ! -d $vbox_vboxdir ]]; then
   echo "directory for virtualbox VMs does not exist: $vbox_vboxdir"
   exit 1
-elif [[ "$k8s_networking" != "cilium" ]] && [[ "$k8s_networking" != "calico" ]]; then
+elif [[ ! -z "$k8s_networking" ]] && [[ "$k8s_networking" != "cilium" ]] && [[ "$k8s_networking" != "calico" ]]; then
   echo "unsupported parameter value for k8s.networking config: $k8s_networking"
   exit 1
-elif [[ "$k8s_monitoring" != "metrics.k8s.io" ]] && [[ "$k8s_monitoring" != "kube-prometheus" ]]; then
+elif [[ ! -z "$k8s_monitoring" ]] && [[ "$k8s_monitoring" != "metrics.k8s.io" ]] && [[ "$k8s_monitoring" != "kube-prometheus" ]]; then
   echo "unsupported parameter value for k8s.monitoring config: $k8s_monitoring"
   exit 1
-elif [[ "$k8s_storage" != "openebs" ]]; then
+elif [[ ! -z "$k8s_storage" ]] && [[ "$k8s_storage" != "openebs" ]]; then
   echo "unsupported parameter value for storage config: $k8s_storage"
   exit 1
 # removing centos9 for now - can't get it working [[ "$vm_linux" != "centos9" ]] && 

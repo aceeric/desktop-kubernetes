@@ -68,7 +68,6 @@ The project ships with a `config.yaml` file in the project root that specifies t
 | `cpu`                         | Number of CPUs.                                              |
 | `mem`                         | RAM in gigabytes. E.g.: `8192`                               |
 | `ip`                          | The rightmost octet of the IP address for the host. Ignored unless `vbox.host-only-network` is configured. So, for example, if `vbox.host-only-network` is `192.168.56` and this `ip` value is `200`. then the IP address assigned to the host-only interface in the VM is `192.168.56.200`. |
-| `pod-cidr`                    | CIDR range for pods on the Kubernetes Node running on the VM. |
 
 ## TODOs
 

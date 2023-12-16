@@ -12,8 +12,8 @@ authorization:
 clusterDomain: cluster.local
 clusterDNS:
   - 10.32.0.10
-podCIDR: PODCIDR
 resolvConf: "/etc/resolv.conf"
 runtimeRequestTimeout: 15m
 tlsCertFile: /var/lib/kubelet/worker.pem
 tlsPrivateKeyFile: /var/lib/kubelet/worker-key.pem
+cgroupDriver: systemd

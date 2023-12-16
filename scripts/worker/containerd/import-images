@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+#
+# Looks in hard-coded path '/tmp/images'. First untar any .tgz files if they
+# exist. This enables to bundle up many tar files into a single tgz. Then
+# for each .tar file in the directory, import into the containerd cache.
+#
+
+image_path=/tmp/images
+
+find $image_path -name '*.tgz' | while read tarball; do
+  tar -zxvf $tarball -C $image_path
+  rm -f $tarball
+done
+
+find $image_path -name '*.tar' | while read tarfile; do
+  ctr -n k8s.io -a /var/run/containerd/containerd.sock image import $tarfile
+  rm -f $tarfile
+done

@@ -2,7 +2,6 @@
 
 if [[ "$1" == "files" ]]; then
   for f in $ALMA_ISO_FILE\
-    $CALICO_CUSTOM_RESOURCES_MANIFEST\
     $CALICO_TIGERA_MANIFEST\
     $CENTOS8_ISO_FILE\
     $CENTOS9_ISO_FILE\
@@ -32,7 +31,6 @@ if [[ "$1" == "files" ]]; then
   done
 else
   for f in $ALMA_ISO_DOWNLOAD\
-    $CALICO_CUSTOM_RESOURCES_DOWNLOAD\
     $CALICO_TIGERA_DOWNLOAD\
     $CENTOS8_ISO_DOWNLOAD\
     $CENTOS9_ISO_DOWNLOAD\

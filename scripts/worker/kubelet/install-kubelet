@@ -2,7 +2,7 @@
 
 set -e
 
-long_opts=priv-key:,controller-ip:,worker-ip:,worker-hostname:,kubelet-binary:,pod-cidr:,ca-cert:
+long_opts=priv-key:,controller-ip:,worker-ip:,worker-hostname:,kubelet-binary:,ca-cert:
 script_name=$(basename "$0")
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
@@ -11,7 +11,6 @@ controller_ip=
 worker_ip=
 worker_hostname=
 kubelet_binary=
-pod_cidr=
 ca_cert=
 
 function opt_val() {
@@ -51,10 +50,6 @@ function parse_args() {
         ;;
       --kubelet-binary)
         kubelet_binary=$(opt_val "$2")
-        shift 2
-        ;;
-      --pod-cidr)
-        pod_cidr=$(opt_val "$2")
         shift 2
         ;;
       --ca-cert)
@@ -105,9 +100,8 @@ scp -i $priv_key $ca_cert root@$worker_ip:/var/lib/kubernetes/
 
 echo "Copying kubelet service and config files to worker VM"
 
-# todo - per https://kubernetes.io/docs/reference/config-api/kubelet-config.v1beta1 the kubelet ignores
-# pod CIDR in a clustered environment so try removing all refs in this project to pod cidr...
-
+# todo SED IN CLUSTER DNS INSTEAD OF POD CIDR
+pod_cidr=NOOP
 sed $script_dir/kubelet-config.yaml\
  -e "s|PODCIDR|$pod_cidr|g" | ssh -i $priv_key root@$worker_ip "cat > /var/lib/kubelet/kubelet-config.yaml"
 scp -i $priv_key $script_dir/kubelet.service root@$worker_ip:/etc/systemd/system/

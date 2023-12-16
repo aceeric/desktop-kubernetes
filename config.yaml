@@ -11,12 +11,11 @@
 #         - ip:       Rightmost octet of the IP address. Ignored unless host-only-network
 #                     is specified and in that case appended to the host-only-network
 #                     value to create the VM IP address
-#         - pod-cidr: Pod CIDR range on the Node
 #
 
 k8s:
   # options: calico and cilium
-  networking: calico
+  networking: cilium
   # options: kube-prometheus and metrics.k8s.io
   monitoring: kube-prometheus
   # options: openebs
@@ -47,17 +46,14 @@ vm:
 vms:
 # first node is control plane+worker. Other nodes are workers
 - name: doc
-  cpu: 3
+  cpu: 2
   mem: 8192
   ip: 200
-  pod-cidr: 10.200.1.0/24
 - name: ham
-  cpu: 3
+  cpu: 2
   mem: 8192
   ip: 201
-  pod-cidr: 10.200.2.0/24
 - name: monk
-  cpu: 3
+  cpu: 2
   mem: 8192
   ip: 202
-  pod-cidr: 10.200.3.0/24

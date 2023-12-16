@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+#
+# Exports the contents of the containerd image cache to a tarball. If you place
+# exported images in '.tar' and '.tgz' files into the 'images' directory of the
+# desktop-kubernetes project on your workstation the installer will copy them
+# to each host and populate the containerd cache from them which can save you
+# some heartburn associated with Docker rate-limiting.
+#
+# Usage:
+#
+# 1. Create a single-node cluster and set it up with CNI, monitoring, etc., the
+#    way you commonly use it including any preferred workloads. (Creating a single-
+#    node cluster is important because then you only have one containerd cache.)
+# 2. Copy this script to the host, ssh into the host and run this script.
+# 3. Exit back to the desktop and: 
+#    scp -i ./generated/kickstart/id_ed25519 root@<IP>:/tmp/images/images.tgz ./images
+# 4. The next time you create a cluster, the tarball will get automatically copied
+#    to each host and loaded into each hosts's containerd cache. See 'scripts/worker/
+#    containerd/install-containerd'
+#
+# if --dockeronly, only do the docker.io images otherwise do all.
+#
+
+image_path=/tmp/images
+mkdir -p $image_path
+
+ctr -n k8s.io -a /var/run/containerd/containerd.sock image ls -q | grep -v '^sha256' | while read image; do
+  if [[ "$1" == "--dockeronly" ]] && [[ $image != docker.io* ]]; then
+    continue
+  fi
+  tarfile=$image_path/$(echo $image | sed "s|[/:]|-|g").tar
+  echo "exporting $image to $tarfile"
+  ctr -n k8s.io -a /var/run/containerd/containerd.sock image export $tarfile $image
+done
+
+echo "creating a tarball from the exported images"
+pushd $image_path
+tar -czvf images.tgz *.tar
+popd

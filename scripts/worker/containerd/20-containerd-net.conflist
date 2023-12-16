@@ -12,7 +12,7 @@
        "type": "host-local",
        "ranges": [
          [{
-           "subnet": "PODCIDR"
+           "subnet": "10.200.0.0/16"
          }]
        ],
        "routes": [

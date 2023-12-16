@@ -39,7 +39,7 @@ done <<< '
     --down                     Optional. Opposite of --up. Note - this is very low-tech at present: Order the
                                args with the workers first and the controller last.
     --delete                   Optional. Tears down the cluster: Force stops all VMs and removes associated
-                               files from the directory specified in the --vboxdir option.
+                               files from the virtual box machine directory.
     --help                     Optional. Displays this help and exits.
 
   Examples:
