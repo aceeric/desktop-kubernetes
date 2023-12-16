@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+#
+# Background: The kickstart file that this project uses configures the VM
+# storage like so (with a 40 gig drive):
+#
+# [root@doc ~]# lsblk
+# NAME                MAJ:MIN RM  SIZE RO TYPE MOUNTPOINT
+# sda                   8:0    0 39.1G  0 disk 
+# ├─sda1                8:1    0    1G  0 part /boot
+# └─sda2                8:2    0 38.1G  0 part 
+#   ├─cs_cloneme-root 253:0    0 34.2G  0 lvm  /
+#   └─cs_cloneme-swap 253:1    0  3.9G  0 lvm  [SWAP]
+#
+# Assuming the storage scheme above, this script (when run in the guest) will
+# "upsize" the /dev/sda device and the cs_cloneme-root logical volume etc.
+#
+# Usage:
+# 1) Increase the size of the virtual storage in VirtualBox (VM must be
+#    stopped first). Example:
+#
+#    vboxdir=/sdb1/virtualboxvms
+#    vmname=frobozz
+#    vboxmanage modifymedium disk $vboxdir/$vmname/$vmname.vdi --resize 80000
+#
+# 2) Copy this script into the host
+# 3) SSH into the host and run the script in the host
+#
+# WARNING: This script doesn't have any safety checks - it can be used safely if:
+#          1 - The guest storage was partitioned by the kickstart in this project
+#          2 - You increased (not decreased) the size of the virtual disk using
+#              vboxmanage
+
+parted -s -a optimal /dev/sda "resizepart 2 100%"
+echo 1 > /sys/block/sda/device/rescan
+pvresize /dev/sda2
+lvextend -l +100%FREE /dev/cs_cloneme/root
+xfs_growfs /dev/cs_cloneme/root
