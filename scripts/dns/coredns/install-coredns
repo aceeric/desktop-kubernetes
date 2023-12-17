@@ -1,8 +1,7 @@
 #!/usr/bin/env bash
 
 #
-# Applies the coredns.yaml to the cluster. The yaml is generated from upstreams as documented in the README
-# todo handle replicas
+# Helm installs CoreDNS
 #
 
 set -e

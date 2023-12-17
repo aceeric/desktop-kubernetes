@@ -17,9 +17,9 @@ k8s:
   # options: calico and cilium
   networking: calico
   # options: kube-prometheus and metrics.k8s.io
-  monitoring: kube-prometheus
+  #monitoring: kube-prometheus
   # options: openebs
-  storage: openebs
+  #storage: openebs
   # options: "all", or any of comma-separated: "etcd", "kube-apiserver", "kube-proxy",
   # "kube-scheduler", and "kube-controller-manager". If empty, components run as systemd units
   containerized-cplane:
@@ -28,7 +28,7 @@ k8s:
   # Core DNS Service IP (ignored - not implemented yet)
   cluster-dns: 10.32.0.10
   # t/f install the Kubernetes Dashboard
-  kubernetes-dashboard: true
+  #kubernetes-dashboard: true
 vbox:
   # results in bridged networking: enter the name of your primary network interface
   host-network-interface:
@@ -49,11 +49,11 @@ vms:
   cpu: 2
   mem: 8192
   ip: 200
-- name: ham
-  cpu: 2
-  mem: 8192
-  ip: 201
-- name: monk
-  cpu: 2
-  mem: 8192
-  ip: 202
+# - name: ham
+#   cpu: 2
+#   mem: 8192
+#   ip: 201
+# - name: monk
+#   cpu: 2
+#   mem: 8192
+#   ip: 202
