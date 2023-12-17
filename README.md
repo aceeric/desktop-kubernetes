@@ -114,7 +114,7 @@ This project has been tested with the tools, components and versions shown in th
 | k8s      | Kubernetes Dashboard                                   | v2.7.0                 |
 | k8s      | kube-proxy (if installed)                              | v1.28.1                |
 | k8s      | Metrics Server (if installed)                          | v0.6.4                 |
-| k8s      | Calico networking (if installed)                       | v3.26.1                |
+| k8s      | Calico networking (if installed)                       | v3.26.4                |
 | k8s      | Cilium networking and Hubble monitoring (if installed) | 1.15.0-pre.2           |
 | k8s      | kube-prometheus stack (if installed)                   | v0.12.0                |
 | k8s      | OpenEBS (if installed)                                 | 3.9.0                  |

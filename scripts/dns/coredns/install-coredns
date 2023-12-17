@@ -7,11 +7,11 @@
 
 set -e
 
-long_opts=replicas:,admin-kubeconfig:
+long_opts=coredns-binary:,admin-kubeconfig:
 script_name=$(basename "$0")
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-replicas=
+coredns_binary=
 admin_kubeconfig=
 
 function opt_val() {
@@ -33,8 +33,8 @@ function parse_args() {
   eval set -- "$parsed"
   while true; do
     case "$1" in
-      --replicas)
-        replicas=$(opt_val "$2")
+      --coredns-binary)
+        coredns_binary=$(opt_val "$2")
         shift 2
         ;;
       --admin-kubeconfig)
