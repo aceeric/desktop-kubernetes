@@ -53,7 +53,7 @@ vms:
   cpu: 2
   mem: 8192
   ip: 201
-#- name: monk
-#  cpu: 2
-#  mem: 8192
-#  ip: 202
+- name: monk
+  cpu: 2
+  mem: 8192
+  ip: 202
