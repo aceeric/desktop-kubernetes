@@ -1,0 +1,34 @@
+priorityClassName: system-cluster-critical
+
+service:
+  clusterIP: 10.32.0.10
+
+serviceAccount:
+  create: true
+  name: coredns
+
+servers:
+- zones:
+  - zone: .
+  port: 53
+  plugins:
+  - name: log
+  - name: errors
+  - name: health
+  - name: ready
+  - name: kubernetes
+    parameters: cluster.local in-addr.arpa ip6.arpa
+    configBlock: |-
+      pods verified
+      fallthrough in-addr.arpa ip6.arpa
+  - name: prometheus
+    parameters: :9153
+  - name: forward
+    parameters: . 8.8.8.8 8.8.4.4
+    configBlock: |-
+      tls_servername dns.google
+  - name: cache
+    parameters: 30
+  - name: loop
+  - name: reload
+  - name: loadbalance
