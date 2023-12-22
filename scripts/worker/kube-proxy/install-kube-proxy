@@ -1,0 +1,109 @@
+#!/usr/bin/env bash
+
+set -e
+
+long_opts=kube-proxy-binary:,priv-key:,containerized-cplane:,admin-kubeconfig:,worker-hostname:,cluster-cidr:
+script_name=$(basename "$0")
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+kube_proxy_binary=
+priv_key=
+containerize_cplane=0
+admin_kubeconfig=
+worker_hostname=
+cluster_cidr=
+
+function opt_val() {
+  opt="$1"
+  if [[ "$opt" == =* ]]; then
+    echo "${opt:1}"
+  else
+    echo "$opt"
+  fi
+}
+
+function parse_args() {
+  if [[ "$#" -eq 0 ]]; then
+    echo "no args provided"
+    exit 1
+  fi
+  local parsed
+  parsed=$(getopt --options "" --longoptions $long_opts -n $script_name -- "$@")
+  eval set -- "$parsed"
+  while true; do
+    case "$1" in
+      --kube-proxy-binary)
+        kube_proxy_binary=$(opt_val "$2")
+        shift 2
+        ;;
+      --priv-key)
+        priv_key=$(opt_val "$2")
+        shift 2
+        ;;
+      --containerized-cplane)
+        tmpvar=$(opt_val "$2")
+        shift 2
+        if [[ "$tmpvar" == *kube-proxy* || "$tmpvar" == all ]]; then
+          containerized_cplane=1
+        fi
+        ;;
+      --admin-kubeconfig)
+        admin_kubeconfig=$(opt_val "$2")
+        shift 2
+        ;;
+      --worker-hostname)
+        worker_hostname=$(opt_val "$2")
+        shift 2
+        ;;
+      --cluster-cidr)
+        cluster_cidr=$(opt_val "$2")
+        shift 2
+        ;;
+      --)
+        shift
+        break
+        ;;
+    esac
+  done
+}
+
+parse_args "$@"
+
+worker_ip=$(xec get-vm-ip $worker_hostname)
+echo "configuring kube-proxy for node $worker_hostname (ip $worker_ip)"
+ssh -i $priv_key root@$worker_ip "mkdir -p /var/lib/kube-proxy/kubeconfig"
+sed $script_dir/kube-proxy-config.yaml  -e "s|CLUSTER_CIDR|$cluster_cidr|g"\
+  | ssh -i $priv_key root@$worker_ip "cat > /var/lib/kube-proxy/kube-proxy-config.yaml"
+scp -i $priv_key $DTKBASE/generated/kubeconfig/kube-proxy.kubeconfig root@$worker_ip:/var/lib/kube-proxy/kubeconfig/
+
+ssh -i $priv_key  root@$worker_ip << EOF
+ echo -e "[keyfile]\nunmanaged-devices=interface-name:cni*;interface-name:veth*" >| /etc/NetworkManager/conf.d/dtk.conf
+ systemctl daemon-reload && systemctl restart NetworkManager
+EOF
+
+if [[ $containerized_cplane -eq 0 ]]; then
+  scp -i $priv_key $kube_proxy_binary root@$worker_ip:/usr/local/bin/kube-proxy
+  scp -i $priv_key $script_dir/kube-proxy.service root@$worker_ip:/etc/systemd/system/kube-proxy.service
+  ssh -i $priv_key root@$worker_ip "systemctl daemon-reload && systemctl enable --now kube-proxy"
+  echo "verifying kube-proxy is running"
+  set +e
+  for i in {1..10}; do
+    ssh -i "$priv_key" root@$worker_ip "systemctl is-active --quiet kube-proxy" && break
+    sleep 1s
+  done
+else
+  echo "copying kube-proxy static pod manifest to controller VM"
+  sed $script_dir/kube-proxy-pod.yaml -e "s|K8S_VER|$K8S_VER|g"\
+    | ssh -i $priv_key root@$worker_ip "cat > /etc/desktop-kubernetes/static-pods/kube-proxy-pod.yaml"
+  for i in {1..20}; do
+    if kubectl --kubeconfig $admin_kubeconfig -n kube-system wait pod\
+      -lcomponent=kube-proxy --for=condition=ready --timeout=5s; then
+      break
+    elif [[ $i -eq 20 ]]; then
+      echo "Can't verify kube-proxy installation"
+      exit 1
+    fi
+    sleep 5s
+  done
+fi
+echo "no errors detected with kube-proxy installation for VM $worker_ip"

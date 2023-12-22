@@ -9,11 +9,15 @@ authentication:
     clientCAFile: /var/lib/kubernetes/ca.pem
 authorization:
   mode: Webhook
-clusterDomain: cluster.local
+cgroupDriver: systemd
 clusterDNS:
-  - 10.32.0.10
-resolvConf: "/etc/resolv.conf"
+- 10.32.0.10
+clusterDomain: cluster.local
+containerRuntimeEndpoint: unix:///var/run/containerd/containerd.sock
+#TODO REMOVE podCIDR: PODCIDR
+registerNode: true
+resolvConf: /etc/resolv.conf
 runtimeRequestTimeout: 15m
+staticPodPath: /etc/desktop-kubernetes/static-pods
 tlsCertFile: /var/lib/kubelet/worker.pem
 tlsPrivateKeyFile: /var/lib/kubelet/worker-key.pem
-cgroupDriver: systemd

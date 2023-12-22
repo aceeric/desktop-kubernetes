@@ -1,0 +1,30 @@
+extraManifests:
+- apiVersion: v1
+  kind: Service
+  metadata:
+    name: kubernetes-dashboard-nodeport
+  spec:
+    ports:
+    - name: https
+      nodePort: 30443
+      port: 443
+      protocol: TCP
+      targetPort: https
+    selector:
+      app.kubernetes.io/component: kubernetes-dashboard
+      app.kubernetes.io/instance: kubernetes-dashboard
+      app.kubernetes.io/name: kubernetes-dashboard
+    type: NodePort
+- apiVersion: rbac.authorization.k8s.io/v1
+  kind: ClusterRoleBinding
+  metadata:
+    name: kubernetes-dashboard-admin-user
+    resourceVersion: "10807"
+  roleRef:
+    apiGroup: rbac.authorization.k8s.io
+    kind: ClusterRole
+    name: cluster-admin
+  subjects:
+  - kind: ServiceAccount
+    name: kubernetes-dashboard
+    namespace: kubernetes-dashboard

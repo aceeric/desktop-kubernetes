@@ -40,7 +40,11 @@ for segment in sys.argv[2].split('/'):
         idx = int(segment)
         y = y[idx]
     except:
-        y = y[segment]
+        try:
+            y = y[segment]
+        except: # no such key
+            y = ""
+            break
 
 if str(y) == "True":
     y = "1"

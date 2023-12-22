@@ -1,31 +1,17 @@
 #!/usr/bin/env bash
 #
-# Parse the yaml configuration for k8s, vbox, and vm keys and convert to
-# variables and assignments. E.g.: 'vbox.host-only-network: 192.168.56'
-# in the config yaml becomes 'vbox_host_only_network=192.168.56' in the
-# current shell environment. In other words, flatten each config param
-# and then dots and dashes to underscores and colon to equal sign.
-# Intended to be sourced, so the script defines the vars in the
-# callers environment. Note - boolean vals are parsed as "1" and "0"
-# which is more natural for shell.
+# Parse the yaml configuration for k8s, vbox, and vm keys. Faster
+# then 'yq', so - kept it around.
 #
-# example:
-#
-# eval $(parse-config config.yaml)
-# echo $vm_linux
-# centos8
 
 CFGFILE="$1" python3 <<END
 import yaml, sys, os
 
 valid_configs = [
-    "k8s.networking",
-    "k8s.monitoring",
-    "k8s.storage",
     "k8s.containerized-cplane",
     "k8s.cluster-cidr",
     "k8s.cluster-dns",
-    "k8s.kubernetes-dashboard",
+    "k8s.kube-proxy",
     "vbox.host-network-interface",
     "vbox.host-only-network",
     "vbox.vboxdir",
@@ -43,7 +29,7 @@ vars = ""
 newline = ""
 
 for key in list(cfg.keys()):
-   if key == "vms":
+   if not key in ["k8s", "vbox", "vm"]:
         continue
    for subkey in list(cfg[key].keys()):
         config = "%s.%s" % (key, subkey)

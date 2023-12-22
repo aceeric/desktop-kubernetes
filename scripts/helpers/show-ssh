@@ -3,12 +3,12 @@
 set -e
 
 priv_key=$1
-IFS=',' read -ra nodes <<< $2
+config=$2
 
 echo "To access the cluster node(s) via ssh:"
 echo
-for node in "${nodes[@]}"
-do
+for ((i = 0; i < $(yq '.vms | length' $config); ++i)); do
+  node=$(yq .vms[$i].name $config)
   ip=$(xec get-vm-ip $node)
   echo "$node: ssh -i $priv_key root@$ip"
 done

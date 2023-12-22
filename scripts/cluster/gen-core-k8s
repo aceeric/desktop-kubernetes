@@ -8,14 +8,16 @@
 
 set -e
 
-long_opts=containerized-cplane:,priv-key:,ca-cert:,ca-key:,config:
+long_opts=containerized-cplane:,kube-proxy-enabled:,priv-key:,ca-cert:,ca-key:,config:,cluster-cidr:
 
 # api
 containerized_cplane=
+kube_proxy_enabled=
 priv_key=
 ca_cert=
 ca_key=
 config=
+cluster_cidr=
 
 #
 # option parsing helper
@@ -47,6 +49,10 @@ function parse_args() {
         containerized_cplane=$(opt_val "$2")
         shift 2
         ;;
+      --kube-proxy-enabled)
+        kube_proxy_enabled=$(opt_val "$2")
+        shift 2
+        ;;
       --priv-key)
         priv_key=$(opt_val "$2")
         shift 2
@@ -63,6 +69,10 @@ function parse_args() {
         config=$(opt_val "$2")
         shift 2
         ;;
+      --cluster-cidr)
+        cluster_cidr=$(opt_val "$2")
+        shift 2
+        ;;
       --)
         shift
         break
@@ -76,11 +86,12 @@ parse_args "$@"
 # The control plane node will get the worker components for two reasons: 1) it supports
 # a containerized control plane, and 2) it lets the controller be also a worker
 
-vmcnt=$(xec yp $config ?vms)
+vmcnt=$(yq '.vms | length' $config)
 vm_names=()
 
 for ((i = 0; i < $vmcnt; ++i)); do
-  vm_name=$(xec yp $config vms/$i/name)
+  vm_name=$(yq .vms[$i].name $config)
+  pod_cidr=$(yq .vms[$i].pod-cidr $config)
   vm_ip=$(xec get-vm-ip $vm_name)
 
   if [[ $i -eq 0 ]]; then
@@ -93,9 +104,12 @@ for ((i = 0; i < $vmcnt; ++i)); do
 
   xec configure-worker\
    --controller-ip=$controller_ip\
+   --kube-proxy-enabled=$kube_proxy_enabled\
    --worker-hostname=$vm_name\
    --priv-key=$priv_key\
    --admin-kubeconfig=$admin_kubeconfig\
+   --pod-cidr=$pod_cidr\
+   --containerized-cplane=$containerized_cplane\
    --ca-cert=$ca_cert\
    --ca-key=$ca_key
 
@@ -106,7 +120,8 @@ for ((i = 0; i < $vmcnt; ++i)); do
      --admin-kubeconfig=$admin_kubeconfig\
      --containerized-cplane=$containerized_cplane\
      --ca-cert=$ca_cert\
-     --ca-key=$ca_key
+     --ca-key=$ca_key\
+     --cluster-cidr=$cluster_cidr
   fi
 
   vm_names+=($vm_name)
@@ -115,7 +130,7 @@ done
 echo "Waiting for all nodes to be Ready"
 
 for ((i = 0; i < $vmcnt; ++i)); do
-  kubectl wait node "${vm_names[$i]}" --for=condition=Ready --timeout=30s
+  kubectl --kubeconfig $admin_kubeconfig wait node "${vm_names[$i]}" --for=condition=Ready --timeout=30s
 done
 
 echo "Labeling node(s) - first node is controller & worker, all other nodes are workers"

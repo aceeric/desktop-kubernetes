@@ -4,4 +4,6 @@ clientConnection:
   kubeconfig: "/var/lib/kube-proxy/kubeconfig/kube-proxy.kubeconfig"
 mode: "iptables"
 metricsBindAddress: "0.0.0.0:10249"
-clusterCIDR: "10.200.0.0/16"
+clusterCIDR: "CLUSTER_CIDR"
+#iptables:
+#  masqueradeAll: true

@@ -14,11 +14,9 @@ export -f xec
 
 # api
 config=$DTKBASE/config.yaml
-k8s_networking=
-k8s_monitoring=
-k8s_storage=
 k8s_containerized_cplane=
-k8s_kubernetes_dashboard=
+k8s_kube_proxy=
+k8s_cluster_cidr=
 vbox_host_network_interface=
 vbox_host_only_network=
 vbox_vboxdir=
@@ -150,15 +148,6 @@ elif [[ -z "$vbox_vboxdir" ]]; then
 elif [[ ! -d $vbox_vboxdir ]]; then
   echo "directory for virtualbox VMs does not exist: $vbox_vboxdir"
   exit 1
-elif [[ ! -z "$k8s_networking" ]] && [[ "$k8s_networking" != "cilium" ]] && [[ "$k8s_networking" != "calico" ]]; then
-  echo "unsupported parameter value for k8s.networking config: $k8s_networking"
-  exit 1
-elif [[ ! -z "$k8s_monitoring" ]] && [[ "$k8s_monitoring" != "metrics.k8s.io" ]] && [[ "$k8s_monitoring" != "kube-prometheus" ]]; then
-  echo "unsupported parameter value for k8s.monitoring config: $k8s_monitoring"
-  exit 1
-elif [[ ! -z "$k8s_storage" ]] && [[ "$k8s_storage" != "openebs" ]]; then
-  echo "unsupported parameter value for storage config: $k8s_storage"
-  exit 1
 # removing centos9 for now - can't get it working [[ "$vm_linux" != "centos9" ]] && 
 elif [[ "$vm_linux" != "centos8" ]] && [[ "$vm_linux" != "rocky" ]]  && [[ "$vm_linux" != "alma" ]]; then
   echo "unsupported parameter value for linux config: $vm_linux"
@@ -172,14 +161,10 @@ mkdir -p $DTKBASE/generated/kickstart\
          $DTKBASE/generated/hostonly-netcfg\
          $DTKBASE/generated/iso
 
-echo "downloading all objects needed to provision the cluster"
+echo "downloading core cluster components"
 xec download-objects\
   --create-template=$vm_create_template\
-  --linux=$vm_linux\
-  --monitoring=$k8s_monitoring\
-  --storage=$k8s_storage\
-  --networking=$k8s_networking\
-  --kubernetes-dashboard=$k8s_kubernetes_dashboard
+  --linux=$vm_linux
 
 echo "provisioning vms"
 xec provision-vms\
@@ -197,37 +182,22 @@ xec gen-root-ca
 echo "generating Kubernetes core cluster"
 xec gen-core-k8s\
   --containerized-cplane=$k8s_containerized_cplane\
+  --kube-proxy-enabled=$k8s_kube_proxy\
   --priv-key=$DTKBASE/generated/kickstart/id_ed25519\
   --ca-cert=$DTKBASE/generated/cert/ca.pem\
   --ca-key=$DTKBASE/generated/cert/ca-key.pem\
-  --config=$config
+  --config=$config\
+  --cluster-cidr=$k8s_cluster_cidr
 
-# build a comma-separated list of VMs
-for ((i = 0; i < $(xec yp $config ?vms); ++i)); do
-  nodes="$nodes,$(xec yp $config vms/$i/name)"
-done
-nodes=${nodes:1}
-
-# host zero is always the controller
-controller_ip=$(xec get-vm-ip $(xec yp $config vms/0/name))
-
+echo "installing add-ons"
 xec install-addons\
+  --config=$config\
   --admin-kubeconfig=$DTKBASE/generated/kubeconfig/admin.kubeconfig\
-  --ca-cert=$DTKBASE/generated/cert/ca.pem\
-  --ca-key=$DTKBASE/generated/cert/ca-key.pem\
-  --cluster-cidr=10.200.0.0/16\
-  --containerized-cplane=$containerized_cplane\
-  --controller-ip=$controller_ip\
-  --nodes=$nodes\
-  --priv-key=$DTKBASE/generated/kickstart/id_ed25519\
-  --networking=$k8s_networking\
-  --monitoring=$k8s_monitoring\
-  --storage=$k8s_storage\
-  --kubernetes-dashboard=$k8s_kubernetes_dashboard
+  --priv-key=$DTKBASE/generated/kickstart/id_ed25519
 
 echo
 echo "finished provisioning cluster. To interact with the cluster:"
 echo "  export KUBECONFIG=$DTKBASE/generated/kubeconfig/admin.kubeconfig"
 echo
 
-xec show-ssh $DTKBASE/generated/kickstart/id_ed25519 $nodes
+xec show-ssh $DTKBASE/generated/kickstart/id_ed25519 $config

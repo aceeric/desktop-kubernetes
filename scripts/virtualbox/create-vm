@@ -7,8 +7,6 @@
 # passed options. This script just creates the VM. To install guest additions, you would need to call
 # 'install-guest-additions' (which is done by the 'create-template-vm' script.)
 #
-# todo args: cpu / mem / storage
-#
 
 set -e
 

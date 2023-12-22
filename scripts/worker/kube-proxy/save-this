@@ -1,0 +1,21 @@
+#!/usr/bin/env bash
+
+config=./config.yaml
+priv_key=/home/eace/projects/desktop-kubernetes/generated/kickstart/id_ed25519
+vmcnt=$(yq '.vms | length' $config)
+
+for ((i = 0; i < $vmcnt; ++i)); do
+  this_vm=$(yq .vms[$i].name $config)
+  this_ip=$(xec get-vm-ip $this_vm)
+  this_cidr=$(yq .vms[$i].pod-cidr $config)
+  echo "configure routes for $this_vm ($this_ip / $this_cidr)"
+  for ((j = 0; j < $vmcnt; ++j)); do
+    if [[ $i -eq $j ]]; then
+      continue
+    fi
+    other_vm=$(yq .vms[$j].name $config)
+    other_ip=$(xec get-vm-ip $other_vm)
+    other_cidr=$(yq .vms[$j].pod-cidr $config)
+    ssh -i $priv_key root@$other_ip "ip route add $other_cidr via $other_ip dev enp0s8"
+  done
+done

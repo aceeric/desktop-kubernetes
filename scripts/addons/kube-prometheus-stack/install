@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+config=$1
+
+KUBE_PROM_VER=55.5.0
+
+url=https://github.com/prometheus-community/helm-charts/releases/download/kube-prometheus-stack-$KUBE_PROM_VER/kube-prometheus-stack-$KUBE_PROM_VER.tgz
+tgz=$DTKBASE/binaries/$(basename $url)
+xec download-obj --url=$url --dest=$tgz
+
+admin_kubeconfig=$(yq .cluster.admin-kubeconfig $config)
+helm install kube-prometheus\
+  --namespace kube-prometheus\
+  --create-namespace\
+  --kubeconfig $admin_kubeconfig\
+  $tgz 
+
+echo "TODO for all components that are not pods, customize the values"

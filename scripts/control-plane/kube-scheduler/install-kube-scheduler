@@ -90,7 +90,7 @@ kube_scheduler_yaml=$script_dir/kube-scheduler.yaml
 
 echo "generating TLS material for kube-scheduler"
 openssl req -newkey rsa:2048 -nodes -keyout $kube_scheduler_key\
- -subj "/CN=system:kube-scheduler" -out $kube_scheduler_csr
+ -subj "/CN=system:kube-scheduler" -out $kube_scheduler_csr 2>/dev/null
 openssl x509 -req -days 10000 -in $kube_scheduler_csr -CA $ca_cert -CAkey $ca_key\
  -CAcreateserial -sha256 -out $kube_scheduler_cert
 # cleanup
@@ -131,7 +131,7 @@ if [[ $containerized_cplane -eq 0 ]]; then
 
   echo "starting kube-scheduler service"
   ssh -i $priv_key root@$controller_ip\
-   "systemctl daemon-reload && systemctl enable kube-scheduler && systemctl start kube-scheduler"
+   "systemctl daemon-reload && systemctl enable --now kube-scheduler"
 
   echo "verifying kube-scheduler is running"
   set +e

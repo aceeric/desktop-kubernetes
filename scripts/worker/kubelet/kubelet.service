@@ -7,10 +7,7 @@ Requires=containerd.service
 [Service]
 ExecStart=/usr/local/bin/kubelet \
   --config=/var/lib/kubelet/kubelet-config.yaml \
-  --container-runtime-endpoint=unix:///var/run/containerd/containerd.sock \
   --kubeconfig=/var/lib/kubelet/kubeconfig/worker.kubeconfig \
-  --register-node=true \
-  --pod-manifest-path=/etc/desktop-kubernetes/static-pods/\
   --v=2
 Restart=on-failure
 RestartSec=5

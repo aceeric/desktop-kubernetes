@@ -6,9 +6,10 @@
 
 set -e
 
-long_opts=controller-ip:,ca-cert:,ca-key:
+long_opts=controller-hostname:,controller-ip:,ca-cert:,ca-key:
 script_name=$(basename "$0")
 
+controller_hostname=
 controller_ip=
 ca_cert=
 ca_key=
@@ -32,6 +33,10 @@ function parse_args() {
   eval set -- "$parsed"
   while true; do
     case "$1" in
+      --controller-hostname)
+        controller_hostname=$(opt_val "$2")
+        shift 2
+        ;;
 	    --controller-ip)
         controller_ip=$(opt_val "$2")
         shift 2
@@ -80,6 +85,7 @@ DNS.2 = kubernetes.default
 DNS.3 = kubernetes.default.svc
 DNS.4 = kubernetes.default.svc.cluster
 DNS.5 = kubernetes.default.svc.cluster.local
+DNS.6 = $controller_hostname
 IP.1 = $controller_ip
 IP.2 = 10.32.0.1
 IP.3 = 127.0.0.1

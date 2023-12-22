@@ -4,19 +4,21 @@
 
 set -e
 
-long_opts=controller-ip:,worker-hostname:,priv-key:,admin-kubeconfig:,ca-cert:,ca-key:
+long_opts=controller-ip:,kube-proxy-enabled:,worker-hostname:,priv-key:,admin-kubeconfig:,pod-cidr:\
+,containerized-cplane:,ca-cert:,ca-key:,cluster-cidr:
 script_name=$(basename "$0")
 
 # api
 controller_ip=
-# worker hostname doubles for VM name here. The script will find a clone VM with this VirtualBox VM name
-# and change the hostname to match, then gen all the worker components wired up to that host name (which then
-# becomes a kubernetes node name)
+kube_proxy_enabled=
 worker_hostname=
 priv_key=
 admin_kubeconfig=
+pod_cidr=
+containerized_cplane=
 ca_cert=
 ca_key=
+cluster_cidr=
 
 # internal
 worker_ip=
@@ -44,6 +46,10 @@ function parse_args() {
         controller_ip=$(opt_val "$2")
         shift 2
         ;;
+      --kube-proxy-enabled)
+        kube_proxy_enabled=$(opt_val "$2")
+        shift 2
+        ;;
       --worker-hostname)
         worker_hostname=$(opt_val "$2")
         shift 2
@@ -56,12 +62,24 @@ function parse_args() {
         admin_kubeconfig=$(opt_val "$2")
         shift 2
         ;;
+      --pod-cidr)
+        pod_cidr=$(opt_val "$2")
+        shift 2
+        ;;
+      --containerized-cplane)
+        containerized_cplane=$(opt_val "$2")
+        shift 2
+        ;;
       --ca-cert)
         ca_cert=$(opt_val "$2")
         shift 2
         ;;
       --ca-key)
         ca_key=$(opt_val "$2")
+        shift 2
+        ;;
+      --cluster-cidr)
+        cluster_cidr=$(opt_val "$2")
         shift 2
         ;;
       --)
@@ -76,21 +94,18 @@ parse_args "$@"
 
 xec start-vm $worker_hostname
 
-echo "Getting IP address from running VM for $worker_hostname"
+echo "getting IP address from running VM for $worker_hostname"
 worker_ip=$(xec get-vm-ip $worker_hostname)
 
-echo "Making worker VM configuration changes"
+echo "making worker VM configuration changes"
 ssh -i $priv_key root@$worker_ip << EOF
   [[ -z "$(swapon --show)" ]] || { swapoff -a; sed -i '/ swap /d' /etc/fstab; }
 EOF
 
-echo "Configuring firewall rules"
+echo "configuring firewall rules"
 xec configure-firewall $worker_ip $priv_key --worker
 
-echo "Generating TLS certs for the worker"
-
-# todo move call to gen-worker-tls to install-kubelet since that's the only place it is used and rename
-# to gen-kubelet-tls
+echo "generating TLS certs for the worker"
 
 xec gen-worker-tls\
   --worker-ip=$worker_ip\
@@ -98,7 +113,7 @@ xec gen-worker-tls\
   --ca-cert=$ca_cert\
   --ca-key=$ca_key
 
-echo "Copying misc. binaries to the worker"
+echo "copying misc. binaries to the worker"
 xec install-misc-bins\
  --priv-key=$priv_key\
  --worker-ip=$worker_ip\
@@ -106,17 +121,34 @@ xec install-misc-bins\
  --runc-binary=$RUNC_BINARY\
  --cni-plugins-binary=$CNI_PLUGINS_BINARY
 
-echo "Installing containerd"
+echo "installing containerd"
 xec install-containerd\
  --priv-key=$priv_key\
  --worker-ip=$worker_ip\
- --containerd-binary=$CONTAINERD_BINARY
+ --containerd-binary=$CONTAINERD_BINARY\
+ --pod-cidr=$pod_cidr
 
-echo "Installing the kubelet"
+echo "installing the kubelet"
 xec install-kubelet\
  --priv-key=$priv_key\
  --controller-ip=$controller_ip\
  --worker-ip=$worker_ip\
  --worker-hostname=$worker_hostname\
  --kubelet-binary=$KUBELET_BINARY\
+ --pod-cidr=$pod_cidr\
  --ca-cert=$ca_cert
+
+if [[ $kube_proxy_enabled -eq 1 ]]; then
+  xec gen-kube-proxy-kubeconfig\
+    --controller-ip=$controller_ip\
+    --ca-cert=$ca_cert\
+    --ca-key=$ca_key
+
+  xec install-kube-proxy\
+   --kube-proxy-binary=$KUBE_PROXY_BINARY\
+   --priv-key=$priv_key\
+   --containerized-cplane=$containerized_cplane\
+   --admin-kubeconfig=$admin_kubeconfig\
+   --worker-hostname=$worker_hostname\
+   --cluster-cidr=$cluster_cidr
+fi

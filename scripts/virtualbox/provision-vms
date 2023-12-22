@@ -101,14 +101,14 @@ if [[ $create_template -eq 1 ]] ; then
    --vboxdir=$vboxdir
 fi
 
-vmcnt=$(xec yp $config ?vms)
+vmcnt=$(yq '.vms | length' $config)
 vm_names=()
 
 for ((i = 0; i < $vmcnt; ++i)); do
-  vm_name=$(xec yp $config vms/$i/name)
-  vm_cpu=$(xec yp $config vms/$i/cpu)
-  vm_mem=$(xec yp $config vms/$i/mem)
-  vm_ip=$(xec yp $config vms/$i/ip)
+  vm_name=$(yq .vms[$i].name $config)
+  vm_cpu=$(yq .vms[$i].cpu $config)
+  vm_mem=$(yq .vms[$i].mem $config)
+  vm_ip=$(yq .vms[$i].ip $config)
 
   xec clone-vm\
    --priv-key=$DTKBASE/generated/kickstart/id_ed25519\

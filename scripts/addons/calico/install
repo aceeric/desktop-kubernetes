@@ -1,0 +1,66 @@
+#!/usr/bin/env bash
+
+config=$1
+
+TIGERA_VER=v3.27.0
+
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+url=https://github.com/projectcalico/calico/releases/download/$TIGERA_VER/tigera-operator-$TIGERA_VER.tgz
+namespace=tigera-operator
+tgz=$DTKBASE/binaries/$(basename $url)
+xec download-obj --url=$url --dest=$tgz
+
+priv_key=$(yq .cluster.priv-key $config)
+cluster_cidr=$(yq .k8s.cluster-cidr $config)
+
+controller_ip=
+for ((i = 0; i < $(yq '.vms | length' $config); ++i)); do
+  vmip=$(xec get-vm-ip $(yq .vms[$i].name $config))
+  if [[ $i -eq 0 ]]; then
+    controller_ip=$vmip
+  fi
+  # per https://docs.tigera.io/calico-enterprise/latest/operations/troubleshoot/troubleshooting#configure-networkmanager
+  # last eyeballed on 24-Dec-2023
+  ssh -i $priv_key root@$vmip << EOF
+    echo -e "[keyfile]\nunmanaged-devices=interface-name:cali*;interface-name:tunl*;interface-name:vxlan.calico;interface-name:wireguard.cali"\
+      >| /etc/NetworkManager/conf.d/calico.conf
+    systemctl daemon-reload && systemctl restart NetworkManager
+EOF
+done
+
+sed "s|CLUSTERCIDR|$cluster_cidr|" $script_dir/values-template.yaml >| $script_dir/values.yaml
+
+admin_kubeconfig=$(yq .cluster.admin-kubeconfig $config)
+helm install tigera-operator\
+  --namespace tigera-operator\
+  --create-namespace\
+  --kubeconfig $admin_kubeconfig\
+  --wait\
+  --values $script_dir/values.yaml\
+  $tgz
+
+# these two steps from https://docs.tigera.io/calico/latest/operations/ebpf/enabling-ebpf to be able
+# to run without kube-proxy
+
+cat <<EOF | kubectl --kubeconfig $admin_kubeconfig --namespace tigera-operator apply -f -
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: kubernetes-services-endpoint
+data:
+  KUBERNETES_SERVICE_HOST: "$controller_ip"
+  KUBERNETES_SERVICE_PORT: "6443"
+EOF
+
+while ! kubectl --kubeconfig $admin_kubeconfig\
+  patch felixconfiguration default --type=merge --patch='{"spec":{"bpfEnabled":true}}'; do 
+    sleep 5s
+done
+
+echo "waiting (indefinitely) for calico daemonset"
+while true; do
+  if kubectl --kubeconfig $admin_kubeconfig -n calico-system rollout status ds calico-node; then
+    break
+  fi
+  sleep 10s
+done

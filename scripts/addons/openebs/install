@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+
+config=$1
+
+OPENEBS_VER=3.9.0
+
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+admin_kubeconfig=$(yq .cluster.admin-kubeconfig $config)
+
+operator_manifest_url=https://raw.githubusercontent.com/openebs/charts/gh-pages/versioned/$OPENEBS_VER/hostpath-operator.yaml
+operator_manifest_file=$DTKBASE/binaries/openebs-hostpath-operator-$OPENEBS_VER.yaml
+xec download-obj --url=$operator_manifest_url --dest=$operator_manifest_file
+kubectl --kubeconfig $admin_kubeconfig apply -f $operator_manifest_file
+
+while ! kubectl --kubeconfig $admin_kubeconfig -n openebs wait po -lopenebs.io/component-name=openebs-localpv-provisioner\
+  --for condition=ready --timeout=30s; do
+  sleep 1s
+done
+
+sc_manifest_url=https://raw.githubusercontent.com/openebs/charts/gh-pages/versioned/$OPENEBS_VER/openebs-lite-sc.yaml
+sc_manifest_file=$DTKBASE/binaries/openebs-lite-sc-$OPENEBS_VER.yaml
+xec download-obj --url=$sc_manifest_url --dest=$sc_manifest_file
+
+kubectl --kubeconfig $admin_kubeconfig apply -f $sc_manifest_file
+count=$(kubectl --kubeconfig $admin_kubeconfig get sc -ocustom-columns=provisioner:provisioner\
+        --no-headers | grep 'openebs.io/local' | wc -l)
+
+if [[ $count -ne 2 ]]; then
+  echo "error - openEBS storage classes did not deploy"
+  exit 1
+fi
+
+kubectl --kubeconfig $admin_kubeconfig annotate sc openebs-hostpath storageclass.kubernetes.io/is-default-class="true"

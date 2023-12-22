@@ -1,19 +1,16 @@
 #!/usr/bin/env bash
 #
-# Download all objects needed to privision the cluster. Based on options. (E.g.
-# selects the appropriate linux, etc.)
+# Download core cluster components. (Downloads for add-ons like Calico etc. are
+# handle by the various add-ons.)
 #
 
 set -e
 
-long_opts=create-template:,linux:,monitoring:,storage:,networking:,kubernetes-dashboard:
+long_opts=create-template:,linux:
 script_name=$(basename "$0")
 
 create_template=
 linux=
-monitoring=
-storage=
-kubernetes_dashboard=
 
 function opt_val() {
   opt="$1"
@@ -42,22 +39,6 @@ function parse_args() {
         linux=$(opt_val "$2")
         shift 2
         ;;
-      --monitoring)
-        monitoring=$(opt_val "$2")
-        shift 2
-        ;;
-      --storage)
-        storage=$(opt_val "$2")
-        shift 2
-        ;;
-      --networking)
-        networking=$(opt_val "$2")
-        shift 2
-        ;;
-      --kubernetes-dashboard)
-        kubernetes_dashboard=$(opt_val "$2")
-        shift 2
-        ;;
       --)
         shift
         break
@@ -76,38 +57,13 @@ if [[ $create_template -eq 1 ]] && [[ -n $linux ]]; then
   xec download-obj --url=$GUEST_ADDITIONS_ISO_DOWNLOAD --dest=$GUEST_ADDITIONS_ISO_FILE
 fi
 
-if [[ -n $monitoring ]]; then
-  [[ $monitoring == "kube-prometheus" ]] && xec download-obj --url=$KUBE_PROMETHEUS_DOWNLOAD --dest=$KUBE_PROMETHEUS_BINARY
-  [[ $monitoring == "metrics.k8s.io"  ]] && xec download-obj --url=$METRICS_SERVER_DOWNLOAD --dest=$METRICS_SERVER_MANIFEST
-fi
-
-if [[ -n $storage ]]; then
-  xec download-obj --url=$OPENEBS_HOSTPATH_OPERATOR_MANIFEST_DOWNLOAD --dest=$OPENEBS_HOSTPATH_OPERATOR_MANIFEST
-  xec download-obj --url=$OPENEBS_SC_MANIFEST_DOWNLOAD --dest=$OPENEBS_SC_MANIFEST
-fi
-
-if [[ -n $networking ]]; then
-  if [[ "$networking" == "calico" ]]; then
-    xec download-obj --url=$CALICO_TIGERA_DOWNLOAD --dest=$CALICO_TIGERA_MANIFEST
-    xec download-obj --url=$KUBE_PROXY_DOWNLOAD --dest=$KUBE_PROXY_BINARY --executable
-  elif [[ "$networking" == "cilium" ]]; then
-    xec download-obj --url=$CILIUM_DOWNLOAD --dest=$CILIUM_BINARY
-  fi
-fi
-
-if [[ $kubernetes_dashboard -eq 1 ]]; then
-  xec download-obj --url=$KUBERNETES_DASHBOARD_DOWNLOAD --dest=$KUBERNETES_DASHBOARD_MANIFEST
-fi
-
-# always do k8s components
-
 xec download-obj --url=$CNI_PLUGINS_DOWNLOAD --dest=$CNI_PLUGINS_BINARY
 xec download-obj --url=$CONTAINERD_DOWNLOAD --dest=$CONTAINERD_BINARY
-xec download-obj --url=$COREDNS_DOWNLOAD --dest=$COREDNS_BINARY
 xec download-obj --url=$CRICTL_DOWNLOAD --dest=$CRICTL_BINARY
 xec download-obj --url=$ETCD_DOWNLOAD --dest=$ETCD_GZIP
 xec download-obj --url=$KUBE_APISERVER_DOWNLOAD --dest=$KUBE_APISERVER_BINARY --executable
 xec download-obj --url=$KUBE_CONTROLLER_MANAGER_DOWNLOAD --dest=$KUBE_CONTROLLER_MANAGER_BINARY --executable
 xec download-obj --url=$KUBELET_DOWNLOAD --dest=$KUBELET_BINARY --executable
+xec download-obj --url=KUBE_PROXY_DOWNLOAD --dest=$KUBE_PROXY_BINARY --executable
 xec download-obj --url=$KUBE_SCHEDULER_DOWNLOAD --dest=$KUBE_SCHEDULER_BINARY --executable
 xec download-obj --url=$RUNC_DOWNLOAD --dest=$RUNC_BINARY --executable

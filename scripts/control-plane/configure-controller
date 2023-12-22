@@ -4,7 +4,7 @@
 
 set -e
 
-long_opts=controller-hostname:,priv-key:,admin-kubeconfig:,containerized-cplane:,ca-cert:,ca-key:
+long_opts=controller-hostname:,priv-key:,admin-kubeconfig:,containerized-cplane:,ca-cert:,ca-key:,cluster-cidr:
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 script_name=$(basename "$0")
 
@@ -15,6 +15,7 @@ admin_kubeconfig=
 containerized_cplane=
 ca_cert=
 ca_key=
+cluster_cidr=
 
 # internal
 controller_ip=
@@ -62,6 +63,10 @@ function parse_args() {
         ca_key=$(opt_val "$2")
         shift 2
         ;;
+      --cluster-cidr)
+        cluster_cidr=$(opt_val "$2")
+        shift 2
+        ;;
       --)
         shift
         break
@@ -80,6 +85,7 @@ xec configure-firewall $controller_ip $priv_key --controller
 
 # creates kubernetes.pem and kubernetes-key.pem
 xec gen-cluster-tls\
+  --controller-hostname=$controller_hostname\
   --controller-ip=$controller_ip\
   --ca-cert=$ca_cert\
   --ca-key=$ca_key
@@ -121,7 +127,8 @@ xec install-kube-controller-manager\
  --containerized-cplane=$containerized_cplane\
  --admin-kubeconfig=$admin_kubeconfig\
  --ca-cert=$ca_cert\
- --ca-key=$ca_key
+ --ca-key=$ca_key\
+ --cluster-cidr=$cluster_cidr
 
 echo "installing kube-scheduler into controller"
 xec install-kube-scheduler\

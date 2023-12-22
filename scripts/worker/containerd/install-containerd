@@ -2,13 +2,14 @@
 
 set -e
 
-long_opts=priv-key:,worker-ip:,containerd-binary:
+long_opts=priv-key:,worker-ip:,containerd-binary:,pod-cidr:
 script_name=$(basename "$0")
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 priv_key=
 worker_ip=
 containerd_binary=
+pod_cidr=
 
 function opt_val() {
   opt="$1"
@@ -39,6 +40,10 @@ function parse_args() {
         ;;
       --containerd-binary)
         containerd_binary=$(opt_val "$2")
+        shift 2
+        ;;
+      --pod-cidr)
+        pod_cidr=$(opt_val "$2")
         shift 2
         ;;
       --)
@@ -80,17 +85,17 @@ ssh -i $priv_key root@$worker_ip << EOF
 EOF
 
 # 20-containerd-net.conflist based on: https://github.com/containerd/containerd/blob/main/script/setup/install-cni
-# name it "20-" because Calico and Cilium lay down a "10-" and so this guarantees they will sort higher. This
-# containerd .conflist is just to bootstrap the Nodes otherwise they will never become Ready. The first workload is
-# the CNI and it will place a /etc/cni/net.d/10-...conflist file on all hosts which will immediately re-configure
-# containerd and supersede this configuration.
+# name it "20-" because Calico and Cilium lay down a "10-" and so this guarantees they will sort higher if installed.
+# This containerd .conflist can run the cluster fine without Calico/Cilium but requires kube-proxy to be installed
+# if running without Calico/Cilium.
 
 echo "Copying 20-containerd-net.conflist to /etc/cni/net.d/ in worker VM"
-ssh -i $priv_key root@$worker_ip "mkdir -p /etc/cni/net.d"
-scp -i $priv_key $script_dir/20-containerd-net.conflist root@$worker_ip:/etc/cni/net.d/20-containerd-net.conflist
+ssh -i $priv_key root@$worker_ip "mkdir -p /etc/cni/net.d /var/log/desktop-kubernetes/cni"
+sed $script_dir/20-containerd-net.conflist\
+ -e "s|PODCIDR|$pod_cidr|g" | ssh -i $priv_key root@$worker_ip "cat > /etc/cni/net.d/20-containerd-net.conflist"
 
 echo "Starting containerd service"
-ssh -i $priv_key root@$worker_ip "systemctl daemon-reload && systemctl enable containerd && systemctl start containerd"
+ssh -i $priv_key root@$worker_ip "systemctl daemon-reload && systemctl enable --now containerd"
 
 echo "Verifying containerd is running"
 set +e
@@ -105,17 +110,14 @@ echo "No errors detected with containerd installation"
 # in the 'images' dir of this project to minimize the impact of Docker rate-limiting. See
 # the 'hack/create-image-archive' script.
 
-tmpdir_created=0
-while read image; do
-  if [[ $tmpdir_created -eq 0 ]]; then
-    echo "Copying images to host"
-    ssh -i $priv_key root@$worker_ip "mkdir -p /tmp/images"
-    tmpdir_created=1
-  fi
-  scp -i $priv_key $image root@$worker_ip:/tmp/images/
-done < <(find $DTKBASE/images \( -name '*.tar' -o -name '*.tgz' \))
+imagecnt=$(find $DTKBASE/images \( -name '*.tar' -o -name '*.tgz' \) | wc -l)
 
-if [[ $tmpdir_created -eq 1 ]]; then
+if [[ $imagecnt -ne 0 ]]; then
+  echo "Copying images to host"
+  ssh -i $priv_key root@$worker_ip "mkdir -p /tmp/images"
+  find $DTKBASE/images \( -name '*.tar' -o -name '*.tgz' \) | while read image; do
+    scp -i $priv_key $image root@$worker_ip:/tmp/images/
+  done
   echo "Importing images into host containerd cache"
   scp -i $priv_key $script_dir/import-images root@$worker_ip:/tmp/images/
   ssh -i $priv_key root@$worker_ip "chmod +x /tmp/images/import-images && /tmp/images/import-images"

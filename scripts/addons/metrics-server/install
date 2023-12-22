@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+config=$1
+
+METRICS_SERVER_VER=v0.6.4
+
+admin_kubeconfig=$(yq .cluster.admin-kubeconfig $config)
+
+metrics_server_download=https://github.com/kubernetes-sigs/metrics-server/releases/download/$METRICS_SERVER_VER/components.yaml
+metrics_server_manifest=$DTKBASE/binaries/metrics-server-components-$METRICS_SERVER_VER.yaml
+xec download-obj --url=$metrics_server_download --dest=$metrics_server_manifest
+
+kubectl --kubeconfig $admin_kubeconfig apply -f $metrics_server_manifest

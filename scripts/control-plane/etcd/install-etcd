@@ -102,7 +102,7 @@ if [[ $containerized_cplane -eq 0 ]]; then
    | ssh -i $priv_key root@$controller_ip "cat > /etc/systemd/system/etcd.service"
   
   echo "starting etcd service"
-  ssh -i $priv_key root@$controller_ip "systemctl daemon-reload && systemctl enable etcd && systemctl start etcd"
+  ssh -i $priv_key root@$controller_ip "systemctl daemon-reload && systemctl enable --now etcd"
 else
   echo "copying etcd static pod manifest to controller VM"
   sed $script_dir/etcd-pod.yaml\

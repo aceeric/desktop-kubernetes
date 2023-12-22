@@ -1,0 +1,31 @@
+#!/usr/bin/env bash
+
+config=$1
+
+CILIUM_VER=1.15.0-pre.2
+
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+url=https://helm.cilium.io/cilium-$CILIUM_VER.tgz
+namespace=cilium
+tgz=$DTKBASE/binaries/$(basename $url)
+xec download-obj --url=$url --dest=$tgz
+
+controller_ip=$(yq .vms[0].name $config)
+sed "s|K8SSERVICEHOST|$controller_ip|g" $script_dir/values-template.yaml >| $script_dir/values.yaml
+
+admin_kubeconfig=$(yq .cluster.admin-kubeconfig $config)
+helm install cilium\
+  --namespace cilium\
+  --create-namespace\
+  --kubeconfig $admin_kubeconfig\
+  --wait\
+  --values $script_dir/values.yaml\
+  $tgz
+
+echo "waiting (indefinitely) for cilium daemonset"
+while true; do
+  if kubectl --kubeconfig $admin_kubeconfig -n cilium rollout status ds cilium; then
+    break
+  fi
+  sleep 10s
+done

@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+config=$1
+
+KUBE_DASHBOARD_VER=6.0.8
+
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+url=https://kubernetes.github.io/dashboard/kubernetes-dashboard-$KUBE_DASHBOARD_VER.tgz
+namespace=kubernetes-dashboard
+tgz=$DTKBASE/binaries/$(basename $url)
+xec download-obj --url=$url --dest=$tgz
+
+admin_kubeconfig=$(yq .cluster.admin-kubeconfig $config)
+helm install kubernetes-dashboard\
+  --namespace kubernetes-dashboard\
+  --create-namespace\
+  --kubeconfig $admin_kubeconfig\
+  --values $script_dir/values.yaml\
+  $tgz

@@ -9,6 +9,7 @@ tested_host_os_version="Ubuntu 22.04.3 LTS"
 tested_kubectl_version="v1.28.0"
 tested_curl_version="7.81.0"
 tested_helm_version="v3.13.1"
+tested_yq_version="4.40.5"
 
 if which openssl &>/dev/null; then
   openssl_version=$(openssl version | awk '{print $2}')
@@ -66,6 +67,15 @@ else
   helm_version="not found"
 fi
 
+if which yq &>/dev/null; then
+  yq_version=$(yq --version)
+  regex=".*version v([0-9.]*)$"
+  [[ $yq_version =~ $regex ]] && yq_version="${BASH_REMATCH[1]}"
+  [[ $yq_version == "$tested_yq_version" ]] && yq_ok=Yes || { yq_ok=No; mismatch=1; }
+else
+  yq_version="not found"
+fi
+
 cat <<EOF | column -t -s "|"
 component|tested|found|matches?
 ---------|------|-----|--------
@@ -77,6 +87,7 @@ host operating system|$tested_host_os_version|$host_os_version|$os_ok
 kubectl (client only)|$tested_kubectl_version|$kubectl_version|$kubectl_ok
 curl|$tested_curl_version|$curl_version|$curl_ok
 helm|$tested_helm_version|$helm_version|$helm_ok
+yq|$tested_yq_version|$yq_version|$yq_ok
 EOF
 
 if [[ $mismatch -ne 0 ]]; then

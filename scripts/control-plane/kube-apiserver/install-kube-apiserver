@@ -106,12 +106,12 @@ aggregator_cert=$DTKBASE/generated/cert/aggregator.pem
 aggregator_key=$DTKBASE/generated/cert/aggregator-key.pem
 aggregator_csr=$DTKBASE/generated/cert/aggregator.csr
 
-openssl req -nodes -newkey rsa:2048 -keyout $service_account_key -subj "/CN=service-accounts" -out $service_account_csr
+openssl req -nodes -newkey rsa:2048 -keyout $service_account_key -subj "/CN=service-accounts" -out $service_account_csr 2>/dev/null
 openssl x509 -req -days 10000 -in $service_account_csr -CA $ca_cert -CAkey $ca_key -CAcreateserial\
  -sha256 -out $service_account_cert
 rm -f $service_account_csr
 
-openssl req -nodes -newkey rsa:2048 -keyout $aggregator_key -subj "/CN=aggregator/O=k8s/OU=system" -out $aggregator_csr
+openssl req -nodes -newkey rsa:2048 -keyout $aggregator_key -subj "/CN=aggregator/O=k8s/OU=system" -out $aggregator_csr 2>/dev/null
 openssl x509 -req -days 10000 -in $aggregator_csr -CA $ca_cert -CAkey $ca_key -CAcreateserial\
  -sha256 -out $aggregator_cert
 rm -f $aggregator_csr
@@ -137,7 +137,7 @@ if [[ $containerized_cplane -eq 0 ]]; then
   
   echo "starting kube-apiserver service"
   ssh -i $priv_key root@$controller_ip\
-   "systemctl daemon-reload && systemctl enable kube-apiserver && systemctl start kube-apiserver"
+   "systemctl daemon-reload && systemctl enable --now kube-apiserver"
   
   echo "verifying kube-apiserver is running"
   set +e

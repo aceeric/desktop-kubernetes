@@ -1,17 +1,15 @@
 #!/usr/bin/env bash
 
-#
-# Helm installs CoreDNS
-#
-
 set -e
 
-long_opts=coredns-binary:,admin-kubeconfig:
+long_opts=config:,admin-kubeconfig:,priv-key:
+
 script_name=$(basename "$0")
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-coredns_binary=
+config=
 admin_kubeconfig=
+priv_key=
 
 function opt_val() {
   opt="$1"
@@ -32,12 +30,16 @@ function parse_args() {
   eval set -- "$parsed"
   while true; do
     case "$1" in
-      --coredns-binary)
-        coredns_binary=$(opt_val "$2")
+      --config)
+        config=$(opt_val "$2")
         shift 2
         ;;
       --admin-kubeconfig)
         admin_kubeconfig=$(opt_val "$2")
+        shift 2
+        ;;
+      --priv-key)
+        priv_key=$(opt_val "$2")
         shift 2
         ;;
       --)
@@ -50,13 +52,16 @@ function parse_args() {
 
 parse_args "$@"
 
-echo "Helm installing CoreDNS"
+# write info to config yaml for addons
+yq -i '.cluster.admin-kubeconfig = "'$admin_kubeconfig'"' $config
+yq -i '.cluster.priv-key = "'$priv_key'"' $config
 
-helm --kubeconfig $admin_kubeconfig install coredns $coredns_binary\
-  --namespace kube-system --create-namespace --values $script_dir/coredns.values.yaml
-
-while ! kubectl --kubeconfig $admin_kubeconfig -n kube-system wait pod -lk8s-app=coredns --for condition=Ready --timeout=3s; do
-  sleep 1s
+for ((i = 0; i < $(yq '.addons | length' $config); ++i)); do
+  addon="$(yq .addons[$i] $config)"
+  if [[ -d $script_dir/$addon ]]; then
+    echo "installing $addon in $script_dir/$addon"
+    $script_dir/$addon/install $config
+  else
+    echo "addon directory not found (skipping): $script_dir/$addon"
+  fi
 done
-
-echo "no errors detected with CoreDNS installation"
