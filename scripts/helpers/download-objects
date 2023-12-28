@@ -64,6 +64,6 @@ xec download-obj --url=$ETCD_DOWNLOAD --dest=$ETCD_GZIP
 xec download-obj --url=$KUBE_APISERVER_DOWNLOAD --dest=$KUBE_APISERVER_BINARY --executable
 xec download-obj --url=$KUBE_CONTROLLER_MANAGER_DOWNLOAD --dest=$KUBE_CONTROLLER_MANAGER_BINARY --executable
 xec download-obj --url=$KUBELET_DOWNLOAD --dest=$KUBELET_BINARY --executable
-xec download-obj --url=KUBE_PROXY_DOWNLOAD --dest=$KUBE_PROXY_BINARY --executable
+xec download-obj --url=$KUBE_PROXY_DOWNLOAD --dest=$KUBE_PROXY_BINARY --executable
 xec download-obj --url=$KUBE_SCHEDULER_DOWNLOAD --dest=$KUBE_SCHEDULER_BINARY --executable
 xec download-obj --url=$RUNC_DOWNLOAD --dest=$RUNC_BINARY --executable
