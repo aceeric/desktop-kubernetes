@@ -4,6 +4,8 @@ config=$1
 
 KUBE_PROM_VER=55.5.0
 
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 url=https://github.com/prometheus-community/helm-charts/releases/download/kube-prometheus-stack-$KUBE_PROM_VER/kube-prometheus-stack-$KUBE_PROM_VER.tgz
 tgz=$DTKBASE/binaries/$(basename $url)
 xec download-obj --url=$url --dest=$tgz
@@ -13,6 +15,7 @@ helm install kube-prometheus\
   --namespace kube-prometheus\
   --create-namespace\
   --kubeconfig $admin_kubeconfig\
+  --values $script_dir/values.yaml\
   $tgz 
 
 echo "TODO for all components that are not pods, customize the values"
