@@ -15,9 +15,9 @@ done <<< '
   VM takes a fair bit of time, including the initial 60 seconds for the boot menu to time out and actually
   start the install.
 
-  Usage: dtk [--config=<path>] [--create-template=<true|false>] [--verify=<files|upstreams>]
-             [--check-compatibility] [--up=<nodelist>] [--down=<nodelist>] [--delete=<nodelist>]
-             [--help]
+  Usage: dtk [--config=<path>] [--create-template=<true|false>] [--install-addon=<addon>]
+             [--verify=<files|upstreams>] [--check-compatibility] [--up=<nodelist>] [--down=<nodelist>]
+             [--delete=<nodelist>] [--help]
 
   Options:
 
@@ -26,6 +26,8 @@ done <<< '
                                See the config.yaml file for structure and supported configs and values.
     --create-template          Optional. Overrides the setting specified in the configuration referenced by
                                the "--config" arg. Allowed values: "true" and "false".
+    --install-addon            Optional. Installs the addon in the "scripts/addons" directory matching the
+                               specified add-on into the running cluster. E.g.: "--install-addon openebs".
     --verify                   Optional. Looks for all the upstreams or filesystem objects used by the script.
                                Valid options are "upstreams" and "files". If "upstreams", then the script does
                                a curl HEAD request for each upstream (e.g. OS ISO, Kubernetes binaries, etc.).

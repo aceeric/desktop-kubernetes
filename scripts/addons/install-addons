@@ -2,7 +2,7 @@
 
 set -e
 
-long_opts=config:,admin-kubeconfig:,priv-key:
+long_opts=config:,admin-kubeconfig:,priv-key:,addon:
 
 script_name=$(basename "$0")
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -10,6 +10,7 @@ script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 config=
 admin_kubeconfig=
 priv_key=
+addon=
 
 function opt_val() {
   opt="$1"
@@ -42,6 +43,10 @@ function parse_args() {
         priv_key=$(opt_val "$2")
         shift 2
         ;;
+      --addon)
+        addon=$(opt_val "$2")
+        shift 2
+        ;;
       --)
         shift
         break
@@ -56,12 +61,21 @@ parse_args "$@"
 yq -i '.cluster.admin-kubeconfig = "'$admin_kubeconfig'"' $config
 yq -i '.cluster.priv-key = "'$priv_key'"' $config
 
-for ((i = 0; i < $(yq '.addons | length' $config); ++i)); do
-  addon="$(yq .addons[$i] $config)"
+if [[ -n "$addon" ]]; then
   if [[ -d $script_dir/$addon ]]; then
     echo "installing $addon in $script_dir/$addon"
     $script_dir/$addon/install $config
   else
-    echo "addon directory not found (skipping): $script_dir/$addon"
+    echo "addon directory not found: $script_dir/$addon"
   fi
-done
+else
+  for ((i = 0; i < $(yq '.addons | length' $config); ++i)); do
+    addon="$(yq .addons[$i] $config)"
+    if [[ -d $script_dir/$addon ]]; then
+      echo "installing $addon in $script_dir/$addon"
+      $script_dir/$addon/install $config
+    else
+      echo "addon directory not found (skipping): $script_dir/$addon"
+    fi
+  done
+fi

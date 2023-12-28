@@ -2,7 +2,7 @@
 
 set -e
 
-long_opts=help,check-compatibility,up:,down:,delete:,verify:,config:,create-template:
+long_opts=help,check-compatibility,up:,down:,delete:,verify:,config:,create-template:,install-addon:
 
 # This snippet enables all scripts to exec all other scripts without knowing any
 # other script's path, as long all the scripts (except this one) are children
@@ -24,6 +24,7 @@ vm_linux=
 vm_create_template=
 vm_create_template_override=
 vm_template_vmname=
+install_addon=
 
 set -a
 source $DTKBASE/artifacts
@@ -102,6 +103,10 @@ function parse_args() {
         fi
         shift 2
         ;;
+      --install-addon)
+        install_addon=$(opt_val "$2")
+        shift 2
+        ;;
       --)
         shift
         break
@@ -119,6 +124,15 @@ function parse_args() {
 
 # parse cmdline
 parse_args "$@"
+
+if [[ -n "$install_addon" ]]; then
+  xec install-addons\
+    --config=$config\
+    --admin-kubeconfig=$DTKBASE/generated/kubeconfig/admin.kubeconfig\
+    --priv-key=$DTKBASE/generated/kickstart/id_ed25519\
+    --addon=$install_addon
+  exit
+fi
 
 # parse config.yaml
 eval $(xec parse-config $config)
