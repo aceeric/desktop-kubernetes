@@ -115,11 +115,11 @@ This project has been tested with the tools, components and versions shown in th
 | k8s      | containerd                                             | v1.7.6                 ||
 | k8s      | kube-proxy (if installed)                              | v1.28.1                ||
 | add-on   | Calico networking                                      | v3.27.0                | v3.27.0 |
-| add-on   | Cilium networking and Hubble monitoring                | 1.15.0-pre.2           |1.15.0-pre.2|
+| add-on   | Cilium networking and Hubble monitoring                | 1.15.0-pre.2           | 1.15.0-pre.2 |
 | add-on   | CoreDNS                                                | 1.11.1                 | 1.28.2 |
-| add-on   | Kube Prometheus Stack                                  | v0.70.0                | 55.5.0|
-| add-on   | Kubernetes Dashboard                                   | v2.7.0                 | 6.0.8 |
-| add-on   | Metrics Server                                         | v0.6.4                 ||
+| add-on   | Kube Prometheus Stack                                  | v0.70.0                | 55.5.0 |
+| add-on   | Kubernetes Dashboard                                   | v2.7.0                 | 6.0.8  |
+| add-on   | Metrics Server                                         | v0.6.4                 | 3.11.0 |
 | add-on   | OpenEBS                                                | 3.9.0                  ||
 | conformance | Sonobuoy conformance                                | v0.56.16               ||
 

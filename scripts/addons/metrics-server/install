@@ -2,12 +2,16 @@
 
 config=$1
 
-METRICS_SERVER_VER=v0.6.4
+METRICS_SERVER_VER=3.11.0
 
 admin_kubeconfig=$(yq .cluster.admin-kubeconfig $config)
 
-metrics_server_download=https://github.com/kubernetes-sigs/metrics-server/releases/download/$METRICS_SERVER_VER/components.yaml
-metrics_server_manifest=$DTKBASE/binaries/metrics-server-components-$METRICS_SERVER_VER.yaml
-xec download-obj --url=$metrics_server_download --dest=$metrics_server_manifest
+url=https://github.com/kubernetes-sigs/metrics-server/releases/download/metrics-server-helm-chart-$METRICS_SERVER_VER/metrics-server-$METRICS_SERVER_VER.tgz
+tgz=$DTKBASE/binaries/$(basename $url)
+xec download-obj --url=$url --dest=$tgz
 
-kubectl --kubeconfig $admin_kubeconfig apply -f $metrics_server_manifest
+helm install metrics-server\
+  --namespace metrics-server\
+  --create-namespace\
+  --kubeconfig $admin_kubeconfig\
+  $tgz
