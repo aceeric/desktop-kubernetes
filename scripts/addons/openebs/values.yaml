@@ -1,0 +1,9 @@
+ndm:
+  enabled: false
+ndmOperator:
+  enabled: false
+localprovisioner:
+  hostpathClass:
+    isDefaultClass: true
+  deviceClass:
+    enabled: false

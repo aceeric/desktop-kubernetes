@@ -120,7 +120,7 @@ This project has been tested with the tools, components and versions shown in th
 | add-on   | Kube Prometheus Stack                                  | v0.70.0                | 55.5.0 |
 | add-on   | Kubernetes Dashboard                                   | v2.7.0                 | 6.0.8  |
 | add-on   | Metrics Server                                         | v0.6.4                 | 3.11.0 |
-| add-on   | OpenEBS                                                | 3.9.0                  ||
+| add-on   | OpenEBS                                                | 3.10.0                 | 3.10.0 |
 | conformance | Sonobuoy conformance                                | v0.56.16               ||
 
 > Static pod container images per: https://kubernetes.io/releases/download/> Static pod container images per: https://kubernetes.io/releases/download/
