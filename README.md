@@ -124,4 +124,4 @@ This project has been tested with the tools, components and versions shown in th
 | add-on   | OpenEBS                                                | 3.10.0                 | 3.10.0 |
 | conformance | Sonobuoy conformance                                | v0.56.16               ||
 
-> Static pod container images per: https://kubernetes.io/releases/download/> Static pod container images per: https://kubernetes.io/releases/download/
+> Static pod container images per: https://kubernetes.io/releases/download/
