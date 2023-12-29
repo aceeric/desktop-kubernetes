@@ -128,13 +128,11 @@ for ((i = 0; i < $vmcnt; ++i)); do
 done
 
 echo "Waiting for all nodes to be Ready"
-
 for ((i = 0; i < $vmcnt; ++i)); do
   kubectl --kubeconfig $admin_kubeconfig wait node "${vm_names[$i]}" --for=condition=Ready --timeout=30s
 done
 
 echo "Labeling node(s) - first node is controller & worker, all other nodes are workers"
-
 for ((i = 0; i < $vmcnt; ++i)); do
   if [[ $i -eq 0 ]]; then
     labels=(controller worker)
@@ -145,5 +143,25 @@ for ((i = 0; i < $vmcnt; ++i)); do
     kubectl --kubeconfig $admin_kubeconfig label node "${vm_names[$i]}" node-role.kubernetes.io/$label=
   done
 done
+
+# if kube-proxy enabled, configure routes on each vm to route pod ip addresses
+host_only_network=$(yq .vbox.host-only-network $config)
+
+if [[ -n "$host_only_network" ]] && [[ $kube_proxy_enabled -eq 1 ]]; then
+  echo "configuring kube-proxy routes"
+  for ((i = 0; i < $vmcnt; ++i)); do
+    this_vm=$(yq .vms[$i].name $config)
+    this_ip=$(xec get-vm-ip $this_vm)
+    for ((j = 0; j < $vmcnt; ++j)); do
+      if [[ $i -eq $j ]]; then
+        continue
+      fi
+      other_vm=$(yq .vms[$j].name $config)
+      other_ip=$(xec get-vm-ip $other_vm)
+      other_cidr=$(yq .vms[$j].pod-cidr $config)
+      ssh -i $priv_key root@$this_ip "ip route add $other_cidr via $other_ip dev enp0s8"
+    done
+  done
+fi
 
 echo "Core Kubernetes cluster creation successful"

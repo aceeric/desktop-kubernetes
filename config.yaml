@@ -32,8 +32,10 @@ k8s:
   cluster-cidr: 10.200.0.0/16
   # Core DNS Service IP (ignored - not implemented yet)
   cluster-dns: 10.32.0.10
-  # not working leave commented out:
-  #kube-proxy: true
+  # if true, install kube-proxy which enables running the cluster without
+  # calico/cilium, using the default cni config. Set false if calico/cilium
+  # are installed.
+  kube-proxy: false
 vbox:
   # results in bridged networking: enter the name of your primary network interface
   host-network-interface:
