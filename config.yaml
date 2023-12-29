@@ -16,13 +16,14 @@
 # - config: Overwritten by the installer for the add-ons.
 #
 addons:
-  - calico
-  #- cilium
+  #- calico
+  - cilium
   - coredns
   - openebs
   - metrics-server
   - kube-prometheus-stack
   - kubernetes-dashboard
+  - ingress-nginx
 k8s:
   # options: "all", or any of comma-separated: "etcd", "kube-apiserver", "kube-proxy",
   # "kube-scheduler", and "kube-controller-manager". If empty, components run as systemd units
