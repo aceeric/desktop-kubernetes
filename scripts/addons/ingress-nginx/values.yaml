@@ -1,0 +1,4 @@
+controller:
+  hostNetwork: true
+  hostPort:
+    enabled: true

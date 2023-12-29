@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+config=$1
+
+INGRESS_NGINX_VER=4.9.0
+
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+url=https://github.com/kubernetes/ingress-nginx/releases/download/helm-chart-$INGRESS_NGINX_VER/ingress-nginx-$INGRESS_NGINX_VER.tgz
+namespace=ingress-nginx
+tgz=$DTKBASE/binaries/$(basename $url)
+xec download-obj --url=$url --dest=$tgz
+
+admin_kubeconfig=$(yq .cluster.admin-kubeconfig $config)
+helm install ingress-nginx\
+  --namespace ingress-nginx\
+  --create-namespace\
+  --kubeconfig $admin_kubeconfig\
+  --values $script_dir/values.yaml\
+  $tgz

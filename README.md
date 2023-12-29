@@ -18,7 +18,7 @@ This project started as a way to automate the steps in **Kelsey Hightower's** [K
 
 ## Quick Start
 
-The `dtk` script in the repo root is what you run. If you supply no arguments, the script will configure the cluster based on the `config.yaml` file in the project root resulting in a three node CentOS 8 cluster consisting of one controller and two workers with VirtualBox Host only + Nat networking.
+The `dtk` script in the repo root is what you run. If you supply no arguments, the script will configure the cluster based on the `config.yaml` file in the project root resulting in a three node CentOS 8 cluster consisting of one controller and two workers with VirtualBox Host only + NAT networking.
 
 > For Centos 8, check the mirror in the `artifacts` script and make sure it makes sense for your geography. (Other Linux options have automatic redirect.)
 >
@@ -122,6 +122,7 @@ This project has been tested with the tools, components and versions shown in th
 | add-on   | Kubernetes Dashboard                                   | v2.7.0                 | 6.0.8  |
 | add-on   | Metrics Server                                         | v0.6.4                 | 3.11.0 |
 | add-on   | OpenEBS                                                | 3.10.0                 | 3.10.0 |
+| add-on   | ingress-nginx                                          | 1.9.5                  | 4.9.0 |
 | conformance | Sonobuoy conformance                                | v0.56.16               ||
 
 > Static pod container images per: https://kubernetes.io/releases/download/
