@@ -25,6 +25,7 @@ vm_create_template=
 vm_create_template_override=
 vm_template_vmname=
 install_addon=
+cmd=
 
 set -a
 source $DTKBASE/artifacts
@@ -73,8 +74,8 @@ function parse_args() {
         ;;
       --up)
         vms=$(opt_val "$2")
-        xec up-down-del "up" $vms
-        exit 0
+        cmd=UP
+        shift 2
         ;;
       --down)
         vms=$(opt_val "$2")
@@ -125,13 +126,19 @@ function parse_args() {
 # parse cmdline
 parse_args "$@"
 
+if [[ "$cmd" == UP ]]; then
+  # can't do in parse because needs config
+  xec up-down-del "up" $vms $config
+  exit 0
+fi
+
 if [[ -n "$install_addon" ]]; then
   xec install-addons\
     --config=$config\
     --admin-kubeconfig=$DTKBASE/generated/kubeconfig/admin.kubeconfig\
     --priv-key=$DTKBASE/generated/kickstart/id_ed25519\
     --addon=$install_addon
-  exit
+  exit 0
 fi
 
 # parse config.yaml

@@ -2,11 +2,11 @@
 #
 # Usage:
 #
-# up-down-del <up|down|del> <comma separated vm list>
+# up-down-del <up|down|del> <comma separated vm list> <config>
 #
 # E.g.:
 #
-# up-down-del up vm1,vm2,vm3
+# up-down-del up vm1,vm2,vm3 ~/my-config.yaml
 #
 
 if [[ $1 == "up" ]]; then
@@ -15,7 +15,7 @@ if [[ $1 == "up" ]]; then
     VBoxManage startvm $vm
   done
   sleep 5s
-  xec show-ssh $DTKBASE/generated/kickstart/id_ed25519 "${vms[@]}"
+  xec show-ssh $DTKBASE/generated/kickstart/id_ed25519 $3
 elif [[ $1 == "down" ]]; then
   IFS=',' read -ra vms <<< "$2"
   for vm in "${vms[@]}"; do
