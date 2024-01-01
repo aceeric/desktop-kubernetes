@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+config=$1
+
+EXTDNS_VER=1.13.1
+
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+url=https://github.com/kubernetes-sigs/external-dns/releases/download/external-dns-helm-chart-$EXTDNS_VER/external-dns-$EXTDNS_VER.tgz
+tgz=$DTKBASE/binaries/$(basename $url)
+xec download-obj --url=$url --dest=$tgz
+
+admin_kubeconfig=$(yq .cluster.admin-kubeconfig $config)
+helm install external-dns\
+  --namespace external-dns\
+  --create-namespace\
+  --kubeconfig $admin_kubeconfig\
+  --wait\
+  --values $script_dir/values.yaml\
+  $tgz

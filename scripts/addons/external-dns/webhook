@@ -1,0 +1,92 @@
+#!/usr/bin/env python3
+#
+# Usage:
+#
+# sudo -E webhook --ip-address <IP address of VM>
+#
+# Example:
+#
+# sudo -E ./webhook --ip-address 192.168.56.200
+#
+# Sudo is needed because the app modifies /etc/hosts. -E is needed so Python can
+# find all its modules/packages when running as root.
+#
+
+from flask import Flask, request, Response
+import json, re, sys
+
+app = Flask(__name__)
+mt = "application/external.dns.webhook+json;version=1"
+recs = "[]"
+filters = {"include":["dtk.io"]}
+cluster_ip = "192.168.56.200"
+
+@app.route("/", methods=["GET"])
+def negotiate():
+    print("\nnegotiate")
+    debug()
+    return Response(json.dumps(filters, separators=(",", ":")), mimetype=mt)
+
+@app.route("/records", methods=["GET"])
+def records():
+    print("\nget records")
+    global recs
+    debug()
+    return Response(recs, mimetype=mt)
+
+@app.route("/adjustendpoints", methods=["POST"])
+def adjust_endpoints():
+    print("\nadjust endpoints")
+    global recs
+    recs = request.data.decode().strip()
+    update_etc_hosts(json.loads(recs))
+    debug()
+    return Response("[]", mimetype=mt)
+
+@app.route("/records", methods=["POST"])
+def apply_changes():
+    print("\npost records")
+    debug()
+    return Response(mimetype=mt)
+
+def update_etc_hosts(recs_list):
+    fname = "/etc/hosts"
+    for rec in recs_list:
+        new_entry = "%s %s\n" % (cluster_ip, rec["dnsName"])
+        found = False
+        expr = r"(^\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})[\s]+" + rec["dnsName"] + "$"
+        with open(fname, "r") as file:
+            lines = file.readlines()
+        for idx, line in enumerate(lines):
+            result = re.match(expr, line)
+            if result is not None:
+                found = True
+                if result.groups()[0] != cluster_ip:
+                    print("updating entry for %s" % rec["dnsName"])
+                    lines[idx] = new_entry
+                else:
+                    print("entry matches for %s - no changes made" % rec["dnsName"])
+                break
+        if not found:
+            print("adding entry for %s" % rec["dnsName"])
+            lines.extend([new_entry])
+
+    with open(fname, "w") as file:
+        file.writelines(lines)
+
+def debug():
+    print("REQ DATA:", request.data)
+    for k in request.headers.keys():
+        print("HDR %s = %s" % (k, request.headers.get(k)))
+
+if __name__ == "__main__":
+    i = 0
+    while i < len(sys.argv):
+        if sys.argv[i].startswith("--ip-address="):
+            cluster_ip = sys.argv[i].split("=")[1]
+        elif sys.argv[i] == "--ip-address":
+            i += 1
+            cluster_ip = sys.argv[i]
+        i += 1
+    print("mapping hosts to ip address %s" % cluster_ip)
+    app.run(host="0.0.0.0")
