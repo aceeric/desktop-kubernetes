@@ -63,7 +63,7 @@ cat $containerd_binary | ssh -i $priv_key root@$worker_ip\
 echo "Copying containerd service and toml files to worker VM"
 scp -i $priv_key $script_dir/containerd.service root@$worker_ip:/etc/systemd/system/
 
-ssh -i $priv_key root@$worker_ip "mkdir -p /etc/containerd"
+ssh -i $priv_key root@$worker_ip "mkdir -p /etc/containerd/certs.d"
 # this TOML produced by 'containerd config default > config.toml' AFTER containerd installed,
 # then copy back into this project plus tweak cgroup:
 scp -i $priv_key $script_dir/config.toml root@$worker_ip:/etc/containerd/
