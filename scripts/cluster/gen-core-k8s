@@ -110,6 +110,7 @@ for ((i = 0; i < $vmcnt; ++i)); do
    --admin-kubeconfig=$admin_kubeconfig\
    --pod-cidr=$pod_cidr\
    --containerized-cplane=$containerized_cplane\
+   --config=$config\
    --ca-cert=$ca_cert\
    --ca-key=$ca_key
 

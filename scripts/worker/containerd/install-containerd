@@ -2,7 +2,7 @@
 
 set -e
 
-long_opts=priv-key:,worker-ip:,containerd-binary:,pod-cidr:
+long_opts=priv-key:,worker-ip:,containerd-binary:,pod-cidr:,config:
 script_name=$(basename "$0")
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
@@ -10,6 +10,7 @@ priv_key=
 worker_ip=
 containerd_binary=
 pod_cidr=
+config=
 
 function opt_val() {
   opt="$1"
@@ -44,6 +45,10 @@ function parse_args() {
         ;;
       --pod-cidr)
         pod_cidr=$(opt_val "$2")
+        shift 2
+        ;;
+      --config)
+        config=$(opt_val "$2")
         shift 2
         ;;
       --)
@@ -93,6 +98,16 @@ echo "Copying 20-containerd-net.conflist to /etc/cni/net.d/ in worker VM"
 ssh -i $priv_key root@$worker_ip "mkdir -p /etc/cni/net.d /var/log/desktop-kubernetes/cni"
 sed $script_dir/20-containerd-net.conflist\
  -e "s|PODCIDR|$pod_cidr|g" | ssh -i $priv_key root@$worker_ip "cat > /etc/cni/net.d/20-containerd-net.conflist"
+
+# configure containerd mirroring
+
+mirror=$(yq .k8s.containerd-mirror.name $config)
+if [[ -n $mirror && $mirror != "null" ]]; then
+  echo "Configure containerd mirroring"
+  ssh -i $priv_key root@$worker_ip "mkdir -p /etc/containerd/certs.d/$mirror"
+  mirrorcfg=$(yq .k8s.containerd-mirror.config $config)
+  echo "$mirrorcfg" | ssh -i $priv_key root@$worker_ip "cat >| /etc/containerd/certs.d/$mirror/hosts.toml"
+fi
 
 echo "Starting containerd service"
 ssh -i $priv_key root@$worker_ip "systemctl daemon-reload && systemctl enable --now containerd"

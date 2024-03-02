@@ -5,7 +5,7 @@
 set -e
 
 long_opts=controller-ip:,kube-proxy-enabled:,worker-hostname:,priv-key:,admin-kubeconfig:,pod-cidr:\
-,containerized-cplane:,ca-cert:,ca-key:,cluster-cidr:
+,containerized-cplane:,config:,ca-cert:,ca-key:,cluster-cidr:
 script_name=$(basename "$0")
 
 # api
@@ -16,6 +16,7 @@ priv_key=
 admin_kubeconfig=
 pod_cidr=
 containerized_cplane=
+config=
 ca_cert=
 ca_key=
 cluster_cidr=
@@ -68,6 +69,10 @@ function parse_args() {
         ;;
       --containerized-cplane)
         containerized_cplane=$(opt_val "$2")
+        shift 2
+        ;;
+      --config)
+        config=$(opt_val "$2")
         shift 2
         ;;
       --ca-cert)
@@ -126,7 +131,8 @@ xec install-containerd\
  --priv-key=$priv_key\
  --worker-ip=$worker_ip\
  --containerd-binary=$CONTAINERD_BINARY\
- --pod-cidr=$pod_cidr
+ --pod-cidr=$pod_cidr\
+ --config=$config
 
 echo "installing the kubelet"
 xec install-kubelet\
