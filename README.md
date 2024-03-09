@@ -106,16 +106,16 @@ This project has been tested with the tools, components and versions shown in th
 | guest VM | Centos ISO (X= 8 or 9)                                 | Stream-X-x86_64-latest ||
 | guest VM | Rocky Linux ISO                                        | Rocky-9.3-x86_64-dvd   ||
 | guest VM | Virtual Box Guest Additions ISO                        | 7.0.8                  ||
-| k8s      | etcd                                                   | v3.5.9                 ||
-| k8s      | kube-apiserver                                         | v1.28.1                ||
-| k8s      | kube-controller-manager                                | v1.28.1                ||
-| k8s      | kube-scheduler                                         | v1.28.1                ||
-| k8s      | kubelet                                                | v1.28.1                ||
-| k8s      | crictl                                                 | v1.28.0                ||
-| k8s      | runc                                                   | v1.1.9                 ||
-| k8s      | cni plugins                                            | v1.3.0                 ||
-| k8s      | containerd                                             | v1.7.6                 ||
-| k8s      | kube-proxy (if installed)                              | v1.28.1                ||
+| k8s      | etcd                                                   | v3.5.12                ||
+| k8s      | kube-apiserver                                         | v1.29.2                ||
+| k8s      | kube-controller-manager                                | v1.29.2                ||
+| k8s      | kube-scheduler                                         | v1.29.2                ||
+| k8s      | kubelet                                                | v1.29.2                ||
+| k8s      | kube-proxy (if installed)                              | v1.29.2                ||
+| k8s      | crictl                                                 | v1.29.0                ||
+| k8s      | runc                                                   | v1.1.12                ||
+| k8s      | cni plugins                                            | v1.4.0                 ||
+| k8s      | containerd                                             | 1.7.13                 ||
 | add-on   | Calico networking                                      | v3.27.0                | v3.27.0 |
 | add-on   | Cilium networking and Hubble monitoring                | 1.15.0-pre.2           | 1.15.0-pre.2 |
 | add-on   | CoreDNS                                                | 1.11.1                 | 1.28.2 |
