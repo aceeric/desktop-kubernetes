@@ -11,7 +11,7 @@
 
 set -e
 
-long_opts=template-vmname:,linux-iso-path:,guest-additions-path:,host-network-interface:,host-only-network:,vboxdir:
+long_opts=template-vmname:,linux-iso-path:,guest-additions-path:,host-network-interface:,host-only-network:,vboxdir:,kickstart:
 script_name=$(basename "$0")
 
 # api
@@ -21,6 +21,7 @@ guest_additions_path=
 host_network_interface=
 host_only_network=
 vboxdir=
+kickstart=
 
 #internal
 host_only_network_name=
@@ -72,6 +73,10 @@ function parse_args() {
         vboxdir=$(opt_val "$2")
         shift 2
         ;;
+      --kickstart)
+        kickstart=$(opt_val "$2")
+        shift 2
+        ;;
       --)
         shift
         break
@@ -86,7 +91,7 @@ echo "checking/generating SSH keys -- the public key will be copied to the VM by
 xec gen-ssh-keyfiles
 
 echo "generating kickstart ISO"
-xec gen-kickstart-iso
+xec gen-kickstart-iso $kickstart
 kickstart_iso_path=$DTKBASE/generated/iso/kickstart.iso
 
 if [[ ! -z "$host_only_network" ]]; then

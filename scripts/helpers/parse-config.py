@@ -1,10 +1,5 @@
-#!/usr/bin/env bash
-#
-# Parse the yaml configuration for k8s, vbox, and vm keys. Faster
-# then 'yq', so - kept it around.
-#
+#!/usr/bin/env python3
 
-CFGFILE="$1" python3 <<END
 import yaml, sys, os
 
 valid_configs = [
@@ -25,7 +20,10 @@ skip_configs = [
     "k8s.containerd-mirror"
 ]
 
-config_file = os.environ['CFGFILE']
+quiet = False
+config_file = sys.argv[1]
+if len(sys.argv) == 3:
+    quiet = True
 
 with open(config_file, "r") as file:
     cfg = yaml.safe_load(file)
@@ -51,5 +49,6 @@ for key in list(cfg.keys()):
         var = (key + "-" + subkey).replace("-", "_")
         vars = vars + "%s%s=%s" % (newline, var, val)
         newline = "\n"
-print(vars)
-END
+
+if not quiet:
+    print(vars)

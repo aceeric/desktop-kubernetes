@@ -91,6 +91,7 @@ linux_iso_path=$CENTOS8_ISO_FILE
 # if it does not already exist - which is used below when cloning the VM
 
 if [[ $create_template -eq 1 ]] ; then
+  kickstart=$(yq .vm.kickstart $config)
   echo "creating a template VM"
   xec create-template-vm\
    --template-vmname=$template_vmname\
@@ -98,7 +99,8 @@ if [[ $create_template -eq 1 ]] ; then
    --guest-additions-path=$GUEST_ADDITIONS_ISO_FILE\
    --host-network-interface=$host_network_interface\
    --host-only-network=$host_only_network\
-   --vboxdir=$vboxdir
+   --vboxdir=$vboxdir\
+   --kickstart=$kickstart
 fi
 
 vmcnt=$(yq '.vms | length' $config)

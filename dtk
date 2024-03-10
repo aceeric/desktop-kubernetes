@@ -142,7 +142,8 @@ if [[ -n "$install_addon" ]]; then
 fi
 
 # parse config.yaml
-eval $(xec parse-config $config)
+xec parse-config.py $config check || exit
+eval $(xec parse-config.py $config)
 
 if [[ -n "$vm_create_template_override" ]]; then
   if [[ "$vm_create_template_override" == "true" ]]; then

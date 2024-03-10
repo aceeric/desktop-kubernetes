@@ -10,11 +10,7 @@ Desktop Kubernetes is the *57 Chevy* of Kubernetes distros: you can take it apar
 
 The project consists of a number of bash scripts and supporting manifests / config files. The design is documented [here](https://github.com/aceeric/desktop-kubernetes/blob/master/resources/design.md).
 
-One of the premises of the project is transparency. Every single binary or manifest used to create the cluster is pulled directly from an official upstream, including the OS itself.
-
-This has been tested on Ubuntu 20.04.X systems with 64 gigs of RAM and 6+ hyper-threaded processors.
-
-This project started as a way to automate the steps in **Kelsey Hightower's** [Kubernetes The Hard Way](https://github.com/kelseyhightower/kubernetes-the-hard-way) - just to see if I could. But at this point I pretty much rely on it for all my local Kubernetes development.
+This project started as a way to automate the steps in **Kelsey Hightower's** [Kubernetes The Hard Way](https://github.com/kelseyhightower/kubernetes-the-hard-way) - just to see if I could. But at this point I pretty much rely on it for all my local Kubernetes development. I use it on Ubuntu 20.04.X systems with 64 gigs of RAM and 6+ hyper-threaded processors
 
 ## Quick Start
 
@@ -46,84 +42,92 @@ The project ships with a `config.yaml` file in the project root that specifies t
 
 1. **k8s:** Kubernetes cluster configuration.
 2. **vbox:** VirtualBox configuration.
-3. **vm:** VirtualBox VM configuration.
+3. **vm:** VM configuration.
 4. **vms:** A list of VMs to create for the cluster, and their characteristics.
 4. **addons:** A list of cluster add-ons to install, e.g.: CNI, CoreDNS, etc.
 4. **config:** Populated by the installer.
 
 | Key | Description |
 |-|-|
-| `k8s.containerized-cplane`    | If specified, creates the control plane components as static pods on the controller VM like Kubeadm, RKE2, et. al. (By default, creates the  control plane components as as systemd units.) Allowed values: `all`, or any of: `etcd`, `kube-apiserver`, `kube-proxy`, `kube-scheduler`, `kube-controller-manager` (comma-separated.) E.g.: `etcd,kube-apiserver` |
-| `k8s.cluster-cidr`            | Configures CIDR range for Pods. This is applied to the `kube-controller-manager`. (Be aware of `--node-cidr-mask-size...`  args which you can't override at this time.) |
-| `k8s.cluster-dns`             | Ignored - not yet implemented. |
-| `k8s.kube-proxy`              | If true, you can run the cluster without Calico  or Cilium (or other CNI) using the default CNI configuration that is established by `scripts/worker/containerd/install-containerd`. |
+| `k8s.containerized-cplane` | If specified, creates the control plane components as static pods on the controller VM like Kubeadm, RKE2, et. al. (By default, creates the control plane components as as systemd units.) Allowed values: `all`, or any of: `etcd`, `kube-apiserver`, `kube-proxy`, `kube-scheduler`, `kube-controller-manager` (comma-separated.) E.g.: `etcd,kube-apiserver` |
+| `k8s.cluster-cidr` | Configures CIDR range for Pods. This is applied to the `kube-controller-manager`. (Be aware of `--node-cidr-mask-size...` args which you can't override at this time.) |
+| `k8s.cluster-dns` | Ignored - not yet implemented. |
+| `k8s.kube-proxy` | If true, you can run the cluster without Calico or Cilium (or other CNI) using the default CNI configuration that is established by `scripts/worker/containerd/install-containerd`. |
 | `k8s.containerd-mirror` | Supports configuring `containerd` to mirror to a different registry. The example in the yaml (commented out) has all images mirrored to a distribution server on 192.168.0.49:8080. Background: I use my own caching pull-only, pull-through OCI distribution server https://github.com/aceeric/ociregistry running as a systemd service on my desktop to mitigate rate limiting. |
 | `vbox.host-network-interface` | The name of the primary network interface on your machine. The scripts use this to configure the VirtualBox bridge network for each guest VM. **Important**: you must specify this consistently when creating the template, and when creating a cluster from the template. The reason is that the option configures settings at the VM level that then propagate into the guest OS. Since guests are cloned from the template, the guest networking has to be defined consistently with the template. This config is mutually exclusive with `vbox.host-only-network`. |
-| `vbox.host-only-network`      | The left three octets of the network. E.g. `192.168.56`. (*For some additional information on this address, see*: [the VirtualBox docs](https://www.virtualbox.org/manual/ch06.html) *section on "Host-Only Networking"*.) This option configures NAT + host only networking mode. The scripts will create a new host only network and configure the cluster to use it for intra-cluster networking, and will configure NAT for the cluster to access the internet. *See important note in the table entry immediately above regarding VBox networking type.* This config is mutually exclusive with `vbox.host-network-interface`. |
-| `vbox.vboxdir`                | The directory where you keep your VirtualBox VM files. The script uses the `VBoxManage` utility to create the VMs, which will in turn create a sub-directory under this directory for each VM. If empty, the script will get the value from VirtualBox. The directory must exist. The script will not create it. |
-| `vm.linux`                    | Valid values are `centos8` for CentOS 8 Stream (the default), `alma` for Alma Linux, and `rocky` for Rocky Linux. Ignored unless `vm.create-template` is specified. |
-| `vm.create-template`          | True/False. Causes the script to create a template VM to clone all the cluster nodes from before bringing up the cluster. (This step by far takes the longest.) If not specified, the script expects to find an existing VM to clone from per the `vm.template-vmname` setting. This option installs the OS using Kickstart, then installs Guest Additions. **You must set this to true for the very first cluster you create.** |
-| `vm.template-vmname`          | Specifies the template VM name to create - or clone from.    |
-| `vms`                         | This is a list of VBox VMs. Each VM in the list specifies the following keys: |
-| -- `name`                        | The VM Name.                                                 |
-| -- `cpu`                         | Number of CPUs.                                              |
-| -- `mem`                         | RAM in gigabytes. E.g.: `8192`                               |
-| -- `ip`                          | The rightmost octet of the IP address for the host. Ignored unless `vbox.host-only-network` is configured. So, for example, if `vbox.host-only-network` is `192.168.56` and this `ip` value is `200`. then the IP address assigned to the host-only interface in the VM is `192.168.56.200`. |
-| -- `pod-cidr`                    | Used to configure CNI for containerd. As soon as Cilium or Calico are installed then this configuration is superseded. |
-| `addons`                      | Installs the listed addons in the `scripts/addons` directory. E.g. Calico, Cilium, Kube Prometheus Stack, etc. Addons are installed in the order listed in the yaml. _CNI needs to be first!_ |
-| `cluster`                     | Contains cluster information for the addons. Populated (overwritten) by `scripts/addons/install-addons`. |
+| `vbox.host-only-network` | The left three octets of the network. E.g. `192.168.56`. (*For some additional information on this address, see*: [the VirtualBox docs](https://www.virtualbox.org/manual/ch06.html) *section on "Host-Only Networking"*.) This option configures NAT + host only networking mode. The scripts will create a new host only network and configure the cluster to use it for intra-cluster networking, and will configure NAT for the cluster to access the internet. *See important note in the table entry immediately above regarding VBox networking type.* This config is mutually exclusive with `vbox.host-network-interface`. |
+| `vbox.vboxdir` | The directory where you keep your VirtualBox VM files. The script uses the `VBoxManage` utility to create the VMs, which will in turn create a sub-directory under this directory for each VM. If empty, the script will get the value from VirtualBox. The directory must exist. The script will not create it. |
+| `vm.linux` | Valid values are `centos8` for CentOS 8 Stream (the default), `alma` for Alma Linux, and `rocky` for Rocky Linux. Ignored unless `vm.create-template` is specified. |
+| `vm.create-template` | True/False. Causes the script to create a template VM to clone all the cluster nodes from before bringing up the cluster. (This step by far takes the longest.) If not specified, the script expects to find an existing VM to clone from per the `vm.template-vmname` setting. This option installs the OS using Kickstart, then installs Guest Additions. **You must set this to true for the very first cluster you create.** |
+| `vm.template-vmname` | Specifies the template VM name to create - or clone from. |
+| `vm.kickstart` | Specifies the name of the kickstart file to configure the OS. The file has to be in the `scripts/os` directory. The default is `ks.txt.cfg` which is a non-graphical install. The other kickstart file is `ks.cfg` which is a graphical install. |
+| `vms` | This is a list of VBox VMs. Each VM in the list specifies the following keys: |
+| -- `name` | The VM Name. |
+| -- `cpu` | Number of CPUs. |
+| -- `mem` | RAM in gigabytes. E.g.: `8192` |
+| -- `ip` | The rightmost octet of the IP address for the host. Ignored unless `vbox.host-only-network` is configured. So, for example, if `vbox.host-only-network` is `192.168.56` and this `ip` value is `200`. then the IP address assigned to the host-only interface in the VM is `192.168.56.200`. |
+| -- `pod-cidr` | Used to configure CNI for containerd. As soon as Cilium or Calico are installed then this configuration is superseded. |
+| `addons` | Installs the listed addons in the `scripts/addons` directory. E.g. Calico, Cilium, Kube Prometheus Stack, etc. Addons are installed in the order listed in the yaml. _CNI needs to be first!_ |
+| `cluster` | Contains cluster information for the addons. Populated (overwritten) by `scripts/addons/install-addons`. |
 
 ## TODOs
 
 | Task | Description |
 |-|-|
-| Network config        | For Rocky 9, configure networking the new way vs network scripts |
-| Graceful shutdown     | Configure graceful shutdown |
-| Management Cluster    | Support the ability to configure as a management cluster |
-| Minimal OS            | Provision with minimal (text-only, least packages) OS |
-| Kube Bench            | https://github.com/aquasecurity/kube-bench |
-| Load Balancer         | [MetalLB](https://github.com/google/metallb)? [Kube VIP](https://kube-vip.io/)?|
-| Firewall              | Get it working with nftables rules and all ports locked down |
-| SELinux               | Enable SELinux |
+| Network config | For Rocky 9, configure networking the new way vs network scripts |
+| Graceful shutdown | Configure graceful shutdown |
+| Management Cluster | Support the ability to configure as a management cluster |
+| Kube Bench | https://github.com/aquasecurity/kube-bench |
+| Load Balancer | [MetalLB](https://github.com/google/metallb)? [Kube VIP](https://kube-vip.io/)?|
+| Firewall | Get it working with nftables rules and all ports locked down |
+| SELinux | Enable SELinux |
 | Other VM provisioning | Consider Packer |
-| Virtualization        | Consider KVM |
+| Virtualization | Consider KVM |
 
 ## Versions
 
-This project has been tested with the tools, components and versions shown in the table below. Where the _Category_ column says _host_ - you are responsible to install those. This project tries not to alter your environment and so this project will use whatever is there and will not mutate your system. Everything else in the table is downloaded by the project but is only installed into the VMs created by the project. To install with different k8s versions, change the corresponding version variable (e.g. `K8S_VER` or `GUEST_ADDITIONS_VER`) in the `artifacts` file. To install different add-on versions - change the version in the corresponding directory `scripts/addons`.
+This project has been tested with the tools, components and versions shown in the table below. Where the _Category_ column says _host_ - you are responsible to install those. This project tries not to alter your environment and so this project will use whatever is present and will not mutate your system. Everything else in the table is downloaded by the project but is only installed into the VMs created by the project. To install with different k8s versions, change the corresponding version variable (e.g. `K8S_VER` or `GUEST_ADDITIONS_VER`) in the `artifacts` file.
 
-| Category | Component                                              | App Version            | Chart Version (if applicable) |
-|-|-|-|-|
-| host     | Linux desktop                                          | Ubuntu 22.04.3 LTS     ||
-| host     | openssl                                                | 3.0.2                  ||
-| host     | openssh                                                | OpenSSH_8.9p1          ||
-| host     | genisoimage (used to create the Kickstart ISO)         | 1.1.11                 ||
-| host     | Virtual Box / VBoxManage                               | 7.0.10                 ||
-| host     | Helm                                                   | v3.13.1                ||
-| host     | kubectl (client only)                                  | v1.28.0                ||
-| host     | curl                                                   | 7.81.0                 ||
-| host     | yq                                                     | 4.40.5                 ||
-| guest VM | Centos ISO (X= 8 or 9)                                 | Stream-X-x86_64-latest ||
-| guest VM | Rocky Linux ISO                                        | Rocky-9.3-x86_64-dvd   ||
-| guest VM | Virtual Box Guest Additions ISO                        | 7.0.8                  ||
-| k8s      | etcd                                                   | v3.5.12                ||
-| k8s      | kube-apiserver                                         | v1.29.2                ||
-| k8s      | kube-controller-manager                                | v1.29.2                ||
-| k8s      | kube-scheduler                                         | v1.29.2                ||
-| k8s      | kubelet                                                | v1.29.2                ||
-| k8s      | kube-proxy (if installed)                              | v1.29.2                ||
-| k8s      | crictl                                                 | v1.29.0                ||
-| k8s      | runc                                                   | v1.1.12                ||
-| k8s      | cni plugins                                            | v1.4.0                 ||
-| k8s      | containerd                                             | 1.7.13                 ||
-| add-on   | Calico networking                                      | v3.27.0                | v3.27.0 |
-| add-on   | Cilium networking and Hubble monitoring                | 1.15.0-pre.2           | 1.15.0-pre.2 |
-| add-on   | CoreDNS                                                | 1.11.1                 | 1.28.2 |
-| add-on   | Kube Prometheus Stack                                  | v0.70.0                | 55.5.0 |
-| add-on   | Kubernetes Dashboard                                   | v2.7.0                 | 6.0.8  |
-| add-on   | Metrics Server                                         | v0.6.4                 | 3.11.0 |
-| add-on   | OpenEBS                                                | 3.10.0                 | 3.10.0 |
-| add-on   | ingress-nginx                                          | 1.9.5                  | 4.9.0 |
-| conformance | Sonobuoy conformance                                | v0.56.16               ||
+| Category | Component | Version |
+|-|-|-|
+| host | Linux desktop | Ubuntu 22.04.4 LTS |
+| host | openssl | 3.0.2 |
+| host | openssh | OpenSSH_8.9p1 |
+| host | genisoimage (used to create the Kickstart ISO) | 1.1.11 |
+| host | Virtual Box / VBoxManage | 7.0.10 |
+| host | Helm | v3.13.1 |
+| host | kubectl (client only) | v1.29.2 |
+| host | curl | 7.81.0 |
+| host | yq | 4.40.5 |
+| guest VM | Centos ISO (X= 8 or 9) | Stream-X-x86_64-latest |
+| guest VM | Rocky Linux ISO | Rocky-9.3-x86_64-dvd |
+| guest VM | Virtual Box Guest Additions ISO | 7.0.14 |
+| k8s | kube-apiserver | v1.29.2 |
+| k8s | kube-controller-manager | v1.29.2 |
+| k8s | kube-scheduler | v1.29.2 |
+| k8s | kubelet | v1.29.2 |
+| k8s | kube-proxy (if installed) | v1.29.2 |
+| k8s | etcd | v3.5.12 |
+| k8s | crictl | v1.29.0 |
+| k8s | runc | v1.1.12 |
+| k8s | cni plugins | v1.4.0 |
+| k8s | containerd | 1.7.13 |
+| conformance | Sonobuoy conformance | v0.56.16 |
+
+### Add-ons
+
+To install different add-on versions - change the version in the corresponding directory `scripts/addons`.
+
+| Add-on | App Version | Chart Version |
+|-|-|-|
+| Calico networking | v3.27.0 | v3.27.0 |
+| Cilium networking and Hubble monitoring | 1.15.0-pre.2 | 1.15.0-pre.2 |
+| CoreDNS | 1.11.1 | 1.28.2 |
+| Kube Prometheus Stack | v0.70.0 | 55.5.0 |
+| Kubernetes Dashboard | v2.7.0 | 6.0.8 |
+| Metrics Server | v0.6.4 | 3.11.0 |
+| OpenEBS | 3.10.0 | 3.10.0 |
+| ingress-nginx | 1.9.5 | 4.9.0 |
+
 
 > Static pod container images per: https://kubernetes.io/releases/download/

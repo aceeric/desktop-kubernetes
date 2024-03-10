@@ -41,11 +41,11 @@ k8s:
   # create under /etc/containerd/certs.d/ and the contents of a host.toml
   # file in the 'config' key.
   containerd-mirror:
-  #name: _default
-  #config: |
-  #  [host."http://192.168.0.49:8080"]
-  #    capabilities = ["pull", "resolve"]
-  #    skip_verify = true
+  # name: _default
+  # config: |
+  #   [host."http://192.168.0.49:8080"]
+  #     capabilities = ["pull", "resolve"]
+  #     skip_verify = true
 vbox:
   # results in bridged networking: enter the name of your primary network interface
   host-network-interface:
@@ -60,6 +60,7 @@ vm:
   create-template: true
   # template VM name to clone the cluster VMs from
   template-vmname: centos8
+  kickstart: ks.text.cfg
 vms:
   - name: vm1
     cpu: 3
