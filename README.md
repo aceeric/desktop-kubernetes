@@ -60,7 +60,7 @@ The project ships with a `config.yaml` file in the project root that specifies t
 | `vm.linux` | Valid values are `centos8` for CentOS 8 Stream (the default), `alma` for Alma Linux, and `rocky` for Rocky Linux. Ignored unless `vm.create-template` is specified. |
 | `vm.create-template` | True/False. Causes the script to create a template VM to clone all the cluster nodes from before bringing up the cluster. (This step by far takes the longest.) If not specified, the script expects to find an existing VM to clone from per the `vm.template-vmname` setting. This option installs the OS using Kickstart, then installs Guest Additions. **You must set this to true for the very first cluster you create.** |
 | `vm.template-vmname` | Specifies the template VM name to create - or clone from. |
-| `vm.kickstart` | Specifies the name of the kickstart file to configure the OS. The file has to be in the `scripts/os` directory. The default is `ks.txt.cfg` which is a non-graphical install. The other kickstart file is `ks.cfg` which is a graphical install. |
+| `vm.kickstart` | Specifies the name of the kickstart file to configure the OS. The file has to be in the `scripts/os` directory. The default is `ks.text.cfg` which is a non-graphical install. The other kickstart file is `ks.cfg` which is a graphical install. |
 | `vms` | This is a list of VBox VMs. Each VM in the list specifies the following keys: |
 | -- `name` | The VM Name. |
 | -- `cpu` | Number of CPUs. |
