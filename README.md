@@ -127,7 +127,6 @@ To install different add-on versions - change the version in the corresponding d
 | Kubernetes Dashboard | v2.7.0 | 6.0.8 |
 | Metrics Server | v0.6.4 | 3.11.0 |
 | OpenEBS | 3.10.0 | 3.10.0 |
-| ingress-nginx | 1.9.5 | 4.9.0 |
-
+| Ingress NGINX Controller | 1.9.5 | 4.9.0 |
 
 > Static pod container images per: https://kubernetes.io/releases/download/
