@@ -1,0 +1,110 @@
+#!/usr/bin/env bash
+
+set -e
+
+long_opts=template-vmname:,linux-iso-path:,host-only-network:,kickstart:,os-variant:
+script_name=$(basename "$0")
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# api
+template_vmname=
+linux_iso_path=
+# not supported (yet) host_network_interface=
+host_only_network=
+kickstart=
+os_variant=
+
+function opt_val() {
+  opt="$1"
+  if [[ "$opt" == =* ]]; then
+    echo "${opt:1}"
+  else
+    echo "$opt"
+  fi
+}
+
+function parse_args() {
+  if [[ "$#" -eq 0 ]]; then
+    echo "no args provided"
+    exit 1
+  fi
+  local parsed
+  parsed=$(getopt --options "" --longoptions $long_opts -n $script_name -- "$@")
+  if [[ "$?" -ne 0 ]]; then
+    exit 1
+  fi
+
+  eval set -- "$parsed"
+  while true; do
+    case "$1" in
+	    --template-vmname)
+        template_vmname=$(opt_val "$2")
+        shift 2
+        ;;
+      --linux-iso-path)
+        linux_iso_path=$(opt_val "$2")
+        shift 2
+        ;;
+      #--host-network-interface)
+      #  host_network_interface=$(opt_val "$2")
+      #  shift 2
+      #  ;;
+      --host-only-network)
+        host_only_network=$(opt_val "$2")
+        shift 2
+        ;;
+      --kickstart)
+        kickstart=$(opt_val "$2")
+        shift 2
+        ;;
+      --os-variant)
+        os_variant=$(opt_val "$2")
+        shift 2
+        ;;
+      --)
+        shift
+        break
+        ;;
+    esac
+  done
+}
+
+parse_args "$@"
+
+## debug
+#echo "template_vmname=$template_vmname"
+#echo "linux_iso_path=$linux_iso_path"
+#echo "host_only_network=$host_only_network"
+#echo "kickstart=$kickstart"
+#echo "os_variant=$os_variant"
+#exit
+
+echo "checking/generating SSH keys -- the public key will be copied to the VM by the kickstart script"
+xec gen-ssh-keyfiles
+
+echo "interpolating SSH key into kickstart file"
+ksout=$DTKBASE/generated/kickstart
+sshkey=$(<$DTKBASE/generated/kickstart/id_ed25519.pub)
+sed "s/SSHKEY/$sshkey/" $DTKBASE/kickstarts/$kickstart >| $ksout/ks.cfg
+
+# memory is MiB
+echo "creating VM"
+virt-install\
+  --noautoconsole\
+  --name $template_vmname\
+  --memory 2000\
+  --vcpus 2\
+  --disk size=30\
+  --cdrom $linux_iso_path\
+  --location $linux_iso_path\
+  --boot hd,cdrom\
+  --os-variant $os_variant\
+  --initrd-inject $ksout/ks.cfg\
+  --extra-args="ks=file:/ks.cfg console=tty0 console=ttyS0,115200n8"
+
+echo "waiting (indefinitely) for the machine to power off"
+while true; do
+  virsh list --all | grep $template_vmname | grep -iv running && break || sleep 10s
+done
+
+echo "template VM fully provisioned"

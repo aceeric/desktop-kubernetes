@@ -1,13 +1,9 @@
 #!/usr/bin/env bash
-#
-# Provisions VBox VMs. If --create-template then creates a template. Otherwise expects a
-# VM named by the --template-vmname param to exist. Clones that template VM into one or
-# more VMs based on the config.yaml per --config arg.
-#
 
 set -e
 
-long_opts=create-template:,linux:,host-network-interface:,host-only-network:,vboxdir:,template-vmname:,config:
+long_opts=create-template:,linux:,host-network-interface:,host-only-network:,vboxdir:,\
+template-vmname:,config:,os-variant:
 script_name=$(basename "$0")
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
@@ -18,6 +14,7 @@ host_only_network=
 vboxdir=
 template_vmname=
 config=
+os_variant=
 
 #
 # option parsing helper
@@ -72,6 +69,10 @@ function parse_args() {
         config=$(opt_val "$2")
         shift 2
         ;;
+      --os-variant)
+        os_variant=$(opt_val "$2")
+        shift 2
+        ;;
       --)
         shift
         break
@@ -82,6 +83,17 @@ function parse_args() {
 
 parse_args "$@"
 
+## debug
+#echo "create_template=$create_template"
+#echo "linux=$linux"
+#echo "host_network_interface=$host_network_interface"
+#echo "host_only_network=$host_only_network"
+#echo "vboxdir=$vboxdir"
+#echo "template_vmname=$template_vmname"
+#echo "config=$config"
+#echo "os_variant=$os_variant"
+#exit
+
 linux_iso_path=$CENTOS8_ISO_FILE
 [[ $linux == "centos9" ]] && linux_iso_path=$CENTOS9_ISO_FILE
 [[ $linux == "alma"    ]] && linux_iso_path=$ALMA_ISO_FILE
@@ -90,17 +102,15 @@ linux_iso_path=$CENTOS8_ISO_FILE
 # create-template-vm gens SSH keypair $DTKBASE/generated/kickstart/id_ed25519
 # if it does not already exist - which is used below when cloning the VM
 
+## TODO kickstarts in their own dir??
 if [[ $create_template -eq 1 ]] ; then
-  kickstart=$(yq .vbox.kickstart $config)
+  kickstart=$(yq .kvm.kickstart $config)
   echo "creating a template VM"
   $script_dir/create-template-vm\
    --template-vmname=$template_vmname\
    --linux-iso-path=$linux_iso_path\
-   --guest-additions-path=$GUEST_ADDITIONS_ISO_FILE\
-   --host-network-interface=$host_network_interface\
-   --host-only-network=$host_only_network\
-   --vboxdir=$vboxdir\
-   --kickstart=$kickstart
+   --kickstart=$kickstart\
+   --os-variant=$os_variant
 fi
 
 vmcnt=$(yq '.vms | length' $config)
@@ -119,9 +129,7 @@ for ((i = 0; i < $vmcnt; ++i)); do
    --clone-ram=$vm_mem\
    --clone-cpu=$vm_cpu\
    --host-only-network=$host_only_network\
-   --host-only-octet=$vm_ip\
-   --vboxdir=$vboxdir\
-   --shutdown=false
+   --host-only-octet=$vm_ip
 
   vm_names+=($vm_name)
 done

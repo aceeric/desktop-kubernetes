@@ -1,0 +1,111 @@
+#!/usr/bin/env bash
+
+set -e
+
+long_opts=priv-key:,template-vmname:,clone-vmname:,clone-ram:,clone-cpus:,\
+host-only-network:,host-only-octet:
+script_name=$(basename "$0")
+
+priv_key=
+template_vmname=
+clone_vmname=
+clone_ram=
+clone_cpus=
+host_only_network=
+host_only_octet=
+
+function opt_val() {
+  opt="$1"
+  if [[ "$opt" == =* ]]; then
+    echo "${opt:1}"
+  else
+    echo "$opt"
+  fi
+}
+
+function parse_args() {
+  if [[ "$#" -eq 0 ]]; then
+    echo "no args provided"
+    exit 1
+  fi
+  local parsed
+  parsed=$(getopt --options "" --longoptions $long_opts -n $script_name -- "$@")
+  eval set -- "$parsed"
+  while true; do
+    case "$1" in
+      --priv-key)
+        priv_key=$(opt_val "$2")
+        shift 2
+        ;;
+	    --template-vmname)
+        template_vmname=$(opt_val "$2")
+        shift 2
+        ;;
+      --clone-vmname)
+        clone_vmname=$(opt_val "$2")
+        shift 2
+        ;;
+      --clone-ram)
+        clone_ram=$(opt_val "$2")
+        shift 2
+        ;;
+      --clone-cpus)
+        clone_cpus=$(opt_val "$2")
+        shift 2
+        ;;
+      --host-only-network)
+        # this is the host only network octet, like 55.1.1
+        host_only_network=$(opt_val "$2")
+        shift 2
+        ;;
+      --host-only-octet)
+        # this is the host octet, like 100 (with above, makes 55.1.1.100)
+        host_only_octet=$(opt_val "$2")
+        shift 2
+        ;;
+      --)
+        shift
+        break
+        ;;
+    esac
+  done
+}
+
+parse_args "$@"
+
+# debug
+#echo "priv_key=$priv_key"
+#echo "template_vmname=$template_vmname"
+#echo "clone_vmname=$clone_vmname"
+#echo "clone_ram=$clone_ram"
+#echo "clone_cpus=$clone_cpus"
+#echo "host_only_network=$host_only_network"
+#echo "host_only_octet=$host_only_octet"
+#echo "shutdown=$shutdown"
+#exit
+
+echo "getting directory of template"
+dir=$(virsh domblklist $template_vmname | grep vda | awk '{print $2}')
+dir=${dir%/*}
+
+echo "cloning VM"
+virt-clone\
+  --original=$template_vmname\
+  --name=$clone_vmname\
+  --file=$dir/$clone_vmname.qcow2\
+  --mac=RANDOM
+
+virsh setvcpus  $clone_vmname $clone_cpus --config --maximum
+virsh setvcpus  $clone_vmname $clone_cpus --config
+virsh setmaxmem $clone_vmname "$clone_ram"M
+virsh setmem    $clone_vmname "$clone_ram"M  --config
+
+echo "starting VM"
+virsh start $clone_vmname
+
+echo "setting the hostname for cloned VM"
+clone_ip=$(xec get-kvm-ip $clone_vmname)
+ssh-keygen -f ~/.ssh/known_hosts -R $clone_ip
+ssh -o "StrictHostKeyChecking no" -i $priv_key root@$clone_ip "hostnamectl set-hostname $clone_vmname"
+
+echo "done cloning \"$clone_vmname\""

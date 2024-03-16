@@ -28,6 +28,7 @@ k8s_cluster_cidr=
 vbox_host_network_interface=
 vbox_host_only_network=
 vbox_vboxdir=
+kvm_os_variant=
 vm_linux=
 vm_create_template=
 vm_create_template_override=
@@ -205,14 +206,25 @@ xec download-objects\
 
 if [[ $create_vms == true ]]; then
   echo "provisioning vms"
-  xec $VIRT/provision-vms\
-    --create-template=$vm_create_template\
-    --linux=$vm_linux\
-    --host-network-interface=$vbox_host_network_interface\
-    --host-only-network=$vbox_host_only_network\
-    --vboxdir=$vbox_vboxdir\
-    --template-vmname=$vm_template_vmname\
-    --config=$config
+  if [[ $VIRT == "virtualbox" ]]; then
+    xec virtualbox/provision-vms\
+      --create-template=$vm_create_template\
+      --linux=$vm_linux\
+      --host-network-interface=$vbox_host_network_interface\
+      --host-only-network=$vbox_host_only_network\
+      --vboxdir=$vbox_vboxdir\
+      --template-vmname=$vm_template_vmname\
+      --config=$config
+  else
+    xec kvm/provision-vms\
+      --create-template=$vm_create_template\
+      --linux=$vm_linux\
+      --host-network-interface=\
+      --host-only-network=\
+      --template-vmname=$vm_template_vmname\
+      --config=$config\
+      --os-variant=$kvm_os_variant
+  fi
 fi
 
 echo "generating root CA to $DTKBASE/generated/cert/ca.pem (and ca-key.pem)"
@@ -238,5 +250,4 @@ echo
 echo "finished provisioning cluster. To interact with the cluster:"
 echo "  export KUBECONFIG=$DTKBASE/generated/kubeconfig/admin.kubeconfig"
 echo
-
-echo "use private key $DTKBASE/generated/kickstart/id_ed25519 to ssh into the VMs."
+echo "use the 'sshto' script to ssh into a VM"

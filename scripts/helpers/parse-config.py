@@ -7,13 +7,15 @@ valid_configs = [
     "k8s.cluster-cidr",
     "k8s.cluster-dns",
     "k8s.kube-proxy",
+    "kvm.kickstart",
+    "kvm.os-variant",
     "vbox.host-network-interface",
     "vbox.host-only-network",
+    "vbox.kickstart",
     "vbox.vboxdir",
     "vm.linux",
     "vm.create-template",
-    "vm.template-vmname",
-    "vm.kickstart"
+    "vm.template-vmname"
 ]
 
 skip_configs = [
@@ -36,7 +38,7 @@ for key in list(cfg.keys()):
     if key == "virt":
         vars = vars + "%svirt=%s" % (newline, cfg[key])
         newline = "\n"
-    elif key not in ["k8s", "vbox", "vm"]:
+    elif key not in ["k8s", "kvm", "vbox", "vm"]:
         continue
     else:
         for subkey in list(cfg[key].keys()):

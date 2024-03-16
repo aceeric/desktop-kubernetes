@@ -4,4 +4,6 @@ if [[ $VIRT == "virtualbox" ]]; then
   xec get-vbox-ip "$@"
 elif [[ $VIRT == "kvm" ]]; then
   xec get-kvm-ip "$@"
+else
+  exit 1
 fi

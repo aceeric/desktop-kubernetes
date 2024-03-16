@@ -1,5 +1,5 @@
 # for help see the README
-virt: virtualbox
+virt: kvm
 addons:
   #- calico
   - cilium
@@ -15,15 +15,18 @@ k8s:
   cluster-dns: 10.32.0.10
   kube-proxy: false
   containerd-mirror:
+kvm:
+  kickstart: kvm.ks.cfg
+  os-variant: centos-stream8
 vbox:
   host-network-interface:
   host-only-network: 192.168.56
+  kickstart: vbox.text.ks.cfg
   vboxdir:
 vm:
   linux: centos8
   create-template: true
   template-vmname: centos8
-  kickstart: ks.text.cfg
 vms:
   - name: vm1
     cpu: 3
@@ -41,3 +44,5 @@ vms:
     ip: 202
     pod-cidr: 10.200.2.0/24
 cluster:
+  admin-kubeconfig: /home/eace/projects/desktop-kubernetes/generated/kubeconfig/admin.kubeconfig
+  priv-key: /home/eace/projects/desktop-kubernetes/generated/kickstart/id_ed25519

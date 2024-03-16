@@ -43,14 +43,15 @@ The project ships with a `config.yaml` file in the project root that specifies t
 
 1. **k8s:** Kubernetes cluster configuration.
 2. **vbox:** VirtualBox configuration.
-3. **vm:** VM configuration.
-4. **vms:** A list of VMs to create for the cluster, and their characteristics.
-4. **addons:** A list of cluster add-ons to install, e.g.: CNI, CoreDNS, etc.
-4. **config:** Populated by the installer.
+3. **kvm:** KVM configuration.
+4. **vm:** VM configuration.
+5. **vms:** A list of VMs to create for the cluster, and their characteristics.
+6. **addons:** A list of cluster add-ons to install, e.g.: CNI, CoreDNS, etc.
+7. **config:** Populated by the installer.
 
 | Key | Description |
 |-|-|
-| `virt` | Only `virtualbox` is presently supported. `kvm` is in progress. |
+| `virt` | Options are `virtualbox` and `kvm`. KVM is experimental at this time. |
 | `k8s.containerized-cplane` | If specified, creates the control plane components as static pods on the controller VM like Kubeadm, RKE2, et. al. (By default, creates the control plane components as as systemd units.) Allowed values: `all`, or any of: `etcd`, `kube-apiserver`, `kube-proxy`, `kube-scheduler`, `kube-controller-manager` (comma-separated.) E.g.: `etcd,kube-apiserver` |
 | `k8s.cluster-cidr` | Configures CIDR range for Pods. This is applied to the `kube-controller-manager`. (Be aware of `--node-cidr-mask-size...` args which you can't override at this time.) |
 | `k8s.cluster-dns` | Ignored - not yet implemented. |
@@ -59,14 +60,16 @@ The project ships with a `config.yaml` file in the project root that specifies t
 | `vbox.host-network-interface` | The name of the primary network interface on your machine. The scripts use this to configure the VirtualBox bridge network for each guest VM. **Important**: you must specify this consistently when creating the template, and when creating a cluster from the template. The reason is that the option configures settings at the VM level that then propagate into the guest OS. Since guests are cloned from the template, the guest networking has to be defined consistently with the template. This config is mutually exclusive with `vbox.host-only-network`. |
 | `vbox.host-only-network` | The left three octets of the network. E.g. `192.168.56`. (*For some additional information on this address, see*: [the VirtualBox docs](https://www.virtualbox.org/manual/ch06.html) *section on "Host-Only Networking"*.) This option configures NAT + host only networking mode. The scripts will create a new host only network and configure the cluster to use it for intra-cluster networking, and will configure NAT for the cluster to access the internet. *See important note in the table entry immediately above regarding VBox networking type.* This config is mutually exclusive with `vbox.host-network-interface`. |
 | `vbox.vboxdir` | The directory where you keep your VirtualBox VM files. The script uses the `VBoxManage` utility to create the VMs, which will in turn create a sub-directory under this directory for each VM. If empty, the script will get the value from VirtualBox. The directory must exist. The script will not create it. |
+| `vbox.kickstart` | Specifies the name of the kickstart file to configure the OS. The file has to be in the `kickstarts` directory. The default is `vbox.text.ks.cfg` which is a non-graphical install. |
+| `kvm.kickstart` | The kickstart file used when creating a template VM. |
+| `kvm.os-variant` | Has to align with OS ISO. (Values from `virt-install --os-variant list`.) |
 | `vm.linux` | Valid values are `centos8` for CentOS 8 Stream (the default), `alma` for Alma Linux, and `rocky` for Rocky Linux. Ignored unless `vm.create-template` is specified. |
 | `vm.create-template` | True/False. Causes the script to create a template VM to clone all the cluster nodes from before bringing up the cluster. (This step by far takes the longest.) If not specified, the script expects to find an existing VM to clone from per the `vm.template-vmname` setting. This option installs the OS using Kickstart, then installs Guest Additions. **You must set this to true for the very first cluster you create.** |
 | `vm.template-vmname` | Specifies the template VM name to create - or clone from. |
-| `vm.kickstart` | Specifies the name of the kickstart file to configure the OS. The file has to be in the `scripts/os` directory. The default is `ks.text.cfg` which is a non-graphical install. The other kickstart file is `ks.cfg` which is a graphical install. |
 | `vms` | This is a list of VBox VMs. Each VM in the list specifies the following keys: |
 | -- `name` | The VM Name. |
 | -- `cpu` | Number of CPUs. |
-| -- `mem` | RAM in gigabytes. E.g.: `8192` |
+| -- `mem` | RAM in MB. E.g.: `8192` (= 8 gigs) |
 | -- `ip` | The rightmost octet of the IP address for the host. Ignored unless `vbox.host-only-network` is configured. So, for example, if `vbox.host-only-network` is `192.168.56` and this `ip` value is `200`. then the IP address assigned to the host-only interface in the VM is `192.168.56.200`. |
 | -- `pod-cidr` | Used to configure CNI for containerd. As soon as Cilium or Calico are installed then this configuration is superseded. |
 | `addons` | Installs the listed addons in the `scripts/addons` directory. E.g. Calico, Cilium, Kube Prometheus Stack, etc. Addons are installed in the order listed in the yaml. _CNI needs to be first!_ |
