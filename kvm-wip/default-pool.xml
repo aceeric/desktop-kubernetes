@@ -1,0 +1,13 @@
+<pool type='dir'>
+  <name>default</name>
+  <uuid>29ff2589-c248-4c3b-8bb6-323daff63947</uuid>
+  <capacity unit='bytes'>0</capacity>
+  <allocation unit='bytes'>0</allocation>
+  <available unit='bytes'>0</available>
+  <source>
+  </source>
+  <target>
+    <path>/sdb1/kvm-machines</path>
+  </target>
+</pool>
+

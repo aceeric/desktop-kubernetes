@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+
+if [[ "$#" -ne 1 ]]; then
+  echo "only one arg allowed: the VM name. E.g. 'get-vm-ip my-vm-name"
+  exit 1
+fi
+
+vm="$1"
+
+while true; do
+  if virsh domifaddr $vm | grep -qE '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}'; then
+    break
+  fi
+  sleep 1s
+done
+
+ip=$(virsh domifaddr $vm | grep -E '[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}' | awk '{print $4}')
+echo "${ip%/*}"

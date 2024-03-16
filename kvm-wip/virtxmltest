@@ -1,0 +1,12 @@
+
+virt-install --print-xml\
+  --name kvmtest\
+  --memory 2048\
+  --vcpus 2\
+  --disk size=30\
+  --cdrom ../binaries/CentOS-Stream-8-x86_64-latest-dvd1.iso\
+  --location ../binaries/CentOS-Stream-8-x86_64-latest-dvd1.iso\
+  --boot hd,cdrom\
+  --os-variant centos-stream8\
+  --initrd-inject ks.cfg\
+  --extra-args="ks=file:/ks.cfg console=tty0 console=ttyS0,115200n8"
