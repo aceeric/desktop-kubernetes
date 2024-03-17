@@ -1,7 +1,14 @@
 #!/usr/bin/env bash
 #
-# Usage: ./sshto <vmname>
+# Usage: ./sshto <vmname> [vbox | kvm]
 #
 
-ip=$(scripts/virtualbox/get-vm-ip $1)
+if [[ "$2" == vbox ]]; then
+  ip=$(scripts/virtualbox/get-vbox-ip $1)
+elif [[ "$2" == kvm ]]; then
+  ip=$(scripts/kvm/get-kvm-ip $1)
+else
+  echo "need vbox or kvm in arg 2"
+  exit 1
+fi
 ssh -i ./generated/kickstart/id_ed25519 root@$ip

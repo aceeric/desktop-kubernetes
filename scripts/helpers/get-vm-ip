@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+if [[ $VIRT == "virtualbox" ]]; then
+  xec get-vbox-ip "$@"
+elif [[ $VIRT == "kvm" ]]; then
+  xec get-kvm-ip "$@"
+fi

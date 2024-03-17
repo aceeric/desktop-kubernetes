@@ -93,7 +93,7 @@ linux_iso_path=$CENTOS8_ISO_FILE
 if [[ $create_template -eq 1 ]] ; then
   kickstart=$(yq .vm.kickstart $config)
   echo "creating a template VM"
-  xec create-template-vm\
+  $script_dir/create-template-vm\
    --template-vmname=$template_vmname\
    --linux-iso-path=$linux_iso_path\
    --guest-additions-path=$GUEST_ADDITIONS_ISO_FILE\
@@ -112,7 +112,7 @@ for ((i = 0; i < $vmcnt; ++i)); do
   vm_mem=$(yq .vms[$i].mem $config)
   vm_ip=$(yq .vms[$i].ip $config)
 
-  xec clone-vm\
+  $script_dir/clone-vm\
    --priv-key=$DTKBASE/generated/kickstart/id_ed25519\
    --template-vmname=$template_vmname\
    --clone-vmname=$vm_name\

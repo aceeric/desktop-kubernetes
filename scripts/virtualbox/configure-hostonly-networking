@@ -27,6 +27,10 @@
 # configure-hostonly-networking 200.200.200 202 my-cloned-vm
 #
 
+set -e
+
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 vmname="$1"
 network_octets="$2"
 host_octet="$3"
@@ -34,7 +38,7 @@ clone_vmname="$4"
 
 # create ifcfg ISO with IP Address from passed args
 echo "creating ifcfg-enp0s8.iso with network $network_octets and octet $host_octet"
-xec gen-hostonly-ifcfg-iso $network_octets $host_octet
+$script_dir/gen-hostonly-ifcfg-iso $network_octets $host_octet
 
 # mount ISO to VM
 echo "attaching ifcfg-enp0s8 ISO to VM $vmname"
@@ -49,7 +53,7 @@ VBoxManage startvm $vmname
 
 echo "waiting indefinitely for VM IP assignment"
 while true; do
-  clone_ip=$(xec get-vm-ip $clone_vmname)
+  clone_ip=$(xec get-vbox-ip $clone_vmname)
   if [[ $clone_ip == "$network_octets.$host_octet" ]]; then
     break
   fi

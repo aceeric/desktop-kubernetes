@@ -17,7 +17,7 @@ done <<< '
 
   Usage: dtk [--config=<path>] [--create-template=<true|false>] [--install-addon=<addon>]
              [--verify=<files|upstreams>] [--check-compatibility] [--up=<nodelist>] [--down=<nodelist>]
-             [--delete=<nodelist>] [--help]
+             [--delete=<nodelist>] [--no-create-vms] [--help]
 
   Options:
 
@@ -26,6 +26,9 @@ done <<< '
                                See the config.yaml file for structure and supported configs and values.
     --create-template          Optional. Overrides the setting specified in the configuration referenced by
                                the "--config" arg. Allowed values: "true" and "false".
+    --no-create-vms            Optional. Do not create VMs. If this option is specified, then the VMs in the
+                               config.yaml file must be up and running, and the installer will simply install
+                               Kubernetes on them.
     --install-addon            Optional. Installs the addon in the "scripts/addons" directory matching the
                                specified add-on into the running cluster. E.g.: "--install-addon openebs".
     --verify                   Optional. Looks for all the upstreams or filesystem objects used by the script.

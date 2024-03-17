@@ -9,25 +9,28 @@
 # up-down-del up vm1,vm2,vm3 ~/my-config.yaml
 #
 
+set -e
+
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
 if [[ $1 == "up" ]]; then
   IFS=',' read -ra vms <<< "$2"
   for vm in "${vms[@]}"; do
     VBoxManage startvm $vm
   done
   sleep 5s
-  xec show-ssh $DTKBASE/generated/kickstart/id_ed25519 $3
 elif [[ $1 == "down" ]]; then
   IFS=',' read -ra vms <<< "$2"
   for vm in "${vms[@]}"; do
     echo "shutting down $vm"
     VBoxManage controlvm $vm acpipowerbutton
-    xec wait-vm $vm --stopped
+    $script_dir/wait-vm $vm --stopped
   done
 elif [[ $1 == "delete" ]]; then
   IFS=',' read -ra vms <<< "$2"
   for vm in "${vms[@]}"; do
     echo "shutting down $vm if running"
-    VBoxManage controlvm $vm poweroff &>/dev/null && xec wait-vm $vm --stopped || echo "(not running)"
+    VBoxManage controlvm $vm poweroff &>/dev/null && $script_dir/wait-vm $vm --stopped || echo "(not running)"
     echo "removing $vm"
     sleep 5s
     VBoxManage unregistervm $vm --delete

@@ -12,6 +12,7 @@ set -e
 
 long_opts=template-vmname:,linux-iso-path:,kickstart-iso-path:,host-network-interface:,host-only-network-name:,vboxdir:
 script_name=$(basename "$0")
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 template_vmname=
 linux_iso_path=
@@ -148,10 +149,10 @@ echo "starting VM to begin kickstart installation"
 VBoxManage startvm $template_vmname
 
 echo "waiting for VM to start"
-xec wait-vm $template_vmname --started
+$script_dir/wait-vm $template_vmname --started
 
 echo "waiting for kickstart to complete and VM to stop"
-xec wait-vm $template_vmname --stopped
+$script_dir/wait-vm $template_vmname --stopped
 
 # for virtual box or the detach calls below fail
 sleep 5s

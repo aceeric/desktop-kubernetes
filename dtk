@@ -2,18 +2,26 @@
 
 set -e
 
-long_opts=help,check-compatibility,up:,down:,delete:,verify:,config:,create-template:,install-addon:
+long_opts=help,check-compatibility,up:,down:,delete:,verify:,config:,create-template:,install-addon:,no-create-vms
 
 # This snippet enables all scripts to exec all other scripts without knowing any
 # other script's path, as long all the scripts (except this one) are children
 # of the 'scripts' directory.
 
 export DTKBASE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-function xec() { f=$(find $DTKBASE/scripts -name $1) && $f "${@:2}"; }
+function xec() {
+  if echo $1 | grep -q /; then
+    f=$(find $DTKBASE/scripts -type d -name $(dirname $1) | xargs -I% find % -type f -name $(basename $1))
+  else
+    f=$(find $DTKBASE/scripts -name $1)
+  fi
+  [[ -n $f ]] && $f "${@:2}"
+}
 export -f xec
 
 # api
 config=$DTKBASE/config.yaml
+create_vms=true
 k8s_containerized_cplane=
 k8s_kube_proxy=
 k8s_cluster_cidr=
@@ -26,6 +34,7 @@ vm_create_template_override=
 vm_template_vmname=
 install_addon=
 cmd=
+virt=
 
 set -a
 source $DTKBASE/artifacts
@@ -74,18 +83,18 @@ function parse_args() {
         ;;
       --up)
         vms=$(opt_val "$2")
-        cmd=UP
+        cmd=up
         shift 2
         ;;
       --down)
         vms=$(opt_val "$2")
-        xec up-down-del "down" $vms
-        exit 0
+        cmd=down
+        shift 2
         ;;
       --delete)
         vms=$(opt_val "$2")
-        xec up-down-del "delete" $vms
-        exit 0
+        cmd=delete
+        shift 2
         ;;
       --verify)
         verify=$(opt_val "$2")
@@ -108,6 +117,10 @@ function parse_args() {
         install_addon=$(opt_val "$2")
         shift 2
         ;;
+      --no-create-vms)
+        create_vms=false
+        shift 1
+        ;;
       --)
         shift
         break
@@ -126,9 +139,15 @@ function parse_args() {
 # parse cmdline
 parse_args "$@"
 
-if [[ "$cmd" == UP ]]; then
-  # can't do in parse because needs config
-  xec up-down-del "up" $vms $config
+# parse config.yaml
+xec parse-config.py $config check || exit
+eval $(xec parse-config.py $config)
+
+# selects vbox or kvm
+export VIRT=$virt
+
+if [[ "$cmd" == up ]] || [[ "$cmd" == down ]] || [[ "$cmd" == delete ]]; then
+  xec $VIRT/up-down-del $cmd $vms $config
   exit 0
 fi
 
@@ -140,10 +159,6 @@ if [[ -n "$install_addon" ]]; then
     --addon=$install_addon
   exit 0
 fi
-
-# parse config.yaml
-xec parse-config.py $config check || exit
-eval $(xec parse-config.py $config)
 
 if [[ -n "$vm_create_template_override" ]]; then
   if [[ "$vm_create_template_override" == "true" ]]; then
@@ -188,15 +203,17 @@ xec download-objects\
   --create-template=$vm_create_template\
   --linux=$vm_linux
 
-echo "provisioning vms"
-xec provision-vms\
-  --create-template=$vm_create_template\
-  --linux=$vm_linux\
-  --host-network-interface=$vbox_host_network_interface\
-  --host-only-network=$vbox_host_only_network\
-  --vboxdir=$vbox_vboxdir\
-  --template-vmname=$vm_template_vmname\
-  --config=$config
+if [[ $create_vms == true ]]; then
+  echo "provisioning vms"
+  xec $VIRT/provision-vms\
+    --create-template=$vm_create_template\
+    --linux=$vm_linux\
+    --host-network-interface=$vbox_host_network_interface\
+    --host-only-network=$vbox_host_only_network\
+    --vboxdir=$vbox_vboxdir\
+    --template-vmname=$vm_template_vmname\
+    --config=$config
+fi
 
 echo "generating root CA to $DTKBASE/generated/cert/ca.pem (and ca-key.pem)"
 xec gen-root-ca
@@ -222,4 +239,4 @@ echo "finished provisioning cluster. To interact with the cluster:"
 echo "  export KUBECONFIG=$DTKBASE/generated/kubeconfig/admin.kubeconfig"
 echo
 
-xec show-ssh $DTKBASE/generated/kickstart/id_ed25519 $config
+echo "use private key $DTKBASE/generated/kickstart/id_ed25519 to ssh into the VMs."

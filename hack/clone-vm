@@ -34,7 +34,14 @@
 # 
 
 export DTKBASE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
-function xec() { f=$(find $DTKBASE/scripts -name $1) && $f "${@:2}"; }
+function xec() {
+  if echo $1 | grep -q /; then
+    f=$(find . -type d -name $(dirname $1) | xargs -I% find % -type f -name $(basename $1))
+  else
+    f=$(find $DTKBASE/scripts -name $1)
+  fi
+  [[ -n $f ]] && $f "${@:2}"
+}
 export -f xec
 
 hostonly=
@@ -77,7 +84,7 @@ for ((i = 1; i <= $#; i++ )); do
   fi
 done
 
-xec clone-vm\
+xec xbox/clone-vm\
   --priv-key=$DTKBASE/generated/kickstart/id_ed25519\
   --template-vmname=$template_vmname\
   --clone-vmname=$vmname\

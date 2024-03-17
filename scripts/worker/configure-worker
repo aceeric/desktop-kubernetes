@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-# Configures a worker node - expects a node already to have been cloned by the clone-vm function.
+# Configures a worker node
 
 set -e
 
@@ -96,8 +96,6 @@ function parse_args() {
 }
 
 parse_args "$@"
-
-xec start-vm $worker_hostname
 
 echo "getting IP address from running VM for $worker_hostname"
 worker_ip=$(xec get-vm-ip $worker_hostname)

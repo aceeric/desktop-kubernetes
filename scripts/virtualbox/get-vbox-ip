@@ -10,7 +10,7 @@
 # sure the guest VM started.
 #
 if [[ "$#" -ne 1 ]]; then
-  echo "only one arg allowed: the VM name. E.g. 'get-vm-ip my-vm-name"
+  echo "only one arg allowed: the VM name"
   exit 1
 fi
 

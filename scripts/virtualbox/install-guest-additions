@@ -10,6 +10,7 @@ set -e
 
 long_opts=template-vmname:,guest-additions-path:
 script_name=$(basename "$0")
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 template_vmname=
 guest_additions_path=
@@ -61,10 +62,10 @@ echo "starting VM to begin guest additions installation"
 VBoxManage startvm $template_vmname
 
 echo "waiting for the VM to start and install guest additions"
-xec wait-vm $template_vmname --started
+$script_dir/wait-vm $template_vmname --started
 
 echo "waiting for the VM to stop - the guest additions install script performs a shutdown when it is done"
-xec wait-vm $template_vmname --stopped
+$script_dir/wait-vm $template_vmname --stopped
 sleep 5s
 
 echo "detaching guest additions ISO"
