@@ -35,9 +35,9 @@ vms:
     mem: 8192
     ip: 201
     pod-cidr: 10.200.1.0/24
-    # - name: vm3
-    #   cpu: 3
-    #   mem: 8192
-    #   ip: 202
-    #   pod-cidr: 10.200.2.0/24
+  - name: vm3
+    cpu: 3
+    mem: 8192
+    ip: 202
+    pod-cidr: 10.200.2.0/24
 cluster:
