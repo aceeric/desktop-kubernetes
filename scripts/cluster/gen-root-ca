@@ -3,6 +3,11 @@
 # Generates root CA cert and key. These will be used to sign every other cert generated for
 # the cluster.
 
+if [[ -f $DTKBASE/generated/cert/ca{,-key}.pem ]]; then
+  echo "CA cert and key already exist - skipping"
+  exit
+fi
+
 openssl genrsa -out "$DTKBASE/generated/cert/ca-key.pem" 2048
 openssl req -x509 -new -nodes -key "$DTKBASE/generated/cert/ca-key.pem" -sha256\
  -subj "/CN=internalca" -days 10000 -out "$DTKBASE/generated/cert/ca.pem"
