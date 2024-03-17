@@ -33,7 +33,7 @@ The following command-line options are supported for the `dtk` script:
 | `--check-compatibility` | Checks the installed versions of various desktop tools used by the project (curl, kubectl, etc) against what the project has been tested on - and then exits, taking no further action. You should do this at least once. Note - there will likely be differences between your desktop and what I tested with - you will have to determine whether the differences are relevant. |
 | `--up`, `--down`, `--delete` | Takes a comma-separated list of VM names, and starts (`--up`), stops (`--down`), or deletes (`--delete`) them all. The `--down` option is a graceful shutdown. The `--delete` is a fast shutdown and also removes the Virtual Box VM files from the file system. |
 | `--create-template` | Accepts `true` or `false`. Overrides the `vm.create-template` setting in the `config.yaml` file. Example: `--create-template=false`. |
-| `--no-create-cms` | Do not create VMs. If this option is specified, then the VMs in the config.yaml file must be up and running, and the installer will simply install k8s on them. |
+| `--no-create-vms` | Do not create VMs. If this option is specified, then the VMs in the config.yaml file must be up and running, and the installer will simply install k8s on them. |
 | `--install-addon` | Installs the specified add-on into a running cluster. Example: `--install-addon openebs`. (The add-on has to exist in the `addons` directory.) |
 | `--help` | Displays help and exits. |
 
