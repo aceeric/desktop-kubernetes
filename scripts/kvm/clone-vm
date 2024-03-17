@@ -98,6 +98,12 @@ virt-clone\
 echo "starting VM"
 virsh start $clone_vmname
 
+# it seems the VM must be running to effect these changes
+virsh setvcpus  $clone_vmname $clone_cpus --config --maximum
+virsh setvcpus  $clone_vmname $clone_cpus --config
+virsh setmaxmem $clone_vmname $clone_ram  --config
+virsh setmem    $clone_vmname $clone_ram  --config
+
 echo "setting the hostname for cloned VM"
 clone_ip=$(xec get-kvm-ip $clone_vmname)
 ssh-keygen -f ~/.ssh/known_hosts -R $clone_ip
