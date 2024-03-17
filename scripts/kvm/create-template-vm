@@ -4,6 +4,7 @@ set -e
 
 long_opts=template-vmname:,linux-iso-path:,host-only-network:,kickstart:,os-variant:
 script_name=$(basename "$0")
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 # api
 template_vmname=
@@ -70,7 +71,7 @@ function parse_args() {
 
 parse_args "$@"
 
-# debug
+## debug
 #echo "template_vmname=$template_vmname"
 #echo "linux_iso_path=$linux_iso_path"
 #echo "host_only_network=$host_only_network"
@@ -84,7 +85,7 @@ xec gen-ssh-keyfiles
 echo "interpolating SSH key into kickstart file"
 ksout=$DTKBASE/generated/kickstart
 sshkey=$(<$DTKBASE/generated/kickstart/id_ed25519.pub)
-sed "s/SSHKEY/$sshkey/" $kickstart >| $ksout/ks.cfg
+sed "s/SSHKEY/$sshkey/" $script_dir/$kickstart >| $ksout/ks.cfg
 
 echo "creating VM"
 virt-install\
@@ -105,4 +106,4 @@ while true; do
   virsh list --all | grep $template_vmname | grep -iv running && break || sleep 10s
 done
 
-echo "machine is powered off"
+echo "template VM fully provisioned"

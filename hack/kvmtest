@@ -18,11 +18,22 @@ export -f xec
 ## --kickstart=$DTKBASE/kvm-wip/12MAR/ks.cfg\
 ## --os-variant=centos-stream8\
 
-xec kvm/clone-vm\
-  --priv-key=$DTKBASE/generated/kickstart/id_ed25519\
-  --template-vmname=kvmtest\
-  --clone-vmname=frobozz\
-  --clone-ram=2048\
-  --clone-cpu=2\
-  --host-only-network=192.168.57\
-  --host-only-octet=200
+##xec kvm/clone-vm\
+##  --priv-key=$DTKBASE/generated/kickstart/id_ed25519\
+##  --template-vmname=kvmtest\
+##  --clone-vmname=frobozz\
+##  --clone-ram=2048\
+##  --clone-cpu=2\
+##  --host-only-network=192.168.57\
+##  --host-only-octet=200
+
+export VIRT=kvm
+export CENTOS8_ISO_FILE=/home/eace/projects/desktop-kubernetes/binaries/CentOS-Stream-8-x86_64-latest-dvd1.iso
+xec kvm/provision-vms\
+  --create-template=0\
+  --linux=centos8\
+  --host-network-interface=\
+  --host-only-network=\
+  --template-vmname=centos8\
+  --config=/home/eace/projects/desktop-kubernetes/config.yaml\
+  --os-variant=centos-stream8

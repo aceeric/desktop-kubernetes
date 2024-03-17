@@ -12,11 +12,13 @@ etc_hosts=""
 for vm in "$@"
 do
   ip=$(xec get-vm-ip $vm)
+  echo "1 - IP=$ip"
   etc_hosts="$etc_hosts$ip $vm\n"
 done
 
 for vm in "$@"
 do
   ip=$(xec get-vm-ip $vm)
+  echo "2 - IP=$ip"
   echo -e "$etc_hosts" | ssh -i $priv_key root@$ip "cat >> /etc/hosts"
 done

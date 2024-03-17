@@ -85,7 +85,7 @@ parse_args "$@"
 #exit
 
 echo "getting directory of template"
-dir=$(virsh domblklist kvmtest | grep vda | awk '{print $2}')
+dir=$(virsh domblklist $template_vmname | grep vda | awk '{print $2}')
 dir=${dir%/*}
 
 echo "cloning VM"
@@ -99,7 +99,7 @@ echo "starting VM"
 virsh start $clone_vmname
 
 echo "setting the hostname for cloned VM"
-clone_ip=$(xec kvm/get-vm-ip $clone_vmname)
+clone_ip=$(xec get-kvm-ip $clone_vmname)
 ssh-keygen -f ~/.ssh/known_hosts -R $clone_ip
 ssh -o "StrictHostKeyChecking no" -i $priv_key root@$clone_ip "hostnamectl set-hostname $clone_vmname"
 

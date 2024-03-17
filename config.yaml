@@ -15,6 +15,9 @@ k8s:
   cluster-dns: 10.32.0.10
   kube-proxy: false
   containerd-mirror:
+kvm:
+  kickstart: ks.cfg
+  os-variant: TODO
 vbox:
   host-network-interface:
   host-only-network: 192.168.56
