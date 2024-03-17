@@ -216,11 +216,10 @@ if [[ $create_vms == true ]]; then
       --template-vmname=$vm_template_vmname\
       --config=$config
   else
+    # TODO host network with static IPs
     xec kvm/provision-vms\
       --create-template=$vm_create_template\
       --linux=$vm_linux\
-      --host-network-interface=\
-      --host-only-network=\
       --template-vmname=$vm_template_vmname\
       --config=$config\
       --os-variant=$kvm_os_variant

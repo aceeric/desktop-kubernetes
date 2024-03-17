@@ -10,6 +10,8 @@ tested_kubectl_version="v1.29.2"
 tested_curl_version="7.81.0"
 tested_helm_version="v3.13.1"
 tested_yq_version="4.40.5"
+tested_virt_install_version="4.0.0"
+tested_virsh_version="8.0.0"
 
 if which openssl &>/dev/null; then
   openssl_version=$(openssl version | awk '{print $2}')
@@ -76,6 +78,20 @@ else
   yq_version="not found"
 fi
 
+if which virt-install &>/dev/null; then
+  virt_install_version=$(virt-install --version)
+  [[ $virt_install_version == "$tested_virt_install_version" ]] && virt_install_ok=Yes || { virt_install_ok=No; mismatch=1; }
+else
+  tested_virt_install_version="not found"
+fi
+
+if which virsh &>/dev/null; then
+  virsh_version=$(virsh --version)
+  [[ $virsh_version == "$tested_virsh_version" ]] && virsh_ok=Yes || { virsh_ok=No; mismatch=1; }
+else
+  tested_virsh_version="not found"
+fi
+
 cat <<EOF | column -t -s "|"
 component|tested|found|matches?
 ---------|------|-----|--------
@@ -88,6 +104,8 @@ kubectl (client only)|$tested_kubectl_version|$kubectl_version|$kubectl_ok
 curl|$tested_curl_version|$curl_version|$curl_ok
 helm|$tested_helm_version|$helm_version|$helm_ok
 yq|$tested_yq_version|$yq_version|$yq_ok
+virt-install|$tested_virt_install_version|$virt_install_version|$virt_install_ok
+virsh|$tested_virsh_version|$virsh_version|$virsh_ok
 EOF
 
 if [[ $mismatch -ne 0 ]]; then

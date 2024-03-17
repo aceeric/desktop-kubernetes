@@ -2,22 +2,19 @@
 
 set -e
 
-if [[ $1 == "up" ]]; then
-  IFS=',' read -ra vms <<< "$2"
-  for vm in "${vms[@]}"; do
+IFS=',' read -ra vms <<< "$2"
+for vm in "${vms[@]}"; do
+  if [[ $1 == "up" ]]; then
     virsh start $vm
-  done
-  sleep 5s
-elif [[ $1 == "down" ]]; then
-  IFS=',' read -ra vms <<< "$2"
-  for vm in "${vms[@]}"; do
-    echo "shutting down $vm"
+  elif [[ $1 == "down" ]]; then
     virsh shutdown $vm
-  done
-elif [[ $1 == "delete" ]]; then
-  IFS=',' read -ra vms <<< "$2"
-  for vm in "${vms[@]}"; do
-    echo "removing $vm"
-    virsh undefine $vm --remove-all-storage
-  done
-fi
+  elif [[ $1 == "delete" ]]; then
+    virsh shutdown $vm || :
+    virsh destroy $vm || :
+    while true; do
+      if virsh undefine $vm --remove-all-storage; then
+        break
+      fi
+    done
+  fi
+done

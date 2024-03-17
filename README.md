@@ -2,7 +2,7 @@
 
 <img src="resources/desktop-kubernetes-no-text.jpg" width="100"/>
 
-Desktop Kubernetes is a Linux *Bash* project that provisions a desktop Kubernetes cluster using VirtualBox - with each cluster node consisting of a CentOS, Alma, or Rocky Linux guest VM. The purpose is to create a local development and testing environment that is 100% compatible with a production-grade Kubernetes environment.
+Desktop Kubernetes is a Linux *Bash* project that provisions a desktop Kubernetes cluster using VirtualBox or KVM - with each cluster node consisting of a CentOS, Alma, or Rocky Linux guest VM. The purpose is to create a local development and testing environment that is 100% compatible with a production-grade Kubernetes environment.
 
 Desktop Kubernetes is the *57 Chevy* of Kubernetes distros: you can take it apart and put it back together with just a few Linux console tools: bash, curl, genisoimage, ssh, scp, tar, openssl, vboxmanage, helm, yp, and kubectl. That being said, **v1.28.0** of this distribution is Kubernetes Certified. See: [CNCF Landscape](https://landscape.cncf.io/?group=certified-partners-and-providers&view-mode=grid&item=platform--certified-kubernetes-distribution--desktop-kubernetes).
 
@@ -14,7 +14,7 @@ This project started as a way to automate the steps in **Kelsey Hightower's** [K
 
 ## Quick Start
 
-The `dtk` script in the repo root is what you run. If you supply no arguments, the script will configure the cluster based on the `config.yaml` file in the project root resulting in a three node CentOS 8 cluster consisting of one controller and two workers with VirtualBox Host only + NAT networking.
+The `dtk` script in the repo root is what you run. If you supply no arguments, the script will configure the cluster based on the `config.yaml` file in the project root resulting in a three node CentOS 8 cluster consisting of one controller and two workers.
 
 > For Centos 8, check the mirror in the `artifacts` script and make sure it makes sense for your geography. (Other Linux options have automatic redirect.)
 >
@@ -31,9 +31,9 @@ The following command-line options are supported for the `dtk` script:
 | `--config` | Specifies the path to a `yaml` file that provides cluster configuration. If omitted, then the script uses the `config.yaml` file in the project root. Example: `--config ~/myconfig.yaml`. |
 | `--verify` | Looks for all the upstreams or filesystem objects used by the script to build the core k8s cluster. Valid options are `upstreams` and `files`. If `upstreams`, then the script does a curl HEAD request for each upstream (e.g. OS ISO, Kubernetes binaries, etc.). If `files`, then the same check is performed for the downloaded filesystem objects. This is a useful option to see all the objects that are required to provision a cluster. Example: `--verify upstreams`. |
 | `--check-compatibility` | Checks the installed versions of various desktop tools used by the project (curl, kubectl, etc) against what the project has been tested on - and then exits, taking no further action. You should do this at least once. Note - there will likely be differences between your desktop and what I tested with - you will have to determine whether the differences are relevant. |
-| `--up`, `--down`, `--delete` | Takes a comma-separated list of VM names, and starts (`--up`), stops (`--down`), or deletes (`--delete`) them all. The `--down` option is a graceful shutdown. The `--delete` is a fast shutdown and also removes the Virtual Box VM files from the file system. |
+| `--up`, `--down`, `--delete` | Takes a comma-separated list of VM names, and starts (`--up`), stops (`--down`), or deletes (`--delete`) them all. The `--down` option is a graceful shutdown. The `--delete` is a fast shutdown and also removes the VM files from the file system. |
 | `--create-template` | Accepts `true` or `false`. Overrides the `vm.create-template` setting in the `config.yaml` file. Example: `--create-template=false`. |
-| `--no-create-vms` | Do not create VMs. If this option is specified, then the VMs in the config.yaml file must be up and running, and the installer will simply install k8s on them. |
+| `--no-create-vms` | Do not create VMs. If this option is specified, then the VMs in the `config.yaml` file must be up and running, and the installer will simply install k8s on them. |
 | `--install-addon` | Installs the specified add-on into a running cluster. Example: `--install-addon openebs`. (The add-on has to exist in the `addons` directory.) |
 | `--help` | Displays help and exits. |
 
@@ -51,7 +51,7 @@ The project ships with a `config.yaml` file in the project root that specifies t
 
 | Key | Description |
 |-|-|
-| `virt` | Options are `virtualbox` and `kvm`. KVM is experimental at this time. |
+| `virt` | Options are `virtualbox` and `kvm`. KVM is experimental at this time and still needs work. |
 | `k8s.containerized-cplane` | If specified, creates the control plane components as static pods on the controller VM like Kubeadm, RKE2, et. al. (By default, creates the control plane components as as systemd units.) Allowed values: `all`, or any of: `etcd`, `kube-apiserver`, `kube-proxy`, `kube-scheduler`, `kube-controller-manager` (comma-separated.) E.g.: `etcd,kube-apiserver` |
 | `k8s.cluster-cidr` | Configures CIDR range for Pods. This is applied to the `kube-controller-manager`. (Be aware of `--node-cidr-mask-size...` args which you can't override at this time.) |
 | `k8s.cluster-dns` | Ignored - not yet implemented. |
@@ -69,7 +69,7 @@ The project ships with a `config.yaml` file in the project root that specifies t
 | `vms` | This is a list of VBox VMs. Each VM in the list specifies the following keys: |
 | -- `name` | The VM Name. |
 | -- `cpu` | Number of CPUs. |
-| -- `mem` | RAM in MB. E.g.: `8192` (= 8 gigs) |
+| -- `mem` | RAM in MB. E.g.: `8192` = 8 gig. |
 | -- `ip` | The rightmost octet of the IP address for the host. Ignored unless `vbox.host-only-network` is configured. So, for example, if `vbox.host-only-network` is `192.168.56` and this `ip` value is `200`. then the IP address assigned to the host-only interface in the VM is `192.168.56.200`. |
 | -- `pod-cidr` | Used to configure CNI for containerd. As soon as Cilium or Calico are installed then this configuration is superseded. |
 | `addons` | Installs the listed addons in the `scripts/addons` directory. E.g. Calico, Cilium, Kube Prometheus Stack, etc. Addons are installed in the order listed in the yaml. _CNI needs to be first!_ |
@@ -87,7 +87,6 @@ The project ships with a `config.yaml` file in the project root that specifies t
 | Firewall | Get it working with nftables rules and all ports locked down |
 | SELinux | Enable SELinux |
 | Other VM provisioning | Consider Packer |
-| Virtualization | Consider KVM |
 
 ## Versions
 
@@ -104,6 +103,8 @@ This project has been tested with the tools, components and versions shown in th
 | host | kubectl (client only) | v1.29.2 |
 | host | curl | 7.81.0 |
 | host | yq | 4.40.5 |
+| host | virt-install | 4.0.0 |
+| host | virsh | 8.0.0 |
 | guest VM | Centos ISO (X= 8 or 9) | Stream-X-x86_64-latest |
 | guest VM | Rocky Linux ISO | Rocky-9.3-x86_64-dvd |
 | guest VM | Virtual Box Guest Additions ISO | 7.0.14 |
