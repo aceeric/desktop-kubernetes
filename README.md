@@ -129,10 +129,11 @@ To install different add-on versions - change the version in the corresponding d
 | Calico networking | v3.27.0 | v3.27.0 |
 | Cilium networking and Hubble monitoring | 1.15.0-pre.2 | 1.15.0-pre.2 |
 | CoreDNS | 1.11.1 | 1.28.2 |
+| External DNS | v0.14.0 | 1.13.1 |
+| Ingress NGINX Controller | 1.9.5 | 4.9.0 |
 | Kube Prometheus Stack | v0.70.0 | 55.5.0 |
 | Kubernetes Dashboard | v2.7.0 | 6.0.8 |
 | Metrics Server | v0.6.4 | 3.11.0 |
 | OpenEBS | 3.10.0 | 3.10.0 |
-| Ingress NGINX Controller | 1.9.5 | 4.9.0 |
 
 > Static pod container images per: https://kubernetes.io/releases/download/

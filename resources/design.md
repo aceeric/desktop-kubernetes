@@ -35,7 +35,9 @@ dtk
 │
 ├─ scripts/kvm/provision-vms (4)
 │  ├─ scripts/kvm/create-template-vm
-│  └─ scripts/kvm/clone-vm
+│  │  └─ scripts/vm/gen-ssh-keyfiles
+│  ├─ scripts/kvm/clone-vm
+│  └─ scripts/vm/configure-etc-hosts
 │
 ├─ scripts/cluster/gen-root-ca (5)
 │
@@ -66,9 +68,7 @@ dtk
 3. All the VMs are created:
     - If config specifies `create-template: true` then ssh keys are generated, and a template VM is created using Kickstart and a CentOS / Alma / Rocky ISO depending on the `linux` selection. The ssh public key is copied into the VM in the `authorized-keys` file, and Virtual Box Guest Additions is installed because it enables getting the IP address of a VirtualBox VM.
     - The template VM (the one created in the prior step, or one that was already there identified by the `template-vmname` config) is cloned to create the VM(s) that comprise the Kubernetes cluster, so each VM has an identical configuration.
-
 4. If `kvm` is specified in the `config.yaml` file then the VMs are created using KVM.
-
 5. A root CA is generated for the cluster if one does not already exist. This CA is used to sign cluster certs throughout the remainder of the cluster provisioning process.
 6. The core Kubernetes cluster is created by installing the canonical Kubernetes components on each VM:
     - 6a: Each worker gets a unique TLS cert/key for its `kubelet`, a few binaries: `crictl`, `runc`, and `cni plugins`, and of course the `kubelet` and `containerd`.
