@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 #
+echo "***DEPRECATED DO NOT USE***"
+exit 1
+#
 # Background: The kickstart file that this project uses configures the VM
 # storage like so (with a 40 gig drive):
 #

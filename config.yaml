@@ -1,5 +1,5 @@
 # for help see the README
-virt: virtualbox
+virt: kvm
 addons:
   #- calico
   - cilium
@@ -21,6 +21,7 @@ k8s:
   #      capabilities = ["pull", "resolve"]
   #      skip_verify = true
 kvm:
+  network: nat
   kickstart: kvm.ks.cfg
   os-variant: centos-stream8
 vbox:
@@ -37,15 +38,18 @@ vms:
     cpu: 3
     mem: 8192
     ip: 200
+    disk:
     pod-cidr: 10.200.0.0/24
   - name: vm2
     cpu: 3
     mem: 8192
     ip: 201
+    disk:
     pod-cidr: 10.200.1.0/24
   - name: vm3
     cpu: 3
     mem: 8192
     ip: 202
+    disk:
     pod-cidr: 10.200.2.0/24
 cluster:

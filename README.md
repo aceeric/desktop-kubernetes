@@ -51,8 +51,8 @@ The project ships with a `config.yaml` file in the project root that specifies t
 
 | Key | Description |
 |-|-|
-| `virt` | Options are `virtualbox` and `kvm`. KVM is experimental at this time and still needs work. |
-| `k8s.containerized-cplane` | If specified, creates the control plane components as static pods on the controller VM like Kubeadm, RKE2, et. al. (By default, creates the control plane components as as systemd units.) Allowed values: `all`, or any of: `etcd`, `kube-apiserver`, `kube-proxy`, `kube-scheduler`, `kube-controller-manager` (comma-separated.) E.g.: `etcd,kube-apiserver` |
+| `virt` | Options are `virtualbox` and `kvm`. |
+| `k8s.containerized-cplane` | If specified, creates the control plane components as static pods on the controller VM like kubeadm, RKE2, et. al. (By default, creates the control plane components as as systemd units.) Allowed values: `all`, or any of: `etcd`, `kube-apiserver`, `kube-proxy`, `kube-scheduler`, `kube-controller-manager` (comma-separated.) E.g.: `etcd,kube-apiserver` |
 | `k8s.cluster-cidr` | Configures CIDR range for Pods. This is applied to the `kube-controller-manager`. (Be aware of `--node-cidr-mask-size...` args which you can't override at this time.) |
 | `k8s.cluster-dns` | Ignored - not yet implemented. |
 | `k8s.kube-proxy` | If true, you can run the cluster without Calico or Cilium (or other CNI) using the default CNI configuration that is established by `scripts/worker/containerd/install-containerd`. |
@@ -61,19 +61,21 @@ The project ships with a `config.yaml` file in the project root that specifies t
 | `vbox.host-only-network` | The left three octets of the network. E.g. `192.168.56`. (*For some additional information on this address, see*: [the VirtualBox docs](https://www.virtualbox.org/manual/ch06.html) *section on "Host-Only Networking"*.) This option configures NAT + host only networking mode. The scripts will create a new host only network and configure the cluster to use it for intra-cluster networking, and will configure NAT for the cluster to access the internet. *See important note in the table entry immediately above regarding VBox networking type.* This config is mutually exclusive with `vbox.host-network-interface`. |
 | `vbox.vboxdir` | The directory where you keep your VirtualBox VM files. The script uses the `VBoxManage` utility to create the VMs, which will in turn create a sub-directory under this directory for each VM. If empty, the script will get the value from VirtualBox. The directory must exist. The script will not create it. |
 | `vbox.kickstart` | Specifies the name of the kickstart file to configure the OS. The file has to be in the `kickstarts` directory. The default is `vbox.text.ks.cfg` which is a non-graphical install. |
-| `kvm.kickstart` | The kickstart file used when creating a template VM. |
+| `kvm.network` | This is set to `nat` in the configuration file. This setting is actually ignored because NAT is the only KVM networking option currently implemented but stating that in the configuration makes it more self-documenting. |
+| `kvm.kickstart` | The kickstart file used when creating a template VM. Kickstart files are in the `kickstarts` directory. The default is `kvm.ks.cfg`. |
 | `kvm.os-variant` | Has to align with OS ISO. (Values from `virt-install --os-variant list`.) |
 | `vm.linux` | Valid values are `centos8` for CentOS 8 Stream (the default), `alma` for Alma Linux, and `rocky` for Rocky Linux. Ignored unless `vm.create-template` is specified. |
 | `vm.create-template` | True/False. Causes the script to create a template VM to clone all the cluster nodes from before bringing up the cluster. (This step by far takes the longest.) If not specified, the script expects to find an existing VM to clone from per the `vm.template-vmname` setting. This option installs the OS using Kickstart, then installs Guest Additions. **You must set this to true for the very first cluster you create.** |
 | `vm.template-vmname` | Specifies the template VM name to create - or clone from. |
-| `vms` | This is a list of VBox VMs. Each VM in the list specifies the following keys: |
-| -- `name` | The VM Name. |
-| -- `cpu` | Number of CPUs. |
-| -- `mem` | RAM in MB. E.g.: `8192` = 8 gig. |
-| -- `ip` | The rightmost octet of the IP address for the host. Ignored unless `vbox.host-only-network` is configured. So, for example, if `vbox.host-only-network` is `192.168.56` and this `ip` value is `200`. then the IP address assigned to the host-only interface in the VM is `192.168.56.200`. |
-| -- `pod-cidr` | Used to configure CNI for containerd. As soon as Cilium or Calico are installed then this configuration is superseded. |
-| `addons` | Installs the listed addons in the `scripts/addons` directory. E.g. Calico, Cilium, Kube Prometheus Stack, etc. Addons are installed in the order listed in the yaml. _CNI needs to be first!_ |
-| `cluster` | Contains cluster information for the addons. Populated (overwritten) by `scripts/addons/install-addons`. |
+| `vms` | This is a list of VMs to create. Each VM in the list specifies the following keys: |
+| `vms[n].name` | The VM Name. |
+| `vms[n].cpu` | Number of CPUs. |
+| `vms[n].mem` | RAM in MB. E.g.: `8192` = 8 gig. |
+| `vms[n].ip` | The rightmost octet of the IP address for the host. Ignored unless `virt=virtualbox` and `vbox.host-only-network` is configured. So, for example, if `vbox.host-only-network` is `192.168.56` and this `ip` value is `200`. then the IP address assigned to the host-only interface in the VM is `192.168.56.200`. |
+| `vms[n].disk` | Only supported if `virt=kvm` at this time. Resizes the disk to the specified number which is interpreted as Gi. **Note:** the script will use `sudo` to issue the resize command because libvirt makes `root` the owner of the VM `qcow2` files and I have not been able to figure out how to overcome that. |
+| `vms[n].pod-cidr` | Used to configure CNI for containerd. As soon as Cilium or Calico are installed then this configuration is superseded. |
+| `addons` | Installs the listed add-ons in the `scripts/addons` directory. E.g. Calico, Cilium, Kube Prometheus Stack, etc. Add-ons are installed in the order listed in the yaml. _CNI needs to be first!_ |
+| `cluster` | Contains cluster information for the add-ons. Populated (overwritten) by `scripts/addons/install-addons`. |
 
 ## TODOs
 
@@ -105,6 +107,7 @@ This project has been tested with the tools, components and versions shown in th
 | host | yq | 4.40.5 |
 | host | virt-install | 4.0.0 |
 | host | virsh | 8.0.0 |
+| host | qemu-img | 6.2.0 |
 | guest VM | Centos ISO (X= 8 or 9) | Stream-X-x86_64-latest |
 | guest VM | Rocky Linux ISO | Rocky-9.3-x86_64-dvd |
 | guest VM | Virtual Box Guest Additions ISO | 7.0.14 |

@@ -2,7 +2,7 @@
 
 set -e
 
-long_opts=priv-key:,template-vmname:,clone-vmname:,clone-ram:,clone-cpus:
+long_opts=priv-key:,template-vmname:,clone-vmname:,clone-ram:,clone-cpus:,clone-disk:
 script_name=$(basename "$0")
 
 priv_key=
@@ -10,6 +10,7 @@ template_vmname=
 clone_vmname=
 clone_ram=
 clone_cpus=
+clone_disk=
 
 function opt_val() {
   opt="$1"
@@ -50,6 +51,10 @@ function parse_args() {
         clone_cpus=$(opt_val "$2")
         shift 2
         ;;
+      --clone-disk)
+        clone_disk=$(opt_val "$2")
+        shift 2
+        ;;
       --)
         shift
         break
@@ -76,6 +81,12 @@ virsh setvcpus  $clone_vmname $clone_cpus --config
 virsh setmaxmem $clone_vmname "$clone_ram"M
 virsh setmem    $clone_vmname "$clone_ram"M  --config
 
+if [[ -n $clone_disk ]]; then
+  echo "resizing disk vda to $clone_disk gigs"
+  img=$(virsh domblklist $clone_vmname | grep vda | awk '{print $2}')
+  sudo qemu-img resize $img ${clone_disk}G
+fi
+
 echo "starting VM"
 virsh start $clone_vmname
 
@@ -83,5 +94,10 @@ echo "setting the hostname for cloned VM"
 clone_ip=$(xec get-kvm-ip $clone_vmname)
 ssh-keygen -f ~/.ssh/known_hosts -R $clone_ip
 ssh -o "StrictHostKeyChecking no" -i $priv_key root@$clone_ip "hostnamectl set-hostname $clone_vmname"
+
+if [[ -n $clone_disk ]]; then
+  echo "resizing partition 3 on /dev/vda"
+  ssh -i $priv_key root@$clone_ip "growpart /dev/vda 3 && xfs_growfs /"
+fi
 
 echo "done cloning \"$clone_vmname\""

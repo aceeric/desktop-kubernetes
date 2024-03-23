@@ -7,6 +7,7 @@ valid_configs = [
     "k8s.cluster-cidr",
     "k8s.cluster-dns",
     "k8s.kube-proxy",
+    "kvm.network",
     "kvm.kickstart",
     "kvm.os-variant",
     "vbox.host-network-interface",

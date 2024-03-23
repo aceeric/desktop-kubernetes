@@ -71,15 +71,7 @@ function parse_args() {
 
 parse_args "$@"
 
-## debug
-#echo "template_vmname=$template_vmname"
-#echo "linux_iso_path=$linux_iso_path"
-#echo "host_only_network=$host_only_network"
-#echo "kickstart=$kickstart"
-#echo "os_variant=$os_variant"
-#exit
-
-echo "checking/generating SSH keys -- the public key will be copied to the VM by the kickstart script"
+echo "checking/generating SSH keys"
 xec gen-ssh-keyfiles
 
 echo "interpolating SSH key into kickstart file"

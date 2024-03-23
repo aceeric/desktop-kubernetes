@@ -12,6 +12,7 @@ tested_helm_version="v3.13.1"
 tested_yq_version="4.40.5"
 tested_virt_install_version="4.0.0"
 tested_virsh_version="8.0.0"
+tested_qemu_img_version="6.2.0"
 
 if which openssl &>/dev/null; then
   openssl_version=$(openssl version | awk '{print $2}')
@@ -92,6 +93,16 @@ else
   tested_virsh_version="not found"
 fi
 
+if which qemu-img &>/dev/null; then
+  qemu_img_version=$(qemu-img --version)
+  regex=".*version ([0-9.]*).*"
+  [[ $qemu_img_version =~ $regex ]] && qemu_img_version="${BASH_REMATCH[1]}"
+  [[ $qemu_img_version == "$tested_qemu_img_version" ]] && qemu_img_ok=Yes || { qemu_img_ok=No; mismatch=1; }
+else
+  tested_qemu_img_version="not found"
+fi
+
+
 cat <<EOF | column -t -s "|"
 component|tested|found|matches?
 ---------|------|-----|--------
@@ -106,6 +117,7 @@ helm|$tested_helm_version|$helm_version|$helm_ok
 yq|$tested_yq_version|$yq_version|$yq_ok
 virt-install|$tested_virt_install_version|$virt_install_version|$virt_install_ok
 virsh|$tested_virsh_version|$virsh_version|$virsh_ok
+qemu-img|$tested_qemu_img_version|$qemu_img_version|$qemu_img_ok
 EOF
 
 if [[ $mismatch -ne 0 ]]; then

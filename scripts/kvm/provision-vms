@@ -98,13 +98,20 @@ for ((i = 0; i < $vmcnt; ++i)); do
   vm_cpu=$(yq .vms[$i].cpu $config)
   vm_mem=$(yq .vms[$i].mem $config)
   vm_ip=$(yq .vms[$i].ip $config)
+  vm_disk=$(yq '.vms['$i'].disk // ""' $config)
+
+  if [[ -n $vm_disk ]] && [[ $vm_disk -le 30 ]]; then
+    echo "shrinking the disk is not supported - ignoring"
+    vm_disk=
+  fi
 
   $script_dir/clone-vm\
    --priv-key=$DTKBASE/generated/kickstart/id_ed25519\
    --template-vmname=$template_vmname\
    --clone-vmname=$vm_name\
    --clone-ram=$vm_mem\
-   --clone-cpu=$vm_cpu
+   --clone-cpu=$vm_cpu\
+   --clone-disk=$vm_disk
 
   vm_names+=($vm_name)
 done
