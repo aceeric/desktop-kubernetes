@@ -10,14 +10,16 @@ $ pwd
 
 # Get Sonobuoy
 ```
-SONOGZIP=https://github.com/vmware-tanzu/sonobuoy/releases/download/v0.56.16/sonobuoy_0.56.16_linux_amd64.tar.gz
-[[ -f conformance/sonobuoy ]] || curl -sL $SONOGZIP | tar zxvf - -C conformance sonobuoy
+SONOVER=0.57.1
+SONOGZIP=https://github.com/vmware-tanzu/sonobuoy/releases/download/v$SONOVER/sonobuoy_${SONOVER}_linux_amd64.tar.gz
+rm -f conformance/sonobuoy
+curl -sL $SONOGZIP | tar zxvf - -C conformance sonobuoy
 ```
 
 ## Smoke test - should run one test successfully
 
 ```
-conformance/sonobuoy run --mode=quick
+conformance/sonobuoy run --mode=quick --dns-namespace coredns
 watch 'conformance/sonobuoy status --json | json_pp'
 conformance/sonobuoy delete --wait
 ```
@@ -25,7 +27,7 @@ conformance/sonobuoy delete --wait
 ## Run conformance tests
 
 ```
-conformance/sonobuoy run --mode=certified-conformance --timeout=30000
+conformance/sonobuoy run --mode=certified-conformance --timeout=30000 --dns-namespace coredns
 ```
 
 ## Watch the tests run in one console window

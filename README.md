@@ -51,7 +51,7 @@ The project ships with a `config.yaml` file in the project root that specifies t
 
 | Key | Description |
 |-|-|
-| `virt` | Options are `virtualbox` and `kvm`. |
+| `virt` | Options are `virtualbox` and `kvm`. (The current specified value is `kvm`.) |
 | `k8s.containerized-cplane` | If specified, creates the control plane components as static pods on the controller VM like kubeadm, RKE2, et. al. (By default, creates the control plane components as as systemd units.) Allowed values: `all`, or any of: `etcd`, `kube-apiserver`, `kube-proxy`, `kube-scheduler`, `kube-controller-manager` (comma-separated.) E.g.: `etcd,kube-apiserver` |
 | `k8s.cluster-cidr` | Configures CIDR range for Pods. This is applied to the `kube-controller-manager`. (Be aware of `--node-cidr-mask-size...` args which you can't override at this time.) |
 | `k8s.cluster-dns` | Ignored - not yet implemented. |
@@ -129,7 +129,7 @@ To install different add-on versions - change the version in the corresponding d
 
 | Add-on | App Version | Chart Version |
 |-|-|-|
-| Calico networking | v3.27.0 | v3.27.0 |
+| Calico networking (Tigera Operator) | v1.32.5 | v3.27.2 |
 | Cilium networking and Hubble monitoring | 1.15.0-pre.2 | 1.15.0-pre.2 |
 | CoreDNS | 1.11.1 | 1.28.2 |
 | External DNS | v0.14.0 | 1.13.1 |
