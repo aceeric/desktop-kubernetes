@@ -12,7 +12,7 @@ url=https://github.com/openebs/charts/releases/download/openebs-$OPENEBS_VER/ope
 tgz=$DTKBASE/binaries/$(basename $url)
 xec download-obj --url=$url --dest=$tgz
 
-helm install openebs\
+helm upgrade --install openebs\
   --namespace openebs\
   --create-namespace\
   --kubeconfig $admin_kubeconfig\

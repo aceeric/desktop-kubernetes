@@ -11,7 +11,7 @@ tgz=$DTKBASE/binaries/$(basename $url)
 xec download-obj --url=$url --dest=$tgz
 
 admin_kubeconfig=$(yq .cluster.admin-kubeconfig $config)
-helm install coredns\
+helm upgrade --install coredns\
   --namespace coredns\
   --create-namespace\
   --kubeconfig $admin_kubeconfig\

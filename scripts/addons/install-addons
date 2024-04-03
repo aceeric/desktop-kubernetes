@@ -70,7 +70,7 @@ if [[ -n "$addon" ]]; then
   fi
 else
   for ((i = 0; i < $(yq '.addons | length' $config); ++i)); do
-    addon="$(yq .addons[$i] $config)"
+    addon="$(yq .addons[$i].name $config)"
     if [[ -d $script_dir/$addon ]]; then
       echo "installing $addon in $script_dir/$addon"
       $script_dir/$addon/install $config

@@ -14,7 +14,7 @@ controller_ip=$(yq .vms[0].name $config)
 sed "s|K8SSERVICEHOST|$controller_ip|g" $script_dir/values-template.yaml >| $script_dir/values.yaml
 
 admin_kubeconfig=$(yq .cluster.admin-kubeconfig $config)
-helm install cilium\
+helm upgrade --install cilium\
   --namespace cilium\
   --create-namespace\
   --kubeconfig $admin_kubeconfig\

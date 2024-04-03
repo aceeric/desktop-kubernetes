@@ -1,14 +1,16 @@
 # for help see the README
 virt: kvm
 addons:
-  #- calico
-  - cilium
-  - coredns
-  - openebs
-  - metrics-server
-  - kube-prometheus-stack
-  - kubernetes-dashboard
-  - ingress-nginx
+  #- name: calico
+  - name: cilium
+  - name: coredns
+  - name: openebs
+  - name: metrics-server
+  - name: kube-prometheus-stack
+  - name: kubernetes-dashboard
+  - name: ingress-nginx
+    ssl-passthrough: true # for vcluster
+  #- name: vcluster
 k8s:
   containerized-cplane:
   cluster-cidr: 10.200.0.0/16

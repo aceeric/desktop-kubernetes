@@ -11,7 +11,7 @@ tgz=$DTKBASE/binaries/$(basename $url)
 xec download-obj --url=$url --dest=$tgz
 
 admin_kubeconfig=$(yq .cluster.admin-kubeconfig $config)
-helm install kube-prometheus\
+helm upgrade --install kube-prometheus\
   --namespace kube-prometheus\
   --create-namespace\
   --kubeconfig $admin_kubeconfig\

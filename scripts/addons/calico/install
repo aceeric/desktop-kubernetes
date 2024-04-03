@@ -31,7 +31,7 @@ done
 sed "s|CLUSTERCIDR|$cluster_cidr|" $script_dir/values-template.yaml >| $script_dir/values.yaml
 
 admin_kubeconfig=$(yq .cluster.admin-kubeconfig $config)
-helm install tigera-operator\
+helm upgrade --install tigera-operator\
   --namespace tigera-operator\
   --create-namespace\
   --kubeconfig $admin_kubeconfig\
