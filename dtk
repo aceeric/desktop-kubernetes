@@ -186,8 +186,7 @@ elif [[ -z "$vbox_vboxdir" ]]; then
 elif [[ ! -d $vbox_vboxdir ]]; then
   echo "directory for virtualbox VMs does not exist: $vbox_vboxdir"
   exit 1
-# removing centos9 for now - can't get it working [[ "$vm_linux" != "centos9" ]] && 
-elif [[ "$vm_linux" != "centos8" ]] && [[ "$vm_linux" != "rocky" ]]  && [[ "$vm_linux" != "alma" ]]; then
+elif [[ "$vm_linux" != "centos9" ]] && [[ "$vm_linux" != "rocky" ]]  && [[ "$vm_linux" != "alma" ]]; then
   echo "unsupported parameter value for linux config: $vm_linux"
   exit 1
 fi

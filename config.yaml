@@ -8,9 +8,9 @@ addons:
   - name: metrics-server
   - name: kube-prometheus-stack
   - name: kubernetes-dashboard
-  - name: ingress-nginx
-    ssl-passthrough: true # for vcluster
-  #- name: vcluster
+    #- name: ingress-nginx
+    #  ssl-passthrough: true # for vcluster
+    #- name: vcluster
 k8s:
   containerized-cplane:
   cluster-cidr: 10.200.0.0/16
@@ -24,17 +24,17 @@ k8s:
   #      skip_verify = true
 kvm:
   network: nat
-  kickstart: kvm.ks.cfg
-  os-variant: centos-stream8
+  kickstart: kvm.text.ks.cfg
+  os-variant: almalinux8
 vbox:
   host-network-interface:
   host-only-network: 192.168.56
   kickstart: vbox.text.ks.cfg
   vboxdir:
 vm:
-  linux: centos8
+  linux: alma
   create-template: true
-  template-vmname: centos8
+  template-vmname: alma8
 vms:
   - name: vm1
     cpu: 3

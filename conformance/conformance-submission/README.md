@@ -20,7 +20,7 @@ Tag v1.28.0 is the current release tested, which mirrors the release of Kubernet
 
 ## Check requirements
 
-This is a Bash shell script project and requires certain command-line utilities on the desktop. Run the `dtk` script first with the `--check-compatibility` option:
+This is a Bash shell script project and requires certain command-line utilities on the desktop. Run the `dtk` script first with the `--check-compatibility` option. This will compare your versions to what has been tested:
 
 ```shell
 $ ./dtk --check-compatibility
@@ -36,7 +36,7 @@ kubectl (client only)  v1.28.0              v1.28.0              Yes
 curl                   7.81.0               7.81.0               Yes
 ```
 
-Virtualbox needs to be 7.0.8. The other components must exist, but version incompatibilities may not be an issue. You have to use your judgement. But, for example, the script uses the `genisoimage` utility to create ISOs to mount into the CentOS VMs during initialization. So if that utility is missing, the script will fail to gen the cluster. 
+Version incompatibilities may not be an issue. You have to use your judgement. But, for example, the script uses the `genisoimage` utility to create ISOs to mount into the CentOS VMs during initialization. So if that utility is missing, the script will fail to gen the cluster.
 
 ## Create the cluster
 

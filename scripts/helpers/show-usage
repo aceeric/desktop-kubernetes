@@ -5,9 +5,10 @@ while IFS= read -r line; do
 done <<< '
   dtk
   ---
-  Creates a Kubernetes cluster on the desktop using VirtualBox and kickstart for hands-free CentOS 8,
-  Rocky 9, or Alma 9 Linux installation. The cluster consists of a configurable number of nodes. The
-  nodes are configured with networking support for host-to-guest, guest-to-guest, and guest-to-internet.
+  Creates a Kubernetes cluster on the desktop using KVM or VirtualBox and kickstart for hands-free
+  CentOS, Rocky, or Alma Linux installation. The cluster consists of a configurable number of nodes.
+  The nodes are configured with networking support for host-to-guest, guest-to-guest, and
+  guest-to-internet.
 
   The script creates a "template" VM, and then clones that for each cluster node. The initial
   template VM creation runs Kickstart to install the OS, and also installs VirtualBox Guest Additions

@@ -2,7 +2,7 @@
 
 <img src="resources/desktop-kubernetes-no-text.jpg" width="100"/>
 
-Desktop Kubernetes is a Linux *Bash* project that provisions a desktop Kubernetes cluster using VirtualBox or KVM - with each cluster node consisting of a CentOS, Alma, or Rocky Linux guest VM. The purpose is to create a local development and testing environment that is 100% compatible with a production-grade Kubernetes environment.
+Desktop Kubernetes is a Linux *Bash* project that provisions a desktop Kubernetes cluster using KVM or VirtualBox - with each cluster node consisting of an Alma, CentOS, or Rocky Linux guest VM. The purpose is to create a local development and testing environment that is 100% compatible with a production-grade Kubernetes environment.
 
 Desktop Kubernetes is the *57 Chevy* of Kubernetes distros: you can take it apart and put it back together with just a few Linux console tools: bash, curl, genisoimage, ssh, scp, tar, openssl, vboxmanage, helm, yp, and kubectl. That being said, **v1.28.0** of this distribution is Kubernetes Certified. See: [CNCF Landscape](https://landscape.cncf.io/?group=certified-partners-and-providers&view-mode=grid&item=platform--certified-kubernetes-distribution--desktop-kubernetes).
 
@@ -14,11 +14,9 @@ This project started as a way to automate the steps in **Kelsey Hightower's** [K
 
 ## Quick Start
 
-The `dtk` script in the repo root is what you run. If you supply no arguments, the script will configure the cluster based on the `config.yaml` file in the project root resulting in a three node CentOS 8 cluster consisting of one controller and two workers.
+The `dtk` script in the repo root is what you run. If you supply no arguments, the script will configure the cluster based on the `config.yaml` file in the project root resulting in a three node Alma 8 cluster consisting of one controller and two workers.
 
-> For Centos 8, check the mirror in the `artifacts` script and make sure it makes sense for your geography. (Other Linux options have automatic redirect.)
->
-> I also recommend you run once with just the `--check-compatibility` option to check the versions of the CLIs used by the scripts (curl, etc.) against the tested versions. E.g.: `./dtk --check-compatibility`. There will likely be differences and you have to decide whether the differences are material. Slight version differences may not matter, but for sure you need all the listed tools. In keeping with the project philosophy of not modifying your desktop - you need to install the tools listed in order to use this project.
+> I recommend you run once with just the `--check-compatibility` option to check the versions of the CLIs used by the scripts (curl, etc.) against the tested versions. E.g.: `./dtk --check-compatibility`. There will likely be differences and you have to decide whether the differences are material. Slight version differences may not matter, but for sure you need all the listed tools. In keeping with the project philosophy of not modifying your desktop - you need to install the tools listed in order to use this project.
 
 Once the cluster comes up, the script will display a message telling you how to set your `KUBECONFIG` environment variable in order to access the cluster. It will also display a message showing how to SSH into each node. (There's also a helper script `sshto` that you can use for that.)
 
@@ -51,20 +49,20 @@ The project ships with a `config.yaml` file in the project root that specifies t
 
 | Key | Description |
 |-|-|
-| `virt` | Options are `virtualbox` and `kvm`. (The current specified value is `kvm`.) |
+| `virt` | Options are `virtualbox` and `kvm`. (The current specified value is `kvm`. The reason is that kvm is significantly faster to provision VMs than VirtualBox.) |
 | `k8s.containerized-cplane` | If specified, creates the control plane components as static pods on the controller VM like kubeadm, RKE2, et. al. (By default, creates the control plane components as as systemd units.) Allowed values: `all`, or any of: `etcd`, `kube-apiserver`, `kube-proxy`, `kube-scheduler`, `kube-controller-manager` (comma-separated.) E.g.: `etcd,kube-apiserver` |
 | `k8s.cluster-cidr` | Configures CIDR range for Pods. This is applied to the `kube-controller-manager`. (Be aware of `--node-cidr-mask-size...` args which you can't override at this time.) |
 | `k8s.cluster-dns` | Ignored - not yet implemented. |
 | `k8s.kube-proxy` | If true, you can run the cluster without Calico or Cilium (or other CNI) using the default CNI configuration that is established by `scripts/worker/containerd/install-containerd`. |
-| `k8s.containerd-mirror` | Supports configuring `containerd` to mirror to a different registry. The example in the yaml (commented out) has all images mirrored to a distribution server on 192.168.0.49:8080. Background: I use my own caching pull-only, pull-through OCI distribution server https://github.com/aceeric/ociregistry running as a systemd service on my desktop to mitigate rate limiting. |
+| `k8s.containerd-mirror` | Supports configuring `containerd` to mirror to a different registry. The example in the yaml (commented out) has all images mirrored to a distribution server on 192.168.0.49:8080. Background: I use my own caching pull-only, pull-through OCI distribution server https://github.com/aceeric/ociregistry running as a systemd service on my desktop to mitigate DockerHub rate limiting. |
 | `vbox.host-network-interface` | The name of the primary network interface on your machine. The scripts use this to configure the VirtualBox bridge network for each guest VM. **Important**: you must specify this consistently when creating the template, and when creating a cluster from the template. The reason is that the option configures settings at the VM level that then propagate into the guest OS. Since guests are cloned from the template, the guest networking has to be defined consistently with the template. This config is mutually exclusive with `vbox.host-only-network`. |
 | `vbox.host-only-network` | The left three octets of the network. E.g. `192.168.56`. (*For some additional information on this address, see*: [the VirtualBox docs](https://www.virtualbox.org/manual/ch06.html) *section on "Host-Only Networking"*.) This option configures NAT + host only networking mode. The scripts will create a new host only network and configure the cluster to use it for intra-cluster networking, and will configure NAT for the cluster to access the internet. *See important note in the table entry immediately above regarding VBox networking type.* This config is mutually exclusive with `vbox.host-network-interface`. |
 | `vbox.vboxdir` | The directory where you keep your VirtualBox VM files. The script uses the `VBoxManage` utility to create the VMs, which will in turn create a sub-directory under this directory for each VM. If empty, the script will get the value from VirtualBox. The directory must exist. The script will not create it. |
 | `vbox.kickstart` | Specifies the name of the kickstart file to configure the OS. The file has to be in the `kickstarts` directory. The default is `vbox.text.ks.cfg` which is a non-graphical install. |
 | `kvm.network` | This is set to `nat` in the configuration file. This setting is actually ignored because NAT is the only KVM networking option currently implemented but stating that in the configuration makes it more self-documenting. |
-| `kvm.kickstart` | The kickstart file used when creating a template VM. Kickstart files are in the `kickstarts` directory. The default is `kvm.ks.cfg`. |
-| `kvm.os-variant` | Has to align with OS ISO. (Values from `virt-install --os-variant list`.) |
-| `vm.linux` | Valid values are `centos8` for CentOS 8 Stream (the default), `alma` for Alma Linux, and `rocky` for Rocky Linux. Ignored unless `vm.create-template` is specified. |
+| `kvm.kickstart` | The kickstart file used when creating a template VM. Kickstart files are in the `kickstarts` directory. The default is `kvm.text.ks.cfg`. |
+| `kvm.os-variant` | Has to align with OS ISO. (Values from `virt-install --os-variant list`.) Default is `almalinux8`. |
+| `vm.linux` | Valid values are `alma` for Alma Linux (the default), `centos9` for CentOS 9 Stream, and `rocky` for Rocky Linux. Ignored unless `vm.create-template` is specified. |
 | `vm.create-template` | True/False. Causes the script to create a template VM to clone all the cluster nodes from before bringing up the cluster. (This step by far takes the longest.) If not specified, the script expects to find an existing VM to clone from per the `vm.template-vmname` setting. This option installs the OS using Kickstart, then installs Guest Additions. **You must set this to true for the very first cluster you create.** |
 | `vm.template-vmname` | Specifies the template VM name to create - or clone from. |
 | `vms` | This is a list of VMs to create. Each VM in the list specifies the following keys: |
@@ -108,9 +106,10 @@ This project has been tested with the tools, components and versions shown in th
 | host | virt-install | 4.0.0 |
 | host | virsh | 8.0.0 |
 | host | qemu-img | 6.2.0 |
-| guest VM | Centos ISO (X= 8 or 9) | Stream-X-x86_64-latest |
-| guest VM | Rocky Linux ISO | Rocky-9.3-x86_64-dvd |
-| guest VM | Virtual Box Guest Additions ISO | 7.0.14 |
+| guest VM | Centos ISO | Stream-9-latest-x86_64 |
+| guest VM | Rocky Linux ISO | 8.10 |
+| guest VM | Alma Linux ISO | 8.10 |
+| guest VM | Virtual Box Guest Additions ISO | 7.0.18 |
 | k8s | kube-apiserver | v1.29.2 |
 | k8s | kube-controller-manager | v1.29.2 |
 | k8s | kube-scheduler | v1.29.2 |
@@ -122,6 +121,8 @@ This project has been tested with the tools, components and versions shown in th
 | k8s | cni plugins | v1.4.0 |
 | k8s | containerd | 1.7.13 |
 | conformance | Sonobuoy conformance | v0.56.16 |
+
+> Note regarding Linux: Prior to June 2024, I defaulted the Linux selection to Centos 8 Stream. Since Centos 8 Stream doesn't appear to be available any more the CentOS version is configured as Stream 9 latest. However, I've so far been unable to get the Stream 9 install working with either KVM or VirtualBox so I've defaulted the Linux distro to **Alma 8.10** in the `config.yaml`.
 
 ### Add-ons
 

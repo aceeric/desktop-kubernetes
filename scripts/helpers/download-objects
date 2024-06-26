@@ -51,7 +51,6 @@ parse_args "$@"
 
 if [[ $create_template -eq 1 ]] && [[ -n $linux ]]; then
   [[ $linux == "alma"    ]] && xec download-obj --url=$ALMA_ISO_DOWNLOAD --dest=$ALMA_ISO_FILE
-  [[ $linux == "centos8" ]] && xec download-obj --url=$CENTOS8_ISO_DOWNLOAD --dest=$CENTOS8_ISO_FILE
   [[ $linux == "centos9" ]] && xec download-obj --url=$CENTOS9_ISO_DOWNLOAD --dest=$CENTOS9_ISO_FILE
   [[ $linux == "rocky"   ]] && xec download-obj --url=$ROCKY_ISO_DOWNLOAD --dest=$ROCKY_ISO_FILE
   xec download-obj --url=$GUEST_ADDITIONS_ISO_DOWNLOAD --dest=$GUEST_ADDITIONS_ISO_FILE

@@ -82,10 +82,17 @@ function parse_args() {
 
 parse_args "$@"
 
-linux_iso_path=$CENTOS8_ISO_FILE
-[[ $linux == "centos9" ]] && linux_iso_path=$CENTOS9_ISO_FILE
-[[ $linux == "alma"    ]] && linux_iso_path=$ALMA_ISO_FILE
-[[ $linux == "rocky"   ]] && linux_iso_path=$ROCKY_ISO_FILE
+linux_iso_path=
+if [[ $linux == "alma" ]]; then
+  linux_iso_path=$ALMA_ISO_FILE
+elif [[ $linux == "rocky" ]]; then
+  linux_iso_path=$ROCKY_ISO_FILE
+elif [[ $linux == "centos9" ]]; then
+  linux_iso_path=$CENTOS9_ISO_FILE
+else
+  echo "unknown/unspecified linux distro"
+  exit 1
+fi
 
 # create-template-vm gens SSH keypair $DTKBASE/generated/kickstart/id_ed25519
 # if it does not already exist - which is used below when cloning the VM

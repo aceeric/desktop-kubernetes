@@ -2,7 +2,6 @@
 
 if [[ "$1" == "files" ]]; then
   for f in $ALMA_ISO_FILE\
-    $CENTOS8_ISO_FILE\
     $CENTOS9_ISO_FILE\
     $CNI_PLUGINS_BINARY\
     $CONTAINERD_BINARY\
@@ -24,7 +23,6 @@ if [[ "$1" == "files" ]]; then
   done
 else
   for f in $ALMA_ISO_DOWNLOAD\
-    $CENTOS8_ISO_DOWNLOAD\
     $CENTOS9_ISO_DOWNLOAD\
     $CNI_PLUGINS_DOWNLOAD\
     $CONTAINERD_DOWNLOAD\

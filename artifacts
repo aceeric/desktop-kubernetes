@@ -1,22 +1,20 @@
 # Change versions here and they will propagate throughout the project
 
-ALMA_VER=9.3
+ALMA_VER=8.10
 CNI_PLUGINS_VER=v1.4.0
 CONTAINERD_VER=1.7.13
 CRICTL_VER=v1.29.0
 ETCD_VER=v3.5.12
-GUEST_ADDITIONS_VER=7.0.14
+GUEST_ADDITIONS_VER=7.0.18
 K8S_VER=v1.29.2
-ROCKY_VER=9.3
+ROCKY_VER=8.10
 RUNC_VER=v1.1.12
 
 # These are the items used to provision the cluster
 
 ALMA_ISO_DOWNLOAD=https://repo.almalinux.org/almalinux/$ALMA_VER/isos/x86_64/AlmaLinux-$ALMA_VER-x86_64-dvd.iso
 ALMA_ISO_FILE=$DTKBASE/binaries/AlmaLinux-$ALMA_VER-x86_64-dvd.iso
-CENTOS8_ISO_DOWNLOAD=https://mirror.umd.edu/centos/8-stream/isos/x86_64/CentOS-Stream-8-x86_64-latest-dvd1.iso
-CENTOS8_ISO_FILE=$DTKBASE/binaries/CentOS-Stream-8-x86_64-latest-dvd1.iso
-CENTOS9_ISO_DOWNLOAD="https://mirrors.centos.org/mirrorlist?path=/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-dvd1.iso&redirect=1&protocol=https"
+CENTOS9_ISO_DOWNLOAD=http://mirror.stream.centos.org/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-dvd1.iso
 CENTOS9_ISO_FILE=$DTKBASE/binaries/CentOS-Stream-9-latest-x86_64-dvd1.iso
 CNI_PLUGINS_BINARY=$DTKBASE/binaries/cni-plugins-linux-amd64-$CNI_PLUGINS_VER.tgz
 CNI_PLUGINS_DOWNLOAD=https://github.com/containernetworking/plugins/releases/download/$CNI_PLUGINS_VER/cni-plugins-linux-amd64-$CNI_PLUGINS_VER.tgz
@@ -38,7 +36,7 @@ KUBE_PROXY_BINARY=$DTKBASE/binaries/kube-proxy-$K8S_VER
 KUBE_PROXY_DOWNLOAD=https://dl.k8s.io/$K8S_VER/bin/linux/amd64/kube-proxy
 KUBE_SCHEDULER_BINARY=$DTKBASE/binaries/kube-scheduler-$K8S_VER
 KUBE_SCHEDULER_DOWNLOAD=https://dl.k8s.io/$K8S_VER/bin/linux/amd64/kube-scheduler
-ROCKY_ISO_DOWNLOAD=https://download.rockylinux.org/pub/rocky/${ROCKY_VER%%\.*}/isos/x86_64/Rocky-$ROCKY_VER-x86_64-dvd.iso
-ROCKY_ISO_FILE=$DTKBASE/binaries/Rocky-$ROCKY_VER-x86_64-dvd.iso
+ROCKY_ISO_DOWNLOAD=https://download.rockylinux.org/pub/rocky/${ROCKY_VER%%\.*}/isos/x86_64/Rocky-$ROCKY_VER-x86_64-dvd1.iso
+ROCKY_ISO_FILE=$DTKBASE/binaries/Rocky-$ROCKY_VER-x86_64-dvd1.iso
 RUNC_BINARY=$DTKBASE/binaries/runc-$RUNC_VER
 RUNC_DOWNLOAD=https://github.com/opencontainers/runc/releases/download/$RUNC_VER/runc.amd64
