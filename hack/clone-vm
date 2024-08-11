@@ -10,6 +10,7 @@
 # --ga-iso <path to guest additions ISO>
 # --vm-name <name>
 # --vbox-dir <dir>
+# --virt 'virtualbox'|'kvm'
 #
 # Examples:
 #
@@ -21,7 +22,8 @@
 #   --cpu 3\
 #   --ram 4096\
 #   --template-vm-name alma93\
-#   --vm-name alma93clone
+#   --vm-name alma93clone\
+#   --virt virtualbox
 # 
 # If the template is bridged networking:
 #
@@ -30,7 +32,17 @@
 #   --cpu 3\
 #   --ram 4096\
 #   --template-vm-name alma93\
-#   --vm-name alma93clone
+#   --vm-name alma93clone\
+#   --virt virtualbox
+# 
+# KVM clone
+#
+# hack/clone-vm\
+#   --cpu 3\
+#   --ram 4096\
+#   --template-vm-name alma8\
+#   --vm-name alma8clone\
+#   --virt kvm
 # 
 
 export DTKBASE="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -52,9 +64,13 @@ ip=
 template_vmname=
 vmname=
 vboxdir=$(vboxmanage list systemproperties | grep folder | awk -F: '{print $2}' | xargs)
+virt=
 
 for ((i = 1; i <= $#; i++ )); do
-  if [[ ${!i} == "--cpu" ]]; then
+  if [[ ${!i} == "--virt" ]]; then
+    ((i++))
+    virt=${!i}
+  elif [[ ${!i} == "--cpu" ]]; then
     ((i++))
     cpu=${!i}
   elif [[ ${!i} == "--ram" ]]; then
@@ -84,13 +100,25 @@ for ((i = 1; i <= $#; i++ )); do
   fi
 done
 
-xec virtualbox/clone-vm\
-  --priv-key=$DTKBASE/generated/kickstart/id_ed25519\
-  --template-vmname=$template_vmname\
-  --clone-vmname=$vmname\
-  --clone-ram=$ram\
-  --clone-cpu=$cpu\
-  --host-only-network=$hostonly\
-  --host-only-octet=$ip\
-  --vboxdir=$vboxdir\
-  --shutdown=false
+if [[ "$virt" == "kvm" ]]; then
+  xec kvm/clone-vm\
+   --priv-key=$DTKBASE/generated/kickstart/id_ed25519\
+   --template-vmname=$template_vmname\
+   --clone-vmname=$vmname\
+   --clone-ram=$ram\
+   --clone-cpu=$cpu
+elif [[ "$virt" == "virtualbox" ]]; then
+  xec virtualbox/clone-vm\
+    --priv-key=$DTKBASE/generated/kickstart/id_ed25519\
+    --template-vmname=$template_vmname\
+    --clone-vmname=$vmname\
+    --clone-ram=$ram\
+    --clone-cpu=$cpu\
+    --host-only-network=$hostonly\
+    --host-only-octet=$ip\
+    --vboxdir=$vboxdir\
+    --shutdown=false
+else
+  echo "need --virt arg"
+  exit 1
+fi
