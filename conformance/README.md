@@ -1,16 +1,16 @@
 # Sonobuoy conformance testing
-27-August-2023
+03-September-2024
 
 This README assumes you're in the repo root. E.g.:
 
 ```
 $ pwd
-/home/eace/projects/desktop-kubernetes
+~/projects/desktop-kubernetes
 ```
 
 # Get Sonobuoy
 ```
-SONOVER=0.57.1
+SONOVER=0.57.2
 SONOGZIP=https://github.com/vmware-tanzu/sonobuoy/releases/download/v$SONOVER/sonobuoy_${SONOVER}_linux_amd64.tar.gz
 rm -f conformance/sonobuoy
 curl -sL $SONOGZIP | tar zxvf - -C conformance sonobuoy
@@ -20,7 +20,7 @@ curl -sL $SONOGZIP | tar zxvf - -C conformance sonobuoy
 
 ```
 conformance/sonobuoy run --mode=quick --dns-namespace coredns
-watch 'conformance/sonobuoy status --json | json_pp'
+watch 'conformance/sonobuoy status --json | jq'
 conformance/sonobuoy delete --wait
 ```
 
@@ -33,7 +33,7 @@ conformance/sonobuoy run --mode=certified-conformance --timeout=30000 --dns-name
 ## Watch the tests run in one console window
 
 ```
-watch 'conformance/sonobuoy status --json | json_pp'
+watch 'conformance/sonobuoy status --json | jq'
 ```
 
 ## Watch the logs in another console window
@@ -69,8 +69,8 @@ conformance/sonobuoy delete --wait
    ```
 3. Hand edit this README, plus `PRODUCT.yaml` and `README.md` in `conformance/conformance-submission` as needed
 4. Git commit and push
-5. Tag `desktop-kubernetes` with a tag matching the Kubernetes version: `git tag -a v1.28.0 -m "Kubernetes 1.28.0 passes Sonobuoy conformance v0.56.16"`
-6. Git push the tag: `git push origin v1.28.0`
+5. Tag `desktop-kubernetes` with a tag matching the Kubernetes version: `git tag -a v1.31.0 -m "Kubernetes 1.31.0 passes Sonobuoy conformance v0.57.2"`
+6. Git push the tag: `git push origin v1.31.0`
 
 ## Conformance fork
 
@@ -78,21 +78,21 @@ E.g.: `~/projects/k8s-conformance-esace-fork`
 
 1. Sync fork https://github.com/aceeric/k8s-conformance/tree/master
 2. Do a `git pull`
-3. Create branch: `git checkout -b v1.28-desktop-kubernetes`
-4. Create directory: `mkdir ./v1.28/desktop-kubernetes`
-5. Populate the directory: `cp ~/projects/desktop-kubernetes/conformance/conformance-submission/* ./v1.28/desktop-kubernetes`
+3. Create branch: `git checkout -b v1.31-desktop-kubernetes`
+4. Create directory: `mkdir ./v1.31/desktop-kubernetes`
+5. Populate the directory: `cp ~/projects/desktop-kubernetes/conformance/conformance-submission/* ./v1.31/desktop-kubernetes`
 6. Verify
    ```
-   $ ls -l ./v1.28/desktop-kubernetes
-   total 3484
-   -rw-rw-r-- 1 eace eace 1494089 Sep 17 21:30 e2e.log
-   -rw-rw-r-- 1 eace eace 2059000 Sep 17 21:30 junit_01.xml
-   -rw-rw-r-- 1 eace eace     509 Sep 17 21:30 PRODUCT.yaml
-   -rw-rw-r-- 1 eace eace    4507 Sep 17 21:30 README.md
+   $ ls -l ./v1.31/desktop-kubernetes
+   total 2264
+   -rw-r--r-- 1 eace eace    7883 Sep  3 19:45 e2e.log
+   -rw-r--r-- 1 eace eace 2296506 Sep  3 19:45 junit_01.xml
+   -rw-rw-r-- 1 eace eace     549 Sep  3 19:45 PRODUCT.yaml
+   -rw-rw-r-- 1 eace eace    4253 Sep  3 19:45 README.md
    ```
 7. Git add and commit to the branch with message AND signoff:
    ```
-   git commit -m 'Conformance results for v1.28/desktop-kubernetes
+   git commit -m 'Conformance results for v1.31/desktop-kubernetes
    Signed-off-by: Eric Ace <24485843+aceeric@users.noreply.github.com>'
    ```
 8. Push to GitHub

@@ -4,7 +4,7 @@
 
 Desktop Kubernetes is a Linux *Bash* project that provisions a desktop Kubernetes cluster using KVM or VirtualBox - with each cluster node consisting of an Alma, CentOS, or Rocky Linux guest VM. The purpose is to create a local development and testing environment that is 100% compatible with a production-grade Kubernetes environment.
 
-Desktop Kubernetes is the *57 Chevy* of Kubernetes distros: you can take it apart and put it back together with just a few Linux console tools: bash, curl, genisoimage, ssh, scp, tar, openssl, vboxmanage, helm, yp, and kubectl. That being said, **v1.28.0** of this distribution is Kubernetes Certified. See: [CNCF Landscape](https://landscape.cncf.io/?group=certified-partners-and-providers&view-mode=grid&item=platform--certified-kubernetes-distribution--desktop-kubernetes).
+Desktop Kubernetes is the *57 Chevy* of Kubernetes distros: you can take it apart and put it back together with just a few Linux console tools: bash, curl, genisoimage, ssh, scp, tar, openssl, vboxmanage, helm, yp, and kubectl. That being said, **v1.31.0** of this distribution is Kubernetes Certified. See: [CNCF Landscape](https://landscape.cncf.io/?group=certified-partners-and-providers&view-mode=grid&item=platform--certified-kubernetes-distribution--desktop-kubernetes).
 
 [<img src="https://www.cncf.io/wp-content/uploads/2020/07/certified_kubernetes_color-1.png" width="90"/>](https://github.com/cncf/k8s-conformance/tree/master/v1.28/desktop-kubernetes)
 
@@ -42,14 +42,14 @@ The project ships with a `config.yaml` file in the project root that specifies t
 1. **k8s:** Kubernetes cluster configuration.
 2. **vbox:** VirtualBox configuration.
 3. **kvm:** KVM configuration.
-4. **vm:** VM configuration.
+4. **vm:** VM configuration (common to KVM & VBox)
 5. **vms:** A list of VMs to create for the cluster, and their characteristics.
 6. **addons:** A list of cluster add-ons to install, e.g.: CNI, CoreDNS, etc.
 7. **config:** Populated by the installer.
 
 | Key | Description |
 |-|-|
-| `virt` | Options are `virtualbox` and `kvm`. (The current specified value is `kvm`. The reason is that kvm is significantly faster to provision VMs than VirtualBox.) |
+| `virt` | Options are `virtualbox` and `kvm`. The current specified value is `kvm`. The reason is that kvm is significantly faster to provision VMs than VirtualBox. |
 | `k8s.containerized-cplane` | If specified, creates the control plane components as static pods on the controller VM like kubeadm, RKE2, et. al. (By default, creates the control plane components as as systemd units.) Allowed values: `all`, or any of: `etcd`, `kube-apiserver`, `kube-proxy`, `kube-scheduler`, `kube-controller-manager` (comma-separated.) E.g.: `etcd,kube-apiserver` |
 | `k8s.cluster-cidr` | Configures CIDR range for Pods. This is applied to the `kube-controller-manager`. (Be aware of `--node-cidr-mask-size...` args which you can't override at this time.) |
 | `k8s.cluster-dns` | Ignored - not yet implemented. |
@@ -100,7 +100,7 @@ This project has been tested with the tools, components and versions shown in th
 | host | genisoimage (used to create the Kickstart ISO) | 1.1.11 |
 | host | Virtual Box / VBoxManage | 7.0.10 |
 | host | Helm | v3.13.1 |
-| host | kubectl (client only) | v1.29.2 |
+| host | kubectl (client only) | v1.31.0 |
 | host | curl | 7.81.0 |
 | host | yq | 4.40.5 |
 | host | virt-install | 4.0.0 |
@@ -110,17 +110,17 @@ This project has been tested with the tools, components and versions shown in th
 | guest VM | Rocky Linux ISO | 8.10 |
 | guest VM | Alma Linux ISO | 8.10 |
 | guest VM | Virtual Box Guest Additions ISO | 7.0.18 |
-| k8s | kube-apiserver | v1.29.2 |
-| k8s | kube-controller-manager | v1.29.2 |
-| k8s | kube-scheduler | v1.29.2 |
-| k8s | kubelet | v1.29.2 |
-| k8s | kube-proxy (if installed) | v1.29.2 |
-| k8s | etcd | v3.5.12 |
-| k8s | crictl | v1.29.0 |
-| k8s | runc | v1.1.12 |
-| k8s | cni plugins | v1.4.0 |
-| k8s | containerd | 1.7.13 |
-| conformance | Sonobuoy conformance | v0.56.16 |
+| k8s | kube-apiserver | v1.31.0 |
+| k8s | kube-controller-manager | v1.31.0 |
+| k8s | kube-scheduler | v1.31.0 |
+| k8s | kubelet | v1.31.0 |
+| k8s | kube-proxy (if installed) | v1.31.0 |
+| k8s | etcd | v3.5.15 |
+| k8s | crictl | v1.31.1 |
+| k8s | runc | v1.1.14 |
+| k8s | cni plugins | v1.5.1 |
+| k8s | containerd | 1.7.21 |
+| conformance | Sonobuoy conformance | v0.57.2 |
 
 > Note regarding Linux: Prior to June 2024, I defaulted the Linux selection to Centos 8 Stream. Since Centos 8 Stream doesn't appear to be available any more the CentOS version is configured as Stream 9 latest. However, I've so far been unable to get the Stream 9 install working with either KVM or VirtualBox so I've defaulted the Linux distro to **Alma 8.10** in the `config.yaml`.
 

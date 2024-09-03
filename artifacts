@@ -1,14 +1,14 @@
 # Change versions here and they will propagate throughout the project
 
 ALMA_VER=8.10
-CNI_PLUGINS_VER=v1.4.0
-CONTAINERD_VER=1.7.13
-CRICTL_VER=v1.29.0
-ETCD_VER=v3.5.12
+CNI_PLUGINS_VER=v1.5.1
+CONTAINERD_VER=1.7.21
+CRICTL_VER=v1.31.1
+ETCD_VER=v3.5.15
 GUEST_ADDITIONS_VER=7.0.18
-K8S_VER=v1.29.2
+K8S_VER=v1.31.0
 ROCKY_VER=8.10
-RUNC_VER=v1.1.12
+RUNC_VER=v1.1.14
 
 # These are the items used to provision the cluster
 
