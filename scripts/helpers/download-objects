@@ -1,16 +1,16 @@
 #!/usr/bin/env bash
 #
 # Download core cluster components. (Downloads for add-ons like Calico etc. are
-# handle by the various add-ons.)
+# handle by the various add-ons - see: 'scripts/addons'.)
 #
 
 set -e
-
-long_opts=create-template:,linux:
+long_opts=create-template:,linux:,virtualization:
 script_name=$(basename "$0")
 
 create_template=
 linux=
+virtualization=
 
 function opt_val() {
   opt="$1"
@@ -39,6 +39,10 @@ function parse_args() {
         linux=$(opt_val "$2")
         shift 2
         ;;
+      --virtualization)
+        virtualization=$(opt_val "$2")
+        shift 2
+        ;;
       --)
         shift
         break
@@ -49,11 +53,17 @@ function parse_args() {
 
 parse_args "$@"
 
-if [[ $create_template -eq 1 ]] && [[ -n $linux ]]; then
-  [[ $linux == "alma"    ]] && xec download-obj --url=$ALMA_ISO_DOWNLOAD --dest=$ALMA_ISO_FILE
-  [[ $linux == "centos9" ]] && xec download-obj --url=$CENTOS9_ISO_DOWNLOAD --dest=$CENTOS9_ISO_FILE
-  [[ $linux == "rocky"   ]] && xec download-obj --url=$ROCKY_ISO_DOWNLOAD --dest=$ROCKY_ISO_FILE
-  xec download-obj --url=$GUEST_ADDITIONS_ISO_DOWNLOAD --dest=$GUEST_ADDITIONS_ISO_FILE
+if [[ $create_template -eq 1 ]]; then
+  if [[ $linux == "alma" ]]; then
+    xec download-obj --url=$ALMA_ISO_DOWNLOAD --dest=$ALMA_ISO_FILE
+  elif [[ $linux == "centos9" ]]; then
+    xec download-obj --url=$CENTOS9_ISO_DOWNLOAD --dest=$CENTOS9_ISO_FILE
+  elif [[ $linux == "rocky" ]]; then
+    xec download-obj --url=$ROCKY_ISO_DOWNLOAD --dest=$ROCKY_ISO_FILE
+  fi
+  if [[ $virtualization == "virtualbox" ]]; then
+    xec download-obj --url=$GUEST_ADDITIONS_ISO_DOWNLOAD --dest=$GUEST_ADDITIONS_ISO_FILE
+  fi
 fi
 
 xec download-obj --url=$CNI_PLUGINS_DOWNLOAD --dest=$CNI_PLUGINS_BINARY

@@ -201,7 +201,8 @@ mkdir -p $DTKBASE/generated/kickstart\
 echo "downloading core cluster components"
 xec download-objects\
   --create-template=$vm_create_template\
-  --linux=$vm_linux
+  --linux=$vm_linux\
+  --virtualization=$VIRT
 
 if [[ $create_vms == true ]]; then
   echo "provisioning vms"

@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-
 #
 # Downloads an object to the filesystem if it does not already exist there.
 #
@@ -7,21 +6,17 @@
 #
 # download-obj --url=https://foobar.com/downloads/frobozz.tar.gz --dest="/tmp/downloads/frobozz.tar.gz"
 #
-# The --dest arg specifies a fully qualified path and file name. The  script will create all intermediate
+# The --dest arg specifies a fully qualified path and file name. The script will create all intermediate
 # directories if they don't exist. Optional --executable arg does a chmod +x on the downloaded file
+#
 
 set -e
-
-# api
-url=
-dest=
-
-# internal
-executable=0
-
-short_opts=u:d:x
 long_opts=url:,dest:,executable
 script_name=$(basename "$0")
+
+url=
+dest=
+executable=0
 
 function opt_val() {
   opt="$1"
@@ -32,37 +27,39 @@ function opt_val() {
   fi
 }
 
-parsed=$(getopt --options $short_opts --longoptions $long_opts -n $script_name -- "$@")
+function parse_args() {
+  if [[ "$#" -eq 0 ]]; then
+    echo "no args provided"
+    exit 1
+  fi
+  local parsed
+  parsed=$(getopt --options "" --longoptions $long_opts -n $script_name -- "$@")
+  eval set -- "$parsed"
+  while true; do
+    case "$1" in
+      --url)
+        url=$(opt_val "$2")
+        shift 2
+        ;;
+      --dest)
+        dest=$(opt_val "$2")
+        shift 2
+        ;;
+      --executable)
+        executable=1
+        shift 1
+        ;;
+      --)
+        shift
+        break
+        ;;
+    esac
+  done
+}
 
-if [[ "$?" -ne 0 ]]; then
-  exit 1
-fi
+parse_args "$@"
 
-eval set -- "$parsed"
-
-while true; do
-  case "$1" in
-    -u|--url)
-      url=$(opt_val "$2")
-      shift 2
-      ;;
-    -d|--dest)
-      dest=$(opt_val "$2")
-      shift 2
-      ;;
-    -x|--executable)
-      executable=1
-      shift 1
-      ;;
-    --)
-      shift
-      break
-      ;;
-  esac
-done
-
-# $# below is the left over args - and there shouldn't be any
-if [[ -z "$url" ]] || [[ -z "$dest" ]] || [[ "$#" -ne 0 ]]; then
+if [[ -z "$url" ]] || [[ -z "$dest" ]]; then
   echo "invalid args"
   exit 1
 fi
