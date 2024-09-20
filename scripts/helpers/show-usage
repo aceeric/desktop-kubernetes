@@ -11,10 +11,7 @@ done <<< '
   guest-to-internet.
 
   The script creates a "template" VM, and then clones that for each cluster node. The initial
-  template VM creation runs Kickstart to install the OS, and also installs VirtualBox Guest Additions
-  because that provides the ability to get the IP address from a running VM. Note - creating the template
-  VM takes a fair bit of time, including the initial 60 seconds for the boot menu to time out and actually
-  start the install.
+  template VM creation runs Kickstart to install the OS.
 
   Usage: dtk [--config=<path>] [--create-template=<true|false>] [--install-addon=<addon>]
              [--verify=<files|upstreams>] [--check-compatibility] [--up=<nodelist>] [--down=<nodelist>]
