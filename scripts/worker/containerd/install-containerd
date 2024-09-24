@@ -3,7 +3,6 @@
 set -e
 
 long_opts=priv-key:,worker-ip:,containerd-binary:,pod-cidr:,config:
-script_name=$(basename "$0")
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 priv_key=
@@ -12,54 +11,11 @@ containerd_binary=
 pod_cidr=
 config=
 
-function opt_val() {
-  opt="$1"
-  if [[ "$opt" == =* ]]; then
-    echo "${opt:1}"
-  else
-    echo "$opt"
-  fi
-}
-
-function parse_args() {
-  if [[ "$#" -eq 0 ]]; then
-    echo "no args provided"
-    exit 1
-  fi
-  local parsed
-  parsed=$(getopt --options "" --longoptions $long_opts -n $script_name -- "$@")
-  eval set -- "$parsed"
-  while true; do
-    case "$1" in
-      --priv-key)
-        priv_key=$(opt_val "$2")
-        shift 2
-        ;;
-      --worker-ip)
-        worker_ip=$(opt_val "$2")
-        shift 2
-        ;;
-      --containerd-binary)
-        containerd_binary=$(opt_val "$2")
-        shift 2
-        ;;
-      --pod-cidr)
-        pod_cidr=$(opt_val "$2")
-        shift 2
-        ;;
-      --config)
-        config=$(opt_val "$2")
-        shift 2
-        ;;
-      --)
-        shift
-        break
-        ;;
-    esac
-  done
-}
-
-parse_args "$@"
+if ! parsed=$(xec parseargs $long_opts "$@"); then
+  echo "$parsed"
+  exit 1
+fi
+eval $(echo -e "$parsed")
 
 echo "Copying containerd binary to worker"
 cat $containerd_binary | ssh -i $priv_key root@$worker_ip\

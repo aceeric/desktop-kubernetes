@@ -1,0 +1,92 @@
+#!/usr/bin/env bash
+#
+# Parses command line options somewhat like 'getopt'. Returns a multi-line string
+# that can be provided to the 'eval' command to set variables from parsed options.
+# For example, if cmd line has '--some-opt=1 --other-opt=foo' then returns
+# 'some_opt=1\nother_opt=foo'.
+#
+# Args:
+# $1 - like the longopts passed to getopt
+# $2..$n actual options to parse
+#
+# Two kinds of options are parsed:
+# 1. With a value in two forms: --foo=bar or --foo bar
+# 2. Y/N with no value, like --enabled. If present then assigned a value of '1'
+#
+# Example
+#
+# ./parseargs foo:,baz,foo-bar: --foo=bar --baz --foo-bar frobozz
+#
+# Would return
+# foo=bar\nbaz=1\nfoo_bar=frobozz
+
+vars=
+sep=
+IFS=',' read -ra optsarr <<<"$1"
+valsarr=()
+
+# parse valid opts, remove trailing colon, set whether opt accepts a value
+for ((i = 0; i < ${#optsarr[@]}; ++i)); do
+  opt=${optsarr[$i]}
+  if [[ $opt == *: ]]; then
+    opt=${opt::-1}
+    valsarr[$i]=1
+    optsarr[$i]=$opt
+  else
+    valsarr[$i]=0
+  fi
+done
+
+# parse command line args after the first (longopts) arg
+for ((i = 2; i <= "$#"; ++i)); do
+  opt="${!i}"
+  # strip leading dbl-dash
+  opt="${opt#--}"
+  val=
+  have_equals=0
+
+  # if there's an =, the opt value is after the =
+  if [[ $opt =~ = ]]; then
+    have_equals=1
+    val=$(echo $opt | cut -d= -f2)
+    opt=$(echo $opt | cut -d= -f1)
+  fi
+
+  # find the option in the list of valid options
+  for ((j = 0; j < "${#optsarr[@]}"; ++j)); do
+    if [[ "$opt" == "${optsarr[$j]}" ]]; then
+       break
+    fi
+  done
+  if [[ j -ge "${#optsarr[@]}" ]]; then
+    echo "unknown option: ${!i}"
+    exit 1
+  fi
+
+  # handle opts that accept values
+  if [[ ${valsarr[$j]} -eq 1 ]]; then
+    if [[ $have_equals -eq 0 ]]; then
+      # didn't already get if from opt=val
+      ((i++))
+      val="${!i}"
+      if [[ ${val:0:2} == "--" ]]; then
+        echo "option $opt expects value, got $val instead"
+        exit 1
+      fi
+    fi
+  else
+    if [[ -n "$val" ]]; then
+      echo "option does not take a value: $opt"
+      exit 1
+    fi
+    # bool opt
+    val=1
+  fi
+
+  # replace dash with underscore
+  varname=${opt//-/_}
+  vars="$vars$sep$varname=$val"
+  sep="\n"
+done
+
+echo -e "$vars"

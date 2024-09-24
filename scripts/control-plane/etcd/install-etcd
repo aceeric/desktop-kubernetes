@@ -4,7 +4,6 @@ set -e
 
 long_opts=priv-key:,controller-ip:,controller-hostname:,etcd-gzip:,kubernetes-cert:,kubernetes-key:,\
 containerized-cplane:,admin-kubeconfig:,ca-cert:
-script_name=$(basename "$0")
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 priv_key=
@@ -17,73 +16,15 @@ containerize_cplane=0
 admin_kubeconfig=
 ca_cert=
 
-function opt_val() {
-  opt="$1"
-  if [[ "$opt" == =* ]]; then
-    echo "${opt:1}"
-  else
-    echo "$opt"
-  fi
-}
+if ! parsed=$(xec parseargs $long_opts "$@"); then
+  echo "$parsed"
+  exit 1
+fi
+eval $(echo -e "$parsed")
 
-function parse_args() {
-  if [[ "$#" -eq 0 ]]; then
-    echo "no args provided"
-    exit 1
-  fi
-  local parsed
-  parsed=$(getopt --options "" --longoptions $long_opts -n $script_name -- "$@")
-  eval set -- "$parsed"
-  while true; do
-    case "$1" in
-	    --priv-key)
-        priv_key=$(opt_val "$2")
-        shift 2
-        ;;
-	    --controller-ip)
-        controller_ip=$(opt_val "$2")
-        shift 2
-        ;;
-      --controller-hostname)
-        controller_hostname=$(opt_val "$2")
-        shift 2
-        ;;
-      --etcd-gzip)
-        etcd_gzip=$(opt_val "$2")
-        shift 2
-        ;;
-      --kubernetes-cert)
-        kubernetes_cert=$(opt_val "$2")
-        shift 2
-        ;;
-      --kubernetes-key)
-        kubernetes_key=$(opt_val "$2")
-        shift 2
-        ;;
-      --containerized-cplane)
-        tmpvar=$(opt_val "$2")
-        shift 2
-        if [[ "$tmpvar" == *etcd* || "$tmpvar" == all ]]; then
-          containerized_cplane=1
-        fi
-        ;;
-      --admin-kubeconfig)
-        admin_kubeconfig=$(opt_val "$2")
-        shift 2
-        ;;
-      --ca-cert)
-        ca_cert=$(opt_val "$2")
-        shift 2
-        ;;
-      --)
-        shift
-        break
-        ;;
-    esac
-  done
-}
-
-parse_args "$@"
+if [[ "$containerized_cplane" == *etcd* || "$containerized_cplane" == all ]]; then
+  containerized_cplane=1
+fi
 
 echo "copying etcd TLS material"
 ssh -i $priv_key root@$controller_ip "mkdir -p /etc/etcd /var/lib/etcd && chmod 700 /var/lib/etcd"

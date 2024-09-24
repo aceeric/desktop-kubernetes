@@ -3,7 +3,6 @@
 set -e
 
 long_opts=kube-proxy-binary:,priv-key:,containerized-cplane:,admin-kubeconfig:,worker-hostname:,cluster-cidr:
-script_name=$(basename "$0")
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 kube_proxy_binary=
@@ -13,61 +12,15 @@ admin_kubeconfig=
 worker_hostname=
 cluster_cidr=
 
-function opt_val() {
-  opt="$1"
-  if [[ "$opt" == =* ]]; then
-    echo "${opt:1}"
-  else
-    echo "$opt"
-  fi
-}
+if ! parsed=$(xec parseargs $long_opts "$@"); then
+  echo "$parsed"
+  exit 1
+fi
+eval $(echo -e "$parsed")
 
-function parse_args() {
-  if [[ "$#" -eq 0 ]]; then
-    echo "no args provided"
-    exit 1
-  fi
-  local parsed
-  parsed=$(getopt --options "" --longoptions $long_opts -n $script_name -- "$@")
-  eval set -- "$parsed"
-  while true; do
-    case "$1" in
-      --kube-proxy-binary)
-        kube_proxy_binary=$(opt_val "$2")
-        shift 2
-        ;;
-      --priv-key)
-        priv_key=$(opt_val "$2")
-        shift 2
-        ;;
-      --containerized-cplane)
-        tmpvar=$(opt_val "$2")
-        shift 2
-        if [[ "$tmpvar" == *kube-proxy* || "$tmpvar" == all ]]; then
-          containerized_cplane=1
-        fi
-        ;;
-      --admin-kubeconfig)
-        admin_kubeconfig=$(opt_val "$2")
-        shift 2
-        ;;
-      --worker-hostname)
-        worker_hostname=$(opt_val "$2")
-        shift 2
-        ;;
-      --cluster-cidr)
-        cluster_cidr=$(opt_val "$2")
-        shift 2
-        ;;
-      --)
-        shift
-        break
-        ;;
-    esac
-  done
-}
-
-parse_args "$@"
+if [[ "$containerized_cplane" == *kube-proxy* || "$containerized_cplane" == all ]]; then
+  containerized_cplane=1
+fi
 
 worker_ip=$(xec get-vm-ip $worker_hostname)
 echo "configuring kube-proxy for node $worker_hostname (ip $worker_ip)"

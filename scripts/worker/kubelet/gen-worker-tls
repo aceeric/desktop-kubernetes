@@ -5,57 +5,17 @@
 set -e
 
 long_opts=worker-ip:,worker-hostname:,ca-cert:,ca-key:
-script_name=$(basename "$0")
 
 worker_ip=
 worker_hostname=
 ca_cert=
 ca_key=
 
-function opt_val() {
-  opt="$1"
-  if [[ "$opt" == =* ]]; then
-    echo "${opt:1}"
-  else
-    echo "$opt"
-  fi
-}
-
-function parse_args() {
-  if [[ "$#" -eq 0 ]]; then
-    echo "no args provided"
-    exit 1
-  fi
-  local parsed
-  parsed=$(getopt --options "" --longoptions $long_opts -n $script_name -- "$@")
-  eval set -- "$parsed"
-  while true; do
-    case "$1" in
-	    --worker-ip)
-        worker_ip=$(opt_val "$2")
-        shift 2
-        ;;
-	    --worker-hostname)
-        worker_hostname=$(opt_val "$2")
-        shift 2
-        ;;
-      --ca-cert)
-        ca_cert=$(opt_val "$2")
-        shift 2
-        ;;
-      --ca-key)
-        ca_key=$(opt_val "$2")
-        shift 2
-        ;;
-      --)
-        shift
-        break
-        ;;
-    esac
-  done
-}
-
-parse_args "$@"
+if ! parsed=$(xec parseargs $long_opts "$@"); then
+  echo "$parsed"
+  exit 1
+fi
+eval $(echo -e "$parsed")
 
 # generate key
 openssl genrsa -out $DTKBASE/generated/cert/worker-key.pem 2048

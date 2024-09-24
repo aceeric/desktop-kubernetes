@@ -11,7 +11,7 @@ ExecStart=/usr/local/bin/etcd\
   --data-dir=/var/lib/etcd\
   --initial-advertise-peer-urls=https://INTERNAL_IP:2380\
   --initial-cluster=ETCD_NAME=https://INTERNAL_IP:2380\
-  --initial-cluster-state new\
+  --initial-cluster-state=new\
   --initial-cluster-token=etcd-cluster-0\
   --key-file=/etc/etcd/kubernetes-key.pem\
   --listen-client-urls=https://INTERNAL_IP:2379,https://127.0.0.1:2379\

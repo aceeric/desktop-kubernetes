@@ -6,9 +6,7 @@ set -e
 
 long_opts=controller-ip:,kube-proxy-enabled:,worker-hostname:,priv-key:,admin-kubeconfig:,pod-cidr:\
 ,containerized-cplane:,config:,ca-cert:,ca-key:,cluster-cidr:
-script_name=$(basename "$0")
 
-# api
 controller_ip=
 kube_proxy_enabled=
 worker_hostname=
@@ -24,78 +22,11 @@ cluster_cidr=
 # internal
 worker_ip=
 
-function opt_val() {
-  opt="$1"
-  if [[ "$opt" == =* ]]; then
-    echo "${opt:1}"
-  else
-    echo "$opt"
-  fi
-}
-
-function parse_args() {
-  if [[ "$#" -eq 0 ]]; then
-    echo "no args provided"
-    exit 1
-  fi
-  local parsed
-  parsed=$(getopt --options "" --longoptions $long_opts -n $script_name -- "$@")
-  eval set -- "$parsed"
-  while true; do
-    case "$1" in
-      --controller-ip)
-        controller_ip=$(opt_val "$2")
-        shift 2
-        ;;
-      --kube-proxy-enabled)
-        kube_proxy_enabled=$(opt_val "$2")
-        shift 2
-        ;;
-      --worker-hostname)
-        worker_hostname=$(opt_val "$2")
-        shift 2
-        ;;
-      --priv-key)
-        priv_key=$(opt_val "$2")
-        shift 2
-        ;;
-      --admin-kubeconfig)
-        admin_kubeconfig=$(opt_val "$2")
-        shift 2
-        ;;
-      --pod-cidr)
-        pod_cidr=$(opt_val "$2")
-        shift 2
-        ;;
-      --containerized-cplane)
-        containerized_cplane=$(opt_val "$2")
-        shift 2
-        ;;
-      --config)
-        config=$(opt_val "$2")
-        shift 2
-        ;;
-      --ca-cert)
-        ca_cert=$(opt_val "$2")
-        shift 2
-        ;;
-      --ca-key)
-        ca_key=$(opt_val "$2")
-        shift 2
-        ;;
-      --cluster-cidr)
-        cluster_cidr=$(opt_val "$2")
-        shift 2
-        ;;
-      --)
-        shift
-        break
-        ;;
-    esac
-  done
-}
-
-parse_args "$@"
+if ! parsed=$(xec parseargs $long_opts "$@"); then
+  echo "$parsed"
+  exit 1
+fi
+eval $(echo -e "$parsed")
 
 echo "getting IP address from running VM for $worker_hostname"
 worker_ip=$(xec get-vm-ip $worker_hostname)

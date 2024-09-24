@@ -19,136 +19,89 @@ function xec() {
 }
 export -f xec
 
-# api
+# set from cmdline
+help=0
+check_compatibility=0
+up=
+down=
+delete=
+verify=
 config=$DTKBASE/config.yaml
-create_vms=true
+create_template=
+install_addon=
+no_create_vms=false
+
+# set by scripts/helpers/parse-config.py:
+virt=
 k8s_containerized_cplane=
-k8s_kube_proxy=
 k8s_cluster_cidr=
+k8s_cluster_dns=
+k8s_kube_proxy=
+kvm_network=
+kvm_kickstart=
+kvm_os_variant=
 vbox_host_network_interface=
 vbox_host_only_network=
+vbox_kickstart=
 vbox_vboxdir=
-kvm_os_variant=
 vm_linux=
-vm_create_template=
-vm_create_template_override=
+vm_create_template=1
 vm_template_vmname=
-install_addon=
-cmd=
-virt=
+
+# entry point
 
 set -a
 source $DTKBASE/artifacts
 set +a
 
-#
-# option parsing helper
-#
-function opt_val() {
-  opt="$1"
-  if [[ "$opt" == =* ]]; then
-    echo "${opt:1}"
-  else
-    echo "$opt"
-  fi
-}
-
-#
-# parses command line parameters and sets script variables from them, executes helper
-# commands, like --up for example.
-#
-function parse_args() {
-  local parsed
-  local script_name=$(basename "$0")
-  parsed=$(getopt --options "" --longoptions $long_opts -n $script_name -- "$@")
-  eval set -- "$parsed"
-  while true; do
-    case "$1" in
-      --help)
-        xec show-usage
-        exit 0
-        ;;
-      --config)
-        config=$(opt_val "$2")
-        config=$(realpath $config)
-        if [[ ! -f "$config" ]]; then
-          echo "config file not found: $config"
-          exit 1
-        fi
-        shift 2
-        ;;
-      --check-compatibility)
-        echo "checking version compatibility"
-        xec check-compatibility
-        exit 0
-        ;;
-      --up)
-        vms=$(opt_val "$2")
-        cmd=up
-        shift 2
-        ;;
-      --down)
-        vms=$(opt_val "$2")
-        cmd=down
-        shift 2
-        ;;
-      --delete)
-        vms=$(opt_val "$2")
-        cmd=delete
-        shift 2
-        ;;
-      --verify)
-        verify=$(opt_val "$2")
-        if [[ "$verify" != "upstreams" ]] && [[ "$verify" != "files" ]]; then
-          echo "unsupported parameter value for --verify option: $verify"
-          exit 1
-        fi
-        xec check-objects "$verify"
-        exit 0
-        ;;
-      --create-template)
-        vm_create_template_override=$(opt_val "$2")
-        if [[ "$vm_create_template_override" != "true" ]] && [[ "$vm_create_template_override" != "false" ]]; then
-          echo "--create-template arg needs true or false"
-          exit 1
-        fi
-        shift 2
-        ;;
-      --install-addon)
-        install_addon=$(opt_val "$2")
-        shift 2
-        ;;
-      --no-create-vms)
-        create_vms=false
-        shift 1
-        ;;
-      --)
-        shift
-        break
-        ;;
-    esac
-  done
-
-  if [[ $# -ne 0 ]]; then
-    echo "unsupported command line option(s): $@"
-    exit 1
-  fi
-}
-
-# entry point
-
 # parse cmdline
-parse_args "$@"
+if ! parsed=$(xec parseargs $long_opts "$@"); then
+  echo "$parsed"
+  exit 1
+fi
+eval $(echo -e "$parsed")
+
+# ensure config.yaml exists
+config=$(realpath $config)
+if [[ ! -f "$config" ]]; then
+  echo "config file not found: $config"
+  exit 1
+fi
 
 # parse config.yaml
 xec parse-config.py $config check || exit
 eval $(xec parse-config.py $config)
 
-# selects vbox or kvm
+# 'virtualbox' or 'kvm'
 export VIRT=$virt
 
-if [[ "$cmd" == up ]] || [[ "$cmd" == down ]] || [[ "$cmd" == delete ]]; then
-  xec $VIRT/up-down-del $cmd $vms $config
+if [[ $help -eq 1 ]]; then
+  xec show-usage
+  exit 0
+fi
+
+if [[ $check_compatibility -eq 1 ]]; then
+  xec check-compatibility
+  exit 0
+fi
+
+if [[ -n "$verify" ]]; then
+  if [[ "$verify" != "upstreams" ]] && [[ "$verify" != "files" ]]; then
+    echo "unsupported value for --verify option: $verify"
+    exit 1
+  fi
+  xec check-objects "$verify"
+  exit 0
+fi
+
+if [[ -n "$up" ]]; then
+  xec $VIRT/up-down-del up $up $config
+  exit 0
+elif [[ -n "$down" ]]; then
+  xec $VIRT/up-down-del down $down $config
+  exit 0
+elif [[ -n "$delete" ]]; then
+  xec $VIRT/up-down-del delete $delete $config
   exit 0
 fi
 
@@ -161,34 +114,41 @@ if [[ -n "$install_addon" ]]; then
   exit 0
 fi
 
-if [[ -n "$vm_create_template_override" ]]; then
-  if [[ "$vm_create_template_override" == "true" ]]; then
-    vm_create_template=1
-  else
-    vm_create_template=0
+if [[ $VIRT == "virtualbox" ]]; then
+  if [[ -z "$vbox_host_network_interface" ]] && [[ -z "$vbox_host_only_network" ]]; then
+    echo "either --host-network-interface or --host-only-network is required"
+    exit 1
+  elif [[ ! -z "$vbox_host_network_interface" ]] && [[ ! -z "$vbox_host_only_network" ]]; then
+    echo "--host-network-interface and --host-only-network are exclusive of each other"
+    exit 1
+  fi
+  if [[ -z "$vbox_vboxdir" ]]; then
+    vbox_vboxdir=$(vboxmanage list systemproperties | grep folder | awk -F: '{print $2}' | xargs)
+  fi
+  if [[ -z "$vbox_vboxdir" ]]; then
+    echo "directory for virtualbox VMs is not defined"
+    exit 1
+  elif [[ ! -d $vbox_vboxdir ]]; then
+    echo "directory for virtualbox VMs does not exist: $vbox_vboxdir"
+    exit 1
   fi
 fi
 
-if [[ -z "$vbox_vboxdir" ]]; then
-  vbox_vboxdir=$(vboxmanage list systemproperties | grep folder | awk -F: '{print $2}' | xargs)
+if [[ "$vm_linux" != "centos9" ]] && [[ "$vm_linux" != "rocky" ]]  && [[ "$vm_linux" != "alma" ]]; then
+  echo "unsupported value for linux config: $vm_linux"
+  exit 1
 fi
 
-# validate configuration
-if [[ -z "$vbox_host_network_interface" ]] && [[ -z "$vbox_host_only_network" ]]; then
-  echo "either --host-network-interface or --host-only-network is required"
-  exit 1
-elif [[ ! -z "$vbox_host_network_interface" ]] && [[ ! -z "$vbox_host_only_network" ]]; then
-  echo "--host-network-interface and --host-only-network are exclusive of each other"
-  exit 1
-elif [[ -z "$vbox_vboxdir" ]]; then
-  echo "directory for virtualbox VMs is not defined"
-  exit 1
-elif [[ ! -d $vbox_vboxdir ]]; then
-  echo "directory for virtualbox VMs does not exist: $vbox_vboxdir"
-  exit 1
-elif [[ "$vm_linux" != "centos9" ]] && [[ "$vm_linux" != "rocky" ]]  && [[ "$vm_linux" != "alma" ]]; then
-  echo "unsupported parameter value for linux config: $vm_linux"
-  exit 1
+if [[ -n "$create_template" ]]; then
+  if [[ "$create_template" != "true" ]] && [[ "$create_template" != "false" ]]; then
+    echo "--create-template arg needs true or false"
+    exit 1
+  fi
+  if [[ "$create_template" == "true" ]]; then
+    vm_create_template=1
+  elif [[ "$create_template" == "false" ]]; then
+    vm_create_template=0
+  fi
 fi
 
 echo "creating directories to generate various files into"
@@ -204,7 +164,7 @@ xec download-objects\
   --linux=$vm_linux\
   --virtualization=$VIRT
 
-if [[ $create_vms == true ]]; then
+if [[ $no_create_vms == false ]]; then
   echo "provisioning vms"
   if [[ $VIRT == "virtualbox" ]]; then
     xec virtualbox/provision-vms\

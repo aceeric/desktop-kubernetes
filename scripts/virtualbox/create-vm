@@ -11,7 +11,6 @@
 set -e
 
 long_opts=template-vmname:,linux-iso-path:,kickstart-iso-path:,host-network-interface:,host-only-network-name:,vboxdir:
-script_name=$(basename "$0")
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 template_vmname=
@@ -21,58 +20,11 @@ host_network_interface=
 host_only_network_name=
 vboxdir=
 
-function opt_val() {
-  opt="$1"
-  if [[ "$opt" == =* ]]; then
-    echo "${opt:1}"
-  else
-    echo "$opt"
-  fi
-}
-
-function parse_args() {
-  if [[ "$#" -eq 0 ]]; then
-    echo "no args provided"
-    exit 1
-  fi
-  local parsed
-  parsed=$(getopt --options "" --longoptions $long_opts -n $script_name -- "$@")
-  eval set -- "$parsed"
-  while true; do
-    case "$1" in
-	    --template-vmname)
-        template_vmname=$(opt_val "$2")
-        shift 2
-        ;;
-      --linux-iso-path)
-        linux_iso_path=$(opt_val "$2")
-        shift 2
-        ;;
-      --kickstart-iso-path)
-        kickstart_iso_path=$(opt_val "$2")
-        shift 2
-        ;;
-      --host-network-interface)
-        host_network_interface=$(opt_val "$2")
-        shift 2
-        ;;
-      --host-only-network-name)
-        host_only_network_name=$(opt_val "$2")
-        shift 2
-        ;;
-      --vboxdir)
-        vboxdir=$(opt_val "$2")
-        shift 2
-        ;;
-      --)
-        shift
-        break
-        ;;
-    esac
-  done
-}
-
-parse_args "$@"
+if ! parsed=$(xec parseargs $long_opts "$@"); then
+  echo "$parsed"
+  exit 1
+fi
+eval $(echo -e "$parsed")
 
 if [[ ! -z "$host_network_interface" ]] && [[ ! -z "$host_only_network_name" ]]; then
   echo "specify either --host-only-network-name or --host-network-interface"

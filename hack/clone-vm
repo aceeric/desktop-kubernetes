@@ -106,14 +106,14 @@ if [[ "$virt" == "kvm" ]]; then
    --template-vmname=$template_vmname\
    --clone-vmname=$vmname\
    --clone-ram=$ram\
-   --clone-cpu=$cpu
+   --clone-cpus=$cpu
 elif [[ "$virt" == "virtualbox" ]]; then
   xec virtualbox/clone-vm\
     --priv-key=$DTKBASE/generated/kickstart/id_ed25519\
     --template-vmname=$template_vmname\
     --clone-vmname=$vmname\
     --clone-ram=$ram\
-    --clone-cpu=$cpu\
+    --clone-cpus=$cpu\
     --host-only-network=$hostonly\
     --host-only-octet=$ip\
     --vboxdir=$vboxdir\

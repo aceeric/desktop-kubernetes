@@ -13,7 +13,7 @@ spec:
     - /usr/local/bin/etcd
     - --advertise-client-urls=https://INTERNAL_IP:2379
     - --cert-file=/etc/etcd/kubernetes.pem
-    - --client-cert-auth=true
+    - --client-cert-auth
     - --data-dir=/var/lib/etcd
     - --initial-advertise-peer-urls=https://INTERNAL_IP:2380
     - --initial-cluster=ETCD_NAME=https://INTERNAL_IP:2380
@@ -28,7 +28,7 @@ spec:
     - --log-outputs=stderr
     - --name=ETCD_NAME
     - --peer-cert-file=/etc/etcd/kubernetes.pem
-    - --peer-client-cert-auth=true
+    - --peer-client-cert-auth
     - --peer-key-file=/etc/etcd/kubernetes-key.pem
     - --peer-trusted-ca-file=/etc/etcd/ca.pem
     - --trusted-ca-file=/etc/etcd/ca.pem

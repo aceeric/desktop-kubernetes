@@ -3,7 +3,6 @@
 set -e
 
 long_opts=priv-key:,template-vmname:,clone-vmname:,clone-ram:,clone-cpus:,clone-disk:
-script_name=$(basename "$0")
 
 priv_key=
 template_vmname=
@@ -12,58 +11,11 @@ clone_ram=
 clone_cpus=
 clone_disk=
 
-function opt_val() {
-  opt="$1"
-  if [[ "$opt" == =* ]]; then
-    echo "${opt:1}"
-  else
-    echo "$opt"
-  fi
-}
-
-function parse_args() {
-  if [[ "$#" -eq 0 ]]; then
-    echo "no args provided"
-    exit 1
-  fi
-  local parsed
-  parsed=$(getopt --options "" --longoptions $long_opts -n $script_name -- "$@")
-  eval set -- "$parsed"
-  while true; do
-    case "$1" in
-      --priv-key)
-        priv_key=$(opt_val "$2")
-        shift 2
-        ;;
-	    --template-vmname)
-        template_vmname=$(opt_val "$2")
-        shift 2
-        ;;
-      --clone-vmname)
-        clone_vmname=$(opt_val "$2")
-        shift 2
-        ;;
-      --clone-ram)
-        clone_ram=$(opt_val "$2")
-        shift 2
-        ;;
-      --clone-cpus)
-        clone_cpus=$(opt_val "$2")
-        shift 2
-        ;;
-      --clone-disk)
-        clone_disk=$(opt_val "$2")
-        shift 2
-        ;;
-      --)
-        shift
-        break
-        ;;
-    esac
-  done
-}
-
-parse_args "$@"
+if ! parsed=$(xec parseargs $long_opts "$@"); then
+  echo "$parsed"
+  exit 1
+fi
+eval $(echo -e "$parsed")
 
 echo "getting directory of template"
 dir=$(virsh domblklist $template_vmname | grep vda | awk '{print $2}')

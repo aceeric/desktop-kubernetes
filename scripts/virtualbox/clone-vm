@@ -9,7 +9,6 @@ set -e
 
 long_opts=priv-key:,template-vmname:,clone-vmname:,clone-ram:,clone-cpus:,\
 host-only-network:,host-only-octet:,vboxdir:,shutdown:
-script_name=$(basename "$0")
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 priv_key=
@@ -22,72 +21,11 @@ host_only_octet=
 vboxdir=
 shutdown=true
 
-function opt_val() {
-  opt="$1"
-  if [[ "$opt" == =* ]]; then
-    echo "${opt:1}"
-  else
-    echo "$opt"
-  fi
-}
-
-function parse_args() {
-  if [[ "$#" -eq 0 ]]; then
-    echo "no args provided"
-    exit 1
-  fi
-  local parsed
-  parsed=$(getopt --options "" --longoptions $long_opts -n $script_name -- "$@")
-  eval set -- "$parsed"
-  while true; do
-    case "$1" in
-      --priv-key)
-        priv_key=$(opt_val "$2")
-        shift 2
-        ;;
-	    --template-vmname)
-        template_vmname=$(opt_val "$2")
-        shift 2
-        ;;
-      --clone-vmname)
-        clone_vmname=$(opt_val "$2")
-        shift 2
-        ;;
-      --clone-ram)
-        clone_ram=$(opt_val "$2")
-        shift 2
-        ;;
-      --clone-cpus)
-        clone_cpus=$(opt_val "$2")
-        shift 2
-        ;;
-      --host-only-network)
-        # this is the host only network octet, like 55.1.1
-        host_only_network=$(opt_val "$2")
-        shift 2
-        ;;
-      --host-only-octet)
-        # this is the host octet, like 100 (with above, makes 55.1.1.100)
-        host_only_octet=$(opt_val "$2")
-        shift 2
-        ;;
-      --vboxdir)
-        vboxdir=$(opt_val "$2")
-        shift 2
-        ;;
-      --shutdown)
-        shutdown=$(opt_val "$2")
-        shift 2
-        ;;
-      --)
-        shift
-        break
-        ;;
-    esac
-  done
-}
-
-parse_args "$@"
+if ! parsed=$(xec parseargs $long_opts "$@"); then
+  echo "$parsed"
+  exit 1
+fi
+eval $(echo -e "$parsed")
 
 echo "cloning VM \"$clone_vmname\" from template VM \"$template_vmname\""
 VBoxManage clonevm $template_vmname\

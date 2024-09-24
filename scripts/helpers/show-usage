@@ -13,9 +13,9 @@ done <<< '
   The script creates a "template" VM, and then clones that for each cluster node. The initial
   template VM creation runs Kickstart to install the OS.
 
-  Usage: dtk [--config=<path>] [--create-template=<true|false>] [--install-addon=<addon>]
+  Usage: dtk [--config=<path>] [--create-template=<true|false>] [--no-create-vms] [--install-addon=<addon>]
              [--verify=<files|upstreams>] [--check-compatibility] [--up=<nodelist>] [--down=<nodelist>]
-             [--delete=<nodelist>] [--no-create-vms] [--help]
+             [--delete=<nodelist>] [--help]
 
   Options:
 
@@ -42,7 +42,7 @@ done <<< '
     --down                     Optional. Opposite of --up. Note - this is very low-tech at present: Order the
                                args with the workers first and the controller last.
     --delete                   Optional. Tears down the cluster: Force stops all VMs and removes associated
-                               files from the virtual box machine directory.
+                               files from the virtual machine directory.
     --help                     Optional. Displays this help and exits.
 
   Examples:
@@ -50,6 +50,10 @@ done <<< '
     ./dtk
 
     Creates a cluster as defined in the provided "config.yaml" file.
+
+    ./dtk --create-template=false
+
+    Same as above except re-uses the existing template from a prior cluster creation.
 
     ./dtk --up=vm1,vm2,vm3
 

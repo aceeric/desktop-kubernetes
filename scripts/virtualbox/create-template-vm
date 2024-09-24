@@ -12,10 +12,8 @@
 set -e
 
 long_opts=template-vmname:,linux-iso-path:,guest-additions-path:,host-network-interface:,host-only-network:,vboxdir:,kickstart:
-script_name=$(basename "$0")
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# api
 template_vmname=
 linux_iso_path=
 guest_additions_path=
@@ -27,66 +25,11 @@ kickstart=
 #internal
 host_only_network_name=
 
-function opt_val() {
-  opt="$1"
-  if [[ "$opt" == =* ]]; then
-    echo "${opt:1}"
-  else
-    echo "$opt"
-  fi
-}
-
-function parse_args() {
-  if [[ "$#" -eq 0 ]]; then
-    echo "no args provided"
-    exit 1
-  fi
-  local parsed
-  parsed=$(getopt --options "" --longoptions $long_opts -n $script_name -- "$@")
-  if [[ "$?" -ne 0 ]]; then
-    exit 1
-  fi
-
-  eval set -- "$parsed"
-  while true; do
-    case "$1" in
-	    --template-vmname)
-        template_vmname=$(opt_val "$2")
-        shift 2
-        ;;
-      --linux-iso-path)
-        linux_iso_path=$(opt_val "$2")
-        shift 2
-        ;;
-      --guest-additions-path)
-        guest_additions_path=$(opt_val "$2")
-        shift 2
-        ;;
-      --host-network-interface)
-        host_network_interface=$(opt_val "$2")
-        shift 2
-        ;;
-      --host-only-network)
-        host_only_network=$(opt_val "$2")
-        shift 2
-        ;;
-      --vboxdir)
-        vboxdir=$(opt_val "$2")
-        shift 2
-        ;;
-      --kickstart)
-        kickstart=$(opt_val "$2")
-        shift 2
-        ;;
-      --)
-        shift
-        break
-        ;;
-    esac
-  done
-}
-
-parse_args "$@"
+if ! parsed=$(xec parseargs $long_opts "$@"); then
+  echo "$parsed"
+  exit 1
+fi
+eval $(echo -e "$parsed")
 
 echo "checking/generating SSH keys -- the public key will be copied to the VM by the kickstart script"
 xec gen-ssh-keyfiles

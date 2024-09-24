@@ -10,7 +10,6 @@ set -e
 
 long_opts=containerized-cplane:,kube-proxy-enabled:,priv-key:,ca-cert:,ca-key:,config:,cluster-cidr:
 
-# api
 containerized_cplane=
 kube_proxy_enabled=
 priv_key=
@@ -19,69 +18,11 @@ ca_key=
 config=
 cluster_cidr=
 
-#
-# option parsing helper
-#
-function opt_val() {
-  opt="$1"
-  if [[ "$opt" == =* ]]; then
-    echo "${opt:1}"
-  else
-    echo "$opt"
-  fi
-}
-
-#
-# parses command line parameters and sets script variables from them
-#
-function parse_args() {
-  if [[ "$#" -eq 0 ]]; then
-    echo "no args provided"
-    exit 1
-  fi
-  local parsed
-  local script_name=$(basename "$0")
-  parsed=$(getopt --options "" --longoptions $long_opts -n $script_name -- "$@")
-  eval set -- "$parsed"
-  while true; do
-    case "$1" in
-      --containerized-cplane)
-        containerized_cplane=$(opt_val "$2")
-        shift 2
-        ;;
-      --kube-proxy-enabled)
-        kube_proxy_enabled=$(opt_val "$2")
-        shift 2
-        ;;
-      --priv-key)
-        priv_key=$(opt_val "$2")
-        shift 2
-        ;;
-      --ca-cert)
-        ca_cert=$(opt_val "$2")
-        shift 2
-        ;;
-      --ca-key)
-        ca_key=$(opt_val "$2")
-        shift 2
-        ;;
-      --config)
-        config=$(opt_val "$2")
-        shift 2
-        ;;
-      --cluster-cidr)
-        cluster_cidr=$(opt_val "$2")
-        shift 2
-        ;;
-      --)
-        shift
-        break
-        ;;
-    esac
-  done
-}
-
-parse_args "$@"
+if ! parsed=$(xec parseargs $long_opts "$@"); then
+  echo "$parsed"
+  exit 1
+fi
+eval $(echo -e "$parsed")
 
 # The control plane node will get the worker components for two reasons: 1) it supports
 # a containerized control plane, and 2) it lets the controller be also a worker

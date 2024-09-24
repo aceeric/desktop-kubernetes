@@ -3,7 +3,6 @@
 set -e
 
 long_opts=create-template:,linux:,vboxdir:,template-vmname:,config:,os-variant:
-script_name=$(basename "$0")
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 create_template=0
@@ -13,64 +12,11 @@ template_vmname=
 config=
 os_variant=
 
-#
-# option parsing helper
-#
-function opt_val() {
-  opt="$1"
-  if [[ "$opt" == =* ]]; then
-    echo "${opt:1}"
-  else
-    echo "$opt"
-  fi
-}
-
-#
-# parses command line parameters and sets script variables from them
-#
-function parse_args() {
-  if [[ "$#" -eq 0 ]]; then
-    echo "no args provided"
-    exit 1
-  fi
-  local parsed
-  parsed=$(getopt --options "" --longoptions $long_opts -n $script_name -- "$@")
-  eval set -- "$parsed"
-  while true; do
-    case "$1" in
-      --create-template)
-        create_template=$(opt_val "$2")
-        shift 2
-        ;;
-      --linux)
-        linux=$(opt_val "$2")
-        shift 2
-        ;;
-      --vboxdir)
-        vboxdir=$(opt_val "$2")
-        shift 2
-        ;;
-      --template-vmname)
-        template_vmname=$(opt_val "$2")
-        shift 2
-        ;;
-      --config)
-        config=$(opt_val "$2")
-        shift 2
-        ;;
-      --os-variant)
-        os_variant=$(opt_val "$2")
-        shift 2
-        ;;
-      --)
-        shift
-        break
-        ;;
-    esac
-  done
-}
-
-parse_args "$@"
+if ! parsed=$(xec parseargs $long_opts "$@"); then
+  echo "$parsed"
+  exit 1
+fi
+eval $(echo -e "$parsed")
 
 linux_iso_path=
 if [[ $linux == "alma" ]]; then
@@ -117,7 +63,7 @@ for ((i = 0; i < $vmcnt; ++i)); do
    --template-vmname=$template_vmname\
    --clone-vmname=$vm_name\
    --clone-ram=$vm_mem\
-   --clone-cpu=$vm_cpu\
+   --clone-cpus=$vm_cpu\
    --clone-disk=$vm_disk
 
   vm_names+=($vm_name)

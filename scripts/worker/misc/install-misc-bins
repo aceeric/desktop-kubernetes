@@ -3,7 +3,6 @@
 set -e
 
 long_opts=priv-key:,worker-ip:,crictl-binary:,runc-binary:,cni-plugins-binary:
-script_name=$(basename "$0")
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 priv_key=
@@ -12,54 +11,11 @@ crictl_binary=
 runc_binary=
 cni_plugins_binary=
 
-function opt_val() {
-  opt="$1"
-  if [[ "$opt" == =* ]]; then
-    echo "${opt:1}"
-  else
-    echo "$opt"
-  fi
-}
-
-function parse_args() {
-  if [[ "$#" -eq 0 ]]; then
-    echo "no args provided"
-    exit 1
-  fi
-  local parsed
-  parsed=$(getopt --options "" --longoptions $long_opts -n $script_name -- "$@")
-  eval set -- "$parsed"
-  while true; do
-    case "$1" in
-      --priv-key)
-        priv_key=$(opt_val "$2")
-        shift 2
-        ;;
-      --worker-ip)
-        worker_ip=$(opt_val "$2")
-        shift 2
-        ;;
-      --crictl-binary)
-        crictl_binary=$(opt_val "$2")
-        shift 2
-        ;;
-      --runc-binary)
-        runc_binary=$(opt_val "$2")
-        shift 2
-        ;;
-      --cni-plugins-binary)
-        cni_plugins_binary=$(opt_val "$2")
-        shift 2
-        ;;
-      --)
-        shift
-        break
-        ;;
-    esac
-  done
-}
-
-parse_args "$@"
+if ! parsed=$(xec parseargs $long_opts "$@"); then
+  echo "$parsed"
+  exit 1
+fi
+eval $(echo -e "$parsed")
 
 echo "Copying misc kubernetes binaries"
 

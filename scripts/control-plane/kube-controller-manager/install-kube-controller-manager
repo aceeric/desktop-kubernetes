@@ -6,7 +6,6 @@ set -e
 
 long_opts=priv-key:,controller-ip:,controller-hostname:,kube-controller-manager-binary:,\
 containerized-cplane:,admin-kubeconfig:,ca-cert:,ca-key:,cluster-cidr:
-script_name=$(basename "$0")
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 priv_key=
@@ -19,73 +18,15 @@ ca_cert=
 ca_key=
 cluster_cidr=
 
-function opt_val() {
-  opt="$1"
-  if [[ "$opt" == =* ]]; then
-    echo "${opt:1}"
-  else
-    echo "$opt"
-  fi
-}
+if ! parsed=$(xec parseargs $long_opts "$@"); then
+  echo "$parsed"
+  exit 1
+fi
+eval $(echo -e "$parsed")
 
-function parse_args() {
-  if [[ "$#" -eq 0 ]]; then
-    echo "no args provided"
-    exit 1
-  fi
-  local parsed
-  parsed=$(getopt --options "" --longoptions $long_opts -n $script_name -- "$@")
-  eval set -- "$parsed"
-  while true; do
-    case "$1" in
-	    --priv-key)
-        priv_key=$(opt_val "$2")
-        shift 2
-        ;;
-	    --controller-ip)
-        controller_ip=$(opt_val "$2")
-        shift 2
-        ;;
-      --controller-hostname)
-        controller_hostname=$(opt_val "$2")
-        shift 2
-        ;;
-      --kube-controller-manager-binary)
-        kube_controller_manager_binary=$(opt_val "$2")
-        shift 2
-        ;;
-      --containerized-cplane)
-        tmpvar=$(opt_val "$2")
-        shift 2
-        if [[ "$tmpvar" == *kube-controller-manager* || "$tmpvar" == all ]]; then
-          containerized_cplane=1
-        fi
-        ;;
-      --admin-kubeconfig)
-        admin_kubeconfig=$(opt_val "$2")
-        shift 2
-        ;;
-      --ca-cert)
-        ca_cert=$(opt_val "$2")
-        shift 2
-        ;;
-      --ca-key)
-        ca_key=$(opt_val "$2")
-        shift 2
-        ;;
-      --cluster-cidr)
-        cluster_cidr=$(opt_val "$2")
-        shift 2
-        ;;
-      --)
-        shift
-        break
-        ;;
-    esac
-  done
-}
-
-parse_args "$@"
+if [[ "$containerized_cplane" == *kube-controller-manager* || "$containerized_cplane" == all ]]; then
+  containerized_cplane=1
+fi
 
 # gen some path refs to make the commands below a little less busy looking
 controller_mgr_cert=$DTKBASE/generated/cert/kube-controller-manager.pem

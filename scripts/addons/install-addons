@@ -3,8 +3,6 @@
 set -e
 
 long_opts=config:,admin-kubeconfig:,priv-key:,addon:
-
-script_name=$(basename "$0")
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 config=
@@ -12,50 +10,11 @@ admin_kubeconfig=
 priv_key=
 addon=
 
-function opt_val() {
-  opt="$1"
-  if [[ "$opt" == =* ]]; then
-    echo "${opt:1}"
-  else
-    echo "$opt"
-  fi
-}
-
-function parse_args() {
-  if [[ "$#" -eq 0 ]]; then
-    echo "no args provided"
-    exit 1
-  fi
-  local parsed
-  parsed=$(getopt --options "" --longoptions $long_opts -n $script_name -- "$@")
-  eval set -- "$parsed"
-  while true; do
-    case "$1" in
-      --config)
-        config=$(opt_val "$2")
-        shift 2
-        ;;
-      --admin-kubeconfig)
-        admin_kubeconfig=$(opt_val "$2")
-        shift 2
-        ;;
-      --priv-key)
-        priv_key=$(opt_val "$2")
-        shift 2
-        ;;
-      --addon)
-        addon=$(opt_val "$2")
-        shift 2
-        ;;
-      --)
-        shift
-        break
-        ;;
-    esac
-  done
-}
-
-parse_args "$@"
+if ! parsed=$(xec parseargs $long_opts "$@"); then
+  echo "$parsed"
+  exit 1
+fi
+eval $(echo -e "$parsed")
 
 # write info to config yaml for addons
 yq -i '.cluster.admin-kubeconfig = "'$admin_kubeconfig'"' $config
