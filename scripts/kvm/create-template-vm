@@ -23,7 +23,7 @@ xec gen-ssh-keyfiles
 echo "interpolating SSH key into kickstart file"
 ksout=$DTKBASE/generated/kickstart
 sshkey=$(<$DTKBASE/generated/kickstart/id_ed25519.pub)
-sed "s/SSHKEY/$sshkey/" $DTKBASE/kickstarts/$kickstart >| $ksout/ks.cfg
+sed "s/REPLACE-WITH-SSHKEY/$sshkey/" $DTKBASE/kickstarts/$kickstart >| $ksout/ks.cfg
 
 # memory is MiB
 echo "creating VM"
