@@ -7,6 +7,7 @@
 set -e
 
 long_opts=controller-hostname:,controller-ip:,ca-cert:,ca-key:
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 controller_hostname=
 controller_ip=
@@ -19,52 +20,36 @@ if ! parsed=$(xec parseargs $long_opts "$@"); then
 fi
 eval $(echo -e "$parsed")
 
-# generate key
-openssl genrsa -out $DTKBASE/generated/cert/kubernetes-key.pem 2048
-
 # generate a CSR conf with the controller IP address embedded
 tmp_dir=$(mktemp -d)
 
-cat <<EOF > $tmp_dir/kubernetes-csr.conf
-[ req ]
-default_bits = 2048
-prompt = no
-default_md = sha256
-req_extensions = req_ext
-distinguished_name = dn
+sed -e "s/HOSTNAME/$controller_hostname/g"\
+    -e "s/IPADDRESS/$controller_ip/g"\
+    $script_dir/csr.conf >| $tmp_dir/kubernetes-csr.conf
 
-[ dn ]
-CN = kubernetes
-
-[ req_ext ]
-subjectAltName = @alt_names
-
-[ alt_names ]
-DNS.1 = kubernetes
-DNS.2 = kubernetes.default
-DNS.3 = kubernetes.default.svc
-DNS.4 = kubernetes.default.svc.cluster
-DNS.5 = kubernetes.default.svc.cluster.local
-DNS.6 = $controller_hostname
-IP.1 = $controller_ip
-IP.2 = 10.32.0.1
-IP.3 = 127.0.0.1
-
-[ v3_ext ]
-authorityKeyIdentifier=keyid,issuer:always
-basicConstraints=CA:FALSE
-keyUsage=keyEncipherment,dataEncipherment,digitalSignature,nonRepudiation
-extendedKeyUsage=serverAuth,clientAuth
-subjectAltName=@alt_names
-EOF
+# generate key
+openssl genrsa\
+  -out $DTKBASE/generated/cert/kubernetes-key.pem\
+  2048
 
 # create a CSR using the conf from above
-openssl req -new -key $DTKBASE/generated/cert/kubernetes-key.pem\
- -out $tmp_dir/kubernetes.csr -config $tmp_dir/kubernetes-csr.conf
+openssl req\
+  -new\
+  -key $DTKBASE/generated/cert/kubernetes-key.pem\
+  -out $tmp_dir/kubernetes.csr\
+  -config $tmp_dir/kubernetes-csr.conf
 
 # gen certificate using the ca cert and key provided to the script, and the csr from above
-openssl x509 -req -in $tmp_dir/kubernetes.csr -CA $ca_cert -CAkey $ca_key\
- -CAcreateserial -out $DTKBASE/generated/cert/kubernetes.pem -days 10000 -extensions v3_ext -extfile $tmp_dir/kubernetes-csr.conf
+openssl x509\
+  -req\
+  -in $tmp_dir/kubernetes.csr\
+  -CA $ca_cert\
+  -CAkey $ca_key\
+  -CAcreateserial\
+  -out $DTKBASE/generated/cert/kubernetes.pem\
+  -days 10000\
+  -extensions v3_ext\
+  -extfile $tmp_dir/kubernetes-csr.conf\
 
 # cleanup
-rm -rf $tmp_dir $DTKBASE/generated/cert/ca.srl
+rm -rf $tmp_dir #$DTKBASE/generated/cert/ca.srl
