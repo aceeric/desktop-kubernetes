@@ -56,7 +56,6 @@ echo "installing kube-apiserver into controller"
 xec install-kube-apiserver\
  --priv-key=$priv_key\
  --controller-ip=$controller_ip\
- --controller-hostname=$controller_hostname\
  --kube-apiserver-binary=$KUBE_APISERVER_BINARY\
  --kubernetes-cert=$kubernetes_cert\
  --kubernetes-key=$kubernetes_key\
