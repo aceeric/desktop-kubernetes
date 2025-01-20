@@ -8,13 +8,12 @@
 
 set -e
 
-long_opts=priv-key:,controller-ip:,controller-hostname:,kube-apiserver-binary:,kubernetes-cert:,kubernetes-key:,\
+long_opts=priv-key:,controller-ip:,kube-apiserver-binary:,kubernetes-cert:,kubernetes-key:,\
 containerized-cplane:,admin-kubeconfig:,ca-cert:,ca-key:
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 priv_key=
 controller_ip=
-controller_hostname=
 kube_apiserver_binary=
 kubernetes_cert=
 kubernetes_key=
@@ -33,31 +32,40 @@ if [[ "$containerized_cplane" == *kube-apiserver* || "$containerized_cplane" == 
   containerized_cplane=1
 fi
 
-echo "generating TLS material for kube-apiserver"
-
-# gen some path refs to make the openssl commands below a little less busy looking
-service_account_cert=$DTKBASE/generated/cert/service-account.pem
-service_account_key=$DTKBASE/generated/cert/service-account-key.pem
-service_account_csr=$DTKBASE/generated/cert/service-account.csr
-aggregator_cert=$DTKBASE/generated/cert/aggregator.pem
-aggregator_key=$DTKBASE/generated/cert/aggregator-key.pem
-aggregator_csr=$DTKBASE/generated/cert/aggregator.csr
-
-openssl req -nodes -newkey rsa:2048 -keyout $service_account_key -subj "/CN=service-accounts" -out $service_account_csr 2>/dev/null
-openssl x509 -req -days 10000 -in $service_account_csr -CA $ca_cert -CAkey $ca_key -CAcreateserial\
- -sha256 -out $service_account_cert
-rm -f $service_account_csr
-
-openssl req -nodes -newkey rsa:2048 -keyout $aggregator_key -subj "/CN=aggregator/O=k8s/OU=system" -out $aggregator_csr 2>/dev/null
-openssl x509 -req -days 10000 -in $aggregator_csr -CA $ca_cert -CAkey $ca_key -CAcreateserial\
- -sha256 -out $aggregator_cert
-rm -f $aggregator_csr
-
-echo "copying kube-apiserver TLS material to controller VM"
 ssh -i $priv_key root@$controller_ip "mkdir -p /var/lib/kubernetes/"
-scp -i $priv_key\
- $ca_cert $ca_key $kubernetes_cert $kubernetes_key $service_account_cert $service_account_key $aggregator_cert $aggregator_key\
- root@$controller_ip:/var/lib/kubernetes
+
+certs=(service-account aggregator)
+subjects=("/CN=service-accounts" "/O=k8s/OU=system/CN=aggregator")
+
+echo "generating TLS material for kube-apiserver and copying to controller"
+
+for ((i = 0; i < 2; ++i)); do
+  cert=${certs[$i]}
+  openssl req\
+    -nodes\
+    -newkey rsa:2048\
+    -keyout $DTKBASE/generated/cert/$cert-key.pem\
+    -subj ${subjects[$i]}\
+    -out $DTKBASE/generated/cert/$cert.csr\
+    2>/dev/null
+
+  openssl x509\
+    -req\
+    -days 10000\
+    -in $DTKBASE/generated/cert/$cert.csr\
+    -CA $ca_cert\
+    -CAkey $ca_key\
+    -CAcreateserial\
+    -sha256\
+    -out $DTKBASE/generated/cert/$cert.pem\
+    2>/dev/null
+
+  rm -f $DTKBASE/generated/cert/$cert.csr
+  scp -i $priv_key $DTKBASE/generated/cert/$cert*.pem root@$controller_ip:/var/lib/kubernetes
+done
+
+echo "copying additional kube-apiserver TLS material to controller VM"
+scp -i $priv_key $ca_cert $ca_key $kubernetes_cert $kubernetes_key root@$controller_ip:/var/lib/kubernetes
 
 echo "generating kube-apiserver encryption config yaml"
 encryption_key=$(head -c 32 /dev/urandom | base64)
