@@ -39,14 +39,6 @@ EOF
 echo "configuring firewall rules"
 xec configure-firewall $worker_ip $priv_key --worker
 
-echo "generating TLS certs for the worker"
-
-xec gen-worker-tls\
-  --worker-ip=$worker_ip\
-  --worker-hostname=$worker_hostname\
-  --ca-cert=$ca_cert\
-  --ca-key=$ca_key
-
 echo "copying misc. binaries to the worker"
 xec install-misc-bins\
  --priv-key=$priv_key\
@@ -71,10 +63,15 @@ xec install-kubelet\
  --worker-hostname=$worker_hostname\
  --kubelet-binary=$KUBELET_BINARY\
  --pod-cidr=$pod_cidr\
- --ca-cert=$ca_cert
+ --ca-cert=$ca_cert\
+ --ca-key=$ca_key
 
 if [[ $kube_proxy_enabled -eq 1 ]]; then
-  xec gen-kube-proxy-kubeconfig\
+  xec gen-kubeconfig\
+    --csr-type=simple\
+    --subject-org=system:node-proxier\
+    --subject-cn=system:kube-proxy\
+    --kubeconfig-name=kube-proxy\
     --controller-ip=$controller_ip\
     --ca-cert=$ca_cert\
     --ca-key=$ca_key

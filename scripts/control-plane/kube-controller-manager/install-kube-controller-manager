@@ -28,52 +28,22 @@ if [[ "$containerized_cplane" == *kube-controller-manager* || "$containerized_cp
   containerized_cplane=1
 fi
 
-# gen some path refs to make the commands below a little less busy looking
-controller_mgr_cert=$DTKBASE/generated/cert/kube-controller-manager.pem
-controller_mgr_key=$DTKBASE/generated/cert/kube-controller-manager-key.pem
-controller_mgr_csr=$DTKBASE/generated/cert/kube-controller-manager.csr
-controller_mgr_kubeconfig=$DTKBASE/generated/kubeconfig/kube-controller-manager.kubeconfig
-controller_mgr_service=$script_dir/kube-controller-manager.service
-
-echo "generating TLS material for kube-controller-manager"
-openssl req -newkey rsa:2048 -nodes -keyout $controller_mgr_key\
- -subj "/CN=system:kube-controller-manager" -out $controller_mgr_csr 2>/dev/null
-
-openssl x509 -req -days 10000 -in $controller_mgr_csr -CA $ca_cert -CAkey $ca_key\
- -CAcreateserial -sha256 -out $controller_mgr_cert
-# cleanup
-rm -f $controller_mgr_csr
-
-echo "generating a kubeconfig file for the kube-controller-manager service"
-rm -f $controller_mgr_kubeconfig
-kubectl config set-cluster kubernetes \
---certificate-authority=$ca_cert \
---embed-certs=true \
---server=https://$controller_ip:6443 \
---kubeconfig=$controller_mgr_kubeconfig
-
-kubectl config set-credentials system:kube-controller-manager \
---client-certificate=$controller_mgr_cert \
---client-key=$controller_mgr_key \
---embed-certs=true \
---kubeconfig=$controller_mgr_kubeconfig
-
-kubectl config set-context default \
---cluster=kubernetes \
---user=system:kube-controller-manager \
---kubeconfig=$controller_mgr_kubeconfig
-
-kubectl config use-context default --kubeconfig=$controller_mgr_kubeconfig
+xec gen-kubeconfig\
+  --subject-cn=system:kube-controller-manager\
+  --kubeconfig-name=kube-controller-manager\
+  --controller-ip=$controller_ip\
+  --ca-cert=$ca_cert\
+  --ca-key=$ca_key
 
 echo "copying kube-controller-manager kubeconfig file to controller VM"
-scp -i $priv_key $controller_mgr_kubeconfig root@$controller_ip:/var/lib/kubernetes/
+scp -i $priv_key $DTKBASE/generated/kubeconfig/kube-controller-manager.kubeconfig root@$controller_ip:/var/lib/kubernetes/
 
 if [[ $containerized_cplane -eq 0 ]]; then
   echo "copying kube-controller-manager binary to controller VM"
   scp -i $priv_key $kube_controller_manager_binary root@$controller_ip:/usr/local/bin/kube-controller-manager
 
   echo "copying kube-controller-manager service file to controller VM"
-  sed $controller_mgr_service -e "s|CLUSTER_CIDR|$cluster_cidr|g"\
+  sed $script_dir/kube-controller-manager.service -e "s|CLUSTER_CIDR|$cluster_cidr|g"\
     | ssh -i $priv_key root@$controller_ip "cat > /etc/systemd/system/kube-controller-manager.service"
   
   echo "starting kube-controller-manager service"

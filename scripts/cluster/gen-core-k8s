@@ -37,7 +37,13 @@ for ((i = 0; i < $vmcnt; ++i)); do
 
   if [[ $i -eq 0 ]]; then
     controller_ip=$vm_ip
-    xec gen-admin-kubeconfig --controller-ip=$controller_ip --ca-cert=$ca_cert --ca-key=$ca_key
+    xec gen-kubeconfig\
+      --subject-org=system:masters\
+      --subject-cn=admin\
+      --kubeconfig-name=admin\
+      --controller-ip=$controller_ip\
+      --ca-cert=$ca_cert\
+      --ca-key=$ca_key
     admin_kubeconfig=$DTKBASE/generated/kubeconfig/admin.kubeconfig
   fi
 

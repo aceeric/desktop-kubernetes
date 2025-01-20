@@ -2,7 +2,7 @@
 
 set -e
 
-long_opts=priv-key:,controller-ip:,worker-ip:,worker-hostname:,kubelet-binary:,pod-cidr:,ca-cert:
+long_opts=priv-key:,controller-ip:,worker-ip:,worker-hostname:,kubelet-binary:,pod-cidr:,ca-cert:,ca-key:
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 priv_key=
@@ -12,6 +12,7 @@ worker_hostname=
 kubelet_binary=
 pod_cidr=
 ca_cert=
+ca_key=
 
 if ! parsed=$(xec parseargs $long_opts "$@"); then
   echo "$parsed"
@@ -19,40 +20,25 @@ if ! parsed=$(xec parseargs $long_opts "$@"); then
 fi
 eval $(echo -e "$parsed")
 
-echo "copying binary to worker"
+xec gen-kubeconfig\
+  --host-name=$worker_hostname\
+  --host-ip=$worker_ip\
+  --subject-org=system:nodes\
+  --subject-cn=system:node:$worker_hostname\
+  --kubeconfig-name=kubelet-$worker_hostname\
+  --csr-type=altnames\
+  --controller-ip=$controller_ip\
+  --ca-cert=$ca_cert\
+  --ca-key=$ca_key
+
+echo "Copying kubelet files to worker VM"
+
 scp -i $priv_key $kubelet_binary root@$worker_ip:/usr/local/bin/kubelet
-
-# TODO name the kubeconfig file with the worker hostname in it?
-echo "Generating a kubeconfig file for the kubelet"
-rm -f $DTKBASE/generated/kubeconfig/worker.kubeconfig
-kubectl config set-cluster kubernetes \
---certificate-authority=$ca_cert \
---embed-certs=true \
---server=https://$controller_ip:6443 \
---kubeconfig=$DTKBASE/generated/kubeconfig/worker.kubeconfig
-
-kubectl config set-credentials system:node:$worker_hostname \
---client-certificate=$DTKBASE/generated/cert/worker.pem \
---client-key=$DTKBASE/generated/cert/worker-key.pem \
---embed-certs=true \
---kubeconfig=$DTKBASE/generated/kubeconfig/worker.kubeconfig
-
-kubectl config set-context default \
---cluster=kubernetes \
---user=system:node:$worker_hostname \
---kubeconfig=$DTKBASE/generated/kubeconfig/worker.kubeconfig
-
-kubectl config use-context default --kubeconfig=$DTKBASE/generated/kubeconfig/worker.kubeconfig
-
-echo "Copying kubeconfig file to worker VM"
 ssh -i $priv_key root@$worker_ip "mkdir -p /var/lib/kubelet/kubeconfig /var/lib/kubernetes"
-scp -i $priv_key $DTKBASE/generated/cert/worker.pem root@$worker_ip:/var/lib/kubelet/
-scp -i $priv_key $DTKBASE/generated/cert/worker-key.pem root@$worker_ip:/var/lib/kubelet/
-scp -i $priv_key $DTKBASE/generated/kubeconfig/worker.kubeconfig root@$worker_ip:/var/lib/kubelet/kubeconfig
+scp -i $priv_key $DTKBASE/generated/cert/kubelet-$worker_hostname.pem root@$worker_ip:/var/lib/kubelet/kubelet.pem
+scp -i $priv_key $DTKBASE/generated/cert/kubelet-$worker_hostname-key.pem root@$worker_ip:/var/lib/kubelet/kubelet-key.pem
+scp -i $priv_key $DTKBASE/generated/kubeconfig/kubelet-$worker_hostname.kubeconfig root@$worker_ip:/var/lib/kubelet/kubeconfig/kubelet.kubeconfig
 scp -i $priv_key $ca_cert root@$worker_ip:/var/lib/kubernetes/
-
-echo "Copying kubelet service and config files to worker VM"
-
 sed $script_dir/kubelet-config.yaml\
  -e "s|PODCIDR|$pod_cidr|g" | ssh -i $priv_key root@$worker_ip "cat > /var/lib/kubelet/kubelet-config.yaml"
 scp -i $priv_key $script_dir/kubelet.service root@$worker_ip:/etc/systemd/system/

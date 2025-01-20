@@ -25,54 +25,24 @@ if [[ "$containerized_cplane" == *kube-scheduler* || "$containerized_cplane" == 
   containerized_cplane=1
 fi
 
-# gen some path refs to make the commands below a little less busy looking
-kube_scheduler_cert=$DTKBASE/generated/cert/kube-scheduler.pem
-kube_scheduler_key=$DTKBASE/generated/cert/kube-scheduler-key.pem
-kube_scheduler_csr=$DTKBASE/generated/cert/kube-scheduler.csr
-kube_scheduler_kubeconfig=$DTKBASE/generated/kubeconfig/kube-scheduler.kubeconfig
-kube_scheduler_service=$script_dir/kube-scheduler.service
-kube_scheduler_yaml=$script_dir/kube-scheduler.yaml
-
-echo "generating TLS material for kube-scheduler"
-openssl req -newkey rsa:2048 -nodes -keyout $kube_scheduler_key\
- -subj "/CN=system:kube-scheduler" -out $kube_scheduler_csr 2>/dev/null
-openssl x509 -req -days 10000 -in $kube_scheduler_csr -CA $ca_cert -CAkey $ca_key\
- -CAcreateserial -sha256 -out $kube_scheduler_cert
-# cleanup
-rm -f $kube_scheduler_csr
-
-echo "generating a kubeconfig file for the kube-scheduler service"
-rm -f $kube_scheduler_kubeconfig
-kubectl config set-cluster kubernetes \
---certificate-authority=$ca_cert \
---embed-certs=true \
---server=https://$controller_ip:6443 \
---kubeconfig=$kube_scheduler_kubeconfig
-
-kubectl config set-credentials system:kube-scheduler \
---client-certificate=$kube_scheduler_cert \
---client-key=$kube_scheduler_key \
---embed-certs=true \
---kubeconfig=$kube_scheduler_kubeconfig
-
-kubectl config set-context default \
---cluster=kubernetes \
---user=system:kube-scheduler \
---kubeconfig=$kube_scheduler_kubeconfig
-
-kubectl config use-context default --kubeconfig=$kube_scheduler_kubeconfig
+xec gen-kubeconfig\
+  --subject-cn=system:kube-scheduler\
+  --kubeconfig-name=kube-scheduler\
+  --controller-ip=$controller_ip\
+  --ca-cert=$ca_cert\
+  --ca-key=$ca_key
 
 echo "copying configuration files to controller VM"
 ssh -i $priv_key root@$controller_ip "mkdir -p /var/lib/kubernetes /etc/kubernetes/config"
-scp -i $priv_key $kube_scheduler_kubeconfig root@$controller_ip:/var/lib/kubernetes/
-scp -i $priv_key $kube_scheduler_yaml root@$controller_ip:/etc/kubernetes/config/
+scp -i $priv_key $DTKBASE/generated/kubeconfig/kube-scheduler.kubeconfig root@$controller_ip:/var/lib/kubernetes/
+scp -i $priv_key $script_dir/kube-scheduler.yaml root@$controller_ip:/etc/kubernetes/config/
 
 if [[ $containerized_cplane -eq 0 ]]; then
   echo "copying kube-scheduler binary to controller VM"
   scp -i $priv_key $kube_scheduler_binary root@$controller_ip:/usr/local/bin/kube-scheduler
 
   echo "copying kube-scheduler service file to controller VM"
-  scp -i $priv_key $kube_scheduler_service root@$controller_ip:/etc/systemd/system/
+  scp -i $priv_key $script_dir/kube-scheduler.service root@$controller_ip:/etc/systemd/system/
 
   echo "starting kube-scheduler service"
   ssh -i $priv_key root@$controller_ip\

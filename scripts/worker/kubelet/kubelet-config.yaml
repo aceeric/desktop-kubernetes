@@ -19,5 +19,5 @@ registerNode: true
 resolvConf: /etc/resolv.conf
 runtimeRequestTimeout: 15m
 staticPodPath: /etc/desktop-kubernetes/static-pods
-tlsCertFile: /var/lib/kubelet/worker.pem
-tlsPrivateKeyFile: /var/lib/kubelet/worker-key.pem
+tlsCertFile: /var/lib/kubelet/kubelet.pem
+tlsPrivateKeyFile: /var/lib/kubelet/kubelet-key.pem

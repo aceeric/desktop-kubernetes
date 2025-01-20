@@ -15,7 +15,7 @@
 #
 # Example
 #
-# ./parseargs foo:,baz,foo-bar: --foo=bar --baz --foo-bar frobozz
+# ./parseargs --foo=bar --baz --foo-bar frobozz
 #
 # Would return
 # foo=bar\nbaz=1\nfoo_bar=frobozz

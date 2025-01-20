@@ -7,7 +7,7 @@ Requires=containerd.service
 [Service]
 ExecStart=/usr/local/bin/kubelet \
   --config=/var/lib/kubelet/kubelet-config.yaml \
-  --kubeconfig=/var/lib/kubelet/kubeconfig/worker.kubeconfig \
+  --kubeconfig=/var/lib/kubelet/kubeconfig/kubelet.kubeconfig \
   --v=2
 Restart=on-failure
 RestartSec=5
