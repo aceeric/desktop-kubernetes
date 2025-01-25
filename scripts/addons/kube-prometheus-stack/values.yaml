@@ -14,3 +14,6 @@ extraManifests:
       app.kubernetes.io/instance: kube-prometheus
       app.kubernetes.io/name: grafana
     type: NodePort
+
+grafana:
+  adminPassword: admin
