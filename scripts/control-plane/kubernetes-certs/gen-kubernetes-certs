@@ -25,7 +25,7 @@ tmp_dir=$(mktemp -d)
 
 sed -e "s/HOSTNAME/$controller_hostname/g"\
     -e "s/IPADDRESS/$controller_ip/g"\
-    $script_dir/csr.conf >| $tmp_dir/kubernetes-csr.conf
+    $script_dir/kubernetes-csr.conf >| $tmp_dir/kubernetes-csr.conf
 
 # generate key
 openssl genrsa\
@@ -52,4 +52,4 @@ openssl x509\
   -extfile $tmp_dir/kubernetes-csr.conf\
 
 # cleanup
-rm -rf $tmp_dir #$DTKBASE/generated/cert/ca.srl
+rm -rf $tmp_dir

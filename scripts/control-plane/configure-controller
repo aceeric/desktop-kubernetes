@@ -30,8 +30,9 @@ controller_ip=$(xec get-vm-ip $controller_hostname)
 echo "configuring firewall rules"
 xec configure-firewall $controller_ip $priv_key --controller
 
-# creates kubernetes.pem and kubernetes-key.pem
-xec gen-cluster-tls\
+# creates kubernetes.pem and kubernetes-key.pem used to configure TLS for
+# etc and the kube api server
+xec gen-kubernetes-certs\
   --controller-hostname=$controller_hostname\
   --controller-ip=$controller_ip\
   --ca-cert=$ca_cert\

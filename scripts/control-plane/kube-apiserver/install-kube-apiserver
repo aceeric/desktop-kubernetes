@@ -119,7 +119,7 @@ echo "generating RBAC for kubelet authorization"
 
 # Per: https://kubernetes.io/docs/reference/access-authn-authz/kubelet-authn-authz/#kubelet-authorization
 # Snip: "...ensure the user identified by the --kubelet-client-certificate and --kubelet-client-key flags passed
-# to the apiserver is authorized..." etc. See 'CN = ' in 'gen-cluster-tls' script. Also see 'authorization.mode'
+# to the apiserver is authorized..." etc. See 'CN = ' in 'gen-kubernetes-certs' script. Also see 'authorization.mode'
 # in 'scripts/worker/kubelet/kubelet-config.yaml'. All these configs together implement the guidance.
 kubectl --kubeconfig $admin_kubeconfig create -f $script_dir/rbac.yaml
 

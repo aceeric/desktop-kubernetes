@@ -1,7 +1,11 @@
 #!/usr/bin/env bash
 
-# Generates root CA cert and key. These will be used to sign every other cert generated for
-# the cluster.
+# Generates root CA cert and key if they don't already exist. These will be used to sign
+# every other cert generated for the cluster.
+#
+# Outputs:
+#   - $DTKBASE/generated/cert/ca-key.pem
+#   - $DTKBASE/generated/cert/ca.pem
 
 if [[ -f $DTKBASE/generated/cert/ca{,-key}.pem ]]; then
   echo "CA cert and key already exist - skipping"
