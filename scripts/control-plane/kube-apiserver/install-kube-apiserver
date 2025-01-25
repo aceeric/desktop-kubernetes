@@ -32,37 +32,27 @@ if [[ "$containerized_cplane" == *kube-apiserver* || "$containerized_cplane" == 
   containerized_cplane=1
 fi
 
+echo "generating service-account and aggregator certs and copying to controller VM"
+
+xec gen-certs-kubeconfig\
+ --subject-cn=service-account\
+ --identity=service-account\
+ --gen-kubeconfig=0\
+ --ca-cert=$ca_cert\
+ --ca-key=$ca_key
+
+xec gen-certs-kubeconfig\
+ --subject-org=k8s\
+ --subject-ou=system\
+ --subject-cn=aggregator\
+ --identity=aggregator\
+ --gen-kubeconfig=0\
+ --ca-cert=$ca_cert\
+ --ca-key=$ca_key
+
 ssh -i $priv_key root@$controller_ip "mkdir -p /var/lib/kubernetes/"
-
-certs=(service-account aggregator)
-subjects=("/CN=service-accounts" "/O=k8s/OU=system/CN=aggregator")
-
-echo "generating TLS material for kube-apiserver and copying to controller"
-
-for ((i = 0; i < 2; ++i)); do
-  cert=${certs[$i]}
-  openssl req\
-    -nodes\
-    -newkey rsa:2048\
-    -keyout $DTKBASE/generated/cert/$cert-key.pem\
-    -subj ${subjects[$i]}\
-    -out $DTKBASE/generated/cert/$cert.csr\
-    2>/dev/null
-
-  openssl x509\
-    -req\
-    -days 10000\
-    -in $DTKBASE/generated/cert/$cert.csr\
-    -CA $ca_cert\
-    -CAkey $ca_key\
-    -CAcreateserial\
-    -sha256\
-    -out $DTKBASE/generated/cert/$cert.pem\
-    2>/dev/null
-
-  rm -f $DTKBASE/generated/cert/$cert.csr
-  scp -i $priv_key $DTKBASE/generated/cert/$cert*.pem root@$controller_ip:/var/lib/kubernetes
-done
+scp -i $priv_key $DTKBASE/generated/cert/service-account*.pem $DTKBASE/generated/cert/aggregator*.pem\
+  root@$controller_ip:/var/lib/kubernetes
 
 echo "copying additional kube-apiserver TLS material to controller VM"
 scp -i $priv_key $ca_cert $ca_key $kubernetes_cert $kubernetes_key root@$controller_ip:/var/lib/kubernetes
