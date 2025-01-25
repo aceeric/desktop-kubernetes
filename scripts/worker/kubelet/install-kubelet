@@ -20,12 +20,12 @@ if ! parsed=$(xec parseargs $long_opts "$@"); then
 fi
 eval $(echo -e "$parsed")
 
-xec gen-kubeconfig\
+xec gen-certs-kubeconfig\
   --host-name=$worker_hostname\
   --host-ip=$worker_ip\
   --subject-org=system:nodes\
   --subject-cn=system:node:$worker_hostname\
-  --kubeconfig-name=kubelet-$worker_hostname\
+  --identity=kubelet-$worker_hostname\
   --csr-type=altnames\
   --controller-ip=$controller_ip\
   --ca-cert=$ca_cert\

@@ -30,16 +30,16 @@ controller_ip=$(xec get-vm-ip $controller_hostname)
 echo "configuring firewall rules"
 xec configure-firewall $controller_ip $priv_key --controller
 
-# creates kubernetes.pem and kubernetes-key.pem used to configure TLS for
-# etc and the kube api server
-xec gen-kubernetes-certs\
-  --controller-hostname=$controller_hostname\
-  --controller-ip=$controller_ip\
-  --ca-cert=$ca_cert\
-  --ca-key=$ca_key
-
-kubernetes_cert=$DTKBASE/generated/cert/kubernetes.pem
-kubernetes_key=$DTKBASE/generated/cert/kubernetes-key.pem
+echo "creating kubernetes.pem and kubernetes-key.pem"
+xec gen-certs-kubeconfig\
+ --host-name=$controller_hostname\
+ --host-ip=$controller_ip\
+ --subject-cn=kubernetes\
+ --identity=kubernetes\
+ --csr-type=kubernetes\
+ --gen-kubeconfig=0\
+ --ca-cert=$ca_cert\
+ --ca-key=$ca_key
 
 echo "installing etcd into controller"
 xec install-etcd\
@@ -47,8 +47,8 @@ xec install-etcd\
  --controller-ip=$controller_ip\
  --controller-hostname=$controller_hostname\
  --etcd-gzip=$ETCD_GZIP\
- --kubernetes-cert=$kubernetes_cert\
- --kubernetes-key=$kubernetes_key\
+ --kubernetes-cert=$DTKBASE/generated/cert/kubernetes.pem\
+ --kubernetes-key=$DTKBASE/generated/cert/kubernetes-key.pem\
  --admin-kubeconfig=$admin_kubeconfig\
  --containerized-cplane=$containerized_cplane\
  --ca-cert=$ca_cert
@@ -58,8 +58,8 @@ xec install-kube-apiserver\
  --priv-key=$priv_key\
  --controller-ip=$controller_ip\
  --kube-apiserver-binary=$KUBE_APISERVER_BINARY\
- --kubernetes-cert=$kubernetes_cert\
- --kubernetes-key=$kubernetes_key\
+ --kubernetes-cert=$DTKBASE/generated/cert/kubernetes.pem\
+ --kubernetes-key=$DTKBASE/generated/cert/kubernetes-key.pem\
  --containerized-cplane=$containerized_cplane\
  --admin-kubeconfig=$admin_kubeconfig\
  --ca-cert=$ca_cert\

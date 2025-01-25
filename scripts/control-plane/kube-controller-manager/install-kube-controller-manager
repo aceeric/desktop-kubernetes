@@ -28,9 +28,9 @@ if [[ "$containerized_cplane" == *kube-controller-manager* || "$containerized_cp
   containerized_cplane=1
 fi
 
-xec gen-kubeconfig\
+xec gen-certs-kubeconfig\
   --subject-cn=system:kube-controller-manager\
-  --kubeconfig-name=kube-controller-manager\
+  --identity=kube-controller-manager\
   --controller-ip=$controller_ip\
   --ca-cert=$ca_cert\
   --ca-key=$ca_key

@@ -50,7 +50,6 @@ dtk
 │  │  └─ scripts/networking/kube-proxy/install-kube-proxy
 │  └─ scripts/control-plane/configure-controller (5b)
 │     ├─ scripts/os/configure-firewall
-│     ├─ scripts/cluster/gen-kubernetes-certs
 │     ├─ scripts/control-plane/etcd/install-etcd
 │     ├─ scripts/control-plane/kube-apiserver/install-kube-apiserver
 │     ├─ scripts/control-plane/kube-controller-manager/install-kube-controller-manager
