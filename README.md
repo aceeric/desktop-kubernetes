@@ -94,13 +94,13 @@ This project has been tested with the tools, components and versions shown in th
 
 | Category | Component | Version |
 |-|-|-|
-| host | Linux desktop | Ubuntu 22.04.4 LTS |
+| host | Linux desktop | Ubuntu 22.04.5 LTS |
 | host | openssl | 3.0.2 |
 | host | openssh | OpenSSH_8.9p1 |
 | host | genisoimage (used to create the Kickstart ISO) | 1.1.11 |
 | host | Virtual Box / VBoxManage | 7.0.10 |
 | host | Helm | v3.13.1 |
-| host | kubectl (client only) | v1.31.0 |
+| host | kubectl (client only) | v1.32.1 |
 | host | curl | 7.81.0 |
 | host | yq | 4.40.5 |
 | host | virt-install | 4.0.0 |
@@ -110,16 +110,16 @@ This project has been tested with the tools, components and versions shown in th
 | guest VM | Rocky Linux ISO | 8.10 |
 | guest VM | Alma Linux ISO | 8.10 |
 | guest VM | Virtual Box Guest Additions ISO | 7.0.18 |
-| k8s | kube-apiserver | v1.31.0 |
-| k8s | kube-controller-manager | v1.31.0 |
-| k8s | kube-scheduler | v1.31.0 |
-| k8s | kubelet | v1.31.0 |
-| k8s | kube-proxy (if installed) | v1.31.0 |
-| k8s | etcd | v3.5.15 |
-| k8s | crictl | v1.31.1 |
-| k8s | runc | v1.1.14 |
-| k8s | cni plugins | v1.5.1 |
-| k8s | containerd | 1.7.21 |
+| k8s | kube-apiserver | v1.32.1 |
+| k8s | kube-controller-manager | v1.32.1 |
+| k8s | kube-scheduler | v1.32.1 |
+| k8s | kubelet | v1.32.1 |
+| k8s | kube-proxy (if installed) | v1.32.1 |
+| k8s | etcd | v3.5.18 |
+| k8s | crictl | v1.32.0 |
+| k8s | runc | v1.2.4 |
+| k8s | cni plugins | v1.6.2 |
+| k8s | containerd | 2.0.2 |
 | conformance | Sonobuoy conformance | v0.57.2 |
 
 > Note regarding Linux: Prior to June 2024, I defaulted the Linux selection to Centos 8 Stream. Since Centos 8 Stream doesn't appear to be available any more the CentOS version is configured as Stream 9 latest. However, I've so far been unable to get the Stream 9 install working with either KVM or VirtualBox so I've defaulted the Linux distro to **Alma 8.10** in the `config.yaml`.
