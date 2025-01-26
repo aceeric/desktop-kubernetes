@@ -63,7 +63,7 @@ The project ships with a `config.yaml` file in the project root that specifies t
 | `kvm.kickstart` | The kickstart file used when creating a template VM. Kickstart files are in the `kickstarts` directory. The default is `kvm.text.ks.cfg`. |
 | `kvm.os-variant` | Has to align with OS ISO. (Values from `virt-install --os-variant list`.) Default is `almalinux8`. |
 | `vm.linux` | Valid values are `alma` for Alma Linux (the default), `centos9` for CentOS 9 Stream, and `rocky` for Rocky Linux. Ignored unless `vm.create-template` is specified. |
-| `vm.create-template` | True/False. Causes the script to create a template VM to clone all the cluster nodes from before bringing up the cluster. (This step by far takes the longest.) If not specified, the script expects to find an existing VM to clone from per the `vm.template-vmname` setting. This option installs the OS using Kickstart, then installs Guest Additions. **You must set this to true for the very first cluster you create.** |
+| `vm.create-template` | True/False. Causes the script to create a template VM to clone all the cluster nodes from before bringing up the cluster. (This step by far takes the longest.) If not specified, the script expects to find an existing VM to clone from per the `vm.template-vmname` setting. This option installs the OS using Kickstart. **You must set this to true for the very first cluster you create.** |
 | `vm.template-vmname` | Specifies the template VM name to create - or clone from. |
 | `vms` | This is a list of VMs to create. Each VM in the list specifies the following keys: |
 | `vms[n].name` | The VM Name. |
