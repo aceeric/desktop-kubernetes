@@ -12,21 +12,32 @@ xec download-obj --url=$url --dest=$tgz
 
 admin_kubeconfig=$(yq .cluster.admin-kubeconfig $config)
 
-helm_arg="set kubeEtcd.endpoints={}"
+etcd_arg="set kubeEtcd.endpoints={}"
+scheduler_arg="set kubeScheduler.endpoints={}"
+ctrllrmgr_arg="set kubeControllerManager.endpoints={}"
+endpoint=$(kubectl --kubeconfig $admin_kubeconfig get node  -l node-role.kubernetes.io/controller\
+  -o json | jq -r '.items[].status.addresses[] | select(.type=="InternalIP").address')
 containerized_cplane=$(yq .k8s.containerized-cplane $config)
 
-# if etcd is running as a systemd service rather than a pod, have to tell kube-prometheus that
+# if k8s components are not running as pods then it requires additional helm values
+
 if [[ "$containerized_cplane" != *etcd* && "$containerized_cplane" != all ]]; then
-  endpoint=$(kubectl --kubeconfig $admin_kubeconfig get node  -l node-role.kubernetes.io/controller\
-    -o json | jq -r '.items[].status.addresses[] | select(.type=="InternalIP").address')
-  helm_arg="set kubeEtcd.endpoints={$endpoint}"
+  etcd_arg="set kubeEtcd.endpoints={$endpoint}"
+fi
+if [[ "$containerized_cplane" != *kube-scheduler* || "$containerized_cplane" != all ]]; then
+  scheduler_arg="set kubeScheduler.endpoints={$endpoint}"
+fi
+if [[ "$containerized_cplane" != *kube-controller-manager* || "$containerized_cplane" != all ]]; then
+  ctrllrmgr_arg="set kubeControllerManager.endpoints={$endpoint}"
 fi
 
 helm upgrade --install kube-prometheus\
   --namespace kube-prometheus\
   --create-namespace\
   --kubeconfig $admin_kubeconfig\
-  --$helm_arg\
+  --$etcd_arg\
+  --$scheduler_arg\
+  --$ctrllrmgr_arg\
   --values $script_dir/values.yaml\
   $tgz 
 
