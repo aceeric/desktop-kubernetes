@@ -15,7 +15,7 @@
 #
 # Example
 #
-# ./parseargs --foo=bar --baz --foo-bar frobozz
+# scripts/helpers/parseargs foo:,baz,foo-bar: --foo=bar --baz --foo-bar frobozz
 #
 # Would return
 # foo=bar\nbaz=1\nfoo_bar=frobozz
@@ -29,6 +29,7 @@ valsarr=()
 for ((i = 0; i < ${#optsarr[@]}; ++i)); do
   opt=${optsarr[$i]}
   if [[ $opt == *: ]]; then
+    # accepts a value, strip the colon from the opt name
     opt=${opt::-1}
     valsarr[$i]=1
     optsarr[$i]=$opt
@@ -40,7 +41,7 @@ done
 # parse command line args after the first (longopts) arg
 for ((i = 2; i <= "$#"; ++i)); do
   opt="${!i}"
-  # strip leading dbl-dash
+  # strip leading dbl-dash 
   opt="${opt#--}"
   val=
   have_equals=0
@@ -66,11 +67,14 @@ for ((i = 2; i <= "$#"; ++i)); do
   # handle opts that accept values
   if [[ ${valsarr[$j]} -eq 1 ]]; then
     if [[ $have_equals -eq 0 ]]; then
-      # didn't already get if from opt=val
+      # didn't already get it from opt=val
       ((i++))
       val="${!i}"
       if [[ ${val:0:2} == "--" ]]; then
         echo "option $opt expects value, got $val instead"
+        exit 1
+      elif [[ -z "$val" ]]; then
+        echo "option $opt expects value"
         exit 1
       fi
     fi
