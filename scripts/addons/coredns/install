@@ -12,7 +12,7 @@ xec download-obj --url=$url --dest=$tgz
 
 admin_kubeconfig=$(yq .cluster.admin-kubeconfig $config)
 helm upgrade --install coredns\
-  --namespace coredns\
+  --namespace kube-system\
   --create-namespace\
   --kubeconfig $admin_kubeconfig\
   --wait\

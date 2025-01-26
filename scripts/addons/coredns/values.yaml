@@ -24,10 +24,6 @@ servers:
   - name: prometheus
     parameters: :9153
   - name: forward
-    ### TEST TEST TEST
-    #parameters: . 8.8.8.8 8.8.4.4
-    #configBlock: |-
-    #  tls_servername dns.google
     parameters: . /etc/resolv.conf
   - name: cache
     parameters: 30
