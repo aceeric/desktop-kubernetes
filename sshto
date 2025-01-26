@@ -4,9 +4,9 @@
 #
 
 if [[ "$2" == vbox ]]; then
-  ip=$(scripts/virtualbox/get-vbox-ip $1)
+  ip=$(scripts/virtualbox/get-vm-ip $1)
 elif [[ "$2" == kvm ]]; then
-  ip=$(scripts/kvm/get-kvm-ip $1)
+  ip=$(scripts/kvm/get-vm-ip $1)
 else
   echo "need vbox or kvm in arg 2"
   exit 1

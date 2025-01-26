@@ -8,7 +8,7 @@
 
 set -e
 
-long_opts=containerized-cplane:,kube-proxy-enabled:,priv-key:,ca-cert:,ca-key:,config:,cluster-cidr:
+long_opts=containerized-cplane:,kube-proxy-enabled:,priv-key:,ca-cert:,ca-key:,config:,cluster-cidr:,virt:
 
 containerized_cplane=
 kube_proxy_enabled=
@@ -17,6 +17,7 @@ ca_cert=
 ca_key=
 config=
 cluster_cidr=
+virt=
 
 if ! parsed=$(xec parseargs $long_opts "$@"); then
   echo "$parsed"
@@ -33,7 +34,7 @@ vm_names=()
 for ((i = 0; i < $vmcnt; ++i)); do
   vm_name=$(yq .vms[$i].name $config)
   pod_cidr=$(yq .vms[$i].pod-cidr $config)
-  vm_ip=$(xec get-vm-ip $vm_name)
+  vm_ip=$(xec $virt/get-vm-ip $vm_name)
 
   if [[ $i -eq 0 ]]; then
     controller_ip=$vm_ip
@@ -58,12 +59,14 @@ for ((i = 0; i < $vmcnt; ++i)); do
    --pod-cidr=$pod_cidr\
    --containerized-cplane=$containerized_cplane\
    --config=$config\
+   --worker-ip=$vm_ip\
    --ca-cert=$ca_cert\
    --ca-key=$ca_key
 
   if [[ $i -eq 0 ]]; then
     xec configure-controller\
      --controller-hostname=$vm_name\
+     --controller-ip=$vm_ip\
      --priv-key=$priv_key\
      --admin-kubeconfig=$admin_kubeconfig\
      --containerized-cplane=$containerized_cplane\
@@ -99,13 +102,13 @@ if [[ -n "$host_only_network" ]] && [[ $kube_proxy_enabled -eq 1 ]]; then
   echo "configuring kube-proxy routes"
   for ((i = 0; i < $vmcnt; ++i)); do
     this_vm=$(yq .vms[$i].name $config)
-    this_ip=$(xec get-vm-ip $this_vm)
+    this_ip=$(xec $virt/get-vm-ip $this_vm)
     for ((j = 0; j < $vmcnt; ++j)); do
       if [[ $i -eq $j ]]; then
         continue
       fi
       other_vm=$(yq .vms[$j].name $config)
-      other_ip=$(xec get-vm-ip $other_vm)
+      other_ip=$(xec $virt/get-vm-ip $other_vm)
       other_cidr=$(yq .vms[$j].pod-cidr $config)
       ssh -i $priv_key root@$this_ip "echo $other_cidr via $other_ip dev enp0s8 >> /etc/sysconfig/network-scripts/route-enp0s8"
     done

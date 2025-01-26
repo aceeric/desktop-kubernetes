@@ -26,7 +26,7 @@ dtk
 │  ├─ scripts/kvm/create-template-vm
 │  │  └─ scripts/vm/gen-ssh-keyfiles
 │  ├─ scripts/kvm/clone-vm
-│  └─ scripts/vm/configure-etc-hosts
+│  └─ scripts/kvm/configure-etc-hosts
 │
 ├─ scripts/virtualbox/provision-vms (3) (if vbox)
 │  ├─ scripts/virtualbox/create-template-vm
@@ -37,7 +37,7 @@ dtk
 │  ├─ scripts/virtualbox/clone-vm
 │  │  └─ scripts/virtualbox/configure-hostonly-networking
 │  │     └─ scripts/virtualbox/gen-hostonly-ifcfg-iso
-│  └─ scripts/vm/configure-etc-hosts
+│  └─ scripts/virtualbox/configure-etc-hosts
 │
 ├─ scripts/cluster/gen-root-ca (4)
 │

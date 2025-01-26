@@ -12,10 +12,12 @@ xec download-obj --url=$url --dest=$tgz
 
 priv_key=$(yq .cluster.priv-key $config)
 cluster_cidr=$(yq .k8s.cluster-cidr $config)
+virt=$(yq .virt $config)
 
 controller_ip=
 for ((i = 0; i < $(yq '.vms | length' $config); ++i)); do
-  vmip=$(xec get-vm-ip $(yq .vms[$i].name $config))
+  vmname=$(yq .vms[$i].name $config)
+  vmip=$(xec $virt/get-vm-ip $vmname)
   if [[ $i -eq 0 ]]; then
     controller_ip=$vmip
   fi

@@ -53,7 +53,7 @@ VBoxManage startvm $vmname
 
 echo "waiting indefinitely for VM IP assignment"
 while true; do
-  clone_ip=$(xec get-vbox-ip $clone_vmname)
+  clone_ip=$(xec virtualbox/get-vm-ip $clone_vmname)
   if [[ $clone_ip == "$network_octets.$host_octet" ]]; then
     break
   fi

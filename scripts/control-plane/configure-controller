@@ -4,7 +4,8 @@
 
 set -e
 
-long_opts=controller-hostname:,priv-key:,admin-kubeconfig:,containerized-cplane:,ca-cert:,ca-key:,cluster-cidr:
+long_opts=controller-hostname:,priv-key:,admin-kubeconfig:,containerized-cplane:,ca-cert:,ca-key:,cluster-cidr:,\
+controller-ip:
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 controller_hostname=
@@ -14,8 +15,6 @@ containerized_cplane=
 ca_cert=
 ca_key=
 cluster_cidr=
-
-# internal
 controller_ip=
 
 if ! parsed=$(xec parseargs $long_opts "$@"); then
@@ -23,9 +22,6 @@ if ! parsed=$(xec parseargs $long_opts "$@"); then
   exit 1
 fi
 eval $(echo -e "$parsed")
-
-echo "getting controller IP address from running VM"
-controller_ip=$(xec get-vm-ip $controller_hostname)
 
 echo "configuring firewall rules"
 xec configure-firewall $controller_ip $priv_key --controller

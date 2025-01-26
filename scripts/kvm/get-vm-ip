@@ -1,10 +1,5 @@
 #!/usr/bin/env bash
 
-if [[ "$#" -ne 1 ]]; then
-  echo "only one arg allowed: the VM name. E.g. 'get-kvm-ip my-vm-name"
-  exit 1
-fi
-
 vm="$1"
 
 while true; do

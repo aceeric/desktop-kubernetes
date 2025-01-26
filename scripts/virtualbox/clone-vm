@@ -60,7 +60,7 @@ VBoxManage guestproperty delete $clone_vmname "/VirtualBox/GuestInfo/Net/1/V4/IP
 
 echo "waiting for VM IP assignment - $host_only_network.$host_only_octet"
 while true; do
-  clone_ip=$(xec get-vbox-ip $clone_vmname)
+  clone_ip=$(xec virtualbox/get-vm-ip $clone_vmname)
   if [[ $clone_ip == "$host_only_network.$host_only_octet" ]]; then
     break
   fi

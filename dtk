@@ -102,9 +102,6 @@ elif [[ -n "$delete" ]]; then
   exit 0
 fi
 
-# 'virtualbox' or 'kvm'
-export VIRT=$virt
-
 if [[ -n "$install_addon" ]]; then
   xec install-addons\
     --config=$config\
@@ -114,7 +111,7 @@ if [[ -n "$install_addon" ]]; then
   exit 0
 fi
 
-if [[ $VIRT == "virtualbox" ]]; then
+if [[ $virt == "virtualbox" ]]; then
   if [[ -z "$vbox_host_network_interface" ]] && [[ -z "$vbox_host_only_network" ]]; then
     echo "either --host-network-interface or --host-only-network is required"
     exit 1
@@ -139,17 +136,11 @@ if [[ "$vm_linux" != "centos9" ]] && [[ "$vm_linux" != "rocky" ]]  && [[ "$vm_li
   exit 1
 fi
 
-# --create-template T/F on the cmdline overrides config.yaml
-if [[ -n "$create_template" ]]; then
-  if [[ "$create_template" != "true" ]] && [[ "$create_template" != "false" ]]; then
-    echo "--create-template arg needs true or false"
-    exit 1
-  fi
-  if [[ "$create_template" == "true" ]]; then
-    vm_create_template=1
-  elif [[ "$create_template" == "false" ]]; then
-    vm_create_template=0
-  fi
+# --create-template on the cmdline overrides config.yaml
+if [[ "$create_template" == "true" ]]; then
+  vm_create_template=1
+elif [[ "$create_template" == "false" ]]; then
+  vm_create_template=0
 fi
 
 echo "creating directories to generate various files into"
@@ -163,11 +154,11 @@ echo "downloading core cluster components"
 xec download-objects\
   --create-template=$vm_create_template\
   --linux=$vm_linux\
-  --virtualization=$VIRT
+  --virt=$virt
 
 if [[ $no_create_vms == false ]]; then
   echo "provisioning vms"
-  if [[ $VIRT == "virtualbox" ]]; then
+  if [[ $virt == "virtualbox" ]]; then
     xec virtualbox/provision-vms\
       --create-template=$vm_create_template\
       --linux=$vm_linux\
@@ -197,7 +188,8 @@ xec gen-core-k8s\
   --ca-cert=$DTKBASE/generated/cert/ca.pem\
   --ca-key=$DTKBASE/generated/cert/ca-key.pem\
   --config=$config\
-  --cluster-cidr=$k8s_cluster_cidr
+  --cluster-cidr=$k8s_cluster_cidr\
+  --virt=$virt
 
 echo "installing add-ons"
 xec install-addons\

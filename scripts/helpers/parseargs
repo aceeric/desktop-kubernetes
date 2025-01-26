@@ -60,7 +60,7 @@ for ((i = 2; i <= "$#"; ++i)); do
     fi
   done
   if [[ j -ge "${#optsarr[@]}" ]]; then
-    echo "unknown option: ${!i}"
+    echo "unknown option: ${!i} (longopts=$1)"
     exit 1
   fi
 

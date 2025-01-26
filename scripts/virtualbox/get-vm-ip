@@ -1,0 +1,22 @@
+#!/usr/bin/env bash
+
+vm="$1"
+
+netnum=
+
+while [[ -z $netnum ]]; do
+  for interface in 0 1; do
+    netname=$(VBoxManage guestproperty get "$vm" "/VirtualBox/GuestInfo/Net/$interface/Name" 2>/dev/null | awk '{print $2}')
+    if [[ $netname == "enp0s3" ]]; then
+      netnum=$interface
+    elif [[ $netname == "enp0s8" ]]; then
+      netnum=$interface
+      # if we find enp0s8 we're done
+      break
+    fi
+  done
+done
+
+ip=$(VBoxManage guestproperty get "$vm" "/VirtualBox/GuestInfo/Net/$netnum/V4/IP" 2>/dev/null)
+
+echo "$ip" | awk '{print $2}'

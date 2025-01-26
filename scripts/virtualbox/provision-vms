@@ -77,4 +77,4 @@ done
 
 # do this now to avoid needing DNS before CoreDNS is installed
 echo "configuring /etc/hosts in VMs"
-xec configure-etc-hosts $DTKBASE/generated/kickstart/id_ed25519 "${vm_names[@]}"
+xec virtualbox/configure-etc-hosts $DTKBASE/generated/kickstart/id_ed25519 "${vm_names[@]}"

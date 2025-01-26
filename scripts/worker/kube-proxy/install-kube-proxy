@@ -2,7 +2,7 @@
 
 set -e
 
-long_opts=kube-proxy-binary:,priv-key:,containerized-cplane:,admin-kubeconfig:,worker-hostname:,cluster-cidr:
+long_opts=kube-proxy-binary:,priv-key:,containerized-cplane:,admin-kubeconfig:,worker-hostname:,cluster-cidr:,worker-ip:
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 kube_proxy_binary=
@@ -11,6 +11,7 @@ containerize_cplane=0
 admin_kubeconfig=
 worker_hostname=
 cluster_cidr=
+worker_ip=
 
 if ! parsed=$(xec parseargs $long_opts "$@"); then
   echo "$parsed"
@@ -22,7 +23,6 @@ if [[ "$containerized_cplane" == *kube-proxy* || "$containerized_cplane" == all 
   containerized_cplane=1
 fi
 
-worker_ip=$(xec get-vm-ip $worker_hostname)
 echo "configuring kube-proxy for node $worker_hostname (ip $worker_ip)"
 ssh -i $priv_key root@$worker_ip "mkdir -p /var/lib/kube-proxy/kubeconfig"
 sed $script_dir/kube-proxy-config.yaml  -e "s|CLUSTER_CIDR|$cluster_cidr|g"\
