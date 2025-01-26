@@ -61,20 +61,6 @@ if ! parsed=$(xec parseargs $long_opts "$@"); then
 fi
 eval $(echo -e "$parsed")
 
-# ensure config.yaml exists
-config=$(realpath $config)
-if [[ ! -f "$config" ]]; then
-  echo "config file not found: $config"
-  exit 1
-fi
-
-# parse config.yaml
-xec parse-config.py $config check || exit
-eval $(xec parse-config.py $config)
-
-# 'virtualbox' or 'kvm'
-export VIRT=$virt
-
 if [[ $help -eq 1 ]]; then
   xec show-usage
   exit 0
@@ -94,16 +80,30 @@ if [[ -n "$verify" ]]; then
   exit 0
 fi
 
+# ensure config.yaml exists
+config=$(realpath $config)
+if [[ ! -f "$config" ]]; then
+  echo "config file not found: $config"
+  exit 1
+fi
+
+# parse config.yaml
+xec parse-config.py $config check || exit
+eval $(xec parse-config.py $config)
+
 if [[ -n "$up" ]]; then
-  xec $VIRT/up-down-del up $up $config
+  xec $virt/up-down-del up $up $config
   exit 0
 elif [[ -n "$down" ]]; then
-  xec $VIRT/up-down-del down $down $config
+  xec $virt/up-down-del down $down $config
   exit 0
 elif [[ -n "$delete" ]]; then
-  xec $VIRT/up-down-del delete $delete $config
+  xec $virt/up-down-del delete $delete $config
   exit 0
 fi
+
+# 'virtualbox' or 'kvm'
+export VIRT=$virt
 
 if [[ -n "$install_addon" ]]; then
   xec install-addons\
@@ -139,6 +139,7 @@ if [[ "$vm_linux" != "centos9" ]] && [[ "$vm_linux" != "rocky" ]]  && [[ "$vm_li
   exit 1
 fi
 
+# --create-template T/F on the cmdline overrides config.yaml
 if [[ -n "$create_template" ]]; then
   if [[ "$create_template" != "true" ]] && [[ "$create_template" != "false" ]]; then
     echo "--create-template arg needs true or false"
