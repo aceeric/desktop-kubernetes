@@ -22,7 +22,7 @@ echo "Copying misc kubernetes binaries"
 echo "Copying crictl binary and config to worker"
 cat $crictl_binary | ssh -i $priv_key root@$worker_ip\
  "tar zxvf - --no-same-owner -C /usr/local/bin/ crictl && chmod +x /usr/local/bin/crictl"
-scp -i $priv_key $script_dir/crictl.yaml root@$worker_ip:/usr/local/bin/
+scp -i $priv_key $script_dir/crictl.yaml root@$worker_ip:/etc/
 
 echo "Copying runc binary to worker"
 scp -i $priv_key $runc_binary root@$worker_ip:/usr/local/bin/runc
