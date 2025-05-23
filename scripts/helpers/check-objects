@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
 if [[ "$1" == "files" ]]; then
-  for f in $ALMA_ISO_FILE\
+  for f in $ALMA8_ISO_FILE\
+    $ALMA9_ISO_FILE\
     $CENTOS9_ISO_FILE\
     $CNI_PLUGINS_BINARY\
     $CONTAINERD_BINARY\
@@ -22,7 +23,8 @@ if [[ "$1" == "files" ]]; then
     fi
   done
 else
-  for f in $ALMA_ISO_DOWNLOAD\
+  for f in $ALMA8_ISO_DOWNLOAD\
+    $ALMA9_ISO_DOWNLOAD\
     $CENTOS9_ISO_DOWNLOAD\
     $CNI_PLUGINS_DOWNLOAD\
     $CONTAINERD_DOWNLOAD\

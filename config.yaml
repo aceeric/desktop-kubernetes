@@ -25,16 +25,16 @@ k8s:
 kvm:
   network: nat
   kickstart: kvm.text.ks.cfg
-  os-variant: almalinux8
+  os-variant: almalinux9
 vbox:
   host-network-interface:
   host-only-network: 192.168.56
   kickstart: vbox.text.ks.cfg
   vboxdir:
 vm:
-  linux: alma
+  linux: alma9
   create-template: true
-  template-vmname: alma8
+  template-vmname: alma9
 vms:
   - name: vm1
     cpu: 3

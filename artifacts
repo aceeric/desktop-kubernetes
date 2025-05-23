@@ -1,6 +1,7 @@
 # Change versions here and they will propagate throughout the project
 
-ALMA_VER=8.10
+ALMA8_VER=8.10
+ALMA9_VER=9.5
 CNI_PLUGINS_VER=v1.6.2
 CONTAINERD_VER=2.0.2
 CRICTL_VER=v1.32.0
@@ -12,8 +13,10 @@ RUNC_VER=v1.2.4
 
 # These are the items used to provision the cluster
 
-ALMA_ISO_DOWNLOAD=https://repo.almalinux.org/almalinux/$ALMA_VER/isos/x86_64/AlmaLinux-$ALMA_VER-x86_64-dvd.iso
-ALMA_ISO_FILE=$DTKBASE/binaries/AlmaLinux-$ALMA_VER-x86_64-dvd.iso
+ALMA8_ISO_DOWNLOAD=https://repo.almalinux.org/almalinux/$ALMA8_VER/isos/x86_64/AlmaLinux-$ALMA8_VER-x86_64-dvd.iso
+ALMA8_ISO_FILE=$DTKBASE/binaries/AlmaLinux-$ALMA8_VER-x86_64-dvd.iso
+ALMA9_ISO_DOWNLOAD=https://repo.almalinux.org/almalinux/$ALMA9_VER/isos/x86_64/AlmaLinux-$ALMA9_VER-x86_64-dvd.iso
+ALMA9_ISO_FILE=$DTKBASE/binaries/AlmaLinux-$ALMA9_VER-x86_64-dvd.iso
 CENTOS9_ISO_DOWNLOAD=http://mirror.stream.centos.org/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-dvd1.iso
 CENTOS9_ISO_FILE=$DTKBASE/binaries/CentOS-Stream-9-latest-x86_64-dvd1.iso
 CNI_PLUGINS_BINARY=$DTKBASE/binaries/cni-plugins-linux-amd64-$CNI_PLUGINS_VER.tgz

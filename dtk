@@ -131,7 +131,8 @@ if [[ $virt == "virtualbox" ]]; then
   fi
 fi
 
-if [[ "$vm_linux" != "centos9" ]] && [[ "$vm_linux" != "rocky" ]]  && [[ "$vm_linux" != "alma" ]]; then
+supported_linux=("=centos9=" "=rocky=" "=alma8=" "=alma9=")
+if [[ ! ${supported_linux[@]} =~ "=$vm_linux=" ]]; then
   echo "unsupported value for linux config: $vm_linux"
   exit 1
 fi

@@ -10,11 +10,21 @@ Desktop Kubernetes is the *57 Chevy* of Kubernetes distros: you can take it apar
 
 The project consists of a number of bash scripts and supporting manifests / config files. The design is documented [here](https://github.com/aceeric/desktop-kubernetes/blob/master/resources/design.md).
 
-This project started as a way to automate the steps in **Kelsey Hightower's** [Kubernetes The Hard Way](https://github.com/kelseyhightower/kubernetes-the-hard-way) - just to see if I could. But at this point I pretty much rely on it for all my local Kubernetes development. I use it on Ubuntu 20.04.X systems with 64 gigs of RAM and 6+ hyper-threaded processors
+This project started as a way to automate the steps in **Kelsey Hightower's** [Kubernetes The Hard Way](https://github.com/kelseyhightower/kubernetes-the-hard-way) - just to see if I could. But at this point I pretty much rely on it for all my local Kubernetes development. I use it on Ubuntu 20.04.X systems with 64 gigs of RAM and 6+ hyper-threaded processors.
+
+> **NOTE: In May 2025 the `master` branch was renamed to `main` and `main` is now the default branch.**
+
+## Contents
+
+  * [Quick Start](#quick-start)
+  * [Command Line Options](#command-line-options)
+  * [The `config.yaml` configuration file](#the--configyaml--configuration-file)
+  * [Versions](#versions)
+  * [Change Log](#change-log)
 
 ## Quick Start
 
-The `dtk` script in the repo root is what you run. If you supply no arguments, the script will configure the cluster based on the `config.yaml` file in the project root resulting in a three node Alma 8 cluster consisting of one controller and two workers.
+The `dtk` script in the repo root is what you run. If you supply no arguments, the script will configure the cluster based on the `config.yaml` file in the project root resulting in a three node Alma Linux cluster consisting of one controller and two workers.
 
 > I recommend you run once with just the `--check-compatibility` option to check the versions of the CLIs used by the scripts (curl, etc.) against the tested versions. E.g.: `./dtk --check-compatibility`. There will likely be differences and you have to decide whether the differences are material. Slight version differences may not matter, but for sure you need all the listed tools. In keeping with the project philosophy of not modifying your desktop - you need to install the tools listed in order to use this project.
 
@@ -61,8 +71,8 @@ The project ships with a `config.yaml` file in the project root that specifies t
 | `vbox.kickstart` | Specifies the name of the kickstart file to configure the OS. The file has to be in the `kickstarts` directory. The default is `vbox.text.ks.cfg` which is a non-graphical install. |
 | `kvm.network` | This is set to `nat` in the configuration file. This setting is actually ignored because NAT is the only KVM networking option currently implemented but stating that in the configuration makes it more self-documenting. |
 | `kvm.kickstart` | The kickstart file used when creating a template VM. Kickstart files are in the `kickstarts` directory. The default is `kvm.text.ks.cfg`. |
-| `kvm.os-variant` | Has to align with OS ISO. (Values from `virt-install --os-variant list`.) Default is `almalinux8`. |
-| `vm.linux` | Valid values are `alma` for Alma Linux (the default), `centos9` for CentOS 9 Stream, and `rocky` for Rocky Linux. Ignored unless `vm.create-template` is specified. |
+| `kvm.os-variant` | Has to align with OS ISO. (Values from `virt-install --os-variant list`.) Default is `almalinux9`. |
+| `vm.linux` | Valid values are `alma9` for Alma 9.5 (the default), `alma8` for Alma 8.10, `centos9` for CentOS 9 Stream, and `rocky` for Rocky Linux. Ignored unless `vm.create-template` is specified. |
 | `vm.create-template` | True/False. Causes the script to create a template VM to clone all the cluster nodes from before bringing up the cluster. (This step by far takes the longest.) If not specified, the script expects to find an existing VM to clone from per the `vm.template-vmname` setting. This option installs the OS using Kickstart. **You must set this to true for the very first cluster you create.** |
 | `vm.template-vmname` | Specifies the template VM name to create - or clone from. |
 | `vms` | This is a list of VMs to create. Each VM in the list specifies the following keys: |
@@ -74,19 +84,6 @@ The project ships with a `config.yaml` file in the project root that specifies t
 | `vms[n].pod-cidr` | Used to configure CNI for containerd. As soon as Cilium or Calico are installed then this configuration is superseded. |
 | `addons` | Installs the listed add-ons in the `scripts/addons` directory. E.g. Calico, Cilium, Kube Prometheus Stack, etc. Add-ons are installed in the order listed in the yaml. _CNI needs to be first!_ |
 | `cluster` | Contains cluster information for the add-ons. Populated (overwritten) by `scripts/addons/install-addons`. |
-
-## TODOs
-
-| Task | Description |
-|-|-|
-| Network config | For Rocky 9, configure networking the new way vs network scripts |
-| Graceful shutdown | Configure graceful shutdown |
-| Management Cluster | Support the ability to configure as a management cluster |
-| Kube Bench | https://github.com/aquasecurity/kube-bench |
-| Load Balancer | [MetalLB](https://github.com/google/metallb)? [Kube VIP](https://kube-vip.io/)?|
-| Firewall | Get it working with nftables rules and all ports locked down |
-| SELinux | Enable SELinux |
-| Other VM provisioning | Consider Packer |
 
 ## Versions
 
@@ -108,7 +105,7 @@ This project has been tested with the tools, components and versions shown in th
 | host | qemu-img | 6.2.0 |
 | guest VM | Centos ISO | Stream-9-latest-x86_64 |
 | guest VM | Rocky Linux ISO | 8.10 |
-| guest VM | Alma Linux ISO | 8.10 |
+| guest VM | Alma Linux ISO | 8.10 and 9.5 |
 | guest VM | Virtual Box Guest Additions ISO | 7.0.18 |
 | k8s | kube-apiserver | v1.32.1 |
 | k8s | kube-controller-manager | v1.32.1 |
@@ -121,8 +118,6 @@ This project has been tested with the tools, components and versions shown in th
 | k8s | cni plugins | v1.6.2 |
 | k8s | containerd | 2.0.2 |
 | conformance | Sonobuoy conformance | v0.57.2 |
-
-> Note regarding Linux: Prior to June 2024, I defaulted the Linux selection to Centos 8 Stream. Since Centos 8 Stream doesn't appear to be available any more the CentOS version is configured as Stream 9 latest. However, I've so far been unable to get the Stream 9 install working with either KVM or VirtualBox so I've defaulted the Linux distro to **Alma 8.10** in the `config.yaml`.
 
 ### Add-ons
 
@@ -141,3 +136,16 @@ To install different add-on versions - change the version in the corresponding d
 | OpenEBS | 3.10.0 | 3.10.0 |
 
 > Static pod container images per: https://kubernetes.io/releases/download/
+
+## Change Log
+
+Date: DD-May-2025
+Tag/Commit: ???
+
+Significant changes:
+
+1. Renamed `master` branch to `main`
+2. Support both Alma 8.10 and Alma 9.5
+3. Configure Alma 9.5 as the default
+
+

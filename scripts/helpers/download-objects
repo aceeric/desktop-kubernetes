@@ -18,8 +18,10 @@ fi
 eval $(echo -e "$parsed")
 
 if [[ $create_template -eq 1 ]]; then
-  if [[ $linux == "alma" ]]; then
-    xec download-obj --url=$ALMA_ISO_DOWNLOAD --dest=$ALMA_ISO_FILE
+  if [[ $linux == "alma8" ]]; then
+    xec download-obj --url=$ALMA8_ISO_DOWNLOAD --dest=$ALMA8_ISO_FILE
+  elif [[ $linux == "alma9" ]]; then
+    xec download-obj --url=$ALMA9_ISO_DOWNLOAD --dest=$ALMA9_ISO_FILE
   elif [[ $linux == "centos9" ]]; then
     xec download-obj --url=$CENTOS9_ISO_DOWNLOAD --dest=$CENTOS9_ISO_FILE
   elif [[ $linux == "rocky" ]]; then

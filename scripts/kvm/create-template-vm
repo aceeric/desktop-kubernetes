@@ -36,9 +36,10 @@ virt-install\
   --cdrom $linux_iso_path\
   --location $linux_iso_path\
   --boot hd,cdrom\
+  --graphics none\
   --os-variant $os_variant\
   --initrd-inject $ksout/ks.cfg\
-  --extra-args="ks=file:/ks.cfg console=tty0 console=ttyS0,115200n8"
+  --extra-args="inst.ks=file:/ks.cfg console=tty0 console=ttyS0,115200n8"
 
 echo "waiting (indefinitely) for the machine to power off"
 while true; do
