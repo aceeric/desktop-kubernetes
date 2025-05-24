@@ -139,13 +139,11 @@ To install different add-on versions - change the version in the corresponding d
 
 ## Change Log
 
-Date: DD-May-2025
-Tag/Commit: ???
+Date: 24-May-2025
+Commit: `e7faa4e4`
 
 Significant changes:
 
 1. Renamed `master` branch to `main`
 2. Support both Alma 8.10 and Alma 9.5
 3. Configure Alma 9.5 as the default
-
-
