@@ -18,7 +18,7 @@ This project started as a way to automate the steps in **Kelsey Hightower's** [K
 
   * [Quick Start](#quick-start)
   * [Command Line Options](#command-line-options)
-  * [The `config.yaml` configuration file](#the--configyaml--configuration-file)
+  * [The `config.yaml` configuration file](#the-configyaml-configuration-file)
   * [Versions](#versions)
   * [Change Log](#change-log)
 
@@ -139,6 +139,15 @@ To install different add-on versions - change the version in the corresponding d
 
 ## Change Log
 
+Date: 25-May-2025
+Commit: `a1699e16`
+
+Significant changes:
+
+1. Kubernetes v1.33.1, runc v1.3.0, etcd v3.6.0, crictl v1.33.0, containerd 2.1.1, cni plugins v1.7.1
+
+---
+
 Date: 24-May-2025
 Commit: `e7faa4e4`
 
@@ -147,3 +156,4 @@ Significant changes:
 1. Renamed `master` branch to `main`
 2. Support both Alma 8.10 and Alma 9.5
 3. Configure Alma 9.5 as the default
+
