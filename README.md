@@ -97,7 +97,7 @@ This project has been tested with the tools, components and versions shown in th
 | host | genisoimage (used to create the Kickstart ISO) | 1.1.11 |
 | host | Virtual Box / VBoxManage | 7.0.10 |
 | host | Helm | v3.13.1 |
-| host | kubectl (client only) | v1.32.1 |
+| host | kubectl (client only) | v1.33.1 |
 | host | curl | 7.81.0 |
 | host | yq | 4.40.5 |
 | host | virt-install | 4.0.0 |
@@ -105,18 +105,18 @@ This project has been tested with the tools, components and versions shown in th
 | host | qemu-img | 6.2.0 |
 | guest VM | Centos ISO | Stream-9-latest-x86_64 |
 | guest VM | Rocky Linux ISO | 8.10 |
-| guest VM | Alma Linux ISO | 8.10 and 9.5 |
+| guest VM | Alma Linux ISO | 8.10 and 9.5 _(9.5 is the defaut)_ |
 | guest VM | Virtual Box Guest Additions ISO | 7.0.18 |
-| k8s | kube-apiserver | v1.32.1 |
-| k8s | kube-controller-manager | v1.32.1 |
-| k8s | kube-scheduler | v1.32.1 |
-| k8s | kubelet | v1.32.1 |
-| k8s | kube-proxy (if installed) | v1.32.1 |
-| k8s | etcd | v3.5.18 |
-| k8s | crictl | v1.32.0 |
-| k8s | runc | v1.2.4 |
-| k8s | cni plugins | v1.6.2 |
-| k8s | containerd | 2.0.2 |
+| k8s | kube-apiserver | v1.33.1 |
+| k8s | kube-controller-manager | v1.33.1 |
+| k8s | kube-scheduler | v1.33.1 |
+| k8s | kubelet | v1.33.1 |
+| k8s | kube-proxy (if installed) | v1.33.1 |
+| k8s | etcd | v3.6.0 |
+| k8s | crictl | v1.33.0 |
+| k8s | runc | v1.3.0 |
+| k8s | cni plugins | v1.7.1 |
+| k8s | containerd | 2.1.1 |
 | conformance | Sonobuoy conformance | v0.57.2 |
 
 ### Add-ons
