@@ -96,7 +96,7 @@ This project has been tested with the tools, components and versions shown in th
 | host | openssh | OpenSSH_8.9p1 |
 | host | genisoimage (used to create the Kickstart ISO) | 1.1.11 |
 | host | Virtual Box / VBoxManage | 7.0.10 |
-| host | Helm | v3.13.1 |
+| host | Helm | v3.18.0 |
 | host | kubectl (client only) | v1.33.1 |
 | host | curl | 7.81.0 |
 | host | yq | 4.40.5 |
@@ -123,17 +123,17 @@ This project has been tested with the tools, components and versions shown in th
 
 To install different add-on versions - change the version in the corresponding directory `scripts/addons`.
 
-| Add-on | App Version | Chart Version |
+| Add-on                   | App Version  | Chart Version |
 |-|-|-|
-| Calico networking (Tigera Operator) | v1.32.5 | v3.27.2 |
-| Cilium networking and Hubble monitoring | 1.15.0-pre.2 | 1.15.0-pre.2 |
-| CoreDNS | 1.11.1 | 1.28.2 |
-| External DNS | v0.14.0 | 1.13.1 |
-| Ingress NGINX Controller | 1.9.5 | 4.9.0 |
-| Kube Prometheus Stack | v0.70.0 | 55.5.0 |
-| Kubernetes Dashboard | v2.7.0 | 6.0.8 |
-| Metrics Server | v0.6.4 | 3.11.0 |
-| OpenEBS | 3.10.0 | 3.10.0 |
+| CoreDNS                  | 1.12.2       | 1.42.1 |
+| External DNS             | v0.14.0      | 1.13.1 |
+| Ingress NGINX Controller | 1.12.2       | 4.12.2 |
+| Kube Prometheus Stack    | v0.82.2      | 72.6.0 |
+| Kubernetes Dashboard     | v2.7.0       | 7.12.0 |
+| Metrics Server           | v0.6.4       | 3.11.0 |
+| OpenEBS                  | 3.10.0       | 3.10.0 |
+| Calico networking (Tigera Operator)     | v1.32.5 | v3.27.2 |
+| Cilium networking and Hubble monitoring | 1.17.4 | 1.17.4 |
 
 > Static pod container images per: https://kubernetes.io/releases/download/
 

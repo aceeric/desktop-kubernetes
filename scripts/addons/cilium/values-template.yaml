@@ -6,19 +6,8 @@ operator:
 ipam:
   # mode kubernetes per - https://docs.cilium.io/en/stable/network/concepts/ipam/kubernetes/
   mode: kubernetes
-# can't seem to get hubble working so comment out for now
-#hubble:
-#  metrics:
-#    enabled:
-#    - dns
-#    - drop
-#    - tcp
-#    - flow
-#    - icmp
-#    - http
-#  relay:
-#    enabled: true
-#  ui:
-#    enabled: true
-#  tls:
-#    enabled: false
+hubble:
+  relay:
+    enabled: true
+  ui:
+    enabled: true
