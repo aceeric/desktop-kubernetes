@@ -140,6 +140,15 @@ To install different add-on versions - change the version in the corresponding d
 ## Change Log
 
 Date: 25-May-2025
+Commit: `04428cee`
+
+Significant changes:
+
+1. Addons: coredns 1.42.1, ingress-nginx 4.12.2, kube-prometheus-stack 72.6.2, kubernetes-dashboard 7.12.0, metrics-server 3.12.2, openebs 4.2.0
+
+---
+
+Date: 25-May-2025
 Commit: `a1699e16`
 
 Significant changes:
