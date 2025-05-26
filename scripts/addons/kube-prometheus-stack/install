@@ -2,7 +2,7 @@
 
 config=$1
 
-KUBE_PROM_VER=55.5.0
+KUBE_PROM_VER=72.6.2
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 

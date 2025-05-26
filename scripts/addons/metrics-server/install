@@ -2,7 +2,7 @@
 
 config=$1
 
-METRICS_SERVER_VER=3.11.0
+METRICS_SERVER_VER=3.12.2
 
 admin_kubeconfig=$(yq .cluster.admin-kubeconfig $config)
 
@@ -13,5 +13,6 @@ xec download-obj --url=$url --dest=$tgz
 helm upgrade --install metrics-server\
   --namespace metrics-server\
   --create-namespace\
+  --wait\
   --kubeconfig $admin_kubeconfig\
   $tgz

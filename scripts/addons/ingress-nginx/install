@@ -2,11 +2,10 @@
 
 config=$1
 
-INGRESS_NGINX_VER=4.9.0
+INGRESS_NGINX_VER=4.12.2
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 url=https://github.com/kubernetes/ingress-nginx/releases/download/helm-chart-$INGRESS_NGINX_VER/ingress-nginx-$INGRESS_NGINX_VER.tgz
-namespace=ingress-nginx
 tgz=$DTKBASE/binaries/$(basename $url)
 xec download-obj --url=$url --dest=$tgz
 

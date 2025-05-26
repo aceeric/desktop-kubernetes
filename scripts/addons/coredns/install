@@ -2,11 +2,10 @@
 
 config=$1
 
-COREDNS_VER=1.28.2
+COREDNS_VER=1.42.1
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 url=https://github.com/coredns/helm/releases/download/coredns-$COREDNS_VER/coredns-$COREDNS_VER.tgz
-namespace=kube-system
 tgz=$DTKBASE/binaries/$(basename $url)
 xec download-obj --url=$url --dest=$tgz
 

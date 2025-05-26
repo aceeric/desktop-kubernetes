@@ -6,7 +6,6 @@ CILIUM_VER=1.15.0-pre.2
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 url=https://helm.cilium.io/cilium-$CILIUM_VER.tgz
-namespace=cilium
 tgz=$DTKBASE/binaries/$(basename $url)
 xec download-obj --url=$url --dest=$tgz
 

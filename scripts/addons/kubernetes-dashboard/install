@@ -2,11 +2,10 @@
 
 config=$1
 
-KUBE_DASHBOARD_VER=6.0.8
+KUBE_DASHBOARD_VER=7.12.0
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-url=https://kubernetes.github.io/dashboard/kubernetes-dashboard-$KUBE_DASHBOARD_VER.tgz
-namespace=kubernetes-dashboard
+url=https://github.com/kubernetes/dashboard/releases/download/kubernetes-dashboard-$KUBE_DASHBOARD_VER/kubernetes-dashboard-$KUBE_DASHBOARD_VER.tgz
 tgz=$DTKBASE/binaries/$(basename $url)
 xec download-obj --url=$url --dest=$tgz
 
