@@ -125,7 +125,7 @@ To install different add-on versions change the version in the `scripts/addons` 
 
 | Add-on                              | App Version  | Chart Version |
 |-|-|-|
-| Calico networking (Tigera Operator) | v1.32.5      | v3.27.2 |
+| Calico networking (Tigera Operator) | v3.30.0      | v3.30.0 |
 | Cilium networking                   | 1.17.4       | 1.17.4  |
 | CoreDNS                             | 1.12.0       | 1.42.1  |
 | External DNS                        | v0.14.0      | 1.13.1  |

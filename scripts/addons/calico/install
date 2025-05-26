@@ -2,7 +2,7 @@
 
 config=$1
 
-TIGERA_VER=v3.27.2
+TIGERA_VER=v3.30.0
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 url=https://github.com/projectcalico/calico/releases/download/$TIGERA_VER/tigera-operator-$TIGERA_VER.tgz
@@ -12,6 +12,7 @@ xec download-obj --url=$url --dest=$tgz
 priv_key=$(yq .cluster.priv-key $config)
 cluster_cidr=$(yq .k8s.cluster-cidr $config)
 virt=$(yq .virt $config)
+kube_proxy=$(yq .k8s.kube-proxy $config)
 
 controller_ip=
 for ((i = 0; i < $(yq '.vms | length' $config); ++i)); do
@@ -21,11 +22,9 @@ for ((i = 0; i < $(yq '.vms | length' $config); ++i)); do
     controller_ip=$vmip
   fi
   # per https://docs.tigera.io/calico-enterprise/latest/operations/troubleshoot/troubleshooting#configure-networkmanager
-  # last eyeballed on 24-Dec-2023
-  ssh -i $priv_key root@$vmip << EOF
-    echo -e "[keyfile]\nunmanaged-devices=interface-name:cali*;interface-name:tunl*;interface-name:vxlan.calico;interface-name:wireguard.cali"\
-      >| /etc/NetworkManager/conf.d/calico.conf
-    systemctl daemon-reload && systemctl restart NetworkManager
+  # last eyeballed on 26-May-2025
+  scp -i $priv_key $script_dir/calico.conf root@$vmip:/etc/NetworkManager/conf.d/calico.conf
+  ssh -i $priv_key root@$vmip "systemctl daemon-reload && systemctl restart NetworkManager"
 EOF
 done
 
@@ -40,7 +39,7 @@ helm upgrade --install tigera-operator\
   --values $script_dir/values.yaml\
   $tgz
 
-# these two steps from https://docs.tigera.io/calico/latest/operations/ebpf/enabling-ebpf to be able
+# these steps from https://docs.tigera.io/calico/latest/operations/ebpf/enabling-ebpf to be able
 # to run without kube-proxy
 
 cat <<EOF | kubectl --kubeconfig $admin_kubeconfig --namespace tigera-operator apply -f -
@@ -53,10 +52,21 @@ data:
   KUBERNETES_SERVICE_PORT: "6443"
 EOF
 
-while ! kubectl --kubeconfig $admin_kubeconfig\
-  patch felixconfiguration default --type=merge --patch='{"spec":{"bpfEnabled":true}}'; do 
-    sleep 5s
-done
+# as of v3.30.0 I needed to do this or the install never progressed:
+kubectl --kubeconfig $admin_kubeconfig -n tigera-operator\
+  rollout restart deploy/tigera-operator
+
+if [[ $kube_proxy != "false" ]]; then
+  while ! kubectl --kubeconfig $admin_kubeconfig\
+    patch felixconfiguration default --type=merge --patch='{"spec":{"bpfEnabled":true}}'; do 
+      sleep 5s
+  done
+fi
+
+# Enable eBPF mode
+kubectl --kubeconfig $admin_kubeconfig\
+  patch installation.operator.tigera.io default\
+  --type merge -p '{"spec":{"calicoNetwork":{"linuxDataplane":"BPF"}}}'
 
 echo "waiting (indefinitely) for calico daemonset"
 while true; do

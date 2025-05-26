@@ -1,4 +1,5 @@
 installation:
+  # per https://docs.tigera.io/calico/latest/reference/installation/api#operator.tigera.io%2fv1.CalicoNetworkSpec
   calicoNetwork:
     ipPools:
     - blockSize: 26
