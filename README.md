@@ -139,6 +139,15 @@ To install different add-on versions - change the version in the corresponding d
 
 ## Change Log
 
+Date: 26-May-2025
+Commit: `c538b600`
+
+Significant changes:
+
+1. Addons: Cilium 1.17.4
+
+---
+
 Date: 25-May-2025
 Commit: `04428cee`
 
