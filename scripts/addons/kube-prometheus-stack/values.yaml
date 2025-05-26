@@ -36,3 +36,7 @@ coreDns:
   service:
     selector:
       k8s-app: coredns
+
+prometheus:
+  prometheusSpec:
+    maximumStartupDurationSeconds: 60
