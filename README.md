@@ -140,6 +140,14 @@ To install different add-on versions change the version in the `scripts/addons` 
 ## Change Log
 
 Date: 26-May-2025
+Commit: `87afc243`
+
+Significant changes:
+
+1. Addons: Calico 3.30.0
+
+---
+Date: 26-May-2025
 Commit: `c538b600`
 
 Significant changes:
