@@ -121,19 +121,19 @@ This project has been tested with the tools, components and versions shown in th
 
 ### Add-ons
 
-To install different add-on versions - change the version in the corresponding directory `scripts/addons`.
+To install different add-on versions change the version in the `scripts/addons` directory. (Version updates sometimes require `values.yaml` changes and other tweaks to the install logic.)
 
-| Add-on                   | App Version  | Chart Version |
+| Add-on                              | App Version  | Chart Version |
 |-|-|-|
-| CoreDNS                  | 1.12.2       | 1.42.1 |
-| External DNS             | v0.14.0      | 1.13.1 |
-| Ingress NGINX Controller | 1.12.2       | 4.12.2 |
-| Kube Prometheus Stack    | v0.82.2      | 72.6.0 |
-| Kubernetes Dashboard     | v2.7.0       | 7.12.0 |
-| Metrics Server           | v0.6.4       | 3.11.0 |
-| OpenEBS                  | 3.10.0       | 3.10.0 |
-| Calico networking (Tigera Operator)     | v1.32.5 | v3.27.2 |
-| Cilium networking and Hubble monitoring | 1.17.4 | 1.17.4 |
+| Calico networking (Tigera Operator) | v1.32.5      | v3.27.2 |
+| Cilium networking                   | 1.17.4       | 1.17.4  |
+| CoreDNS                             | 1.12.0       | 1.42.1  |
+| External DNS                        | v0.14.0      | 1.13.1  |
+| Ingress NGINX Controller            | 1.12.2       | 4.12.2  |
+| Kube Prometheus Stack               | v0.82.2      | 72.6.0  |
+| Kubernetes Dashboard                | (multiple)   | 7.12.0  |
+| Metrics Server                      | 0.7.2        | 3.12.2  |
+| OpenEBS Local PV Provisioner        | 4.2.0        | 4.2.0   |
 
 > Static pod container images per: https://kubernetes.io/releases/download/
 
