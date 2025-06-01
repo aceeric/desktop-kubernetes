@@ -69,7 +69,11 @@ if [[ $containerized_cplane -eq 0 ]]; then
   echo "generating kube-apiserver service file"
   sed $script_dir/kube-apiserver.service -e "s|CONTROLLER_IP|$controller_ip|g"\
    | ssh -i $priv_key root@$controller_ip "cat > /etc/systemd/system/kube-apiserver.service"
-  
+
+  echo "configuring static token"
+  ssh -i $priv_key root@$controller_ip "mkdir -p /etc/kubernetes/auth"
+  scp -i $priv_key $script_dir/static-token.csv root@$controller_ip:/etc/kubernetes/auth/
+
   echo "starting kube-apiserver service"
   ssh -i $priv_key root@$controller_ip\
    "systemctl daemon-reload && systemctl enable --now kube-apiserver"
