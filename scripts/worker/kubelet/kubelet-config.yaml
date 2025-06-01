@@ -14,7 +14,6 @@ clusterDNS:
 - 10.32.0.10
 clusterDomain: cluster.local
 containerRuntimeEndpoint: unix:///var/run/containerd/containerd.sock
-#TODO REMOVE podCIDR: PODCIDR
 registerNode: true
 resolvConf: /etc/resolv.conf
 runtimeRequestTimeout: 15m

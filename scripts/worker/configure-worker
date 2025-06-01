@@ -57,7 +57,6 @@ xec install-kubelet\
  --worker-ip=$worker_ip\
  --worker-hostname=$worker_hostname\
  --kubelet-binary=$KUBELET_BINARY\
- --pod-cidr=$pod_cidr\
  --ca-cert=$ca_cert\
  --ca-key=$ca_key
 

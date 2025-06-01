@@ -2,7 +2,7 @@
 
 set -e
 
-long_opts=priv-key:,controller-ip:,worker-ip:,worker-hostname:,kubelet-binary:,pod-cidr:,ca-cert:,ca-key:
+long_opts=priv-key:,controller-ip:,worker-ip:,worker-hostname:,kubelet-binary:,ca-cert:,ca-key:
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 priv_key=
@@ -10,7 +10,6 @@ controller_ip=
 worker_ip=
 worker_hostname=
 kubelet_binary=
-pod_cidr=
 ca_cert=
 ca_key=
 
@@ -39,8 +38,7 @@ scp -i $priv_key $DTKBASE/generated/cert/kubelet-$worker_hostname.pem root@$work
 scp -i $priv_key $DTKBASE/generated/cert/kubelet-$worker_hostname-key.pem root@$worker_ip:/var/lib/kubelet/kubelet-key.pem
 scp -i $priv_key $DTKBASE/generated/kubeconfig/kubelet-$worker_hostname.kubeconfig root@$worker_ip:/var/lib/kubelet/kubeconfig/kubelet.kubeconfig
 scp -i $priv_key $ca_cert root@$worker_ip:/var/lib/kubernetes/
-sed $script_dir/kubelet-config.yaml\
- -e "s|PODCIDR|$pod_cidr|g" | ssh -i $priv_key root@$worker_ip "cat > /var/lib/kubelet/kubelet-config.yaml"
+scp -i $priv_key $script_dir/kubelet-config.yaml root@$worker_ip:/var/lib/kubelet/
 scp -i $priv_key $script_dir/kubelet.service root@$worker_ip:/etc/systemd/system/
 
 echo "Starting kubelet service"
