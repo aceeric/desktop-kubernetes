@@ -1,5 +1,7 @@
 priorityClassName: system-cluster-critical
 
+replicaCount: 2
+
 service:
   clusterIP: 10.32.0.10
 
