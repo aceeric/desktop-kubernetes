@@ -9,7 +9,9 @@ url=https://helm.cilium.io/cilium-$CILIUM_VER.tgz
 tgz=$DTKBASE/binaries/$(basename $url)
 xec download-obj --url=$url --dest=$tgz
 
-controller_ip=$(yq .vms[0].name $config)
+controller_hostname=$(yq .vms[0].name $config)
+virt=$(yq .virt $config)
+controller_ip=$(xec $virt/get-vm-ip $controller_hostname)
 sed "s|K8SSERVICEHOST|$controller_ip|g" $script_dir/values-template.yaml >| $script_dir/values.yaml
 
 admin_kubeconfig=$(yq .cluster.admin-kubeconfig $config)
