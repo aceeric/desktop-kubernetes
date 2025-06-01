@@ -10,9 +10,8 @@ tgz=$DTKBASE/binaries/$(basename $url)
 xec download-obj --url=$url --dest=$tgz
 
 ssl_passthrough=$(yq '.addons[] | select(.name == "ingress-nginx").ssl-passthrough' $config)
-
 if [[ $ssl_passthrough == "true" ]]; then
-  ssl_passthrough="--set controller.extraArgs.enable-ssl-passthrough=true"
+  ssl_passthrough="--set controller.extraArgs.enable-ssl-passthrough="
 else
   ssl_passthrough=""
 fi
