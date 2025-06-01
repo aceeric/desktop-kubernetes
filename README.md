@@ -4,7 +4,7 @@
 
 Desktop Kubernetes is a Linux *Bash* project that provisions a desktop Kubernetes cluster using KVM or VirtualBox - with each cluster node consisting of an Alma, CentOS, or Rocky Linux guest VM. The purpose is to create a local development and testing environment that is 100% compatible with a production-grade Kubernetes environment.
 
-Desktop Kubernetes is the *57 Chevy* of Kubernetes distros: you can take it apart and put it back together with just a few Linux console tools: bash, curl, genisoimage, ssh, scp, tar, openssl, vboxmanage, helm, yq, and kubectl. That being said, **v1.31.0** of this distribution is Kubernetes Certified. See: [CNCF Landscape](https://landscape.cncf.io/?group=certified-partners-and-providers&view-mode=grid&item=platform--certified-kubernetes-distribution--desktop-kubernetes).
+Desktop Kubernetes is the *57 Chevy* of Kubernetes distros: you can take it apart and put it back together with just a few Linux console tools: bash, curl, ssh, scp, tar, openssl, helm, yq, kvm tools (virsh, virt-install, qemu-img), and kubectl. That being said, **v1.31.0** of this distribution is Kubernetes Certified. See: [CNCF Landscape](https://landscape.cncf.io/?group=certified-partners-and-providers&view-mode=grid&item=platform--certified-kubernetes-distribution--desktop-kubernetes).
 
 [<img src="https://www.cncf.io/wp-content/uploads/2020/07/certified_kubernetes_color-1.png" width="90"/>](https://github.com/cncf/k8s-conformance/tree/master/v1.28/desktop-kubernetes)
 
@@ -47,7 +47,7 @@ The following command-line options are supported for the `dtk` script:
 
 ## The `config.yaml` configuration file
 
-The project ships with a `config.yaml` file in the project root that specifies the cluster configuration. The file is structured into the following sections:
+The project has a `config.yaml` file in the repo root that specifies the cluster configuration. The file is structured into the following sections:
 
 1. **k8s:** Kubernetes cluster configuration.
 2. **vbox:** VirtualBox configuration.
@@ -59,7 +59,7 @@ The project ships with a `config.yaml` file in the project root that specifies t
 
 | Key | Description |
 |-|-|
-| `virt` | Options are `virtualbox` and `kvm`. The current specified value is `kvm`. The reason is that kvm is significantly faster to provision VMs than VirtualBox. |
+| `virt` | Options are `virtualbox` and `kvm`. The default value is `kvm`. The reason is that kvm is significantly faster (and simpler) to provision VMs than VirtualBox. |
 | `k8s.containerized-cplane` | If specified, creates the control plane components as static pods on the controller VM like kubeadm, RKE2, et. al. (By default, creates the control plane components as as systemd units.) Allowed values: `all`, or any of: `etcd`, `kube-apiserver`, `kube-proxy`, `kube-scheduler`, `kube-controller-manager` (comma-separated.) E.g.: `etcd,kube-apiserver` |
 | `k8s.cluster-cidr` | Configures CIDR range for Pods. This is applied to the `kube-controller-manager`. (Be aware of `--node-cidr-mask-size...` args which you can't override at this time.) |
 | `k8s.cluster-dns` | Ignored - not yet implemented. |
@@ -72,8 +72,8 @@ The project ships with a `config.yaml` file in the project root that specifies t
 | `kvm.network` | This is set to `nat` in the configuration file. This setting is actually ignored because NAT is the only KVM networking option currently implemented but stating that in the configuration makes it more self-documenting. |
 | `kvm.kickstart` | The kickstart file used when creating a template VM. Kickstart files are in the `kickstarts` directory. The default is `kvm.text.ks.cfg`. |
 | `kvm.os-variant` | Has to align with OS ISO. (Values from `virt-install --os-variant list`.) Default is `almalinux9`. |
-| `vm.linux` | Valid values are `alma9` for Alma 9.5 (the default), `alma8` for Alma 8.10, `centos9` for CentOS 9 Stream, and `rocky` for Rocky Linux. Ignored unless `vm.create-template` is specified. |
-| `vm.create-template` | True/False. Causes the script to create a template VM to clone all the cluster nodes from before bringing up the cluster. (This step by far takes the longest.) If not specified, the script expects to find an existing VM to clone from per the `vm.template-vmname` setting. This option installs the OS using Kickstart. **You must set this to true for the very first cluster you create.** |
+| `vm.linux` | Valid values are `alma9` for Alma 9.5 (the default), `alma8` for Alma 8.10, `centos9` for CentOS 9 Stream, and `rocky` for Rocky Linux. Ignored unless `vm.create-template` is specified. **CentOS and Rocky are un-tested.** (It's on the to-do list.) |
+| `vm.create-template` | True (the  default)/False. Causes the script to create a template VM to clone all the cluster nodes from before bringing up the cluster. (This step by far takes the longest.) If not specified, the script expects to find an existing VM to clone from per the `vm.template-vmname` setting. This option installs the OS using Kickstart. **You must set this to true for the very first cluster you create.** |
 | `vm.template-vmname` | Specifies the template VM name to create - or clone from. |
 | `vms` | This is a list of VMs to create. Each VM in the list specifies the following keys: |
 | `vms[n].name` | The VM Name. |
@@ -94,19 +94,19 @@ This project has been tested with the tools, components and versions shown in th
 | host | Linux desktop | Ubuntu 22.04.5 LTS |
 | host | openssl | 3.0.2 |
 | host | openssh | OpenSSH_8.9p1 |
-| host | genisoimage (used to create the Kickstart ISO) | 1.1.11 |
-| host | Virtual Box / VBoxManage | 7.0.10 |
-| host | Helm | v3.18.0 |
+| host (vbox) | genisoimage (used to create a kickstart ISO) | 1.1.11 |
+| host (vbox) | Virtual Box / VBoxManage | 7.0.10 |
+| host | helm | v3.18.0 |
 | host | kubectl (client only) | v1.33.1 |
 | host | curl | 7.81.0 |
 | host | yq | 4.40.5 |
-| host | virt-install | 4.0.0 |
-| host | virsh | 8.0.0 |
-| host | qemu-img | 6.2.0 |
+| host (kvm) | virt-install / virt-clone | 4.0.0 |
+| host (kvm) | virsh | 8.0.0 |
+| host (kvm) | qemu-img | 6.2.0 |
 | guest VM | Centos ISO | Stream-9-latest-x86_64 |
 | guest VM | Rocky Linux ISO | 8.10 |
 | guest VM | Alma Linux ISO | 8.10 and 9.5 _(9.5 is the defaut)_ |
-| guest VM | Virtual Box Guest Additions ISO | 7.0.18 |
+| guest VM (vbox) | Virtual Box Guest Additions ISO | 7.0.18 |
 | k8s | kube-apiserver | v1.33.1 |
 | k8s | kube-controller-manager | v1.33.1 |
 | k8s | kube-scheduler | v1.33.1 |
@@ -126,6 +126,7 @@ To install different add-on versions change the version in the `scripts/addons` 
 | Add-on                              | App Version  | Chart Version |
 |-|-|-|
 | Calico networking (Tigera Operator) | v3.30.0      | v3.30.0 |
+| Cert Manager                        | v1.17.2      | v1.17.2 |
 | Cilium networking                   | 1.17.4       | 1.17.4  |
 | CoreDNS                             | 1.12.0       | 1.42.1  |
 | External DNS                        | v0.14.0      | 1.13.1  |
@@ -147,6 +148,7 @@ Significant changes:
 1. Addons: Calico 3.30.0
 
 ---
+
 Date: 26-May-2025
 Commit: `c538b600`
 

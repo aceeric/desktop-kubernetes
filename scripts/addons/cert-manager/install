@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+
+config=$1
+
+CERT_MANAGER_VER=v1.17.2
+
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+url=https://charts.jetstack.io/charts/cert-manager-$CERT_MANAGER_VER.tgz
+tgz=$DTKBASE/binaries/$(basename $url)
+xec download-obj --url=$url --dest=$tgz
+
+admin_kubeconfig=$(yq .cluster.admin-kubeconfig $config)
+helm upgrade --install cert-manager $tgz\
+  --namespace cert-manager\
+  --create-namespace\
+  --set crds.enabled=true\
+  --kubeconfig $admin_kubeconfig
