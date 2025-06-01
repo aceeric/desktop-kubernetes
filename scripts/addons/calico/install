@@ -25,7 +25,6 @@ for ((i = 0; i < $(yq '.vms | length' $config); ++i)); do
   # last eyeballed on 26-May-2025
   scp -i $priv_key $script_dir/calico.conf root@$vmip:/etc/NetworkManager/conf.d/calico.conf
   ssh -i $priv_key root@$vmip "systemctl daemon-reload && systemctl restart NetworkManager"
-EOF
 done
 
 sed "s|CLUSTERCIDR|$cluster_cidr|" $script_dir/values-template.yaml >| $script_dir/values.yaml
