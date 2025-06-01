@@ -9,6 +9,7 @@ addons:
   - name: kube-prometheus-stack
   - name: kubernetes-dashboard
   - name: ingress-nginx
+    #ssl-passthrough: true
 k8s:
   containerized-cplane:
   cluster-cidr: 10.200.0.0/16
