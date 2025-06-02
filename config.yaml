@@ -4,6 +4,7 @@ addons:
   #- name: calico
   - name: cilium
   - name: coredns
+  - name: cert-manager
   - name: openebs
   - name: metrics-server
   - name: kube-prometheus-stack

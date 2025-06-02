@@ -7,3 +7,4 @@
 2. Support https://github.com/flannel-io/flannel#deploying-flannel-with-helm
 3. See scripts/worker/containerd/install-containerd - is the networking config still needed
 4. Add auth side-car to kube dash
+5. Alma 9.5 no longer available - now its 9.6
