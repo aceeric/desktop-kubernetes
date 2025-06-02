@@ -2,18 +2,18 @@
 
 config=$1
 
-COREDNS_VER=1.42.1
+COREDNS_VER=1.42.2
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 url=https://github.com/coredns/helm/releases/download/coredns-$COREDNS_VER/coredns-$COREDNS_VER.tgz
+namespace=kube-system
 tgz=$DTKBASE/binaries/$(basename $url)
 xec download-obj --url=$url --dest=$tgz
 
 admin_kubeconfig=$(yq .cluster.admin-kubeconfig $config)
-helm upgrade --install coredns\
-  --namespace kube-system\
+helm upgrade --install coredns $tgz\
+  --namespace $namespace\
   --create-namespace\
   --kubeconfig $admin_kubeconfig\
   --wait\
-  --values $script_dir/values.yaml\
-  $tgz
+  --values $script_dir/values.yaml

@@ -128,7 +128,7 @@ To install different add-on versions change the version in the `scripts/addons` 
 | Calico networking (Tigera Operator) | v3.30.0      | v3.30.0 |
 | Cert Manager                        | v1.17.2      | v1.17.2 |
 | Cilium networking                   | 1.17.4       | 1.17.4  |
-| CoreDNS                             | 1.12.0       | 1.42.1  |
+| CoreDNS                             | 1.12.0       | 1.42.2  |
 | External DNS                        | v0.14.0      | 1.13.1  |
 | Ingress NGINX Controller            | 1.12.2       | 4.12.2  |
 | Kube Prometheus Stack               | v0.82.2      | 72.6.0  |
