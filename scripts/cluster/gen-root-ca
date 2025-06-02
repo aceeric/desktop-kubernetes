@@ -1,13 +1,16 @@
 #!/usr/bin/env bash
 
 # Generates root CA cert and key if they don't already exist. These will be used to sign
-# every other cert generated for the cluster.
+# every other cert generated for the cluster. There's no need to continually regenerate these
+# so if they already exist just keep re-using them.
 #
 # Outputs:
 #   - $DTKBASE/generated/cert/ca-key.pem
 #   - $DTKBASE/generated/cert/ca.pem
 
-if [[ -f $DTKBASE/generated/cert/ca{,-key}.pem ]]; then
+mapfile -t certfiles < <(ls -1 $DTKBASE/generated/cert/ca{,-key}.pem)
+
+if [[ "${#certfiles[@]}" -eq 2 ]]; then
   echo "CA cert and key already exist - skipping"
   exit
 fi
