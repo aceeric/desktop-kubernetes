@@ -47,17 +47,18 @@ Version incompatibilities may not be an issue. You have to use your judgement. (
 
 ## Create the cluster
 
-If all requirements are reasonably satistfied you create a cluster by running the `dtk` script which in turn reads the cluster configuration from `config.yaml`. By default the `config.yaml` installs Cilium and other add-ons which are not needed for the conformance test. Modify the `config.yaml` to only install the Calico and CoreDNS add-ons:
+If all requirements are reasonably satistfied you create a cluster by running the `dtk` script which in turn reads the cluster configuration from `config.yaml`. By default the `config.yaml` installs several add-ons which are not needed for the conformance test. Modify the `config.yaml` to only install the Cilium and CoreDNS add-ons:
 
-```
+```shell
 sed -i""\
-  -e "s/#- name: calico/- name: calico/"\
-  -e "/- name: cilium/d"\
+  -e "/- name: calico/d"\
+  -e "/- name: cert-manager/d"\
   -e "/- name: openebs/d"\
   -e "/- name: metrics-server/d"\
   -e "/- name: kube-prometheus-stack/d"\
   -e "/- name: kubernetes-dashboard/d"\
   -e "/- name: ingress-nginx/d"\
+  -e "/#ssl-passthrough: true/d"\
   config.yaml
 ```
 
@@ -66,39 +67,18 @@ Then provision the VMs, and the Kubernetes cluster:
 $ ./dtk
 ```
 
-The example above will create the cluster by first creating a template VM named `alma9`. It will then clone that template VM into three VMs: `vm1`, `vm2`, and `vm3`, and then proceed to install Kubernetes, Calico CNI, and CoreDNS. On completion, it will display a message telling you how to set your KUBECONFIG environment variable to access the cluster as a cluster admin. The KVM networking is NAT. This provides host-to-guest, guest-to-guest, and guest-to-internet. The example also installs calico cluster networking.
+The example above will create the cluster by first creating a template VM named `alma9`. It will then clone that template VM into three VMs: `vm1`, `vm2`, and `vm3`, and then proceed to install Kubernetes, Cilium CNI, and CoreDNS. On completion, it will display a message telling you how to set your `KUBECONFIG` environment variable to access the cluster as a cluster admin. The KVM networking is NAT. This provides host-to-guest, guest-to-guest, and guest-to-internet.
 
 Wait for all pods to be running before proceeding.
 
 ## Run the conformance tests
 
-My procedure follows the guidance at: https://github.com/cncf/k8s-conformance/blob/master/instructions.md
-
-### Here are the steps I performed:
+The project uses Hydrophone:
 
 ```shell
-SONOVER=0.57.3
-SONOGZIP=https://github.com/vmware-tanzu/sonobuoy/releases/download/v$SONOVER/sonobuoy_${SONOVER}_linux_amd64.tar.gz
-rm -f conformance/sonobuoy
-curl -sL $SONOGZIP | tar zxvf - -C conformance sonobuoy
-conformance/sonobuoy run --mode=certified-conformance --timeout=30000
+hydrophone --conformance --parallel 5
 ```
 
-###  Watch the tests run in one console window
-```
-watch "conformance/sonobuoy status --json | jq"
-```
+## Verify the test results
 
-###  Watch the logs as the tests run in another console window
-```
-conformance/sonobuoy logs -f
-```
-
-###  Get the test results upon completion
-```
-outfile=$(conformance/sonobuoy retrieve) &&\
-  mv $outfile conformance &&\
-  rm -rf conformance/results &&\
-  mkdir -p conformance/results &&\
-  tar xzf conformance/$outfile -C conformance/results
-```
+Test results are placed in the current working directory by `hydrophone`.

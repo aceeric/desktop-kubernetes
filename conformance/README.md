@@ -1,75 +1,47 @@
-# Sonobuoy conformance testing
-31-May-2025
+# Conformance testing
+_03-Jun-2025_
 
-This README assumes you're in the repo root. E.g.:
+This README assumes you have git cloned the repo and the repo root is the current working directory. This article documents the conformance submission process.
 
-```
-$ pwd
-~/projects/desktop-kubernetes
-```
+## Get Hydrophone
 
-# Get Sonobuoy
-```
-SONOVER=0.57.3
-SONOGZIP=https://github.com/vmware-tanzu/sonobuoy/releases/download/v$SONOVER/sonobuoy_${SONOVER}_linux_amd64.tar.gz
-rm -f conformance/sonobuoy
-curl -sL $SONOGZIP | tar zxvf - -C conformance sonobuoy
-```
+The project uses [Hydrophone](https://www.kubernetes.dev/blog/2024/05/23/introducing-hydrophone/) to run the conformance tests.
 
-## Smoke test - should run one test successfully
-
-```
-conformance/sonobuoy run --mode=quick
-watch 'conformance/sonobuoy status --json | jq'
-conformance/sonobuoy delete --wait
+```shell
+go install sigs.k8s.io/hydrophone@v0.7.0
 ```
 
 ## Run conformance tests
 
-```
-conformance/sonobuoy run --mode=certified-conformance --timeout=0
-```
-
-## Watch the tests run in one console window
-
-```
-watch 'conformance/sonobuoy status --json | jq'
+```shell
+hydrophone --conformance --parallel 5
 ```
 
-## Watch the logs in another console window
+The test results are generated into the current working directory.
 
-```
-conformance/sonobuoy logs -f
-```
+## Move test results to submission folder
 
-## Get the test results upon completion
-
-```
-outfile=$(conformance/sonobuoy retrieve) &&\
- mv $outfile conformance &&\
- rm -rf conformance/results &&\
- mkdir -p conformance/results &&\
- tar xzf conformance/$outfile -C conformance/results
+```shell
+rm conformance/conformance-submission/{e2e.log,junit_01.xml}
+mv e2e.log junit_01.xml conformance/conformance-submission
 ```
 
 ## Clean up the cluster
 
+```shell
+hydrophone --cleanup
 ```
-conformance/sonobuoy delete --wait
-```
 
-## Certification submission process
+## Edit documents
 
-### This repo
+Update any new version numbers, etc.:
 
-1. Download Sono / Update Sono version in main README / Run Sono per above. If PASS:
-2. Copy two Sono result files to a staging dir in this project:
-   ```
-   find conformance/results \( -name e2e.log -o -name junit_01.xml \) | xargs -I% cp % conformance/conformance-submission
-   ```
-3. Hand edit this README, plus `PRODUCT.yaml` and `README.md` in `conformance/conformance-submission` as needed
+1. This README
+2. The Project README
+3. `PRODUCT.yaml` and `README.md` in `conformance/conformance-submission`
 4. Git commit and push
-5. Tag `desktop-kubernetes` with a tag matching the Kubernetes version: `git tag -a v1.33.1 -m "Kubernetes 1.33.1 passes Sonobuoy conformance v0.57.3"`
+5. Tag `desktop-kubernetes` with a tag matching the Kubernetes version. E.g.:
+   `git tag -a v1.33.1 -m "Kubernetes 1.33.1 passes conformance using Hydrophone v0.7.0"`
 6. Git push the tag: `git push origin v1.33.1`
 
 ## Conformance fork
@@ -82,16 +54,16 @@ E.g.: `~/projects/k8s-conformance-esace-fork`
 4. Create directory: `mkdir ./v1.33/desktop-kubernetes`
 5. Populate the directory: `cp ~/projects/desktop-kubernetes/conformance/conformance-submission/* ./v1.33/desktop-kubernetes`
 6. Verify
-   ```
+   ```shell
    $ ls -l ./v1.33/desktop-kubernetes
-   total 2264
-   -rw-r--r-- 1 eace eace    7883 Sep  3 19:45 e2e.log
-   -rw-r--r-- 1 eace eace 2296506 Sep  3 19:45 junit_01.xml
-   -rw-rw-r-- 1 eace eace     549 Sep  3 19:45 PRODUCT.yaml
-   -rw-rw-r-- 1 eace eace    4253 Sep  3 19:45 README.md
+   total 2312
+   -rw-rw-r-- 1 eace eace    7957 Jun  3 18:19 e2e.log
+   -rw-rw-r-- 1 eace eace 2348748 Jun  3 18:19 junit_01.xml
+   -rw-rw-r-- 1 eace eace     549 Jun  3 18:19 PRODUCT.yaml
+   -rw-rw-r-- 1 eace eace    4037 Jun  3 18:19 README.md
    ```
 7. Git add and commit to the branch with message AND signoff:
-   ```
+   ```shell
    git commit -m 'Conformance results for v1.33/desktop-kubernetes
    Signed-off-by: Eric Ace <24485843+aceeric@users.noreply.github.com>'
    ```

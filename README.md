@@ -140,6 +140,15 @@ To install different add-on versions change the version in the `scripts/addons` 
 
 ## Change Log
 
+Date: 03-June-2025
+Tag: `v1.33.1`
+
+Significant changes:
+
+1. Kubernetes 1.33.1 passes conformance using Hydrophone v0.7.0
+
+---
+
 Date: 26-May-2025
 Commit: `87afc243`
 
