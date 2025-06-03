@@ -117,7 +117,7 @@ This project has been tested with the tools, components and versions shown in th
 | k8s | runc | v1.3.0 |
 | k8s | cni plugins | v1.7.1 |
 | k8s | containerd | 2.1.1 |
-| conformance | Sonobuoy conformance | v0.57.2 |
+| conformance | Hydrophone | v0.7.0 |
 
 ### Add-ons
 
