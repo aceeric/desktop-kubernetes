@@ -72,7 +72,7 @@ The project has a `config.yaml` file in the repo root that specifies the cluster
 | `kvm.network` | This is set to `nat` in the configuration file. This setting is actually ignored because NAT is the only KVM networking option currently implemented but stating that in the configuration makes it more self-documenting. |
 | `kvm.kickstart` | The kickstart file used when creating a template VM. Kickstart files are in the `kickstarts` directory. The default is `kvm.text.ks.cfg`. |
 | `kvm.os-variant` | Has to align with OS ISO. (Values from `virt-install --os-variant list`.) Default is `almalinux9`. |
-| `vm.linux` | Valid values are `alma9` for Alma 9.5 (the default), `alma8` for Alma 8.10, `centos9` for CentOS 9 Stream, and `rocky` for Rocky Linux. Ignored unless `vm.create-template` is specified. **CentOS and Rocky are un-tested.** (It's on the to-do list.) |
+| `vm.linux` | Valid values are `alma9` for Alma 9.6 (the default), `alma8` for Alma 8.10, `centos9` for CentOS 9 Stream, and `rocky` for Rocky Linux. Ignored unless `vm.create-template` is specified. **CentOS and Rocky are un-tested.** (It's on the to-do list.) |
 | `vm.create-template` | True (the  default)/False. Causes the script to create a template VM to clone all the cluster nodes from before bringing up the cluster. (This step by far takes the longest.) If not specified, the script expects to find an existing VM to clone from per the `vm.template-vmname` setting. This option installs the OS using Kickstart. **You must set this to true for the very first cluster you create.** |
 | `vm.template-vmname` | Specifies the template VM name to create - or clone from. |
 | `vms` | This is a list of VMs to create. Each VM in the list specifies the following keys: |
@@ -105,7 +105,7 @@ This project has been tested with the tools, components and versions shown in th
 | host (kvm) | qemu-img | 6.2.0 |
 | guest VM | Centos ISO | Stream-9-latest-x86_64 |
 | guest VM | Rocky Linux ISO | 8.10 |
-| guest VM | Alma Linux ISO | 8.10 and 9.5 _(9.5 is the defaut)_ |
+| guest VM | Alma Linux ISO | 8.10 and 9.6 _(9.6 is the defaut)_ |
 | guest VM (vbox) | Virtual Box Guest Additions ISO | 7.0.18 |
 | k8s | kube-apiserver | v1.33.1 |
 | k8s | kube-controller-manager | v1.33.1 |
@@ -139,6 +139,14 @@ To install different add-on versions change the version in the `scripts/addons` 
 > Static pod container images per: https://kubernetes.io/releases/download/
 
 ## Change Log
+
+Date: 22-June-2025
+Commit: `cceb1762`
+
+Significant changes:
+
+1. Alma to 9.6
+
 
 Date: 03-June-2025
 Tag: `v1.33.1`
