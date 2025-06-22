@@ -1,7 +1,7 @@
 # Change versions here and they will propagate throughout the project
 
 ALMA8_VER=8.10
-ALMA9_VER=9.5
+ALMA9_VER=9.6
 CNI_PLUGINS_VER=v1.7.1
 CONTAINERD_VER=2.1.1
 CRICTL_VER=v1.33.0
@@ -15,7 +15,7 @@ RUNC_VER=v1.3.0
 
 ALMA8_ISO_DOWNLOAD=https://repo.almalinux.org/almalinux/$ALMA8_VER/isos/x86_64/AlmaLinux-$ALMA8_VER-x86_64-dvd.iso
 ALMA8_ISO_FILE=$DTKBASE/binaries/AlmaLinux-$ALMA8_VER-x86_64-dvd.iso
-ALMA9_ISO_DOWNLOAD=https://repo.almalinux.org/almalinux/$ALMA9_VER/isos/x86_64/AlmaLinux-$ALMA9_VER-x86_64-dvd.iso
+ALMA9_ISO_DOWNLOAD=https://raw.repo.almalinux.org/almalinux/9/isos/x86_64/AlmaLinux-$ALMA9_VER-x86_64-dvd.iso
 ALMA9_ISO_FILE=$DTKBASE/binaries/AlmaLinux-$ALMA9_VER-x86_64-dvd.iso
 CENTOS9_ISO_DOWNLOAD=http://mirror.stream.centos.org/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-dvd1.iso
 CENTOS9_ISO_FILE=$DTKBASE/binaries/CentOS-Stream-9-latest-x86_64-dvd1.iso
