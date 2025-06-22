@@ -147,6 +147,7 @@ Significant changes:
 
 1. Alma to 9.6
 
+---
 
 Date: 03-June-2025
 Tag: `v1.33.1`
