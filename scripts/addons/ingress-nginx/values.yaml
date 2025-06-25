@@ -5,3 +5,4 @@ controller:
   service:
     type: NodePort
   kind: DaemonSet
+  allowSnippetAnnotations: true
