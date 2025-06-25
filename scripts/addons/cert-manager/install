@@ -15,3 +15,5 @@ helm upgrade --install cert-manager $tgz\
   --create-namespace\
   --set crds.enabled=true\
   --kubeconfig $admin_kubeconfig
+
+kubectl --kubeconfig $admin_kubeconfig apply -f $script_dir/selfsigned-cluster-issuer.yaml

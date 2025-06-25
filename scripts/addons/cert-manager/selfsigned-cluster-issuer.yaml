@@ -1,0 +1,36 @@
+# from https://cert-manager.io/docs/configuration/selfsigned/
+# last checked: 25-June-2025
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: dtk-selfsigned-issuer
+spec:
+  selfSigned: {}
+---
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: dtk-ca-issuer
+spec:
+  ca:
+    secretName: dtk-root-secret
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: dtk-selfsigned-ca
+  namespace: cert-manager
+spec:
+  isCA: true
+  commonName: dtk-selfsigned-ca
+  dnsNames:
+    - dtk.io
+  secretName: dtk-root-secret
+  privateKey:
+    algorithm: ECDSA
+    size: 256
+  issuerRef:
+    name: dtk-selfsigned-issuer
+    kind: ClusterIssuer
+    group: cert-manager.io
