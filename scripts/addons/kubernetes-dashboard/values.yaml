@@ -1,3 +1,21 @@
+---
+app:
+  ingress:
+    enabled: true
+    hosts:
+      - dtk.io
+    ingressClassName: nginx
+    path: /dashboard
+    issuer:
+      name: dtk-ca-issuer
+      scope: cluster
+    annotations:
+      # Use the static admin token configured in kube-apiserver. See:
+      # scripts/control-plane/kube-apiserver/static-token.csv
+      nginx.ingress.kubernetes.io/configuration-snippet: |
+        proxy_set_header Authorization "Bearer 18bb628a-9f6c-4cc6-aae3-3bf15a89ff62";
+
+# Add a NodePort for access to the dashboard too
 extras:
   manifests:
     - apiVersion: v1
