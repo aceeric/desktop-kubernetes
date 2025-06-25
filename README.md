@@ -140,6 +140,17 @@ To install different add-on versions change the version in the `scripts/addons` 
 
 ## Change Log
 
+Date: 25-June-2025
+Commit: `132e3f62` to `12c78912`
+
+Significant changes:
+
+1. Kubernetes Dashboard: Expose via Ingress. Pass static admin token in auth header to bypass login. Note - The ingress needs a host so I went with host `dtk.io` which unfortunately at present requires hand-editing `/etc/hosts`. (I don't have a DNS solution yet to make newly provisioned clusters DNS-addressable.)
+2. Ingress-Nginx: Allow snippet annotations by default.
+3. Cert-Manager: Create a `ClusterIssuer`.
+
+---
+
 Date: 22-June-2025
 Commit: `cceb1762`
 
