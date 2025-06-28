@@ -6,3 +6,5 @@ controller:
     type: NodePort
   kind: DaemonSet
   allowSnippetAnnotations: true
+  config:
+    annotations-risk-level: Critical
