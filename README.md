@@ -140,6 +140,15 @@ To install different add-on versions change the version in the `scripts/addons` 
 
 ## Change Log
 
+Date: 28-June-2025
+Commit: `4ddd2e63`
+
+Significant changes:
+
+1. Corrected an omission in the prior commit: Re-add ` annotations-risk-level: Critical` to Nginx so it will accept the Kubernetes Dashboard bearer token as a snippet.
+
+---
+
 Date: 25-June-2025
 Commit: `132e3f62` to `12c78912`
 
