@@ -1,8 +1,4 @@
-provider: webhook
-
-extraArgs:
-- --webhook-provider-url=http://192.168.0.49:5000
-
-# v0.14.0 has the webhook functionality
-image:
-  tag: v0.14.0
+provider:
+  name: webhook
+  webhook:
+    sidecar: false

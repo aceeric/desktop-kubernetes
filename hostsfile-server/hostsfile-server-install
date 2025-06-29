@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+#
+# Install the server as a systemd service using this script. Run this script from
+# the root of the cloned repository.
+#
+
+if [[ $(id -u) -ne 0 ]]; then
+  echo "must run as root"
+  exit 1
+fi
+
+cp etchosts/hostsfile-server.py /bin/
+cp etchosts/hostsfile-server.service /etc/systemd/system/
+systemctl enable --now hostsfile-server
