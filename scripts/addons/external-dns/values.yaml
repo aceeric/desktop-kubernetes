@@ -1,8 +1,9 @@
-provider: webhook
-
-extraArgs:
-- --webhook-provider-url=http://192.168.0.49:5000
-
-# v0.14.0 has the webhook functionality
-image:
-  tag: v0.14.0
+provider:
+  name: webhook
+  # the webhook sidecar will get removed by the post-renderer so these
+  # values are meaningless. They're just needed otherwise the chart will
+  # will fail.
+  webhook:
+    image:
+      repository: foobar
+      tag: frobozz

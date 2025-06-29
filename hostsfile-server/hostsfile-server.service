@@ -1,0 +1,13 @@
+[Unit]
+Description=Hosts file synchronizer webhook for external-dns
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/hostsfile-server.py
+Environment=PYTHONUNBUFFERED=1
+Type=simple
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target

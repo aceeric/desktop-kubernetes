@@ -3,3 +3,4 @@ conformance/results
 conformance/*.gz
 generated/*
 scratch/*
+.vscode/

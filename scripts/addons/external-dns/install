@@ -2,18 +2,30 @@
 
 config=$1
 
-EXTDNS_VER=1.13.1
+EXTDNS_VER=1.19.0
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 url=https://github.com/kubernetes-sigs/external-dns/releases/download/external-dns-helm-chart-$EXTDNS_VER/external-dns-$EXTDNS_VER.tgz
 tgz=$DTKBASE/binaries/$(basename $url)
 xec download-obj --url=$url --dest=$tgz
 
+extra_args=""
+dns_enabled=$(yq .dns.enabled $config)
+
+if [[ "$dns_enabled" == "true" ]]; then
+  dns_host_ip=$(yq .dns.host-ip $config)
+  dns_webhook_port=$(yq .dns.webhook-port $config)
+  dns_domain=$(yq .dns.domain $config)
+  curl -X POST "http://$dns_host_ip:$dns_webhook_port/domains" -d "$dns_domain"
+  extra_args="--set extraArgs={--webhook-provider-url=http://$dns_host_ip:$dns_webhook_port}"
+fi
+
 admin_kubeconfig=$(yq .cluster.admin-kubeconfig $config)
-helm upgrade --install external-dns\
+helm upgrade --install external-dns $tgz\
   --namespace external-dns\
   --create-namespace\
   --kubeconfig $admin_kubeconfig\
-  --wait\
   --values $script_dir/values.yaml\
-  $tgz
+  $extra_args\
+  --post-renderer $script_dir/post-render.py\
+  --wait
