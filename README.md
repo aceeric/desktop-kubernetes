@@ -140,6 +140,15 @@ To install different add-on versions change the version in the `scripts/addons` 
 
 ## Change Log
 
+Date: 02-July-2025
+Commit: `7f6d561f`
+
+Significant changes:
+
+1. Update README to reflect current 1.33.1 is formally certified.
+
+---
+
 Date: 28-June-2025
 Commit: `4ddd2e63`
 
