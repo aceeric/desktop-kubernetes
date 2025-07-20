@@ -1,4 +1,24 @@
 #!/usr/bin/env python3
+#
+# Parses a config.yaml file like the one included in the project root. Emanates
+# a series of bash variable assigment statements. To understand what this script
+# does, just run this from the repo root:
+#
+# scripts/helpers/parse-config.py ./config.yaml
+#
+# This script is intended to be sourced by the 'dtk' script to set script variables.
+# For example, if 'config.yaml' has:
+#
+# kvm:
+#   kickstart: kvm.text.ks.cfg
+#
+# then this script emanates a line:
+#
+# kvm_kickstart=kvm.text.ks.cfg
+#
+# Not all keys in the config file are processed. Only certain ones that the 'dtk'
+# script cares about.
+#
 
 import yaml, sys, os
 
