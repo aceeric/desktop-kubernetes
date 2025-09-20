@@ -1,5 +1,12 @@
 # Change Log
 
+## 19-Sep-2025
+Commit: `84b73db`
+
+1. Kubernetes 1.34.1, etcd v3.6.5, crictl v1.34.0, runc v1.3.1, cni plugins v1.8.0, containerd 2.1.4.
+
+---
+
 ## 26-July-2025
 Commit: `85b2626`
 
