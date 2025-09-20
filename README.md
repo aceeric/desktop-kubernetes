@@ -107,16 +107,16 @@ This project has been tested with the tools, components and versions shown in th
 | guest VM | Rocky Linux ISO | 8.10 |
 | guest VM | Alma Linux ISO | 8.10 and 9.6 _(9.6 is the defaut)_ |
 | guest VM (vbox) | Virtual Box Guest Additions ISO | 7.0.18 |
-| k8s | kube-apiserver | v1.33.1 |
-| k8s | kube-controller-manager | v1.33.1 |
-| k8s | kube-scheduler | v1.33.1 |
-| k8s | kubelet | v1.33.1 |
-| k8s | kube-proxy (if installed) | v1.33.1 |
-| k8s | etcd | v3.6.0 |
-| k8s | crictl | v1.33.0 |
-| k8s | runc | v1.3.0 |
-| k8s | cni plugins | v1.7.1 |
-| k8s | containerd | 2.1.1 |
+| k8s | kube-apiserver | 1.34.1 |
+| k8s | kube-controller-manager | 1.34.1 |
+| k8s | kube-scheduler | 1.34.1 |
+| k8s | kubelet | 1.34.1 |
+| k8s | kube-proxy (if installed) | 1.34.1 |
+| k8s | etcd | v3.6.5 |
+| k8s | crictl | v1.34.0 |
+| k8s | runc | v1.3.1 |
+| k8s | cni plugins | v1.8.0 |
+| k8s | containerd | 2.1.4 |
 | conformance | Hydrophone | v0.7.0 |
 
 ### Add-ons
