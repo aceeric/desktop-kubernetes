@@ -24,9 +24,9 @@ There will likely be differences and you have to decide whether the differences 
 
 > See the full documentation (link below) to know which tools are specific to KVM vs VirtualBox.
 
-The `dtk` script in the repo root is what you run. If you supply no arguments, the script will configure the cluster based on the `config.yaml` file in the repo root resulting in a three node Alma Linux cluster consisting of one controller and two workers.
+The `dtk` script in the repo root is what you run. If you supply no arguments, the script will use KVM to provision and configure a cluster based on the `config.yaml` file in the repo root resulting in a three node Alma Linux cluster consisting of one controller and two workers.
 
-Once the cluster comes up, the script will display a message telling you how to set your `KUBECONFIG` environment variable in order to access the cluster. It will also display a message showing how to SSH into each node. (There's also a helper script `sshto` that you can use for that.)
+Once the cluster comes up, the script will display a message telling you how to set your `KUBECONFIG` environment variable to access the cluster. It will also display a message showing how to SSH into each node. (There's also a helper script `sshto` that you can use for that.)
 
 ## Full Documentation
 
