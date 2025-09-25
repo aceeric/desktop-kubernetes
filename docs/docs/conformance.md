@@ -69,4 +69,4 @@ This section assumes you've forked the conformance repo per their guidance. E.g.
    Signed-off-by: Eric Ace <24485843+aceeric@users.noreply.github.com>'
    ```
 1. Push to GitHub.
-1. Create a Pull Request to https://github.com/cncf/k8s-conformance from the branch in the fork. For detailed instructions, see [creating-a-pull-request-from-a-fork](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/.proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request-from-a-fork).
+1. Create a Pull Request to https://github.com/cncf/k8s-conformance from the branch in the fork. For detailed instructions, see [creating-a-pull-request-from-a-fork](https://docs.github.com/en/pull-requests/collaborating-with-pull-requests/proposing-changes-to-your-work-with-pull-requests/creating-a-pull-request-from-a-fork) on the GitHub _Collaborating with pull requests_ documentation page.

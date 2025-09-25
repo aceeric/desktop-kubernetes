@@ -8,7 +8,7 @@ The project includes a `config.yaml` file in the repo root that specifies the cl
 | `k8s` | Kubernetes cluster configuration. |
 | `kvm` | KVM configuration. |
 | `vbox` | VirtualBox configuration. |
-| `vm` | VM configuration (common to KVM & VBox) |
+| `vm` | VM configuration (common to KVM & VirtualBox.) |
 | `vms` | A list of VMs to create for the cluster, and their characteristics. |
 | `cluster` | Populated by _Desktop Kubernetes_ when a new cluster is provisioned. |
 
@@ -16,7 +16,7 @@ There is one top-level key with no subkeys: `virt`. This key determines whether 
 
 ## The `addons` Section
 
-This section enables or disables the addons included with the CLI. See the [Addons](addons.md) section for more details. These are the default values:
+This section enables or disables the addons included with the CLI. See the [Addons](add-ons.md) section for more details. These are the default values:
 
 | Key | Enabled by default? |
 |-|-|
@@ -108,4 +108,4 @@ This section has a list of dictionaries.
 
 | Key | Description |
 |-|-|
-| `cluster` | Contains cluster information for the add-ons. Populated (overwritten) by `scripts/addons/install-addons`. |
+| `cluster` | Contains cluster information for the add-ons. Populated (overwritten) by `scripts/addons/install-addons`. Avoid editing this as it will be overwritten whenever a cluster is provisioned. |
