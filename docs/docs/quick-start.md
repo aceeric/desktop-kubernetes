@@ -1,6 +1,6 @@
 # Quick Start
 
-Run the `dtk` script in the repo root. If you supply no arguments, the script will configure the cluster based on the `config.yaml` file in the project root resulting in a three node Alma Linux cluster consisting of one controller and two workers. See the [Configuration](the-configyaml-configuration-file.md) section for details.
+Run the `dtk` script in the repo root. If you supply no arguments, the script will use KVM to provision and configure a cluster based on the `config.yaml` file in the project root resulting in a three node Alma Linux cluster consisting of one controller and two workers. See the [Configuration](configuration.md) section for details.
 
 I recommend you run first with just the `--check-compatibility` option to check the versions of the CLIs used by the scripts (curl, etc.) against the tested versions. E.g.:
 
