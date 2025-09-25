@@ -1,0 +1,35 @@
+site_name: Desktop Kubernetes
+site_url: https://aceeric.github.io/desktop-kubernetes
+
+nav:
+  - Introduction: index.md
+  - Quick Start: quick-start.md
+  - Command Line Options: command-line-options.md
+  - Configuration: configuration.md
+  - Add-Ons: add-ons.md
+  - Components and Versions: components-and-versions.md
+  - Conformance: conformance.md
+  - Design: design.md
+
+theme:
+  name: material
+  features:
+    - navigation.footer
+
+repo_url: https://github.com/aceeric/desktop-kubernetes
+
+plugins:
+  - search
+
+markdown_extensions:
+  - attr_list:
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - toc:
+      permalink: true
+
+extra_css:
+  - extra.css
