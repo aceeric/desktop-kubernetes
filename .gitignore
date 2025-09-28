@@ -1,6 +1,6 @@
-conformance/sonobuoy
-conformance/results
-conformance/*.gz
 generated/*
 scratch/*
 .vscode/
+
+# supports having multiple configs like my-cluster.config.yaml, etc.
+*.config.yaml
