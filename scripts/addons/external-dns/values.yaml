@@ -5,5 +5,5 @@ provider:
   # will fail.
   webhook:
     image:
-      repository: foobar
-      tag: frobozz
+      repository: slug
+      tag: slug

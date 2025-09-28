@@ -7,6 +7,7 @@ nav:
   - Command Line Options: command-line-options.md
   - Configuration: configuration.md
   - Add-Ons: add-ons.md
+  - External DNS: external-dns.md
   - Components and Versions: components-and-versions.md
   - Conformance: conformance.md
   - Design: design.md
@@ -30,6 +31,9 @@ markdown_extensions:
           format: !!python/name:pymdownx.superfences.fence_code_format
   - toc:
       permalink: true
+  - admonition:
+  - pymdownx.details:
+  - pymdownx.superfences:
 
 extra_css:
   - extra.css

@@ -9,16 +9,17 @@ url=https://github.com/kubernetes-sigs/external-dns/releases/download/external-d
 tgz=$DTKBASE/binaries/$(basename $url)
 xec download-obj --url=$url --dest=$tgz
 
-extra_args=""
-dns_enabled=$(yq .dns.enabled $config)
+controller_hostname=$(yq .vms[0].name $config)
+virt=$(yq .virt $config)
+controller_ip=$(xec $virt/get-vm-ip $controller_hostname)
 
-if [[ "$dns_enabled" == "true" ]]; then
-  dns_host_ip=$(yq .dns.host-ip $config)
-  dns_webhook_port=$(yq .dns.webhook-port $config)
-  dns_domain=$(yq .dns.domain $config)
-  curl -X POST "http://$dns_host_ip:$dns_webhook_port/domains" -d "$dns_domain"
-  extra_args="--set extraArgs={--webhook-provider-url=http://$dns_host_ip:$dns_webhook_port}"
-fi
+dns_host_ip=$(yq .dns.host-ip $config)
+dns_webhook_port=$(yq .dns.webhook-port $config)
+dns_domain=$(yq .dns.domain $config)
+
+# configure the webhook server
+curl -X POST "http://$dns_host_ip:$dns_webhook_port/domains" -d "$dns_domain"
+curl -X POST "http://$dns_host_ip:$dns_webhook_port/clusterip" -d "$controller_ip"
 
 admin_kubeconfig=$(yq .cluster.admin-kubeconfig $config)
 helm upgrade --install external-dns $tgz\
@@ -26,6 +27,6 @@ helm upgrade --install external-dns $tgz\
   --create-namespace\
   --kubeconfig $admin_kubeconfig\
   --values $script_dir/values.yaml\
-  $extra_args\
+  --set extraArgs={--webhook-provider-url=http://$dns_host_ip:$dns_webhook_port}\
   --post-renderer $script_dir/post-render.py\
   --wait

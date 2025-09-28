@@ -6,6 +6,7 @@ The project includes a `config.yaml` file in the repo root that specifies the cl
 |-|-|
 | `addons` | A list of cluster add-ons to install, e.g.: CNI, CoreDNS, etc. |
 | `k8s` | Kubernetes cluster configuration. |
+| `dns` | Configuration for the _External DNS_ Add-On. |
 | `kvm` | KVM configuration. |
 | `vbox` | VirtualBox configuration. |
 | `vm` | VM configuration (common to KVM & VirtualBox.) |
@@ -60,6 +61,15 @@ k8s:
         skip_verify = true
 ```
 
+## The `dns` Section
+
+The `dns` section configures the External-DNS Add-On. _Desktop Kubernetes_ uses the External-DNS Add-On to watch `Ingress` resources and configure `/etc/hosts` so that when you create an ingress with a host name, the host name is DNS-resolveable. This means that after creating an ingress, you can use the address in your browser. This requires you to run the included External DNS webhook server. See the [External DNS](external-dns.md) section for details.
+
+| Key | Description |
+|-|-|
+| `domain` | This is a comma-separated list of domain names that the webhook server will manage. E.g.: `dtk.io,mydomain.com`. |
+| `host-ip` | The IP address of your desktop. This will be configured into the `external-dns` Helm chart as the URL of the webhook. |
+| `webhook-port` | The port address of the webhook server running on your desktop. This is also configured into the `external-dns` Helm chart. |
 
 ## The `vbox` Section
 
