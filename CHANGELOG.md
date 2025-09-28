@@ -1,9 +1,11 @@
 # Change Log
 
 ## 28-Sep-2025
-Commit: `3108246`
+Commit: `e1e9771`
 
 1. Implement External DNS Webhook to manage /etc/hosts so Ingresses can accessed by host name.
+1. Change `config.yaml` to use an `enabled` flag rather than commenting configuration out
+1. Update `.gitignore` - remove sonobuoy (not used any more) and add ability to ignore multiple configs
 
 ---
 ## 27-Sep-2025
