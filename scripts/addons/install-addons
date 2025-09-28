@@ -30,9 +30,12 @@ if [[ -n "$addon" ]]; then
 else
   for ((i = 0; i < $(yq '.addons | length' $config); ++i)); do
     addon="$(yq .addons[$i].name $config)"
+    enabled="$(yq .addons[$i].enabled $config)"
     if [[ -d $script_dir/$addon ]]; then
-      echo "installing $addon in $script_dir/$addon"
-      $script_dir/$addon/install $config
+      if [[ $enabled == "true" ]]; then
+        echo "installing $addon in $script_dir/$addon"
+        $script_dir/$addon/install $config
+      fi
     else
       echo "addon directory not found (skipping): $script_dir/$addon"
     fi

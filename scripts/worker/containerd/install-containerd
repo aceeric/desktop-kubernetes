@@ -48,12 +48,13 @@ sed $script_dir/20-containerd-net.conflist\
 
 # configure containerd mirroring
 
-mirror=$(yq .k8s.containerd-mirror.name $config)
-if [[ -n $mirror && $mirror != "null" ]]; then
-  echo "Configure containerd mirroring"
-  ssh -i $priv_key root@$worker_ip "mkdir -p /etc/containerd/certs.d/$mirror"
+mirroring_enabled=$(yq .k8s.containerd-mirror.enabled $config)
+if [[ $mirroring_enabled == "true" ]]; then
+  name=$(yq .k8s.containerd-mirror.name $config)
+  echo "Configuring containerd mirroring"
+  ssh -i $priv_key root@$worker_ip "mkdir -p /etc/containerd/certs.d/$name"
   mirrorcfg=$(yq .k8s.containerd-mirror.config $config)
-  echo "$mirrorcfg" | ssh -i $priv_key root@$worker_ip "cat >| /etc/containerd/certs.d/$mirror/hosts.toml"
+  echo "$mirrorcfg" | ssh -i $priv_key root@$worker_ip "cat >| /etc/containerd/certs.d/$name/hosts.toml"
 fi
 
 echo "Starting containerd service"

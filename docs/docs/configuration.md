@@ -17,21 +17,24 @@ There is one top-level key with no subkeys: `virt`. This key determines whether 
 
 ## The `addons` Section
 
-This section enables or disables the addons included with the CLI. See the [Addons](add-ons.md) section for more details. These are the default values:
+This section enables or disables the Add-Ons included with the CLI. See the [Add-Ons](add-ons.md) section for more details. These are the default values:
 
 | Key | Enabled by default? |
 |-|-|
 | `calico` | false |
-| `cert-manager` | true |
 | `cilium` | true |
 | `coredns` | true |
-| `external-dns` | false |
 | `ingress-nginx` | true |
+| `cert-manager` | true |
+| `external-dns` | false |
 | `kube-prometheus-stack` | true |
 | `kubernetes-dashboard` | true |
 | `metrics-server` | true |
 | `openebs` | true |
 | `vcluster` | false |
+
+!!! Note
+    The Add-Ons are listed in the order in which they are installed. This is important. Notice that the CNI is first, followed by Core DNS for service IP address resolution, then Nginx for `Ingress` reconciliation, and then everything else.
 
 ## The `k8s` Section
 
@@ -43,17 +46,17 @@ The `k8s` section has configuration settings that configure Kubernetes, independ
 | `k8s.cluster-cidr` | Configures CIDR range for Pods. This is applied to the `kube-controller-manager`. (Be aware of `--node-cidr-mask-size...` args which you can't override at this time.) |
 | `k8s.cluster-dns` | Ignored - not yet implemented. |
 | `k8s.kube-proxy` | If true, you can run the cluster without Calico or Cilium (or other CNI) using the default CNI configuration that is established by `scripts/worker/containerd/install-containerd`. |
-| `k8s.containerd-mirror` | Supports configuring `containerd` to mirror to a different registry. The example in the yaml (commented out) has all images mirrored to a distribution server on 192.168.0.49:8080. Background: I use my own caching pull-only, pull-through OCI distribution server https://github.com/aceeric/ociregistry running as a systemd service on my desktop to mitigate DockerHub rate limiting. See the example immediately below. |
+| `k8s.containerd-mirror` | Supports configuring `containerd` to mirror to a different registry. The example in the yaml has all images mirrored to a distribution server on 192.168.0.49:8080. Background: I use my own caching pull-only, pull-through OCI distribution server https://github.com/aceeric/ociregistry running as a systemd service on my desktop to mitigate DockerHub rate limiting. See the example immediately below. |
 
 > Static pod container images for the containerized control plane per: https://kubernetes.io/releases/download/
 
 ### Configuring `containerd`
 
-You can configure containerd to mirror with the following in the `config.yaml` file. In the example, **all** images are mirrored (`name: _default`) and the mirror is http://http://192.168.0.49:8080.
-
+You can configure containerd to mirror with the following in the `config.yaml` file. Mirroring is disabled by default. You enable it by setting `enabled: true` and specifying the name and configuration. In the example, **all** images are mirrored (`name: _default` which is a special value recognized by `containerd`) and the mirror is http://http://192.168.0.49:8080.
 ```
 k8s:
   containerd-mirror:
+    enabled: true
     name: _default
     config: |
       [host."http://192.168.0.49:8080"]
