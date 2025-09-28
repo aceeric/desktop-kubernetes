@@ -1,9 +1,15 @@
 # Change Log
 
+## 28-Sep-2025
+Commit: `3108246`
+
+1. Implement External DNS Webhook to manage /etc/hosts so Ingresses can accessed by host name.
+
+---
 ## 27-Sep-2025
 Commit: `ba8e110`
 
-1. Added documentation, published via GitHub pages to https://aceeric.github.io/desktop-kubernetes
+1. Added documentation, published via GitHub pages to https://aceeric.github.io/desktop-kubernetes.
 
 ---
 ## 19-Sep-2025
