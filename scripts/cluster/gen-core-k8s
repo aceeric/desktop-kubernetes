@@ -46,6 +46,8 @@ for ((i = 0; i < $vmcnt; ++i)); do
       --ca-cert=$ca_cert\
       --ca-key=$ca_key
     admin_kubeconfig=$DTKBASE/generated/kubeconfig/admin.kubeconfig
+    admin_cert=$DTKBASE/generated/cert/admin.pem
+    admin_key=$DTKBASE/generated/cert/admin-key.pem
   fi
 
   ssh -i $priv_key root@$vm_ip mkdir -p /etc/desktop-kubernetes/static-pods
@@ -69,6 +71,8 @@ for ((i = 0; i < $vmcnt; ++i)); do
      --controller-ip=$vm_ip\
      --priv-key=$priv_key\
      --admin-kubeconfig=$admin_kubeconfig\
+     --admin-cert=$admin_cert\
+     --admin-key=$admin_key\
      --containerized-cplane=$containerized_cplane\
      --ca-cert=$ca_cert\
      --ca-key=$ca_key\

@@ -5,12 +5,14 @@
 set -e
 
 long_opts=controller-hostname:,priv-key:,admin-kubeconfig:,containerized-cplane:,ca-cert:,ca-key:,cluster-cidr:,\
-controller-ip:
+controller-ip:,admin-cert:,admin-key:
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 controller_hostname=
 priv_key=
 admin_kubeconfig=
+admin_cert=
+admin_key=
 containerized_cplane=
 ca_cert=
 ca_key=
@@ -84,17 +86,24 @@ xec install-kube-scheduler\
  --ca-cert=$ca_cert\
  --ca-key=$ca_key
 
-healthy_count=0
+echo "verifying all controller components report ok"
+status="000"
 for i in {1..10}; do
-  healthy_count=$(kubectl --kubeconfig=$DTKBASE/generated/kubeconfig/kube-controller-manager.kubeconfig\
-    get componentstatuses --no-headers 2>/dev/null | awk '{print $2}' | grep Healthy | wc -l)
-  if [[ "$healthy_count" -eq 3 ]]; then
+  status=$(curl --silent\
+    --output /dev/null\
+    --write-out "%{http_code}"\
+    --cert $admin_cert\
+    --key $admin_key\
+    --cacert $ca_cert\
+    https://$controller_ip:6443/livez)
+
+  if [[ "$status" == "200" ]]; then
     break
   fi
   sleep 1s
 done
 
-if [[ "$healthy_count" -ne 3 ]]; then
+if [[ "$status" != "200" ]]; then
   echo "unable to verify that controller was successfully configured"
   exit 1
 fi
