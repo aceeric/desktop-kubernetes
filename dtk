@@ -4,6 +4,8 @@ set -e
 
 long_opts=help,check-compatibility,up:,down:,delete:,verify:,config:,create-template:,install-addon:,no-create-vms
 
+begin_timestamp=$(date +%s%N | cut -b1-13)
+
 # This snippet enables all scripts to exec all other scripts without knowing any
 # other script's path, as long all the scripts (except this one) are children
 # of the 'scripts' directory.
@@ -198,8 +200,13 @@ xec install-addons\
   --admin-kubeconfig=$DTKBASE/generated/kubeconfig/admin.kubeconfig\
   --priv-key=$DTKBASE/generated/kickstart/id_ed25519
 
+end_timestamp=$(date +%s%N | cut -b1-13)
+elapsed=$(xec elapsed $begin_timestamp $end_timestamp)
+
 echo
-echo "finished provisioning cluster. To interact with the cluster:"
+echo "Finished provisioning cluster. Elapsed time (H:MM:SS:NNN): $elapsed"
+echo
+echo "To interact with the cluster:"
 echo "  export KUBECONFIG=$DTKBASE/generated/kubeconfig/admin.kubeconfig"
 echo
-echo "use the 'sshto' script to ssh into a VM"
+echo "(Use the 'sshto' script to ssh into a VM.)"
