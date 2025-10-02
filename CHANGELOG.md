@@ -1,5 +1,12 @@
 # Change Log
 
+## 02-Oct-2025
+Commit: `a075273`
+
+1. Replace call to deprecated `get componentstatuses`
+1. Add elasped time to message when cluster provisioning completes.
+
+---
 ## 28-Sep-2025
 Commit: `e1e9771`
 
