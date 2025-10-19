@@ -1,0 +1,117 @@
+#!/usr/bin/env bash
+#
+# Top-level cluster creation script.
+#
+
+set -e
+
+long_opts=admin-kubeconfig:,ca-cert:,ca-key:,cluster-cidr:,config:,containerized-cplane:,create-template:,create-vms:\
+,host-network-interface:,host-only-network:,kube-proxy-enabled:,linux:,os-variant:,priv-key:,template-vmname:,vboxdir:,virt:
+
+admin_kubeconfig=
+ca_cert=
+ca_key=
+cluster_cidr=
+config=
+containerized_cplane=
+create_template=
+create_vms=
+host_network_interface=
+host_only_network=
+kube_proxy_enabled=
+linux=
+os_variant=
+priv_key=
+template_vmname=
+vboxdir=
+virt=
+
+if ! parsed=$(xec parseargs $long_opts "$@"); then
+  echo "$parsed"
+  exit 1
+fi
+eval $(echo -e "$parsed")
+
+#echo "admin_kubeconfig=$admin_kubeconfig"
+#echo "ca_cert=$ca_cert"
+#echo "ca_key=$ca_key"
+#echo "cluster_cidr=$cluster_cidr"
+#echo "config=$config"
+#echo "containerized_cplane=$containerized_cplane"
+#echo "create_template=$create_template"
+#echo "create_vms=$create_vms"
+#echo "host_network_interface=$host_network_interface"
+#echo "host_only_network=$host_only_network"
+#echo "kube_proxy_enabled=$kube_proxy_enabled"
+#echo "linux=$linux"
+#echo "os_variant=$os_variant"
+#echo "priv_key=$priv_key"
+#echo "template_vmname=$template_vmname"
+#echo "vboxdir=$vboxdir"
+#echo "virt=$virt"
+#exit
+
+begin_timestamp=$(date +%s%N | cut -b1-13)
+
+echo "creating directories to generate various files into"
+for dir in kickstart kubeconfig cert hostonly-netcfg iso; do
+  mkdir -p $DTKBASE/generated/$dir
+done
+
+echo "downloading core cluster components"
+xec download-objects\
+  --create-template=$create_template\
+  --linux=$linux\
+  --virt=$virt
+
+if [[ $create_vms -eq 1 ]]; then
+  echo "provisioning vms"
+  if [[ $virt == "virtualbox" ]]; then
+    xec virtualbox/provision-vms\
+      --config=$config\
+      --create-template=$create_template\
+      --host-network-interface=$host_network_interface\
+      --host-only-network=$host_only_network\
+      --linux=$_linux\
+      --template-vmname=$template_vmname\
+      --vboxdir=$vboxdir
+  else
+    xec kvm/provision-vms\
+      --config=$config\
+      --create-template=$create_template\
+      --linux=$linux\
+      --os-variant=$os_variant\
+      --template-vmname=$template_vmname
+  fi
+fi
+
+echo "generating root CA"
+xec gen-root-ca
+
+echo "generating Kubernetes core cluster"
+xec gen-core-k8s\
+  --ca-cert=$ca_cert\
+  --ca-key=$ca_key\
+  --cluster-cidr=$cluster_cidr\
+  --config=$config\
+  --containerized-cplane=$containerized_cplane\
+  --kube-proxy-enabled=$kube_proxy_enabled\
+  --priv-key=$priv_key\
+  --virt=$virt
+
+echo "installing add-ons"
+xec install-addons\
+  --admin-kubeconfig=$admin_kubeconfig\
+  --config=$config\
+  --priv-key=$priv_key
+
+end_timestamp=$(date +%s%N | cut -b1-13)
+elapsed=$(xec elapsed $begin_timestamp $end_timestamp)
+
+echo
+echo "Finished provisioning cluster. Elapsed time (H:MM:SS:NNN): $elapsed"
+echo
+echo "To interact with the cluster:"
+echo "  export KUBECONFIG=$admin_kubeconfig"
+echo
+echo "(Use the 'sshto' script to ssh into a VM.)"

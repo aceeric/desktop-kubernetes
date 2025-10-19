@@ -1,20 +1,35 @@
 #!/usr/bin/env bash
+#
+# Usage:
+#
+# up-down-del <up|down|del> <config>
+#
+# E.g.:
+#
+# up-down-del up ~/my-config.yaml
+#
 
 set -e
 
-IFS=',' read -ra vms <<< "$2"
-for vm in "${vms[@]}"; do
-  if [[ $1 == "up" ]]; then
-    virsh start $vm
-  elif [[ $1 == "down" ]]; then
-    virsh shutdown $vm
-  elif [[ $1 == "delete" ]]; then
-    virsh shutdown $vm || :
-    virsh destroy $vm || :
-    while true; do
-      if virsh undefine $vm --remove-all-storage; then
-        break
-      fi
-    done
-  fi
+op="$1"
+config="$2"
+
+yq -r '.vms[].name' $config | while read vmname; do
+  case $op in
+    up)
+      virsh start $vmname
+      ;;
+    down)
+      virsh shutdown $vmname
+      ;;
+    del)
+      virsh shutdown $vmname || :
+      virsh destroy $vmname || :
+      while true; do
+        if virsh undefine $vmname --remove-all-storage; then
+          break
+        fi
+      done
+      ;;
+  esac
 done

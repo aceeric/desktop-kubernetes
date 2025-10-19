@@ -1,0 +1,262 @@
+#!/usr/bin/env bash
+#
+# Desktop Kubernetes CLI.
+#
+
+set -e
+
+long_opts=config:,create-template:,create-vms:,addon:
+
+export DTKBASE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# set from the command line by parse_cmdline function (defaults are hard-coded)
+operation=
+config=$DTKBASE/config.yaml
+create_template=
+create_vms=1
+addon=
+
+# set from config.yaml by scripts/helpers/parse-config.py
+virt=
+k8s_containerized_cplane=
+k8s_cluster_cidr=
+k8s_cluster_dns=
+k8s_kube_proxy=
+kvm_network=
+kvm_kickstart=
+kvm_os_variant=
+vbox_host_network_interface=
+vbox_host_only_network=
+vbox_kickstart=
+vbox_vboxdir=
+vm_linux=
+vm_create_template=
+vm_template_vmname=
+
+#
+# Enables scripts to exec other scripts by name only or pathpart/name.
+#
+function xec() {
+  if echo $1 | grep -q /; then
+    f=$(find $DTKBASE/scripts -type d -name $(dirname $1) | xargs -I% find % -type f -name $(basename $1))
+  else
+    f=$(find $DTKBASE/scripts -name $1)
+  fi
+  [[ -n $f ]] && $f "${@:2}"
+}
+
+#
+# Option parser helper for parse_cmdline function. Parses "--foo bar" and "--foo=bar"
+# the same way.
+#
+function opt_val() {
+  opt="$1"
+  if [[ "$opt" == =* ]]; then
+    echo "${opt:1}"
+  else
+    echo "$opt"
+  fi
+}
+
+#
+# Parses the command line.
+#
+function parse_cmdline() {
+  if [[ "$#" -eq 0 ]]; then
+    operation="help"
+    return
+  fi
+  # must separate the local declaration from the assignment or the exit code is lost
+  local parsed
+  parsed=$(getopt --options "" --longoptions $long_opts -n dtk -- "$@")
+  
+  if [[ "$?" -ne 0 ]]; then
+    exit 1
+  fi
+
+  eval set -- "$parsed"
+
+  echo "START=$@"
+  while true; do
+    case "$1" in
+      cluster)
+        subcmd="$2"
+        echo "HERE $1-$2"
+        shift 2
+        ;;
+      --config)
+        config=$(opt_val "$2")
+        shift 2
+        ;;
+      --create-template)
+        tmp=$(opt_val "$2")
+        if [[ $tmp == "true" ]]; then
+          create_template=1
+        elif [[ $tmp == "false" ]]; then
+          create_template=0
+        else
+          echo "--create-template accepts 'true' or 'false'"
+          exit 1
+        fi
+        shift 2
+        ;;
+      --create-vms)
+        tmp=$(opt_val "$2")
+        if [[ $tmp == "true" ]]; then
+          create_vms=1
+        elif [[ $tmp == "false" ]]; then
+          create_vms=0
+        else
+          echo "--create-vms accepts 'true' or 'false'"
+          exit 1
+        fi
+        shift 2
+        ;;
+      --addon)
+        addon=$(opt_val "$2")
+        shift 2
+        ;;
+      --)
+        shift
+        #break
+        ;;
+    esac
+  done
+
+  if [[ $# -eq 1 ]]; then
+    operation="$@"
+  elif [[ $# -eq 2 ]]; then
+    operation="$1-$2"
+  else
+    echo "unable to parse command line, try: ./dtk help"
+    exit 1
+  fi
+
+  valid_ops=(".create-cluster." ".delete-cluster." ".start-cluster." ".stop-cluster." ".install-addon."
+  ".verify-upstreams." ".verify-files." ".check-tools." ".help.")
+  if [[ ! ${valid_ops[@]} =~ ".$operation." ]]; then
+    echo "unknown operation '$operation', try: ./dtk help"
+    exit 1
+  fi
+}
+
+#
+# Validates the config.yaml file.
+#
+function validate_config_file() {
+  config=$(realpath $config)
+  if [[ ! -f "$config" ]]; then
+    echo "config file not found: $config"
+    exit 1
+  fi
+  scripts/helpers/parse-config.py $config check || exit
+}
+
+#
+# Allows the cmdline to override config.yaml.
+#
+function set_cmdline_overrides() {
+  case $create_template in
+    1)
+      vm_create_template=1
+      ;;
+    0)
+      vm_create_template=0
+      ;;
+  esac
+}
+
+#
+# Performs configuration validation and in some cases performs configuration overrides
+# (e.g., for omitted values.)
+#
+function validate_config_values() {
+  supported_linux=(".centos9." ".rocky." ".alma8." ".alma9.")
+  if [[ ! ${supported_linux[@]} =~ ".$vm_linux." ]]; then
+    echo "unsupported value for linux config: $vm_linux"
+    exit 1
+  fi
+
+  if [[ $virt == "virtualbox" ]]; then
+    if [[ -z "$vbox_host_network_interface" ]] && [[ -z "$vbox_host_only_network" ]]; then
+      echo "either --host-network-interface or --host-only-network is required"
+      exit 1
+    elif [[ ! -z "$vbox_host_network_interface" ]] && [[ ! -z "$vbox_host_only_network" ]]; then
+      echo "--host-network-interface and --host-only-network are exclusive of each other"
+      exit 1
+    fi
+    if [[ -z "$vbox_vboxdir" ]]; then
+      vbox_vboxdir=$(vboxmanage list systemproperties | grep folder | awk -F: '{print $2}' | xargs)
+    fi
+    if [[ -z "$vbox_vboxdir" ]]; then
+      echo "directory for virtualbox VMs is not defined"
+      exit 1
+    elif [[ ! -d $vbox_vboxdir ]]; then
+      echo "directory for virtualbox VMs does not exist: $vbox_vboxdir"
+      exit 1
+    fi
+  fi
+}
+
+# entry point
+
+parse_cmdline "$@"
+exit
+validate_config_file
+eval $(scripts/helpers/parse-config.py $config)
+validate_config_values
+set_cmdline_overrides
+
+export -f xec
+set -a && source $DTKBASE/artifacts && set +a
+
+case $operation in
+  help)
+    xec show-usage
+    ;;
+  create-cluster)
+    xec create-cluster\
+      --admin-kubeconfig=$DTKBASE/generated/kubeconfig/admin.kubeconfig\
+      --ca-cert=$DTKBASE/generated/cert/ca.pem\
+      --ca-key=$DTKBASE/generated/cert/ca-key.pem\
+      --cluster-cidr=$k8s_cluster_cidr\
+      --config=$config\
+      --containerized-cplane=$k8s_containerized_cplane\
+      --create-template=$vm_create_template\
+      --create-vms=$create_vms\
+      --host-network-interface=$vbox_host_network_interface\
+      --host-only-network=$vbox_host_only_network\
+      --kube-proxy-enabled=$k8s_kube_proxy\
+      --linux=$vm_linux\
+      --os-variant=$kvm_os_variant\
+      --priv-key=$DTKBASE/generated/kickstart/id_ed25519\
+      --template-vmname=$vm_template_vmname\
+      --vboxdir=$vbox_vboxdir\
+      --virt=$virt
+    ;;
+  delete-cluster)
+    xec $virt/up-down-del delete $config
+    ;;
+  start-cluster)
+     xec $virt/up-down-del up $config
+    ;;
+  stop-cluster)
+    xec $virt/up-down-del down $config
+    ;;
+  install-addon)
+    xec install-addons\
+      --addon=$addon\
+      --admin-kubeconfig=$DTKBASE/generated/kubeconfig/admin.kubeconfig\
+      --config=$config\
+      --priv-key=$DTKBASE/generated/kickstart/id_ed25519
+    ;;
+  verify-upstreams)
+    xec check-objects upstreams
+    ;;
+  verify-files)
+    xec check-objects files
+    ;;
+  check-tools)
+    xec check-compatibility
+    ;;
+esac

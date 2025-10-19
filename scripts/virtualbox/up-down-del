@@ -2,37 +2,34 @@
 #
 # Usage:
 #
-# up-down-del <up|down|del> <comma separated vm list> <config>
+# up-down-del <up|down|del> <config>
 #
 # E.g.:
 #
-# up-down-del up vm1,vm2,vm3 ~/my-config.yaml
+# up-down-del up ~/my-config.yaml
 #
 
 set -e
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-if [[ $1 == "up" ]]; then
-  IFS=',' read -ra vms <<< "$2"
-  for vm in "${vms[@]}"; do
-    VBoxManage startvm $vm
-  done
-  sleep 5s
-elif [[ $1 == "down" ]]; then
-  IFS=',' read -ra vms <<< "$2"
-  for vm in "${vms[@]}"; do
-    echo "shutting down $vm"
-    VBoxManage controlvm $vm acpipowerbutton
-    $script_dir/wait-vm $vm --stopped
-  done
-elif [[ $1 == "delete" ]]; then
-  IFS=',' read -ra vms <<< "$2"
-  for vm in "${vms[@]}"; do
-    echo "shutting down $vm if running"
-    VBoxManage controlvm $vm poweroff &>/dev/null && $script_dir/wait-vm $vm --stopped || echo "(not running)"
-    echo "removing $vm"
-    sleep 5s
-    VBoxManage unregistervm $vm --delete
-  done
-fi
+op="$1"
+config="$2"
+
+yq -r '.vms[].name' "$config" | while read vmname; do
+  case $op in
+    up)
+      VBoxManage startvm $vm
+      sleep 5s
+      ;;
+    down)
+      VBoxManage controlvm $vm acpipowerbutton
+      $script_dir/wait-vm $vm --stopped
+      ;;
+    del)
+      VBoxManage controlvm $vm poweroff &>/dev/null && $script_dir/wait-vm $vm --stopped || echo "(not running)"
+      sleep 5s
+      VBoxManage unregistervm $vm --delete
+      ;;
+  esac
+done
