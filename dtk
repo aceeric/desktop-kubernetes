@@ -94,13 +94,13 @@ xec parse-config.py $config check || exit
 eval $(xec parse-config.py $config)
 
 if [[ -n "$up" ]]; then
-  xec $virt/up-down-del up $up $config
+  xec $virt/up-down-del up $config
   exit 0
 elif [[ -n "$down" ]]; then
-  xec $virt/up-down-del down $down $config
+  xec $virt/up-down-del down $config
   exit 0
 elif [[ -n "$delete" ]]; then
-  xec $virt/up-down-del delete $delete $config
+  xec $virt/up-down-del delete $config
   exit 0
 fi
 
