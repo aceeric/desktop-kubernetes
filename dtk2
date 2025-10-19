@@ -46,16 +46,37 @@ function xec() {
 }
 
 #
-# Option parser helper for parse_cmdline function. Parses "--foo bar" and "--foo=bar"
-# the same way.
+# Translates "true" to 1 and "false" to 0. The function arg is a variable
+# name, whose contents may be modified by the function. Returns a non-zero
+# exit code on error, else a zero exit code.
 #
-function opt_val() {
-  opt="$1"
-  if [[ "$opt" == =* ]]; then
-    echo "${opt:1}"
-  else
-    echo "$opt"
-  fi
+function xlat_tf() {
+    local -n var_ref=$1
+    if [[ -z "$var_ref" ]] || [[ $var_ref -eq 1 ]] || [[ $var_ref -eq 0 ]] then
+      return
+    elif [[ $var_ref == "true" ]]; then
+      var_ref=1
+    elif [[ $var_ref == "false" ]]; then
+      var_ref=0
+    else
+      false
+      return
+    fi
+    true
+}
+
+#
+# Verifies the dirname pased in $1 matches a directory name under
+# scripts/addons.
+#
+function validate_addon() {
+  while read dirname; do
+    if [[ $1 == $dirname ]]; then
+      true
+      return
+    fi
+  done < <(find $DTKBASE/scripts/addons -maxdepth 1 -mindepth 1 -type d -printf "%f\n")
+  false
 }
 
 #
@@ -63,80 +84,96 @@ function opt_val() {
 #
 function parse_cmdline() {
   if [[ "$#" -eq 0 ]]; then
-    operation="help"
-    return
-  fi
-  # must separate the local declaration from the assignment or the exit code is lost
-  local parsed
-  parsed=$(getopt --options "" --longoptions $long_opts -n dtk -- "$@")
-  
-  if [[ "$?" -ne 0 ]]; then
+    echo "no args specified, try: ./dtk help"
     exit 1
   fi
 
-  eval set -- "$parsed"
-
-  echo "START=$@"
-  while true; do
-    case "$1" in
-      cluster)
-        subcmd="$2"
-        echo "HERE $1-$2"
-        shift 2
+  parse_error=
+  for ((i=1; i<=$#; i++)); do
+    arg="${!i}"
+    case $arg in
+      cluster|verify)
+        ((i++))
+        if [[ -z "${!i}" ]]; then
+          parse_error=1
+          break
+        fi
+        operation="$arg-${!i}"
+        ;;
+      install-addon)
+        ((i++))
+        if [[ -z "${!i}" ]]; then
+          parse_error=1
+          break
+        fi
+        operation="$arg"
+        addon="${!i}"
+        ;;
+      check-tools)
+        operation="$arg"
+        ;;
+      --config=*)
+        config=$(echo $arg | cut -d= -f2)
         ;;
       --config)
-        config=$(opt_val "$2")
-        shift 2
+        ((i++))
+        if [[ -z "${!i}" ]]; then
+          parse_error=1
+          break
+        fi
+        config="${!i}"
+        ;;
+      --create-template=*)
+        create_template=$(echo $arg | cut -d= -f2)
         ;;
       --create-template)
-        tmp=$(opt_val "$2")
-        if [[ $tmp == "true" ]]; then
-          create_template=1
-        elif [[ $tmp == "false" ]]; then
-          create_template=0
-        else
-          echo "--create-template accepts 'true' or 'false'"
-          exit 1
+        ((i++))
+        if [[ -z "${!i}" ]]; then
+          parse_error=1
+          break
         fi
-        shift 2
+        create_template="${!i}"
+        ;;
+      --create-vms=*)
+        create_vms=$(echo $arg | cut -d= -f2)
         ;;
       --create-vms)
-        tmp=$(opt_val "$2")
-        if [[ $tmp == "true" ]]; then
-          create_vms=1
-        elif [[ $tmp == "false" ]]; then
-          create_vms=0
-        else
-          echo "--create-vms accepts 'true' or 'false'"
-          exit 1
+        ((i++))
+        if [[ -z "${!i}" ]]; then
+          parse_error=1
+          break
         fi
-        shift 2
+        create_vms="${!i}"
         ;;
-      --addon)
-        addon=$(opt_val "$2")
-        shift 2
+      help|--help)
+        operation="help"
         ;;
-      --)
-        shift
-        #break
+      *)  
+        parse_error=1
         ;;
     esac
   done
 
-  if [[ $# -eq 1 ]]; then
-    operation="$@"
-  elif [[ $# -eq 2 ]]; then
-    operation="$1-$2"
-  else
+  xlat_tf create_template || parse_error=1
+  xlat_tf create_vms || parse_error=1
+
+  if [[ "$parse_error" -eq 1 ]]; then
     echo "unable to parse command line, try: ./dtk help"
     exit 1
   fi
 
-  valid_ops=(".create-cluster." ".delete-cluster." ".start-cluster." ".stop-cluster." ".install-addon."
+  valid_ops=(".cluster-create." ".cluster-delete." ".cluster-up." ".cluster-down." ".install-addon."
   ".verify-upstreams." ".verify-files." ".check-tools." ".help.")
   if [[ ! ${valid_ops[@]} =~ ".$operation." ]]; then
     echo "unknown operation '$operation', try: ./dtk help"
     exit 1
+  fi
+
+  if [[ -n "$addon" ]]; then
+    if ! validate_addon $addon; then
+      echo "unknown addon: '$addon', try: ./dtk help"
+      exit 1
+    fi
   fi
 }
 
@@ -201,11 +238,18 @@ function validate_config_values() {
 # entry point
 
 parse_cmdline "$@"
-exit
 validate_config_file
 eval $(scripts/helpers/parse-config.py $config)
 validate_config_values
 set_cmdline_overrides
+
+# HERE HERE HERE TEST TEST TEST
+echo "operation=$operation"
+echo "create_vms=$create_vms"
+echo "create_template=$create_template"
+echo "config=$config"
+echo "addon=$addon"
+exit
 
 export -f xec
 set -a && source $DTKBASE/artifacts && set +a
