@@ -1,5 +1,10 @@
 # Change Log
 
+## 20-Oct-2025
+Tag: `v1.34.1-1`
+
+1. Re-designed the command line. Not compatible with prior versions. (Retain `dtk-deprecated` for now.)
+
 ## 02-Oct-2025
 Commit: `a075273`
 
