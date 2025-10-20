@@ -1,4 +1,4 @@
-# Command Line Options
+# The Command Line
 
 The `dtk` CLI takes one mandatory command, and then an optional sub-command or operand, and flags. As stated elsewhere in the documentation, most cluster configuration is read from a configuration yaml file. See the [configuration](configuration.md) section for more information on that.
 
