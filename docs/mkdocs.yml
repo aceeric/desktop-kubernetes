@@ -4,7 +4,7 @@ site_url: https://aceeric.github.io/desktop-kubernetes
 nav:
   - Introduction: index.md
   - Quick Start: quick-start.md
-  - Command Line Options: command-line-options.md
+  - The Command Line: command-line.md
   - Configuration: configuration.md
   - Add-Ons: add-ons.md
   - External DNS: external-dns.md

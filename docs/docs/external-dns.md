@@ -53,7 +53,7 @@ Narrative:
     1. `host-ip: 192.168.0.12`: Your desktop IP address.
     1. `webhook-port: 5000`: The port you're running the Python HTTP server on. The desktop IP address and this port are templated into the External DNS Helm values when it is installed by DTK. That's how External DNS inside the cluster can call the Python HTTP server running on your desktop.
 2. DTK sends the specified domain (`dtk.io` in this case) and the IP address of the Kubernetes controller VM to the Python HTTP server. The server stores these.
-3. DTK installs `external-dns`, either because you uncommented it in the `addons` list in `config.yaml`, or you explicitly installed it with `./dtk --install-addon external-dns`. As part of this step, your host IP and webhook port are templated into the `external-dns` Helm values.
+3. DTK installs `external-dns`, either because you uncommented it in the `addons` list in `config.yaml`, or you explicitly installed it with `./dtk install-addon external-dns`. As part of this step, your host IP and webhook port are templated into the `external-dns` Helm values.
 4. Kubernetes creates the `external-dns` workload.
 5. When `external-dns` starts it sees that it is configured to integrate with the `webhook` provider so it calls the webhook (the Python HTTP server) to get a list of managed domains.
 6. The Python HTTP server replies with `dtk.io`.

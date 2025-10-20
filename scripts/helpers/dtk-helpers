@@ -52,7 +52,7 @@ function validate_addon() {
 #
 function parse_cmdline() {
   if [[ "$#" -eq 0 ]]; then
-    echo "no args specified, try: ./dtk help"
+    echo "no args specified, try: ./dtk help (the command line was re-designed in version v1.34.1-1)"
     exit 1
   fi
 
@@ -113,6 +113,9 @@ function parse_cmdline() {
         fi
         create_vms="${!i}"
         ;;
+      version)
+        operation="version"
+        ;;
       help|--help)
         operation="help"
         ;;
@@ -126,20 +129,20 @@ function parse_cmdline() {
   xlat_tf create_vms || parse_error=1
 
   if [[ "$parse_error" -eq 1 ]]; then
-    echo "unable to parse command line, try: ./dtk help"
+    echo "unable to parse command line, try: ./dtk help (the command line was re-designed in version v1.34.1-1)"
     exit 1
   fi
 
   valid_ops=(".cluster-create." ".cluster-delete." ".cluster-up." ".cluster-down." ".install-addon."
-  ".verify-upstreams." ".verify-files." ".check-tools." ".help.")
+  ".verify-upstreams." ".verify-files." ".check-tools." ".version." ".help.")
   if [[ ! ${valid_ops[@]} =~ ".$operation." ]]; then
-    echo "unknown operation '$operation', try: ./dtk help"
+    echo "unknown operation '$operation', try: ./dtk help (the command line was re-designed in version v1.34.1-1)"
     exit 1
   fi
 
   if [[ -n "$addon" ]]; then
     if ! validate_addon $addon; then
-      echo "unknown addon: '$addon', try: ./dtk help"
+      echo "unknown addon: '$addon', try: ./dtk help (the command line was re-designed in version v1.34.1-1)"
       exit 1
     fi
   fi

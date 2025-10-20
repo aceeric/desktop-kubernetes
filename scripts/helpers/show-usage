@@ -14,8 +14,9 @@ done <<< '
   hands-free. Thereafter, clones the template VM for each cluster node and each new cluster.
   (The template VM can be regenerated and multiple templates can be maintained.)
 
-  Cluster and VM configuration is specified in a config.yaml file. By default, config.yaml in the
-  CLI dir is used but this can be overridden with a command line option.
+  Cluster and VM configuration are specified in a config.yaml file. By default, the CLI looks for
+  config.yaml in the same directory as the CLI was executed from, but this can be overridden with
+  a command line option.
 
   Usage:
   
@@ -35,6 +36,7 @@ done <<< '
     install-addon  The addon name     Install an add-on from the scripts/addons directory.
     check-tools    n/a                Reports on the presence or absence, and version, of the tools
                                       used by the CLI to provision a cluster.
+    version        n/a                Displays the version.
     help           n/a                Displays this help.
 
   Options:

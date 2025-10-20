@@ -6,6 +6,7 @@
 set -e
 
 export DTKBASE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+export DTKVER=v1.34.1-1
 
 # set from the command line by parse_cmdline function (defaults are hard-coded)
 operation=
@@ -103,6 +104,9 @@ case $operation in
     ;;
   check-tools)
     xec check-compatibility
+    ;;
+  version)
+    echo "Desktop Kubernetes version: $DTKVER (Mon Oct 20 2025)"
     ;;
   *)
     echo "unsupported operation: $operation (should never happen)"

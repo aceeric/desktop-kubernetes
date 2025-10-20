@@ -32,25 +32,6 @@ if ! parsed=$(xec parseargs $long_opts "$@"); then
 fi
 eval $(echo -e "$parsed")
 
-#echo "admin_kubeconfig=$admin_kubeconfig"
-#echo "ca_cert=$ca_cert"
-#echo "ca_key=$ca_key"
-#echo "cluster_cidr=$cluster_cidr"
-#echo "config=$config"
-#echo "containerized_cplane=$containerized_cplane"
-#echo "create_template=$create_template"
-#echo "create_vms=$create_vms"
-#echo "host_network_interface=$host_network_interface"
-#echo "host_only_network=$host_only_network"
-#echo "kube_proxy_enabled=$kube_proxy_enabled"
-#echo "linux=$linux"
-#echo "os_variant=$os_variant"
-#echo "priv_key=$priv_key"
-#echo "template_vmname=$template_vmname"
-#echo "vboxdir=$vboxdir"
-#echo "virt=$virt"
-#exit
-
 begin_timestamp=$(date +%s%N | cut -b1-13)
 
 echo "creating directories to generate various files into"
