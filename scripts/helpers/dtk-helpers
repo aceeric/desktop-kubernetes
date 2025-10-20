@@ -1,37 +1,4 @@
-#!/usr/bin/env bash
-#
-# Desktop Kubernetes CLI.
-#
-
-set -e
-
-long_opts=config:,create-template:,create-vms:,addon:
-
-export DTKBASE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-
-# set from the command line by parse_cmdline function (defaults are hard-coded)
-operation=
-config=$DTKBASE/config.yaml
-create_template=
-create_vms=1
-addon=
-
-# set from config.yaml by scripts/helpers/parse-config.py
-virt=
-k8s_containerized_cplane=
-k8s_cluster_cidr=
-k8s_cluster_dns=
-k8s_kube_proxy=
-kvm_network=
-kvm_kickstart=
-kvm_os_variant=
-vbox_host_network_interface=
-vbox_host_only_network=
-vbox_kickstart=
-vbox_vboxdir=
-vm_linux=
-vm_create_template=
-vm_template_vmname=
+# This file is to be sourced by the root dtk script so that script is less busy.
 
 #
 # Enables scripts to exec other scripts by name only or pathpart/name.
@@ -44,6 +11,7 @@ function xec() {
   fi
   [[ -n $f ]] && $f "${@:2}"
 }
+export -f xec
 
 #
 # Translates "true" to 1 and "false" to 0. The function arg is a variable
@@ -52,7 +20,7 @@ function xec() {
 #
 function xlat_tf() {
     local -n var_ref=$1
-    if [[ -z "$var_ref" ]] || [[ $var_ref -eq 1 ]] || [[ $var_ref -eq 0 ]] then
+    if [[ -z "$var_ref" ]] || [[ $var_ref == "1" ]] || [[ $var_ref == "0" ]] then
       return
     elif [[ $var_ref == "true" ]]; then
       var_ref=1
@@ -234,73 +202,3 @@ function validate_config_values() {
     fi
   fi
 }
-
-# entry point
-
-parse_cmdline "$@"
-validate_config_file
-eval $(scripts/helpers/parse-config.py $config)
-validate_config_values
-set_cmdline_overrides
-
-# HERE HERE HERE TEST TEST TEST
-echo "operation=$operation"
-echo "create_vms=$create_vms"
-echo "create_template=$create_template"
-echo "config=$config"
-echo "addon=$addon"
-exit
-
-export -f xec
-set -a && source $DTKBASE/artifacts && set +a
-
-case $operation in
-  help)
-    xec show-usage
-    ;;
-  create-cluster)
-    xec create-cluster\
-      --admin-kubeconfig=$DTKBASE/generated/kubeconfig/admin.kubeconfig\
-      --ca-cert=$DTKBASE/generated/cert/ca.pem\
-      --ca-key=$DTKBASE/generated/cert/ca-key.pem\
-      --cluster-cidr=$k8s_cluster_cidr\
-      --config=$config\
-      --containerized-cplane=$k8s_containerized_cplane\
-      --create-template=$vm_create_template\
-      --create-vms=$create_vms\
-      --host-network-interface=$vbox_host_network_interface\
-      --host-only-network=$vbox_host_only_network\
-      --kube-proxy-enabled=$k8s_kube_proxy\
-      --linux=$vm_linux\
-      --os-variant=$kvm_os_variant\
-      --priv-key=$DTKBASE/generated/kickstart/id_ed25519\
-      --template-vmname=$vm_template_vmname\
-      --vboxdir=$vbox_vboxdir\
-      --virt=$virt
-    ;;
-  delete-cluster)
-    xec $virt/up-down-del delete $config
-    ;;
-  start-cluster)
-     xec $virt/up-down-del up $config
-    ;;
-  stop-cluster)
-    xec $virt/up-down-del down $config
-    ;;
-  install-addon)
-    xec install-addons\
-      --addon=$addon\
-      --admin-kubeconfig=$DTKBASE/generated/kubeconfig/admin.kubeconfig\
-      --config=$config\
-      --priv-key=$DTKBASE/generated/kickstart/id_ed25519
-    ;;
-  verify-upstreams)
-    xec check-objects upstreams
-    ;;
-  verify-files)
-    xec check-objects files
-    ;;
-  check-tools)
-    xec check-compatibility
-    ;;
-esac

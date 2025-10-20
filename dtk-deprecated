@@ -1,0 +1,212 @@
+#!/usr/bin/env bash
+
+set -e
+
+long_opts=help,check-compatibility,up:,down:,delete:,verify:,config:,create-template:,install-addon:,no-create-vms
+
+begin_timestamp=$(date +%s%N | cut -b1-13)
+
+# This snippet enables all scripts to exec all other scripts without knowing any
+# other script's path, as long all the scripts (except this one) are children
+# of the 'scripts' directory.
+
+export DTKBASE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+function xec() {
+  if echo $1 | grep -q /; then
+    f=$(find $DTKBASE/scripts -type d -name $(dirname $1) | xargs -I% find % -type f -name $(basename $1))
+  else
+    f=$(find $DTKBASE/scripts -name $1)
+  fi
+  [[ -n $f ]] && $f "${@:2}"
+}
+export -f xec
+
+# set from cmdline
+help=0
+check_compatibility=0
+up=
+down=
+delete=
+verify=
+config=$DTKBASE/config.yaml
+create_template=
+install_addon=
+no_create_vms=false
+
+# set by scripts/helpers/parse-config.py:
+virt=
+k8s_containerized_cplane=
+k8s_cluster_cidr=
+k8s_cluster_dns=
+k8s_kube_proxy=
+kvm_network=
+kvm_kickstart=
+kvm_os_variant=
+vbox_host_network_interface=
+vbox_host_only_network=
+vbox_kickstart=
+vbox_vboxdir=
+vm_linux=
+vm_create_template=1
+vm_template_vmname=
+
+# entry point
+
+set -a
+source $DTKBASE/artifacts
+set +a
+
+# parse cmdline
+if ! parsed=$(xec parseargs $long_opts "$@"); then
+  echo "$parsed"
+  exit 1
+fi
+eval $(echo -e "$parsed")
+
+if [[ $help -eq 1 ]]; then
+  xec show-usage
+  exit 0
+fi
+
+if [[ $check_compatibility -eq 1 ]]; then
+  xec check-compatibility
+  exit 0
+fi
+
+if [[ -n "$verify" ]]; then
+  if [[ "$verify" != "upstreams" ]] && [[ "$verify" != "files" ]]; then
+    echo "unsupported value for --verify option: $verify"
+    exit 1
+  fi
+  xec check-objects "$verify"
+  exit 0
+fi
+
+# ensure config.yaml exists
+config=$(realpath $config)
+if [[ ! -f "$config" ]]; then
+  echo "config file not found: $config"
+  exit 1
+fi
+
+# parse config.yaml
+xec parse-config.py $config check || exit
+eval $(xec parse-config.py $config)
+
+if [[ -n "$up" ]]; then
+  xec $virt/up-down-del up $config
+  exit 0
+elif [[ -n "$down" ]]; then
+  xec $virt/up-down-del down $config
+  exit 0
+elif [[ -n "$delete" ]]; then
+  xec $virt/up-down-del del $config
+  exit 0
+fi
+
+if [[ -n "$install_addon" ]]; then
+  xec install-addons\
+    --config=$config\
+    --admin-kubeconfig=$DTKBASE/generated/kubeconfig/admin.kubeconfig\
+    --priv-key=$DTKBASE/generated/kickstart/id_ed25519\
+    --addon=$install_addon
+  exit 0
+fi
+
+if [[ $virt == "virtualbox" ]]; then
+  if [[ -z "$vbox_host_network_interface" ]] && [[ -z "$vbox_host_only_network" ]]; then
+    echo "either --host-network-interface or --host-only-network is required"
+    exit 1
+  elif [[ ! -z "$vbox_host_network_interface" ]] && [[ ! -z "$vbox_host_only_network" ]]; then
+    echo "--host-network-interface and --host-only-network are exclusive of each other"
+    exit 1
+  fi
+  if [[ -z "$vbox_vboxdir" ]]; then
+    vbox_vboxdir=$(vboxmanage list systemproperties | grep folder | awk -F: '{print $2}' | xargs)
+  fi
+  if [[ -z "$vbox_vboxdir" ]]; then
+    echo "directory for virtualbox VMs is not defined"
+    exit 1
+  elif [[ ! -d $vbox_vboxdir ]]; then
+    echo "directory for virtualbox VMs does not exist: $vbox_vboxdir"
+    exit 1
+  fi
+fi
+
+supported_linux=("=centos9=" "=rocky=" "=alma8=" "=alma9=")
+if [[ ! ${supported_linux[@]} =~ "=$vm_linux=" ]]; then
+  echo "unsupported value for linux config: $vm_linux"
+  exit 1
+fi
+
+# --create-template on the cmdline overrides config.yaml
+if [[ "$create_template" == "true" ]]; then
+  vm_create_template=1
+elif [[ "$create_template" == "false" ]]; then
+  vm_create_template=0
+fi
+
+echo "creating directories to generate various files into"
+mkdir -p $DTKBASE/generated/kickstart\
+         $DTKBASE/generated/kubeconfig\
+         $DTKBASE/generated/cert\
+         $DTKBASE/generated/hostonly-netcfg\
+         $DTKBASE/generated/iso
+
+echo "downloading core cluster components"
+xec download-objects\
+  --create-template=$vm_create_template\
+  --linux=$vm_linux\
+  --virt=$virt
+
+if [[ $no_create_vms == false ]]; then
+  echo "provisioning vms"
+  if [[ $virt == "virtualbox" ]]; then
+    xec virtualbox/provision-vms\
+      --create-template=$vm_create_template\
+      --linux=$vm_linux\
+      --host-network-interface=$vbox_host_network_interface\
+      --host-only-network=$vbox_host_only_network\
+      --vboxdir=$vbox_vboxdir\
+      --template-vmname=$vm_template_vmname\
+      --config=$config
+  else
+    xec kvm/provision-vms\
+      --create-template=$vm_create_template\
+      --linux=$vm_linux\
+      --template-vmname=$vm_template_vmname\
+      --config=$config\
+      --os-variant=$kvm_os_variant
+  fi
+fi
+
+echo "generating root CA to $DTKBASE/generated/cert/ca.pem (and ca-key.pem)"
+xec gen-root-ca
+
+echo "generating Kubernetes core cluster"
+xec gen-core-k8s\
+  --containerized-cplane=$k8s_containerized_cplane\
+  --kube-proxy-enabled=$k8s_kube_proxy\
+  --priv-key=$DTKBASE/generated/kickstart/id_ed25519\
+  --ca-cert=$DTKBASE/generated/cert/ca.pem\
+  --ca-key=$DTKBASE/generated/cert/ca-key.pem\
+  --config=$config\
+  --cluster-cidr=$k8s_cluster_cidr\
+  --virt=$virt
+
+echo "installing add-ons"
+xec install-addons\
+  --config=$config\
+  --admin-kubeconfig=$DTKBASE/generated/kubeconfig/admin.kubeconfig\
+  --priv-key=$DTKBASE/generated/kickstart/id_ed25519
+
+end_timestamp=$(date +%s%N | cut -b1-13)
+elapsed=$(xec elapsed $begin_timestamp $end_timestamp)
+
+echo
+echo "Finished provisioning cluster. Elapsed time (H:MM:SS:NNN): $elapsed"
+echo
+echo "To interact with the cluster:"
+echo "  export KUBECONFIG=$DTKBASE/generated/kubeconfig/admin.kubeconfig"
+echo
+echo "(Use the 'sshto' script to ssh into a VM.)"

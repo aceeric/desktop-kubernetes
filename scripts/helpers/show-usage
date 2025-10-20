@@ -3,58 +3,68 @@
 while IFS= read -r line; do
   echo "${line:2}"
 done <<< '
-  dtk
-  ---
-  Creates a Kubernetes cluster on the desktop using KVM or VirtualBox and kickstart for hands-free
-  CentOS, Rocky, or Alma Linux installation. The cluster consists of a configurable number of nodes.
-  The nodes are configured with networking support for host-to-guest, guest-to-guest, and
-  guest-to-internet.
+  dtk (desktop kubernetes)
+  ------------------------
+  Creates a Kubernetes cluster on the desktop using kickstart, KVM or VirtualBox, and choice of
+  CentOS, Rocky, or Alma Linux as the guest OS. The cluster consists of a configurable number of
+  guest VMs with each guest running one node. The nodes are configured with networking support
+  for host-to-guest, guest-to-guest, and guest-to-internet.
 
-  The script creates a "template" VM, and then clones that for each cluster node. The initial
-  template VM creation runs Kickstart to install the OS.
+  The script first creates a re-usable template VM by using kickstart to install the guest OS
+  hands-free. Thereafter, clones the template VM for each cluster node and each new cluster.
+  (The template VM can be regenerated and multiple templates can be maintained.)
 
-  Usage: dtk [--config=<path>] [--create-template=<true|false>] [--no-create-vms] [--install-addon=<addon>]
-             [--verify=<files|upstreams>] [--check-compatibility] [--up=<nodelist>] [--down=<nodelist>]
-             [--delete=<nodelist>] [--help]
+  Cluster and VM configuration is specified in a config.yaml file. By default, config.yaml in the
+  CLI dir is used but this can be overridden with a command line option.
+
+  Usage:
+  
+    dtk command [sub-command] [flags]
+
+  Supported commands, sub-commands, and operands:
+
+    command        sub-cmd / operand  Description
+    -------------  -----------------  -----------
+    cluster        create             Creates a cluster per the config.yaml file.
+                   up                 Starts all the VMs in config.yaml.
+                   down               Stops all the VMs in config.yaml.
+                   delete             Deletes a cluster by deleting all the VMs in config.yaml.
+    verify         upstreams          Does a curl HEAD request on all core k8s components, ISOs.
+                   files              Reports on which core k8s components have already been
+                                      downloaded to the file system.
+    install-addon  The addon name     Install an add-on from the scripts/addons directory.
+    check-tools    n/a                Reports on the presence or absence, and version, of the tools
+                                      used by the CLI to provision a cluster.
+    help           n/a                Displays this help.
 
   Options:
 
-    --config                   Optional. The path to a configuration yaml file that specifies the cluster
-                               options. If not provided, uses the config.yaml file in the project root.
-                               See the config.yaml file for structure and supported configs and values.
-    --create-template          Optional. Overrides the setting specified in the configuration referenced by
-                               the "--config" arg. Allowed values: "true" and "false".
-    --no-create-vms            Optional. Do not create VMs. If this option is specified, then the VMs in the
-                               config.yaml file must be up and running, and the installer will simply install
-                               Kubernetes on them.
-    --install-addon            Optional. Installs the addon in the "scripts/addons" directory matching the
-                               specified add-on into the running cluster. E.g.: "--install-addon openebs".
-    --verify                   Optional. Looks for all the upstreams or filesystem objects used by the script.
-                               Valid options are "upstreams" and "files". If "upstreams", then the script does
-                               a curl HEAD request for each upstream (e.g. OS ISO, Kubernetes binaries, etc.).
-                               If "files", then the same check is performed for the downloaded filesystem
-                               objects. This is a useful option to see all the objects that are required to
-                               provision a cluster.
-    --check-compatibility      Optional. Checks the installed versions of various utils used by the project
-                               (curl, kubectl, etc) against what the project has been tested on - and then exits,
-                               taking no further action. You should do this at least once.
-    --up                       Optional. Takes a comma-separated list of VM names, and starts them all.
-    --down                     Optional. Opposite of --up. Note - this is very low-tech at present: Order the
-                               args with the workers first and the controller last.
-    --delete                   Optional. Tears down the cluster: Force stops all VMs and removes associated
-                               files from the virtual machine directory.
-    --help                     Optional. Displays this help and exits.
+    --config           The path to a configuration yaml file that specifies the cluster
+                       options. If not provided, uses the config.yaml file in the same directory
+                       as the CLI.
+    --create-template  Overrides the setting specified in the configuration yaml. Allowed values
+                       are "true" and "false".
+    --create-vms       Create VMs. Allowed values are "true" and "false". Default is true. If
+                       false, then the VMs in the config.yaml file must be up and running, and the
+                       installer will simply install Kubernetes on them.
+    --help             Same as the help command.
 
   Examples:
 
-    ./dtk
+    ./dtk cluster create --config mycluster.yaml
 
-    Creates a cluster as defined in the provided "config.yaml" file.
+    Creates a cluster as defined in "mycluster.yaml" file.
 
-    ./dtk --create-template=false
+    ./dtk cluster create --create-template=false
 
-    Same as above except re-uses the existing template from a prior cluster creation.
+    Like above except re-uses the existing template from a prior cluster creation, and
+    uses the config.yaml in the CLI dir. (The config.yaml specifies the name of the
+    template VM.)
 
-    ./dtk --up=vm1,vm2,vm3
+    ./dtk cluster up
 
-    Starts the named VMs.'
+    Starts the VMs listed in the config.yaml in the CLI dir.
+
+    ./dtk install-addon external-dns
+
+    Installs the external-dns add-on from scripts/addons.'
