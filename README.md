@@ -14,17 +14,23 @@ This project started as a way to automate the steps in **Kelsey Hightower's** [K
 
 The `dtk` script in the repo root is the _Desktop Kubernetes_ CLI.
 
-The first time, run with just the `--check-compatibility` option to check the installed versions of the tools used by _Desktop Kubernetes_ (curl, etc.) against the tested versions. E.g.:
+The first time, run with just the `check-tools` command to check the installed versions of the tools used by _Desktop Kubernetes_ (curl, etc.) against the tested versions. E.g.:
 
 ```
-./dtk --check-compatibility
+./dtk check-tools
 ```
 
 There will likely be differences and you have to decide whether the differences are material. Slight version differences may not matter, but for sure you need all the listed tools. In keeping with the project philosophy of not modifying your desktop - you need to install the tools listed in order to use this project. **_Desktop Kubernetes_ will not alter your desktop.**
 
 > See the full documentation (link below) to know which tools are specific to KVM vs VirtualBox.
 
-The `dtk` script in the repo root is what you run. If you supply no arguments, the script will use KVM to provision and configure a cluster based on the `config.yaml` file in the repo root resulting in a three node Alma Linux cluster consisting of one controller and two workers.
+To provision a cluster:
+
+```bash
+./dtk cluster create
+```
+
+The script will use KVM to provision and configure a cluster based on the `config.yaml` file in the repo root resulting in a three node Alma Linux cluster consisting of one controller and two workers.
 
 Once the cluster comes up, the script will display a message telling you how to set your `KUBECONFIG` environment variable to access the cluster. It will also display a message showing how to SSH into each node. (There's also a helper script `sshto` that you can use for that.)
 
