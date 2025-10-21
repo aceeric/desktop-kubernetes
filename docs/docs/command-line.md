@@ -16,9 +16,9 @@ dtk command [sub-command] [flags]
 | | up | Starts all the VMs in configuration yaml. |
 | | down | Stops all the VMs in configuration yaml. |
 | | delete | Deletes a cluster by deleting all the VMs in configuration yaml. |
-| verify | upstreams | Does a curl HEAD request on all core k8s components, ISOs. |
+| verify | upstreams | Does a curl HEAD request on all core k8s components, ISOs that will be downloaded to provision a cluster. |
 | | files | Reports on which core k8s components have already been downloaded to the file system. |
-| install-addon | The addon name | Install an add-on from the scripts/addons directory. |
+| install-addon | The addon name | Install an add-on from the scripts/addons directory. See the [Add-Ons](add-ons.md) section for more detail. |
 | check-tools | n/a | Reports on the presence or absence, and version, of the tools used by the CLI to provision a cluster. |
 | version | n/a | Displays this CLI version. |
 | help | n/a | Displays this help. |
@@ -29,8 +29,8 @@ dtk command [sub-command] [flags]
 | Option | Description |
 |-|-|
 | `--config` | The path to a configuration yaml file that specifies the cluster options. If not provided, uses the configuration yaml file in the same directory as the CLI. |
-| `--create-template` {: .nowrap-column } | Overrides the setting specified in the configuration yaml. Allowed values are "true" and "false". |
-| `--create-vms` | Create VMs. Allowed values are "true" and "false". Default is true. If false, then the VMs in the configuration yaml file must be up and running, and the installer will simply install Kubernetes on them. |
+| `--create-template` {: .nowrap-column } | Overrides the setting specified in the configuration yaml. Allowed values are `true` and `false`. |
+| `--create-vms` | Create VMs. Allowed values are `true` and `false`. Default is true. If false, then the VMs in the configuration yaml file must be up and running, and the installer will simply install Kubernetes on them. |
 | `--help` | Same as the help command. |
 
 ## Examples

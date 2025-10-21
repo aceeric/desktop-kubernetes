@@ -46,13 +46,13 @@ The `k8s` section has configuration settings that configure Kubernetes, independ
 | `k8s.cluster-cidr` | Configures CIDR range for Pods. This is applied to the `kube-controller-manager`. (Be aware of `--node-cidr-mask-size...` args which you can't override at this time.) |
 | `k8s.cluster-dns` | Ignored - not yet implemented. |
 | `k8s.kube-proxy` | If true, you can run the cluster without Calico or Cilium (or other CNI) using the default CNI configuration that is established by `scripts/worker/containerd/install-containerd`. |
-| `k8s.containerd-mirror` | Supports configuring `containerd` to mirror to a different registry. The example in the yaml has all images mirrored to a distribution server on 192.168.0.49:8080. Background: I use my own caching pull-only, pull-through OCI distribution server https://github.com/aceeric/ociregistry running as a systemd service on my desktop to mitigate DockerHub rate limiting. See the example immediately below. |
+| `k8s.containerd-mirror` | Supports configuring `containerd` to mirror to a different registry. The example in the yaml has all images mirrored to a distribution server on 192.168.0.49:8080. Background: I use my own caching pull-only, pull-through [OCI distribution server](https://github.com/aceeric/ociregistry) running as a systemd service on my desktop to mitigate DockerHub rate limiting. See the example immediately below. |
 
 > Static pod container images for the containerized control plane per: https://kubernetes.io/releases/download/
 
 ### Configuring `containerd`
 
-You can configure containerd to mirror with the following in the `config.yaml` file. Mirroring is disabled by default. You enable it by setting `enabled: true` and specifying the name and configuration. In the example, **all** images are mirrored (`name: _default` which is a special value recognized by `containerd`) and the mirror is http://http://192.168.0.49:8080.
+You can configure `containerd` to mirror with the following in the `config.yaml` file. Mirroring is disabled by default. You enable it by setting `enabled: true` and specifying the name and configuration. In the example, **all** images are mirrored (`name: _default` which is a special value recognized by `containerd`) and the mirror is http://http://192.168.0.49:8080.
 ```
 k8s:
   containerd-mirror:
@@ -64,9 +64,13 @@ k8s:
         skip_verify = true
 ```
 
+With the configuration above, as _Desktop Kubernetes_ is installing `containerd` into each guest, it also configures mirroring at the same time.
+
 ## The `dns` Section
 
-The `dns` section configures the External-DNS Add-On. _Desktop Kubernetes_ uses the External-DNS Add-On to watch `Ingress` resources and configure `/etc/hosts` so that when you create an ingress with a host name, the host name is DNS-resolveable. This means that after creating an ingress, you can use the address in your browser. This requires you to run the included External DNS webhook server. See the [External DNS](external-dns.md) section for details.
+The `dns` section configures the External-DNS Add-On. _Desktop Kubernetes_ uses the External-DNS Add-On to watch `Ingress` resources and configure `/etc/hosts` so that when you create an ingress with a host name, the host name is immediately DNS-resolveable. This means that after creating an ingress, you can use the address in your browser.
+
+This requires you to run the included External DNS webhook server. See the [External DNS](external-dns.md) section for details.
 
 | Key | Description |
 |-|-|
@@ -100,12 +104,12 @@ This section is only used if `virt = kvm`
 | Key | Description |
 |-|-|
 | `vm.linux` | Determines the Linux variant.  Valid values are `alma9` for Alma 9.6 (the default), `alma8` for Alma 8.10, `centos9` for CentOS 9 Stream, and `rocky` for Rocky Linux. Ignored unless `vm.create-template` is specified. **CentOS and Rocky are un-tested.** (It's on the to-do list.) |
-| `vm.create-template` | Values are `true` (the  default) or `false`. Causes the script to create a template VM to clone all the cluster nodes from before bringing up the cluster. (This step by far takes the longest.) If not specified, the script expects to find an existing VM to clone from per the `vm.template-vmname` setting. This option installs the OS using Kickstart. **You must set this to true for the very first cluster you create.** |
+| `vm.create-template` | Values are `true` (the  default) or `false`. Causes the script to create a template VM before bringing up the cluster. (This step by far takes the longest.) The template is then used to clone all the cluster nodes. If not specified, the script expects to find an existing VM to clone from per the `vm.template-vmname` setting. This option installs the OS using Kickstart. **You must set this to true for the very first cluster you create meaning - you have to create a template at least once.** |
 | `vm.template-vmname` {: .nowrap-column } | Specifies the template VM name to create - or clone from. |
 
 ## The `vms` Section
 
-This section has a list of dictionaries.
+This section has a list of dictionaries. Each element in the list is a VM to create and to install the Kubernetes components in.
 
 | Key | Description |
 |-|-|
