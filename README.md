@@ -4,7 +4,7 @@
 
 _Desktop Kubernetes_ is a Linux Bash CLI that provisions a Kubernetes cluster right on your desktop using KVM or VirtualBox - with each cluster node consisting of a guest VM running any of: Alma, CentOS, or Rocky Linux. The goal is to create a local development and testing environment that is 100% compatible with a production-grade Kubernetes environment.
 
-_Desktop Kubernetes_ is the _57 Chevy_ of Kubernetes distros: you can take it apart and put it back together with just a few Linux console tools: `bash`, `curl`, `ssh`, `scp`, `tar`, `openssl`, `helm`, `yq`, kvm tools (`virsh`, `virt-install`, `qemu-img`), and `kubectl`. That being said, **v1.33.1** of this distribution is Kubernetes Certified. See: [CNCF Landscape](https://landscape.cncf.io/?group=certified-partners-and-providers&view-mode=grid&item=platform--certified-kubernetes-distribution--desktop-kubernetes).
+_Desktop Kubernetes_ is the _57 Chevy_ of Kubernetes distros: you can take it apart and put it back together with just a few Linux console tools: `bash`, `curl`, `ssh`, `scp`, `tar`, `openssl`, `helm`, `yq`, kvm tools (`virsh`, `virt-install`), and `kubectl`. That being said, **v1.33.1** of this distribution is Kubernetes Certified. See: [CNCF Landscape](https://landscape.cncf.io/?group=certified-partners-and-providers&view-mode=grid&item=platform--certified-kubernetes-distribution--desktop-kubernetes).
 
 [<img src="https://www.cncf.io/wp-content/uploads/2020/07/certified_kubernetes_color-1.png" width="90"/>](https://github.com/cncf/k8s-conformance/tree/master/v1.33/desktop-kubernetes)
 

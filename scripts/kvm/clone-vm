@@ -33,14 +33,15 @@ virsh setvcpus  $clone_vmname $clone_cpus --config
 virsh setmaxmem $clone_vmname "$clone_ram"M
 virsh setmem    $clone_vmname "$clone_ram"M  --config
 
+echo "starting VM"
+virsh start $clone_vmname
+
+# can only resize a running VM
 if [[ -n $clone_disk ]]; then
   echo "resizing disk vda to $clone_disk gigs"
   img=$(virsh domblklist $clone_vmname | grep vda | awk '{print $2}')
-  sudo qemu-img resize $img ${clone_disk}G
+  virsh blockresize $clone_vmname $img ${clone_disk}GiB
 fi
-
-echo "starting VM"
-virsh start $clone_vmname
 
 echo "setting the hostname for cloned VM"
 clone_ip=$(xec kvm/get-vm-ip $clone_vmname)

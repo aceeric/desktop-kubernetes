@@ -11,7 +11,7 @@ To install with different Kubernetes component versions, change the correspondin
 The categories are:
 
 1. **Host:** These tools must be installed on your desktop (by you.)
-2. **Guest VM:**  These are installed in the Guest VMs that make up the cluster.
+2. **Guest VM:**  These are installed by _Desktop Kubernetes_ into the Guest VMs that make up the cluster.
 3. **Kubernetes:** These run Kubernetes in the Guest VMs.
 
 | Category | Component | Version | VirtualBox Only | KVM Only |
@@ -27,7 +27,6 @@ The categories are:
 | Host | yq | 4.40.5 | - | - |
 | Host | virt-install / virt-clone | 4.0.0 | - | Yes |
 | Host | virsh | 8.0.0 | - | Yes |
-| Host | qemu-img | 6.2.0 | - | Yes |
 | Host | Hydrophone | v0.7.0 | - | - |
 | Guest VM | Centos ISO | Stream-9-latest-x86_64 | - | - |
 | Guest VM | Rocky Linux ISO | 8.10 | - | - |
@@ -43,6 +42,8 @@ The categories are:
 | Kubernetes | runc | v1.3.1 | - | - |
 | Kubernetes | cni plugins | v1.8.0 | - | - |
 | Kubernetes | containerd | 2.1.4 | - | - |
+
+> The Virtual Box Guest Additions ISO enables getting the IP address of a VM.
 
 ## Add-ons
 

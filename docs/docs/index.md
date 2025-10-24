@@ -15,7 +15,7 @@ The goal of this distro is to create stable, reliable, production-grade VM-based
 
 ![Certified Kubernetes Logo](assets/certified_kubernetes_color-1.png){ width=110px align=left }
 
-_Desktop Kubernetes_ is the *57 Chevy* of Kubernetes distros: you can take it apart and put it back together with just a few Linux console tools: `bash`, `curl`, `ssh`, `scp`, `tar`, `openssl`, `helm`, `yq`, kvm tools (`virsh`, `virt-install`, `qemu-img`), and `kubectl`. That being said, **v1.33.1** of this distribution is Kubernetes Certified. See: [CNCF Landscape](https://landscape.cncf.io/?group=certified-partners-and-providers&view-mode=grid&item=platform--certified-kubernetes-distribution--desktop-kubernetes).
+_Desktop Kubernetes_ is the *57 Chevy* of Kubernetes distros: you can take it apart and put it back together with just a few Linux console tools: `bash`, `curl`, `ssh`, `scp`, `tar`, `openssl`, `helm`, `yq`, kvm tools (`virsh`, `virt-install`), and `kubectl`. That being said, **v1.33.1** of this distribution is Kubernetes Certified. See: [CNCF Landscape](https://landscape.cncf.io/?group=certified-partners-and-providers&view-mode=grid&item=platform--certified-kubernetes-distribution--desktop-kubernetes).
 
 The project consists of a number of bash scripts and supporting manifests / config files. The design is documented in the [Design](design.md) Section.
 

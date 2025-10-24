@@ -118,7 +118,7 @@ This section has a list of dictionaries. Each element in the list is a VM to cre
 | `vms[n].cpu` | Number of CPUs. |
 | `vms[n].mem` | Memory in MB. E.g.: `8192` = 8 gig. |
 | `vms[n].ip` | The rightmost octet of the IP address for the host. Ignored unless `virt=virtualbox` and `vbox.host-only-network` is configured. So, for example, if `vbox.host-only-network` is `192.168.56` and this `ip` value is `200`. then the IP address assigned to the host-only interface in the VM is `192.168.56.200`. |
-| `vms[n].disk` | Only supported if `virt=kvm` at this time. Resizes the disk to the specified number which is interpreted as Gi. **Note:** the script will use `sudo` to issue the resize command because libvirt makes `root` the owner of the VM `qcow2` files and I have not been able to figure out how to overcome that. |
+| `vms[n].disk` | Only supported if `virt=kvm` at this time. Resizes the disk to the specified number which is interpreted as Gi. |
 | `vms[n].pod-cidr` {: .nowrap-column } | Used to configure CNI for containerd. **As soon as Cilium or Calico are installed then this configuration is rendered unused.** |
 
 ## The `cluster` Section

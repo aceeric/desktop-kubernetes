@@ -29,8 +29,6 @@ The tools / components checked by the script are:
 | `yq` | Parse the configuration yaml file. | - | - |
 | `virt-install` | Provision KVM VMs. | - | Yes |
 | `virsh` |  Provision KVM VMs. | - | Yes |
-| `qemu-img` |  Provision KVM VMs. | - | Yes |
-
 
 You may need to install tools and there will likely be differences between the versions tested by the project, and what you've installed. You have to decide whether the differences are material. Slight version differences may not matter, but for sure you need all the listed tools.
 

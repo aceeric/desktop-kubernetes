@@ -38,7 +38,6 @@ helm                   v3.18.0               v3.18.0               Yes
 yq                     4.40.5                4.40.5                Yes
 virt-install           4.0.0                 4.0.0                 Yes
 virsh                  8.0.0                 8.0.0                 Yes
-qemu-img               6.2.0                 6.2.0                 Yes
 ```
 
 Version incompatibilities may not be an issue. You have to use your judgement. (Since KVM is the default virtualization, any VirtualBox or genisoimage discrepancies are not relevant for conformance since those are not used as part of KVM provisioning.)
