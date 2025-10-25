@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Start a VM if it is not already running. VM name in arg 1.
+# Starts a VM if it is not already running. VM name in arg 1.
 #
 # Usage
 #

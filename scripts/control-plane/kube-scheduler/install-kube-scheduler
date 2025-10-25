@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+#
+# Installs the kube-scheduler
+#
 
 set -e
 

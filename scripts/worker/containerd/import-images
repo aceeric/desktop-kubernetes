@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 #
-# Looks in hard-coded path '/tmp/images'. First untar any .tgz files if they
-# exist. This enables to bundle up many tar files into a single tgz. Then
-# for each .tar file in the directory, import into the containerd cache.
+# Imports images into the containerd cache. Looks in hard-coded path
+# '/tmp/images'. First untars any .tgz files if they exist. This enables
+# to bundle up many tar files into a single tgz. Then for each .tar file
+# in the directory, imports the tarred image into the containerd cache.
 #
 
 image_path=/tmp/images

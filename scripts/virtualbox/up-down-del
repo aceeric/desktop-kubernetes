@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Usage:
+# Starts / stops / deletes a cluster. Usage:
 #
 # up-down-del <up|down|del> <config>
 #

@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+#
+# Helm-installs the kube-prometheus stack.
+#
 
 config=$1
 

@@ -1,9 +1,9 @@
 #!/usr/bin/env bash
 #
-# aggregator configs based on:
-# - https://github.com/kubernetes-sigs/metrics-server#requirements
-# - https://kubernetes.io/docs/tasks/extend-kubernetes/configure-aggregation-layer/
-# - https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/apiserver-aggregation/
+# Installs the kube-apiserver. Aggregator configs based on:
+#  - https://github.com/kubernetes-sigs/metrics-server#requirements
+#  - https://kubernetes.io/docs/tasks/extend-kubernetes/configure-aggregation-layer/
+#  - https://kubernetes.io/docs/concepts/extend-kubernetes/api-extension/apiserver-aggregation/
 #
 
 set -e

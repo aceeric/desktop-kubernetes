@@ -1,7 +1,10 @@
 #!/usr/bin/env bash
-
-# Key pair eventually gets wired into the template VM. So the private key can be used to SSH
-# into any VM cloned from the template.
+#
+# Generates an SSH key pair if not already present. The Key pair eventually gets
+# wired into the template VM. So the private key can be used to SSH into any VM
+# cloned from the template. Outputs: id_ed25519 and id_ed25519.pub in id_ed25519
+# in $DTKBASE/generated/kickstart directory.
+#
 
 set -e
 

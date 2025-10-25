@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
-
-# Configures a worker node
+#
+# Configures a worker node by installing crictl, runc, containerd,
+# kubelet, and optionally kube-proxy.
+#
 
 set -e
 

@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-
 #
 # Creates - or returns the name of - a host only network using the passed octets. The passed octets
 # are the left three octets of an IPv4 address. E.g.: 192.168.55.
@@ -16,6 +15,7 @@
 #
 # Example:
 #   get-or-create-hostonly-network 192.168.55
+#
 
 set -e
 

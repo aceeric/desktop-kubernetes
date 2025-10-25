@@ -1,11 +1,11 @@
 #!/usr/bin/env bash
-
 #
-# Creates a Linux VM from a Linux ISO, and installs the OS using Kickstart from a Kickstart ISO.
-# Intent is - this VM will be the template VM from which the cluster VMs will subsequently be cloned.
-# Expects ISO files on the file system. Configures bridged networking or host only networking based on
-# passed options. This script just creates the VM. To install guest additions, you would need to call
-# 'install-guest-additions' (which is done by the 'create-template-vm' script.)
+# Creates a VM from an  ISO, and installs the OS using Kickstart from a Kickstart ISO.
+# Intent is - this VM will be the template VM from which the cluster VMs will subsequently
+# be cloned. Expects ISO files on the file system. Configures bridged networking or host
+# only networking based on passed options. This script just creates the VM. To install guest
+# additions, you would need to call 'install-guest-additions' (which is done by the
+# 'create-template-vm' script.)
 #
 
 set -e

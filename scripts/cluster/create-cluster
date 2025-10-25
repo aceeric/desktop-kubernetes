@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 #
-# Top-level cluster creation script.
+# Top-level cluster creation script. Creates VMs. Install Kubernetes. Then
+# installs Add-Ons.
 #
 
 set -e

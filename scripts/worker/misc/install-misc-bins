@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+#
+# Copies crictl, runc, and cni plugins to the VM with IP
+# --worker-ip.
+#
 
 set -e
 

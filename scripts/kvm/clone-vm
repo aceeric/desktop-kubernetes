@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+#
+# Clones a VM from --template-vmname into --clone-vmname.
+#
 
 set -e
 

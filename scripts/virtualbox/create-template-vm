@@ -1,12 +1,11 @@
 #!/usr/bin/env bash
-
 #
 # Creates a template VM suitable to clone into a cluster VM. Specifically:
 #
-# 1. *may* generate SSH key pair into the 'generated/kickstart' directory to support SSH access to the VM
-# 2. generates the kickstart ISO into the 'generated/iso' directory
-# 3. creates a VM from the passed Linux ISO and generated kickstart ISO
-# 4. installs guest additions from the passed ISO to support other scripts getting the IP address from the VM
+# 1. May generate SSH key pair into the 'generated/kickstart' directory to support SSH access to the VM
+# 2. Generates the kickstart ISO into the 'generated/iso' directory
+# 3. Creates a VM from the passed Linux ISO and generated kickstart ISO
+# 4. Installs guest additions from the passed ISO to support other scripts getting the IP address from the VM
 #
 
 set -e

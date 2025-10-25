@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-
+#
 # installs the kube-controller-manager.
+#
 
 set -e
 

@@ -1,5 +1,7 @@
 #!/usr/bin/env python3
 #
+# This file is no longer used, having been replaced by the use of 'yp'.
+#
 # Super-simple yaml config-file value getter. Three capabilities:
 #
 # 1) (base use case): return a value at a path:

@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
-
+#
 # Firewall rules per:
 # https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/#check-required-ports
+#
 
 vmip="$1"
 priv_key="$2"

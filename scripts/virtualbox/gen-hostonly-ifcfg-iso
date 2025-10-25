@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-
+#
 #
 # Creates an ISO that the desktop-kubernetes service (installed by kickstart) can use to configure
 # host only networking. The label - CFGENP0S8 - that is assigned to the ISO is important:

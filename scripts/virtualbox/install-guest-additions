@@ -1,10 +1,13 @@
 #!/usr/bin/env bash
-
-# Mount the guest additions ISO and boot the VM. On boot, the desktop-kubernetes service that was
-# installed by the kickstart script will run, and install the guest additions unattended, booting the VM
-# when needed. To watch the guest additions being installed, you can log into the VM, open a terminal,
-# and: 'journalctl -u desktop-kubernetes -f'. Upon return from this script, the guest additions install
-# has completed, the VM is shut down, and the guest additions ISO is detached.
+#
+# Installs guest additions which enables getting the IP address. Mounts the guest additions
+# ISO and boots the VM. On boot, the desktop-kubernetes service that was installed by the
+# kickstart script will run, and install the guest additions unattended, booting the VM when
+# needed. To watch the guest additions being installed, you can log into the VM, open a
+# terminal, and: 'journalctl -u desktop-kubernetes -f'. Upon return from this script, the
+# guest additions install has completed, the VM is shut down, and the guest additions ISO
+# is detached.
+#
 
 set -e
 

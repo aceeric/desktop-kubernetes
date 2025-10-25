@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+#
+# Helm-installs cilium.
+#
 
 config=$1
 

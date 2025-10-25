@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+#
+# Gets the IP address of a VM.
+#
 
 vm="$1"
 

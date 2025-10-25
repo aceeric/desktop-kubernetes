@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+#
+# Prints versions of tools installed on the host and the versions
+# I have tested with.
+#
 
 mismatch=0
 tested_openssl_version="3.0.13"

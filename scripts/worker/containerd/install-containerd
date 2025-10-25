@@ -1,4 +1,10 @@
 #!/usr/bin/env bash
+#
+# Installs and configures containerd. Optionally populates the containerd
+# cache on each host if files are populated in the 'images' dir of the project.
+# Minimizes the impact of Docker rate-limiting. See 'hack/create-image-archive'
+# script.
+#
 
 set -e
 
@@ -68,10 +74,6 @@ for i in {1..10}; do
 done
 
 echo "No errors detected with containerd installation"
-
-# this section of code populates the containerd cache on each host if files are populated
-# in the 'images' dir of this project to minimize the impact of Docker rate-limiting. See
-# the 'hack/create-image-archive' script.
 
 imagecnt=$(find $DTKBASE/images \( -name '*.tar' -o -name '*.tgz' \) | wc -l)
 

@@ -1,7 +1,9 @@
 #!/usr/bin/env bash
-
-# configures /etc/hosts on each VM with the hostname of each VM. Usage:
-#   configure-etc-hosts kickstart/id_ed25519 vm1 vm2 ... vmN
+#
+# Configures /etc/hosts on each VM with the hostname of each VM. Usage:
+#
+# configure-etc-hosts generated/kickstart/id_ed25519 vm1 vm2 ... vmN
+#
 
 set -e
 

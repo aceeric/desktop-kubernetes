@@ -1,4 +1,10 @@
 #!/usr/bin/env bash
+#
+# Checks to see if binaries needed to provision the cluster are downloaded
+# the the file system if the script arg is "files". Otherwise does a HEAD
+# request on upstreams to see if they are available. Uses environment variables
+# defined in the 'artifacts' script in the repo root.
+#
 
 if [[ "$1" == "files" ]]; then
   for f in $ALMA8_ISO_FILE\

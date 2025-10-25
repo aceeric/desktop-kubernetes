@@ -5,7 +5,7 @@
 #
 # Usage example:
 #
-# start=$(date +%s%N | cut -b1-13); read; stop=$(date +%s%N | cut -b1-13); ./elapsed $start $stop
+# start=$(date +%s%N | cut -b1-13); read; stop=$(date +%s%N | cut -b1-13); ./elapsed $start $stop; echo
 #
 
 start="$1"

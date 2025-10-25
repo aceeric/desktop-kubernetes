@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Download core cluster components. (Downloads for add-ons like Calico etc. are
+# Downloads core cluster components. (Downloads for add-ons like Calico etc. are
 # handle by the various add-ons - see: 'scripts/addons'.)
 #
 

@@ -1,4 +1,8 @@
 #!/usr/bin/env bash
+#
+# Provisions VMs for the cluster. May create a template VM first if
+# --create-template=true. Otherwise clones the VMs from --template-vmname
+# arg.
 
 set -e
 

@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
-
+#
 # Creates a clone VM from the passed template VM. The cloned VM will have the passed
 # characteristics (VM name, mem, disk size). Unless shutdown=false, the VM will be shut down after it
 # is created. The host name of the VM will be set to the same value as the VM name. The clone_ram arg
 # is interpreted as kilobytes.
+#
 
 set -e
 

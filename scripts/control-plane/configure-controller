@@ -1,6 +1,8 @@
 #!/usr/bin/env bash
-
-# Configures a controller node
+#
+# Configures a controller node by installing etcd, kube-apiserver, kube-controller-manager,
+# and kube-scheduler.
+#
 
 set -e
 

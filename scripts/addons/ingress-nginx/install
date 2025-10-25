@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+#
+# Helm-installs Ingress-Nginx.
+#
 
 config=$1
 

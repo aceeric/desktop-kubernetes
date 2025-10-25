@@ -19,6 +19,7 @@
 #
 # Would return
 # foo=bar\nbaz=1\nfoo_bar=frobozz
+#
 
 vars=
 sep=

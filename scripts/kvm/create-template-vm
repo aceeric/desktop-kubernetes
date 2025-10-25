@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+#
+# Creates a template VM.
+#
 
 set -e
 

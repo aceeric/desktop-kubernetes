@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+#
+# Shows the dtk usage instructions.
+#
 
 while IFS= read -r line; do
   echo "${line:2}"

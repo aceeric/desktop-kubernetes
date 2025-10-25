@@ -1,4 +1,7 @@
 #!/usr/bin/env bash
+#
+# Helm-installs the External DNS.
+#
 
 config=$1
 

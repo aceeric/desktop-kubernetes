@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
-
+#
 # Waits (forever) for a VM to be either stopped or started based on the passed option of '--stopped'
 # or '--started'. Usage:
 #
 #   wait-vm MYVMNAME [ --started | --stopped ]
+#
 
 vm=
 action=
