@@ -62,6 +62,10 @@ encryption_key=$(head -c 32 /dev/urandom | base64)
 sed $script_dir/encryption-config.yaml -e "s|ENCRYPTION_KEY|$encryption_key|g"\
  | ssh -i $priv_key root@$controller_ip "cat > /var/lib/kubernetes/encryption-config.yaml"
 
+echo "configuring static token"
+ssh -i $priv_key root@$controller_ip "mkdir -p /etc/kubernetes/auth"
+scp -i $priv_key $script_dir/static-token.csv root@$controller_ip:/etc/kubernetes/auth/
+
 if [[ $containerized_cplane -eq 0 ]]; then
   echo "copying kube-apiserver binary to controller"
   scp -i $priv_key $kube_apiserver_binary root@$controller_ip:/usr/local/bin/kube-apiserver
@@ -70,43 +74,29 @@ if [[ $containerized_cplane -eq 0 ]]; then
   sed $script_dir/kube-apiserver.service -e "s|CONTROLLER_IP|$controller_ip|g"\
    | ssh -i $priv_key root@$controller_ip "cat > /etc/systemd/system/kube-apiserver.service"
 
-  echo "configuring static token"
-  ssh -i $priv_key root@$controller_ip "mkdir -p /etc/kubernetes/auth"
-  scp -i $priv_key $script_dir/static-token.csv root@$controller_ip:/etc/kubernetes/auth/
-
   echo "starting kube-apiserver service"
   ssh -i $priv_key root@$controller_ip\
    "systemctl daemon-reload && systemctl enable --now kube-apiserver"
-  
-  echo "verifying kube-apiserver is running"
-  set +e
-  for i in {1..10}; do
-    http_code=$(curl -so /dev/null -w "%{http_code}" --cacert $ca_cert https://$controller_ip:6443/version)
-    if [[ "$http_code" == "200" ]]; then
-      break
-    fi
-    sleep 1s
-  done
-  
-  if [[ "$http_code" != "200" ]]; then
-    echo "ERROR: Unable to verify kube-apiserver installation"
-    exit 1
-  fi
 else
   echo "copying kube-apiserver static pod manifest to controller VM"
   sed $script_dir/kube-apiserver-pod.yaml -e "s|CONTROLLER_IP|$controller_ip|g"\
     -e "s|K8S_VER|$K8S_VER|g"\
     | ssh -i $priv_key root@$controller_ip "cat > /etc/desktop-kubernetes/static-pods/kube-apiserver-pod.yaml"
-  for i in {1..20}; do
-    if kubectl --kubeconfig $admin_kubeconfig -n kube-system wait pod\
-      -lcomponent=kube-apiserver --for=condition=ready --timeout=5s; then
-      break
-    elif [[ $i -eq 20 ]]; then
-      echo "Can't verify kube-apiserver installation"
-      exit 1
-    fi
-    sleep 5s
-  done
+fi
+
+echo "verifying kube-apiserver is running"
+set +e
+for i in {1..20}; do
+  http_code=$(curl -so /dev/null -w "%{http_code}" --cacert $ca_cert https://$controller_ip:6443/version)
+  if [[ "$http_code" == "200" ]]; then
+    break
+  fi
+  sleep 1s
+done
+
+if [[ "$http_code" != "200" ]]; then
+  echo "ERROR: Unable to verify kube-apiserver installation"
+  exit 1
 fi
 
 echo "generating RBAC for kubelet authorization"

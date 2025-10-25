@@ -13,7 +13,6 @@ spec:
     - kube-apiserver
     - --advertise-address=CONTROLLER_IP
     - --allow-privileged=true
-    - --apiserver-count=3
     - --audit-log-maxage=30
     - --audit-log-maxbackup=3
     - --audit-log-maxsize=100
@@ -58,18 +57,24 @@ spec:
       privileged: false
     volumeMounts:
     - name: d1
-      mountPath: /var/lib/kubernetes/
+      mountPath: /var/lib/kubernetes
       readOnly: true
     - name: d2
       mountPath: /var/log
+    - name: d3
+      mountPath: /etc/kubernetes/auth
   hostNetwork: true
   priorityClassName: system-cluster-critical
   volumes:
   - name: d1
     hostPath:
-      path: /var/lib/kubernetes/
+      path: /var/lib/kubernetes
       type: DirectoryOrCreate
   - name: d2
     hostPath:
       path: /var/log
+      type: DirectoryOrCreate
+  - name: d3
+    hostPath:
+      path: /etc/kubernetes/auth
       type: DirectoryOrCreate
