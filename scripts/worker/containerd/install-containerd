@@ -31,9 +31,13 @@ echo "Copying containerd service and toml files to worker VM"
 scp -i $priv_key $script_dir/containerd.service root@$worker_ip:/etc/systemd/system/
 
 ssh -i $priv_key root@$worker_ip "mkdir -p /etc/containerd/certs.d"
-# this TOML produced by 'containerd config default > config.toml' AFTER containerd installed,
-# then copy back into this project plus tweak cgroup:
-scp -i $priv_key $script_dir/config.toml root@$worker_ip:/etc/containerd/
+# toml produced by 'containerd config default > config.2.1.4.toml' then hand-update:
+# config_path which is empty by default:
+# [plugins]
+#   [plugins.'io.containerd.cri.v1.images']
+#     [plugins.'io.containerd.cri.v1.images'.registry]
+#       config_path = '/etc/containerd/certs.d'
+scp -i $priv_key $script_dir/config.2.1.4.toml root@$worker_ip:/etc/containerd/config.toml
 
 # June 2025 per https://kubernetes.io/docs/setup/production-environment/container-runtimes/
 echo "Configuring networking"
@@ -75,8 +79,8 @@ done
 
 echo "No errors detected with containerd installation"
 
+# support the ability to pre-load containerd cache from the images directory on the desktop
 imagecnt=$(find $DTKBASE/images \( -name '*.tar' -o -name '*.tgz' \) | wc -l)
-
 if [[ $imagecnt -ne 0 ]]; then
   echo "Copying images to host"
   ssh -i $priv_key root@$worker_ip "mkdir -p /tmp/images"

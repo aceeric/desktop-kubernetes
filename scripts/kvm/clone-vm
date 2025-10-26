@@ -46,7 +46,7 @@ if [[ -n $clone_disk ]]; then
   virsh blockresize $clone_vmname $img ${clone_disk}GiB
 fi
 
-echo "setting the hostname for cloned VM"
+echo "setting the hostname for $clone_vmname"
 clone_ip=$(xec kvm/get-vm-ip $clone_vmname)
 ssh-keygen -f ~/.ssh/known_hosts -R $clone_ip
 ssh -o "StrictHostKeyChecking no" -i $priv_key root@$clone_ip "hostnamectl set-hostname $clone_vmname"
