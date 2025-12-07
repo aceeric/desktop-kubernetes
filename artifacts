@@ -1,7 +1,7 @@
 # Change versions here and they will propagate throughout the project
 
 ALMA8_VER=8.10
-ALMA9_VER=9.6
+ALMA9_VER=9.7
 CNI_PLUGINS_VER=v1.8.0
 CONTAINERD_VER=2.1.4
 CRICTL_VER=v1.34.0
