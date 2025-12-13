@@ -2,6 +2,8 @@
 
 <img src="resources/desktop-kubernetes-no-text.jpg" width="150"/>
 
+![Version: 1.34.1-2](https://img.shields.io/badge/Version-1.34.1--2-informational?style=rounded-square)
+
 _Desktop Kubernetes_ is a Linux Bash CLI that provisions a Kubernetes cluster right on your desktop using KVM or VirtualBox - with each cluster node consisting of a guest VM running any of: Alma, CentOS, or Rocky Linux. The goal is to create a local development and testing environment that is 100% compatible with a production-grade Kubernetes environment.
 
 _Desktop Kubernetes_ is the _57 Chevy_ of Kubernetes distros: you can take it apart and put it back together with just a few Linux console tools: `bash`, `curl`, `ssh`, `scp`, `tar`, `openssl`, `helm`, `yq`, kvm tools (`virsh`, `virt-install`), and `kubectl`. That being said, **v1.33.1** of this distribution is Kubernetes Certified. See: [CNCF Landscape](https://landscape.cncf.io/?group=certified-partners-and-providers&view-mode=grid&item=platform--certified-kubernetes-distribution--desktop-kubernetes).

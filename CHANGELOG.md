@@ -1,5 +1,17 @@
 # Change Log
 
+## 12-Dec-2025
+Tag: `v1.34.1-2`
+
+1. Update Alma from 9.6 to 9.7
+2. Update containerd toml to 2.1.4 default
+3. Source code documentation consistency
+4. Fix static token missing from containerized kube-apiserver
+5. Replace qemu-img with virsh blockresize
+6. Handle vbox not fully installed (e.g. after Ubunutu upgrade)
+7. MKDocs doc cleanups
+8. Correct main README for new command line structure
+
 ## 20-Oct-2025
 Tag: `v1.34.1-1`
 
