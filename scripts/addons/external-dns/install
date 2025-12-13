@@ -24,12 +24,17 @@ dns_domain=$(yq .dns.domain $config)
 curl -X POST "http://$dns_host_ip:$dns_webhook_port/domains" -d "$dns_domain"
 curl -X POST "http://$dns_host_ip:$dns_webhook_port/clusterip" -d "$controller_ip"
 
+cat <<EOF >| $script_dir/extra-values.yaml
+extraArgs:
+  - --webhook-provider-url=http://$dns_host_ip:$dns_webhook_port
+EOF
+
 admin_kubeconfig=$(yq .cluster.admin-kubeconfig $config)
 helm upgrade --install external-dns $tgz\
   --namespace external-dns\
   --create-namespace\
   --kubeconfig $admin_kubeconfig\
-  --values $script_dir/values.yaml\
-  --set extraArgs={--webhook-provider-url=http://$dns_host_ip:$dns_webhook_port}\
   --post-renderer $script_dir/post-render.py\
-  --wait
+  --values $script_dir/values.yaml\
+  --values $script_dir/extra-values.yaml\
+  --wait\

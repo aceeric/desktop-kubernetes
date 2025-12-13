@@ -16,7 +16,8 @@ admin_kubeconfig=$(yq .cluster.admin-kubeconfig $config)
 helm upgrade --install cert-manager $tgz\
   --namespace cert-manager\
   --create-namespace\
-  --set crds.enabled=true\
-  --kubeconfig $admin_kubeconfig
+  --kubeconfig $admin_kubeconfig\
+  --values $script_dir/values.yaml\
+  --wait
 
 kubectl --kubeconfig $admin_kubeconfig apply -f $script_dir/selfsigned-cluster-issuer.yaml

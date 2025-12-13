@@ -15,9 +15,9 @@ url=https://openebs.github.io/dynamic-localpv-provisioner/localpv-provisioner-$O
 tgz=$DTKBASE/binaries/$(basename $url)
 xec download-obj --url=$url --dest=$tgz
 
-helm upgrade --install openebs\
+helm upgrade --install openebs $tgz\
   --namespace openebs\
   --create-namespace\
   --kubeconfig $admin_kubeconfig\
   --values $script_dir/values.yaml\
-  $tgz
+  --wait

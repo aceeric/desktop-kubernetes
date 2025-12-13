@@ -13,9 +13,9 @@ tgz=$DTKBASE/binaries/$(basename $url)
 xec download-obj --url=$url --dest=$tgz
 
 admin_kubeconfig=$(yq .cluster.admin-kubeconfig $config)
-helm upgrade --install kubernetes-dashboard\
+helm upgrade --install kubernetes-dashboard $tgz\
   --namespace kubernetes-dashboard\
   --create-namespace\
   --kubeconfig $admin_kubeconfig\
   --values $script_dir/values.yaml\
-  $tgz
+  --wait

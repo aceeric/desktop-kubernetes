@@ -18,13 +18,12 @@ controller_ip=$(xec $virt/get-vm-ip $controller_hostname)
 sed "s|K8SSERVICEHOST|$controller_ip|g" $script_dir/values-template.yaml >| $script_dir/values.yaml
 
 admin_kubeconfig=$(yq .cluster.admin-kubeconfig $config)
-helm upgrade --install cilium\
+helm upgrade --install cilium $tgz\
   --namespace cilium\
   --create-namespace\
   --kubeconfig $admin_kubeconfig\
-  --wait\
   --values $script_dir/values.yaml\
-  $tgz
+  --wait
 
 echo "waiting (indefinitely) for cilium daemonset"
 while true; do

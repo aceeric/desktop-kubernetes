@@ -33,13 +33,12 @@ done
 sed "s|CLUSTERCIDR|$cluster_cidr|" $script_dir/values-template.yaml >| $script_dir/values.yaml
 
 admin_kubeconfig=$(yq .cluster.admin-kubeconfig $config)
-helm upgrade --install tigera-operator\
+helm upgrade --install tigera-operator $tgz\
   --namespace tigera-operator\
   --create-namespace\
   --kubeconfig $admin_kubeconfig\
-  --wait\
   --values $script_dir/values.yaml\
-  $tgz
+  --wait
 
 # these steps from https://docs.tigera.io/calico/latest/operations/ebpf/enabling-ebpf to be able
 # to run without kube-proxy

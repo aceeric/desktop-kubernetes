@@ -12,18 +12,22 @@ url=https://github.com/kubernetes/ingress-nginx/releases/download/helm-chart-$IN
 tgz=$DTKBASE/binaries/$(basename $url)
 xec download-obj --url=$url --dest=$tgz
 
+echo --- >| $script_dir/extra-values.yaml
 ssl_passthrough=$(yq '.addons[] | select(.name == "ingress-nginx").ssl-passthrough' $config)
+
 if [[ $ssl_passthrough == "true" ]]; then
-  ssl_passthrough="--set controller.extraArgs.enable-ssl-passthrough="
-else
-  ssl_passthrough=""
+  cat <<EOF >> $script_dir/extra-values.yaml
+controller:
+  extraArgs:
+    enable-ssl-passthrough:
+EOF
 fi
 
 admin_kubeconfig=$(yq .cluster.admin-kubeconfig $config)
-helm upgrade --install ingress-nginx\
+helm upgrade --install ingress-nginx $tgz\
   --namespace ingress-nginx\
   --create-namespace\
   --kubeconfig $admin_kubeconfig\
   --values $script_dir/values.yaml\
-  $ssl_passthrough\
-  $tgz
+  --values $script_dir/extra-values.yaml\
+  --wait

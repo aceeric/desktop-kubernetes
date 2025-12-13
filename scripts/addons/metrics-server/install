@@ -13,9 +13,8 @@ url=https://github.com/kubernetes-sigs/metrics-server/releases/download/metrics-
 tgz=$DTKBASE/binaries/$(basename $url)
 xec download-obj --url=$url --dest=$tgz
 
-helm upgrade --install metrics-server\
+helm upgrade --install metrics-server $tgz\
   --namespace metrics-server\
   --create-namespace\
-  --wait\
   --kubeconfig $admin_kubeconfig\
-  $tgz
+  --wait

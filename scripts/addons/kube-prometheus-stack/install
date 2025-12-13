@@ -25,22 +25,36 @@ containerized_cplane=$(yq .k8s.containerized-cplane $config)
 
 # if k8s components are not running as pods then it requires additional helm values
 
+echo --- >| $script_dir/extra-values.yaml
+
 if [[ "$containerized_cplane" != *etcd* && "$containerized_cplane" != all ]]; then
-  etcd_arg="--set kubeEtcd.endpoints={$endpoint}"
-fi
-if [[ "$containerized_cplane" != *kube-scheduler* && "$containerized_cplane" != all ]]; then
-  scheduler_arg="--set kubeScheduler.endpoints={$endpoint}"
-fi
-if [[ "$containerized_cplane" != *kube-controller-manager* && "$containerized_cplane" != all ]]; then
-  ctrllrmgr_arg="--set kubeControllerManager.endpoints={$endpoint}"
+  cat <<EOF >>$script_dir/extra-values.yaml
+kubeEtcd:
+  endpoints:
+    - $endpoint
+EOF
 fi
 
-helm upgrade --install kube-prometheus\
+if [[ "$containerized_cplane" != *kube-scheduler* && "$containerized_cplane" != all ]]; then
+  cat <<EOF >>$script_dir/extra-values.yaml
+kubeScheduler:
+  endpoints:
+    - $endpoint
+EOF
+fi
+
+if [[ "$containerized_cplane" != *kube-controller-manager* && "$containerized_cplane" != all ]]; then
+  cat <<EOF >>$script_dir/extra-values.yaml
+kubeControllerManager:
+  endpoints:
+    - $endpoint
+EOF
+fi
+
+helm upgrade --install kube-prometheus $tgz\
   --namespace kube-prometheus\
   --create-namespace\
   --kubeconfig $admin_kubeconfig\
-  $etcd_arg\
-  $scheduler_arg\
-  $ctrllrmgr_arg\
   --values $script_dir/values.yaml\
-  $tgz 
+  --values $script_dir/extra-values.yaml\
+  --wait

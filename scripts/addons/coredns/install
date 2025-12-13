@@ -18,5 +18,5 @@ helm upgrade --install coredns $tgz\
   --namespace $namespace\
   --create-namespace\
   --kubeconfig $admin_kubeconfig\
-  --wait\
-  --values $script_dir/values.yaml
+  --values $script_dir/values.yaml\
+  --wait
