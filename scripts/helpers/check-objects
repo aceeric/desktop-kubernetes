@@ -7,6 +7,16 @@
 #
 
 if [[ "$1" == "files" ]]; then
+  ADDON_FILES=""
+  while read scriptfile; do
+    envvar=$(grep _VER= $scriptfile)
+    envvar_nm=$(echo $envvar | cut -d= -f1)
+    envvar_val=$(echo $envvar | cut -d= -f2)
+    url=$(grep  '^url=' $scriptfile | sed "s/\$$envvar_nm/$envvar_val/g" | cut -d= -f2)
+    file=$DTKBASE/binaries/$(basename $url)
+    ADDON_FILES="$ADDON_FILES $file"
+  done < <(find $DTKBASE/scripts/addons -name install | sort)
+
   for f in $ALMA8_ISO_FILE\
     $ALMA9_ISO_FILE\
     $CENTOS9_ISO_FILE\
@@ -21,7 +31,8 @@ if [[ "$1" == "files" ]]; then
     $KUBE_PROXY_BINARY\
     $KUBE_SCHEDULER_BINARY\
     $ROCKY_ISO_FILE\
-    $RUNC_BINARY; do
+    $RUNC_BINARY\
+    $ADDON_FILES; do
     if ! [[ -f $f ]]; then
       echo "missing: $f" >&2
     else
@@ -29,6 +40,15 @@ if [[ "$1" == "files" ]]; then
     fi
   done
 else
+  ADDON_URLS=""
+  while read scriptfile; do
+    envvar=$(grep _VER= $scriptfile)
+    envvar_nm=$(echo $envvar | cut -d= -f1)
+    envvar_val=$(echo $envvar | cut -d= -f2)
+    url=$(grep  '^url=' $scriptfile | sed "s/\$$envvar_nm/$envvar_val/g" | cut -d= -f2)
+    ADDON_URLS="$ADDON_URLS $url"
+  done < <(find $DTKBASE/scripts/addons -name install | sort)
+
   for f in $ALMA8_ISO_DOWNLOAD\
     $ALMA9_ISO_DOWNLOAD\
     $CENTOS9_ISO_DOWNLOAD\
@@ -43,7 +63,8 @@ else
     $KUBE_PROXY_DOWNLOAD\
     $KUBE_SCHEDULER_DOWNLOAD\
     $ROCKY_ISO_DOWNLOAD\
-    $RUNC_DOWNLOAD; do
+    $RUNC_DOWNLOAD\
+    $ADDON_URLS; do
     if ! curl -sL $f -o /dev/null --head --fail; then
       echo "missing: $f" >&2
     else
