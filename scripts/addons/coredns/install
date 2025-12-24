@@ -5,7 +5,7 @@
 
 config=$1
 
-COREDNS_VER=1.42.2
+COREDNS_VER=1.45.0
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 url=https://github.com/coredns/helm/releases/download/coredns-$COREDNS_VER/coredns-$COREDNS_VER.tgz

@@ -5,7 +5,7 @@
 
 config=$1
 
-TIGERA_VER=v3.30.0
+TIGERA_VER=v3.31.3
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 url=https://github.com/projectcalico/calico/releases/download/$TIGERA_VER/tigera-operator-$TIGERA_VER.tgz

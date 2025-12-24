@@ -5,7 +5,7 @@
 
 config=$1
 
-METRICS_SERVER_VER=3.12.2
+METRICS_SERVER_VER=3.13.0
 
 admin_kubeconfig=$(yq .cluster.admin-kubeconfig $config)
 

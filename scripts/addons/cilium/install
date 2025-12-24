@@ -5,7 +5,7 @@
 
 config=$1
 
-CILIUM_VER=1.17.4
+CILIUM_VER=1.18.5
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 url=https://helm.cilium.io/cilium-$CILIUM_VER.tgz

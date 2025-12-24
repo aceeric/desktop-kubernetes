@@ -5,7 +5,7 @@
 
 config=$1
 
-OPENEBS_VER=4.2.0
+OPENEBS_VER=4.4.0
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
