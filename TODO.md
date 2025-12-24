@@ -5,3 +5,4 @@
 # TODO
 
 1. Support https://github.com/flannel-io/flannel#deploying-flannel-with-helm
+2. Nginx deprecation - [NGINX Gateway Fabric](https://github.com/nginx/nginx-gateway-fabric)

@@ -32,15 +32,15 @@ The categories are:
 | Guest VM | Rocky Linux ISO | 8.10 | - | - |
 | Guest VM | Alma Linux ISO | 8.10 and 9.6 _(9.6 is the default)_ | - | - |
 | Guest VM | Virtual Box Guest Additions ISO | 7.0.18 | Yes | - |
-| Kubernetes | kube-apiserver | 1.34.1 | - | - |
-| Kubernetes | kube-controller-manager | 1.34.1 | - | - |
-| Kubernetes | kube-scheduler | 1.34.1 | - | - |
-| Kubernetes | kubelet | 1.34.1 | - | - |
-| Kubernetes | kube-proxy (if installed) | 1.34.1 | - | - |
-| Kubernetes | etcd | v3.6.5 | - | - |
-| Kubernetes | crictl | v1.34.0 | - | - |
-| Kubernetes | runc | v1.3.1 | - | - |
-| Kubernetes | cni plugins | v1.8.0 | - | - |
+| Kubernetes | kube-apiserver | 1.35.0 | - | - |
+| Kubernetes | kube-controller-manager | 1.35.0 | - | - |
+| Kubernetes | kube-scheduler | 1.35.0 | - | - |
+| Kubernetes | kubelet | 1.35.0 | - | - |
+| Kubernetes | kube-proxy (if installed) | 1.35.0 | - | - |
+| Kubernetes | etcd | v3.6.7 | - | - |
+| Kubernetes | crictl | v1.35.0 | - | - |
+| Kubernetes | runc | v1.4.0 | - | - |
+| Kubernetes | cni plugins | v1.9.0 | - | - |
 | Kubernetes | containerd | 2.1.4 | - | - |
 
 > The Virtual Box Guest Additions ISO enables getting the IP address of a VM.
