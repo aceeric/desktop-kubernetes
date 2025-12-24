@@ -1,5 +1,13 @@
 # Change Log
 
+## 23-Dec-2025
+Tag: `v1.35.0-uncertified`
+
+1. Update add-ons: calico `v3.31.3`, cert-manager `v1.19.2`, cilium `1.18.5`, coredns `1.45.0`, ingress-nginx `4.14.1`, kube-prometheus-stack `80.6.0`, kubernetes-dashboard `7.14.0`, metrics-server `3.13.0`, openebs `4.4.0`, vcluster `0.30.4`
+2. Include add-ons in output of `verify` command
+3. Kubernetes `v1.35.0`, cni plugins `v1.9.0`, crictl `v1.35.0`, etcd `v3.6.7`, runc `v1.4.0`
+4. Make all add-on helm installs consistent
+
 ## 12-Dec-2025
 Tag: `v1.34.1-2`
 
