@@ -58,10 +58,10 @@ This section assumes you've forked the conformance repo per their guidance. E.g.
    ```shell
    $ ls -l ./v1.35/desktop-kubernetes
    total 2312
-   -rw-rw-r-- 1 eace eace    7957 Jun  3 18:19 e2e.log
-   -rw-rw-r-- 1 eace eace 2348748 Jun  3 18:19 junit_01.xml
-   -rw-rw-r-- 1 eace eace     549 Jun  3 18:19 PRODUCT.yaml
-   -rw-rw-r-- 1 eace eace    4037 Jun  3 18:19 README.md
+   -rw-rw-r-- 1 eace eace    8618 Dec 24 11:31 e2e.log
+   -rw-rw-r-- 1 eace eace 2567261 Dec 24 11:31 junit_01.xml
+   -rw-rw-r-- 1 eace eace     549 Dec 24 11:31 PRODUCT.yaml
+   -rw-rw-r-- 1 eace eace    3441 Dec 24 11:31 README.md
    ```
 1. Git add and commit to the branch with message AND signoff:
    ```shell

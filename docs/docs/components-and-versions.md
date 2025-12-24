@@ -50,7 +50,7 @@ The categories are:
 To install different add-on versions change the version in the `scripts/addons` directory. (Version updates sometimes require `values.yaml` changes and other tweaks to the install logic.)
 
 | Add-on                              | Chart Version |
-|-|-|-|
+|-|-|
 | Calico networking (Tigera Operator) | v3.31.3 |
 | Cert Manager                        | v1.19.2 |
 | Cilium networking                   | 1.18.5  |
