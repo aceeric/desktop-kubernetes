@@ -1,5 +1,10 @@
 # Change Log
 
+## 24-Dec-2025
+Tag: `v1.35.0`
+
+1. Passes conformance.
+
 ## 23-Dec-2025
 Tag: `v1.35.0-uncertified`
 

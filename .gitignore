@@ -4,3 +4,4 @@ scratch/*
 
 # supports having multiple configs like my-cluster.config.yaml, etc.
 *.config.yaml
+!conformance.config.yaml
