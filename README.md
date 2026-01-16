@@ -8,7 +8,7 @@ _Desktop Kubernetes_ is a Linux Bash CLI that provisions a Kubernetes cluster ri
 
 _Desktop Kubernetes_ is the _57 Chevy_ of Kubernetes distros: you can take it apart and put it back together with just a few Linux console tools: `bash`, `curl`, `ssh`, `scp`, `tar`, `openssl`, `helm`, `yq`, kvm tools (`virsh`, `virt-install`), and `kubectl`. That being said, **v1.35.0** of this distribution is Kubernetes Certified. See: [CNCF Landscape](https://landscape.cncf.io/?group=certified-partners-and-providers&view-mode=grid&item=platform--certified-kubernetes-distribution--desktop-kubernetes).
 
-[<img src="https://www.cncf.io/wp-content/uploads/2020/07/certified_kubernetes_color-1.png" width="90"/>](https://github.com/cncf/k8s-conformance/tree/master/v1.33/desktop-kubernetes)
+[<img src="https://www.cncf.io/wp-content/uploads/2020/07/certified_kubernetes_color-1.png" width="90"/>](https://github.com/cncf/k8s-conformance/tree/master/v1.35/desktop-kubernetes)
 
 This project started as a way to automate the steps in **Kelsey Hightower's** [Kubernetes The Hard Way](https://github.com/kelseyhightower/kubernetes-the-hard-way) - just to see if I could. But at this point I pretty much rely on it for all my local Kubernetes development. I use it on a couple of different Ubuntu 24.04.X systems with 64 gigs of RAM and 6+ hyper-threaded processors.
 
