@@ -20,7 +20,7 @@ Say your cluster is like this:
 
 ```
 NAME  STATUS  ROLES              AGE  VERSION  INTERNAL-IP     etc.
-vm1   Ready   controller,worker  70m  v1.33.1  192.168.122.24  etc.
+vm1   Ready   controller,worker  70m  v1.35.0  192.168.122.24  etc.
 ```
 Then, in your browser: https://192.168.122.24:30443
 

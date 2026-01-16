@@ -22,7 +22,7 @@ The categories are:
 | Host | genisoimage (used to create a VirtualBox kickstart ISO) | 1.1.11 | Yes | - |
 | Host | Virtual Box / VBoxManage | 7.0.10 | Yes | - |
 | Host | helm | v3.18.0 | - | - |
-| Host | kubectl (client only) | v1.33.1 | - | - |
+| Host | kubectl (client only) | v1.35.0 | - | - |
 | Host | curl | 7.81.0 | - | - |
 | Host | yq | 4.40.5 | - | - |
 | Host | virt-install / virt-clone | 4.0.0 | - | Yes |
