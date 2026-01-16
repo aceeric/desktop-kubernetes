@@ -2,7 +2,7 @@
 
 <img src="resources/desktop-kubernetes-no-text.jpg" width="150"/>
 
-![Version: 1.35.0-uncertified](https://img.shields.io/badge/Version-1.35.0--uncertified-informational?style=rounded-square)
+![Version: 1.35.0](https://img.shields.io/badge/Version-1.35.0-informational?style=rounded-square)
 
 _Desktop Kubernetes_ is a Linux Bash CLI that provisions a Kubernetes cluster right on your desktop using KVM or VirtualBox - with each cluster node consisting of a guest VM running any of: Alma, CentOS, or Rocky Linux. The goal is to create a local development and testing environment that is 100% compatible with a production-grade Kubernetes environment.
 
