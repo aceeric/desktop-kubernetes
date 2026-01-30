@@ -27,4 +27,6 @@ openssl req\
   -sha256\
   -subj "/CN=internalca"\
   -days 10000\
-  -out "$DTKBASE/generated/cert/ca.pem"
+  -out "$DTKBASE/generated/cert/ca.pem"\
+  -addext "basicConstraints=critical,CA:TRUE"\
+  -addext "keyUsage=critical,digitalSignature,keyCertSign,cRLSign"
