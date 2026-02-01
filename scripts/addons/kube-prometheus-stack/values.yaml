@@ -40,3 +40,10 @@ coreDns:
 prometheus:
   prometheusSpec:
     maximumStartupDurationSeconds: 60
+    serviceMonitorSelector: {}
+    serviceMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelector: {}
+    podMonitorSelectorNilUsesHelmValues: false
+    ruleNamespaceSelector: {}
+    ruleSelector: {}
+    ruleSelectorNilUsesHelmValues: false
