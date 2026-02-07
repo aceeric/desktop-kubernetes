@@ -26,7 +26,7 @@ vm:
   template-vmname: alma9.7
 dns:
   domain: dtk.io
-  host-ip: 192.168.0.49
+  host-ip:
   webhook-port: 5000
 vms:
   - name: kronos
@@ -54,5 +54,3 @@ vms:
     disk:
     pod-cidr: 10.200.3.0/24
 cluster:
-  admin-kubeconfig: /home/eace/projects/desktop-kubernetes/generated/kubeconfig/admin.kubeconfig
-  priv-key: /home/eace/projects/desktop-kubernetes/generated/kickstart/id_ed25519
