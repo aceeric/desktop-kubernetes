@@ -6,7 +6,7 @@
 set -e
 
 export DTKBASE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-export DTKVER=v1.34.1-1
+export DTKVER=v1.35.0
 
 # set from the command line by parse_cmdline function (defaults are hard-coded)
 operation=
@@ -80,7 +80,6 @@ case $operation in
       --virt=$virt
     ;;
   cluster-delete)
-    echo HERE
     xec $virt/up-down-del del $config
     ;;
   cluster-up)
@@ -106,7 +105,7 @@ case $operation in
     xec check-compatibility
     ;;
   version)
-    echo "Desktop Kubernetes version: $DTKVER (Mon Oct 20 2025)"
+    echo "Desktop Kubernetes version: $DTKVER (24-Dec-2025)"
     ;;
   *)
     echo "unsupported operation: $operation (should never happen)"

@@ -1,8 +1,8 @@
 # This file is to be sourced by the root dtk script so that script is less busy.
+
 #
 # Enables scripts to exec other scripts by name only or pathpart/name.
 #
-
 function xec() {
   if echo $1 | grep -q /; then
     f=$(find $DTKBASE/scripts -type d -name $(dirname $1) | xargs -I% find % -type f -name $(basename $1))
