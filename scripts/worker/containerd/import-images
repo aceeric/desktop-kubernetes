@@ -14,6 +14,6 @@ find $image_path -name '*.tgz' | while read tarball; do
 done
 
 find $image_path -name '*.tar' | while read tarfile; do
-  ctr -n k8s.io -a /var/run/containerd/containerd.sock image import $tarfile
+  ctr -n k8s.io -a /run/containerd/containerd.sock image import $tarfile
   rm -f $tarfile
 done

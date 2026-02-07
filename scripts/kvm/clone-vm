@@ -51,6 +51,12 @@ clone_ip=$(xec kvm/get-vm-ip $clone_vmname)
 ssh-keygen -f ~/.ssh/known_hosts -R $clone_ip
 ssh -o "StrictHostKeyChecking no" -i $priv_key root@$clone_ip "hostnamectl set-hostname $clone_vmname"
 
+# set environment variables for the 'ctr' utility
+ssh -i $priv_key root@$clone_ip "cat >> /etc/environment" <<EOF
+CONTAINERD_NAMESPACE=k8s.io
+CONTAINERD_ADDRESS=/run/containerd/containerd.sock
+EOF
+
 if [[ -n $clone_disk ]]; then
   echo "resizing partition 3 on /dev/vda"
   ssh -i $priv_key root@$clone_ip "growpart /dev/vda 3 && xfs_growfs /"

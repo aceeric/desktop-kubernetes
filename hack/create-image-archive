@@ -24,13 +24,13 @@
 image_path=/tmp/images
 mkdir -p $image_path
 
-ctr -n k8s.io -a /var/run/containerd/containerd.sock image ls -q | grep -v '^sha256' | while read image; do
+ctr -n k8s.io -a /run/containerd/containerd.sock image ls -q | grep -v '^sha256' | while read image; do
   if [[ "$1" == "--dockeronly" ]] && [[ $image != docker.io* ]]; then
     continue
   fi
   tarfile=$image_path/$(echo $image | sed "s|[/:]|-|g").tar
   echo "exporting $image to $tarfile"
-  ctr -n k8s.io -a /var/run/containerd/containerd.sock image export $tarfile $image
+  ctr -n k8s.io -a /run/containerd/containerd.sock image export $tarfile $image
 done
 
 echo "creating a tarball from the exported images"
