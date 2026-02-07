@@ -30,7 +30,7 @@ The categories are:
 | Host | Hydrophone | v0.7.0 | - | - |
 | Guest VM | Centos ISO | Stream-9-latest-x86_64 | - | - |
 | Guest VM | Rocky Linux ISO | 8.10 | - | - |
-| Guest VM | Alma Linux ISO | 8.10 and 9.6 _(9.6 is the default)_ | - | - |
+| Guest VM | Alma Linux ISO | 8.10 and 9.7 _(9.7 is the default)_ | - | - |
 | Guest VM | Virtual Box Guest Additions ISO | 7.0.18 | Yes | - |
 | Kubernetes | kube-apiserver | 1.35.0 | - | - |
 | Kubernetes | kube-controller-manager | 1.35.0 | - | - |
@@ -60,5 +60,6 @@ To install different add-on versions change the version in the `scripts/addons` 
 | Kube Prometheus Stack               | 80.6.0  |
 | Kubernetes Dashboard                | 7.14.0  |
 | Metrics Server                      | 3.13.0  |
+| NFS Subdir External Provisioner     | 4.0.18  |
 | OpenEBS Local PV Provisioner        | 4.4.0   |
 | Vcluster                            | 0.30.4  |

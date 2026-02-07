@@ -31,10 +31,11 @@ This section enables or disables the Add-Ons included with the CLI. See the [Add
 | `kubernetes-dashboard` | true |
 | `metrics-server` | true |
 | `openebs` | true |
+| `nfs-provisioner` | false |
 | `vcluster` | false |
 
 !!! Note
-    The Add-Ons are listed in the order in which they are installed. This is important. Notice that the CNI is first, followed by Core DNS for service IP address resolution, then Nginx for `Ingress` reconciliation, and then everything else.
+    The Add-Ons are listed in the order in which they are installed. **This is important.** Notice that the CNI is first, followed by Core DNS for service IP address resolution. The order after that is unimportant.
 
 ## The `k8s` Section
 
@@ -52,7 +53,7 @@ The `k8s` section has configuration settings that configure Kubernetes, independ
 
 ### Configuring `containerd`
 
-You can configure `containerd` to mirror with the following in the `config.yaml` file. Mirroring is disabled by default. You enable it by setting `enabled: true` and specifying the name and configuration. In the example, **all** images are mirrored (`name: _default` which is a special value recognized by `containerd`) and the mirror is http://http://192.168.0.49:8080.
+You can configure `containerd` to mirror with the following in the `config.yaml` file. Mirroring is disabled by default. You enable it by setting `enabled: true` and specifying the name and configuration. In the example, **all** images are mirrored (`name: _default` which is a special value recognized by `containerd`) and the mirror is http://192.168.0.49:8080.
 ```
 k8s:
   containerd-mirror:
@@ -103,8 +104,8 @@ This section is only used if `virt = kvm`
 
 | Key | Description |
 |-|-|
-| `vm.linux` | Determines the Linux variant.  Valid values are `alma9` for Alma 9.6 (the default), `alma8` for Alma 8.10, `centos9` for CentOS 9 Stream, and `rocky` for Rocky Linux. Ignored unless `vm.create-template` is specified. **CentOS and Rocky are un-tested.** (It's on the to-do list.) |
-| `vm.create-template` | Values are `true` (the  default) or `false`. Causes the script to create a template VM before bringing up the cluster. (This step by far takes the longest.) The template is then used to clone all the cluster nodes. If not specified, the script expects to find an existing VM to clone from per the `vm.template-vmname` setting. This option installs the OS using Kickstart. **You must set this to true for the very first cluster you create meaning - you have to create a template at least once.** |
+| `vm.linux` | Determines the Linux variant.  Valid values are `alma9` for Alma 9.7 (the default), `alma8` for Alma 8.10, `centos9` for CentOS 9 Stream, and `rocky` for Rocky Linux. Ignored unless `vm.create-template` is specified. **CentOS and Rocky are un-tested.** (It's on the to-do list.) |
+| `vm.create-template` | Values are `true` (the  default) or `false`. Causes the script to create a template VM before bringing up the cluster. (This step by far takes the longest.) The template is then used to clone all the cluster nodes. If `false`, the script expects to find an existing VM to clone from per the `vm.template-vmname` setting. You can override this with command line arg `--create-template=true\|false`. **This setting must be `true` for the very first cluster you create - meaning - you have to create a template at least once.** |
 | `vm.template-vmname` {: .nowrap-column } | Specifies the template VM name to create - or clone from. |
 
 ## The `vms` Section
@@ -119,7 +120,7 @@ This section has a list of dictionaries. Each element in the list is a VM to cre
 | `vms[n].mem` | Memory in MB. E.g.: `8192` = 8 gig. |
 | `vms[n].ip` | The rightmost octet of the IP address for the host. Ignored unless `virt=virtualbox` and `vbox.host-only-network` is configured. So, for example, if `vbox.host-only-network` is `192.168.56` and this `ip` value is `200`. then the IP address assigned to the host-only interface in the VM is `192.168.56.200`. |
 | `vms[n].disk` | Only supported if `virt=kvm` at this time. Resizes the disk to the specified number which is interpreted as Gi. |
-| `vms[n].pod-cidr` {: .nowrap-column } | Used to configure CNI for containerd. **As soon as Cilium or Calico are installed then this configuration is rendered unused.** |
+| `vms[n].pod-cidr` {: .nowrap-column } | Used to configure CNI for containerd. **As soon as Cilium or Calico are installed then this configuration is rendered inert.** |
 
 ## The `cluster` Section
 

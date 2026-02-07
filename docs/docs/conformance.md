@@ -37,7 +37,7 @@ hydrophone --cleanup
 
 Update any new version numbers, etc.:
 
-1. This document.
+1. The MKDocs documentation.
 1. The Project README.
 1. The `PRODUCT.yaml` and `README.md` files in `conformance/conformance-submission`.
 1. Git commit and push.

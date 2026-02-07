@@ -23,7 +23,7 @@ The tools / components checked by the script are:
 | `genisoimage` | Builds an ISO to configure VirtualBox. | Yes | - |
 | Virtual Box (vboxmanage) | Provisions VirtualBox VMs. | Yes | - |
 | Host operating system | I run Ubuntu but there's really nothing specific to any given Linux as long as Bash is available. |  - | - |
-| `kubectl` | Connect to the provisioned cluster to run clustr commands. | - | - |
+| `kubectl` | Connect to the provisioned cluster to run cluster commands. | - | - |
 | `curl` | Download binaries. | - | - |
 | `helm` | Install Add-Ons (e.g.: CoreDNS.) | - | - |
 | `yq` | Parse the configuration yaml file. | - | - |
