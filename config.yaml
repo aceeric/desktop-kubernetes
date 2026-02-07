@@ -21,6 +21,8 @@ addons:
     enabled: true
   - name: openebs
     enabled: true
+  - name: nfs-provisioner
+    enabled: false
 k8s:
   containerized-cplane:
   cluster-cidr: 10.200.0.0/16

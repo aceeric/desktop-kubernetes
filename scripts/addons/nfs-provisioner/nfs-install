@@ -1,0 +1,11 @@
+#!/usr/bin/env bash
+
+dnf -y install nfs-utils
+mkdir -p /mnt/nfs_share
+chown nobody:nobody /mnt/nfs_share
+chmod 777 /mnt/nfs_share
+cat <<EOF > /etc/exports
+/mnt/nfs_share *(rw,sync,no_subtree_check)
+EOF
+
+systemctl enable --now nfs-server

@@ -1,0 +1,40 @@
+#!/usr/bin/env bash
+#
+# Helm-installs kubernetes nfs subdir external provisioner. Also yum-installs
+# nfs-utils.
+#
+
+set -e
+
+config=$1
+
+CHART_VER=4.0.18
+CHART_NAME=nfs-subdir-external-provisioner
+
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+url=https://github.com/kubernetes-sigs/$CHART_NAME/releases/download/$CHART_NAME-$CHART_VER/$CHART_NAME-$CHART_VER.tgz
+tgz=$DTKBASE/binaries/$(basename $url)
+xec download-obj --url=$url --dest=$tgz
+
+controller_hostname=$(yq .vms[0].name $config)
+virt=$(yq .virt $config)
+controller_ip=$(xec $virt/get-vm-ip $controller_hostname)
+priv_key=$(yq .cluster.priv-key $config)
+
+scp -i $priv_key $script_dir/nfs-install root@$controller_ip:/tmp
+ssh -i $priv_key root@$controller_ip "chmod +x /tmp/nfs-install && /tmp/nfs-install"
+
+vms=$(yq .vms[].name $config | tr '\n' ' ')
+for vmname in $vms; do
+  vmip=$(xec $virt/get-vm-ip $vmname)
+  ssh -i $priv_key root@$vmip "yum -y install nfs-utils" || echo "nfs-utils already installed"
+done
+
+admin_kubeconfig=$(yq .cluster.admin-kubeconfig $config)
+helm upgrade --install nfs-subdir-external-provisioner $tgz\
+  --namespace nfs\
+  --create-namespace\
+  --kubeconfig $admin_kubeconfig\
+  --set nfs.server=$controller_ip \
+  --set nfs.path=/mnt/nfs_share\
+  --wait
