@@ -5,10 +5,10 @@
 
 config=$1
 
-TIGERA_VER=v3.31.3
+CHART_VER=v3.31.3
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-url=https://github.com/projectcalico/calico/releases/download/$TIGERA_VER/tigera-operator-$TIGERA_VER.tgz
+url=https://github.com/projectcalico/calico/releases/download/$CHART_VER/tigera-operator-$CHART_VER.tgz
 tgz=$DTKBASE/binaries/$(basename $url)
 xec download-obj --url=$url --dest=$tgz
 

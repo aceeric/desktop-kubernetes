@@ -5,10 +5,10 @@
 
 config=$1
 
-EXTDNS_VER=1.19.0
+CHART_VER=1.19.0
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-url=https://github.com/kubernetes-sigs/external-dns/releases/download/external-dns-helm-chart-$EXTDNS_VER/external-dns-$EXTDNS_VER.tgz
+url=https://github.com/kubernetes-sigs/external-dns/releases/download/external-dns-helm-chart-$CHART_VER/external-dns-$CHART_VER.tgz
 tgz=$DTKBASE/binaries/$(basename $url)
 xec download-obj --url=$url --dest=$tgz
 

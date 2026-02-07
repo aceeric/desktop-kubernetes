@@ -5,13 +5,13 @@
 
 config=$1
 
-VCLUSTER_VER=0.30.4
+CHART_VER=0.30.4
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 admin_kubeconfig=$(yq .cluster.admin-kubeconfig $config)
 
-url=https://charts.loft.sh/charts/vcluster-$VCLUSTER_VER.tgz
+url=https://charts.loft.sh/charts/vcluster-$CHART_VER.tgz
 tgz=$DTKBASE/binaries/$(basename $url)
 xec download-obj --url=$url --dest=$tgz
 

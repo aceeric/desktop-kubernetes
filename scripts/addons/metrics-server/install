@@ -5,11 +5,11 @@
 
 config=$1
 
-METRICS_SERVER_VER=3.13.0
+CHART_VER=3.13.0
 
 admin_kubeconfig=$(yq .cluster.admin-kubeconfig $config)
 
-url=https://github.com/kubernetes-sigs/metrics-server/releases/download/metrics-server-helm-chart-$METRICS_SERVER_VER/metrics-server-$METRICS_SERVER_VER.tgz
+url=https://github.com/kubernetes-sigs/metrics-server/releases/download/metrics-server-helm-chart-$CHART_VER/metrics-server-$CHART_VER.tgz
 tgz=$DTKBASE/binaries/$(basename $url)
 xec download-obj --url=$url --dest=$tgz
 

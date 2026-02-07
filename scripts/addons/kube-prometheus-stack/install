@@ -5,11 +5,11 @@
 
 config=$1
 
-KUBE_PROM_VER=80.6.0
+CHART_VER=80.6.0
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-url=https://github.com/prometheus-community/helm-charts/releases/download/kube-prometheus-stack-$KUBE_PROM_VER/kube-prometheus-stack-$KUBE_PROM_VER.tgz
+url=https://github.com/prometheus-community/helm-charts/releases/download/kube-prometheus-stack-$CHART_VER/kube-prometheus-stack-$CHART_VER.tgz
 tgz=$DTKBASE/binaries/$(basename $url)
 xec download-obj --url=$url --dest=$tgz
 

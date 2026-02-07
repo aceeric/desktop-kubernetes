@@ -5,10 +5,10 @@
 
 config=$1
 
-COREDNS_VER=1.45.0
+CHART_VER=1.45.0
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-url=https://github.com/coredns/helm/releases/download/coredns-$COREDNS_VER/coredns-$COREDNS_VER.tgz
+url=https://github.com/coredns/helm/releases/download/coredns-$CHART_VER/coredns-$CHART_VER.tgz
 namespace=kube-system
 tgz=$DTKBASE/binaries/$(basename $url)
 xec download-obj --url=$url --dest=$tgz
