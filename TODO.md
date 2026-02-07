@@ -1,7 +1,5 @@
 # INP
 
-1. NFS RWX Provisioner
-
 # TODO
 
 1. Separate generated files by cluster
