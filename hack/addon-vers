@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+
+find scripts/addons -name install |\
+  xargs grep CHART_VER= | \
+  sed -e 's/CHART_VER=//' -e 's|scripts/addons/||' -e 's|/install||' |\
+  sort |\
+  column -s : -t -C name=ADDON -C name=CHARTVER
