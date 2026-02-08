@@ -61,5 +61,6 @@ To install different add-on versions change the version in the `scripts/addons` 
 | Kubernetes Dashboard                | 7.14.0  |
 | Metrics Server                      | 3.13.0  |
 | NFS Subdir External Provisioner     | 4.0.18  |
+| Nginx Gateway Fabric                | 2.4.1   |
 | OpenEBS Local PV Provisioner        | 4.4.0   |
 | Vcluster                            | 0.30.4  |

@@ -9,6 +9,8 @@ addons:
   - name: ingress-nginx
     enabled: true
     ssl-passthrough: false
+  - name: nginx-gateway-fabric
+    enabled: false
   - name: cert-manager
     enabled: true
   - name: external-dns

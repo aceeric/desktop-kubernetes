@@ -30,6 +30,7 @@ This section enables or disables the Add-Ons included with the CLI. See the [Add
 | `kube-prometheus-stack` | true |
 | `kubernetes-dashboard` | true |
 | `metrics-server` | true |
+| `nginx-gateway-fabric` | false |
 | `openebs` | true |
 | `nfs-provisioner` | false |
 | `vcluster` | false |
