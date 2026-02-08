@@ -1,0 +1,39 @@
+#!/usr/bin/env bash
+#
+# Helm-installs Nginx Gateway Fabric. CRD install based on:
+# https://docs.nginx.com/nginx-gateway-fabric/get-started/
+#
+
+set -e
+
+config=$1
+
+CHART_VER=2.4.1
+
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+url=oci://ghcr.io/nginx/charts/nginx-gateway-fabric
+tarball=nginx-gateway-fabric-$CHART_VER.tgz
+xec helm-pull --url=$url --dest=$DTKBASE/binaries --version=$CHART_VER --tarball=$tarball
+
+admin_kubeconfig=$(yq .cluster.admin-kubeconfig $config)
+
+if ! kubectl --kubeconfig $admin_kubeconfig api-resources | grep -q gateway.networking.k8s.io; then
+  echo "installing gateway api crds"
+  for file in gateway.networking.k8s.io_backendtlspolicies\
+              gateway.networking.k8s.io_gatewayclasses\
+              gateway.networking.k8s.io_gateways\
+              gateway.networking.k8s.io_grpcroutes\
+              gateway.networking.k8s.io_httproutes\
+              gateway.networking.k8s.io_referencegrants; do
+    curl -sL https://github.com/kubernetes-sigs/gateway-api/raw/refs/tags/v1.4.1/config/crd/standard/$file.yaml |\
+      kubectl --kubeconfig $admin_kubeconfig apply -f -
+  done
+fi
+
+helm upgrade --install nginx-gateway-fabric $DTKBASE/binaries/$tarball\
+  --namespace nginx-gateway\
+  --create-namespace\
+  --kubeconfig $admin_kubeconfig\
+  --values $script_dir/values.yaml\
+  --wait
