@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+#
+# Does a helm pull. Does not log in - expects the user to already be logged in
+# if the helm repo requires it. (E.g. ghcr.io)
+#
+# Usage:
+#
+# helm-pull --url=oci://ghcr.io/nginx/charts/nginx-gateway-fabric --version=2.4.1\
+#   --dest="/tmp/downloads/" --tarball=nginx-gateway-fabric-2.4.1.tgz
+#
+
+set -e
+long_opts=url:,version:,dest:,tarball:
+
+url=
+version=
+dest=
+tarball=
+
+if ! parsed=$(xec parseargs $long_opts "$@"); then
+  echo "$parsed"
+  exit 1
+fi
+eval $(echo -e "$parsed")
+
+fullname="${dest%/}/${tarball}"
+if [[ -f $fullname ]]; then
+  echo "$tarball already exists, skipping download"
+  exit
+fi
+
+mkdir -p $dest
+helm pull $url --version $version --destination $dest
