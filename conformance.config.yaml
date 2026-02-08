@@ -15,19 +15,10 @@ kvm:
   network: nat
   kickstart: kvm.text.ks.cfg
   os-variant: almalinux9
-vbox:
-  host-network-interface:
-  host-only-network: 192.168.56
-  kickstart: vbox.text.ks.cfg
-  vboxdir:
 vm:
   linux: alma9
   create-template: true
   template-vmname: alma9.7
-dns:
-  domain: dtk.io
-  host-ip:
-  webhook-port: 5000
 vms:
   - name: kronos
     cpu: 2
@@ -54,3 +45,5 @@ vms:
     disk:
     pod-cidr: 10.200.3.0/24
 cluster:
+  admin-kubeconfig: /home/eace/projects/desktop-kubernetes/generated/kubeconfig/admin.kubeconfig
+  priv-key: /home/eace/projects/desktop-kubernetes/generated/kickstart/id_ed25519
