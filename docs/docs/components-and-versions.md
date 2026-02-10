@@ -21,7 +21,7 @@ The categories are:
 | Host | openssh | OpenSSH_8.9p1 | - | - |
 | Host | genisoimage (used to create a VirtualBox kickstart ISO) | 1.1.11 | Yes | - |
 | Host | Virtual Box / VBoxManage | 7.0.10 | Yes | - |
-| Host | helm | v3.18.0 | - | - |
+| Host | helm | v4.1.1 | - | - |
 | Host | kubectl (client only) | v1.35.0 | - | - |
 | Host | curl | 7.81.0 | - | - |
 | Host | yq | 4.40.5 | - | - |

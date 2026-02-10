@@ -30,7 +30,7 @@ openssh                OpenSSH_9.6p1         OpenSSH_9.6p1         Yes
 host operating system  Ubuntu 24.04.3 LTS    Ubuntu 24.04.3 LTS    Yes
 kubectl (client only)  v1.35.0               v1.35.0               Yes
 curl                   8.5.0                 8.5.0                 Yes
-helm                   v3.18.0               v3.18.0               Yes
+helm                   v4.1.1                v4.1.1                Yes
 yq                     4.40.5                4.40.5                Yes
 virt-install           4.1.0                 4.1.0                 Yes
 virsh                  10.0.0                10.0.0                Yes
