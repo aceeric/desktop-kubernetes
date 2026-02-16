@@ -21,19 +21,20 @@ This section enables or disables the Add-Ons included with the CLI. See the [Add
 
 | Key | Enabled by default? |
 |-|-|
-| `calico` | false |
-| `cilium` | true |
-| `coredns` | true |
-| `ingress-nginx` | true |
-| `cert-manager` | true |
-| `external-dns` | false |
-| `kube-prometheus-stack` | true |
-| `kubernetes-dashboard` | true |
-| `metrics-server` | true |
-| `nginx-gateway-fabric` | false |
-| `openebs` | true |
-| `nfs-provisioner` | false |
-| `vcluster` | false |
+| `calico` | &#x2718 |
+| `cilium` | &#10004 |
+| `coredns` | &#10004 |
+| `cert-manager` | &#10004 |
+| `external-dns` | &#x2718 |
+| `headlamp` | &#10004 |
+| `ingress-nginx` | &#x2718 |
+| `kube-prometheus-stack` | &#10004 |
+| `kubernetes-dashboard` | &#x2718 |
+| `metrics-server` | &#10004 |
+| `nfs-provisioner` | &#x2718 |
+| `nginx-gateway-fabric` | &#10004 |
+| `openebs` | &#10004 |
+| `vcluster` | &#x2718 |
 
 !!! Note
     The Add-Ons are listed in the order in which they are installed. **This is important.** Notice that the CNI is first, followed by Core DNS for service IP address resolution. The order after that is unimportant.
