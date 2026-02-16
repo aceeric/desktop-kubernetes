@@ -1,5 +1,21 @@
 # Change Log
 
+## 15-Feb-2026
+Commit: `bb44371`
+
+1. Add `headlamp` and `nginx-gateway-fabric` add-ons. Deprecate `kubernetes-dashboard` and `ingress-nginx` (no longer supported upstream)
+2. Helm CLI to `4.1.1` or _media type vnd.cncf.helm.chart.provenance.v1.prov not allowed_ helm error on some `oci://` helm pulls
+3. Support `oci://` scheme for helm add-on installs
+4. Clean up conformance config to only the items needed for the test. Other minor conformance clean-ups
+5. Standardize chart version variable naming
+6. Add `nfs-subdir-external-provisioner` add-on (for RWX testing)
+7. Standardize `containerd` address
+8. Template VM name to `alma9.7`
+9. Configure `kube-prometheus` to support all namespaces
+10. Add key usage and basic constraints to cluster CA
+11. Update docs to reflect `v1.35.0` is certified
+12. Various minor documentation cleanups
+
 ## 24-Dec-2025
 Tag: `v1.35.0`
 
