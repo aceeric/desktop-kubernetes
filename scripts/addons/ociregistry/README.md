@@ -16,3 +16,9 @@ addons:
     image-path: binaries/ociregistry-image-1.12.3.tar
     containerd-mirror-enabled: true
 ```
+
+## Ingress
+
+At this time, only the Kubernetes Gateway API is supported for ingress. The helm values specify an `HTTPRoute` with a host name of `ociregistry.io`. The registry serves on `/`. The reason is that some tools (the Docker CLI) have trouble with a registry serving on anything other than `/`. Ingress is optional. If you're installing the registry exclusively as an in-cluster mirror then you don't need access to the registry externally but its installed with external access anyway.
+
+With the ingress so configured you can test the registry by pulling through it: `docker pull ociregistry.io/docker.io/hello-world:latest`.
