@@ -1,0 +1,54 @@
+#!/usr/bin/env bash
+#
+# Helm-installs Ociregistry. See:
+# https://github.com/aceeric/ociregistry
+#
+
+set -e
+
+config=$1
+
+CHART_VER=1.12.3
+
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+url=oci://quay.io/appzygy/helm-charts/ociregistry
+tarball=ociregistry-$CHART_VER.tgz
+xec helm-pull --url=$url --dest=$DTKBASE/binaries --version=$CHART_VER --tarball=$tarball
+
+containerd_mirror_enabled=$(yq '.addons[] | select(.name == "ociregistry").containerd-mirror-enabled' $config)
+
+if [[ "$containerd_mirror_enabled" == "true" ]]; then
+  image_path=$(yq '.addons[] | select(.name == "ociregistry").image-path' $config)
+  if [[ -n "$image_path" ]] && [[ "${image_path:0:1}" != "/" ]]; then
+    image_path=$DTKBASE/$image_path
+  fi
+  priv_key=$(yq .cluster.priv-key $config)
+  name="_default"
+  mirrorcfg='[host."http://localhost:31080"]
+  capabilities = ["pull", "resolve"]
+  skip_verify = true
+'
+  vms=$(yq .vms[].name $config | tr '\n' ' ')
+  virt=$(yq .virt $config)
+
+  for vmname in $vms; do
+    vmip=$(xec $virt/get-vm-ip $vmname)
+    if [[ "$image_path" != "" ]]; then
+      scp -i $priv_key $image_path root@$vmip:/tmp/imagefile.tar
+      ssh -i $priv_key root@$vmip "ctr -n k8s.io -a /run/containerd/containerd.sock image import /tmp/imagefile.tar"
+    fi
+    ssh -i $priv_key root@$vmip "mkdir -p /etc/containerd/certs.d/$name"
+    echo "$mirrorcfg" | ssh -i $priv_key root@$vmip "cat >| /etc/containerd/certs.d/$name/hosts.toml"
+    ssh -i $priv_key root@$vmip "systemctl daemon-reload && systemctl restart containerd"
+  done
+fi
+
+admin_kubeconfig=$(yq .cluster.admin-kubeconfig $config)
+
+helm upgrade --install ociregistry $DTKBASE/binaries/$tarball\
+  --namespace ociregistry\
+  --create-namespace\
+  --kubeconfig $admin_kubeconfig\
+  --values $script_dir/values.yaml\
+  --wait

@@ -1,0 +1,47 @@
+httpRoute:
+  enabled: true
+  parentRefs:
+    - name: dtk-gateway
+      namespace: nginx-gateway
+  hostnames:
+    - ociregistry.io
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /
+      backendRefs:
+        - name: ociregistry
+          port: 8080
+
+observability:
+  enabled: true
+
+metrics:
+  port: 2112
+
+persistence:
+  persistentVolumeClaim:
+    enabled: true
+    newClaimSpec:
+      storageClassName: nfs-client
+      accessModes:
+      - ReadWriteOnce
+      volumeMode: Filesystem
+      resources:
+        requests:
+          storage: 5Gi
+
+deploymentStrategy:
+  type: RollingUpdate
+  rollingUpdate:
+    maxUnavailable: 0
+    maxSurge: 1
+
+resources:
+  requests:
+    cpu: 100m
+    memory: 300Mi
+  limits:
+    cpu: 300m
+    memory: 300Mi
