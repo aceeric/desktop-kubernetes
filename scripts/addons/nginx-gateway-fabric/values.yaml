@@ -1,8 +1,32 @@
 nginx:
   service:
-    type: NodePort
-    nodePorts:
-      - port: 31437
-        listenerPort: 80
-      - port: 30478
-        listenerPort: 8443
+    type: ClusterIP
+  container:
+    hostPorts:
+     - containerPort: 80
+       port: 80
+  # configure NGF to create all the `Gateway` proxies on the controller
+  pod:
+    nodeSelector:
+      node-role.kubernetes.io/controller: ""
+  kind: deployment
+
+  # alternatively, you can tell NGF to create the proxies as DaemonSets, in which case
+  # you can access workloads via any node in the cluster. To do this - set the kind to
+  # daemonSet as shown below and omit the `nginx.pod` key and sub-keys above
+  #
+  #kind: daemonSet
+
+# create a gateway that listens on port 80 that all workloads can use
+gateways:
+  - name: dtk-gateway
+    namespace: nginx-gateway
+    spec:
+      gatewayClassName: nginx
+      listeners:
+      - name: http
+        protocol: HTTP
+        port: 80
+        allowedRoutes:
+          namespaces:
+            from: All

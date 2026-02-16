@@ -3,6 +3,8 @@
 # Helm-installs Nginx Gateway Fabric. CRD install based on:
 # https://docs.nginx.com/nginx-gateway-fabric/get-started/
 #
+# Note: the chart creates a gatewayclass "nginx" by default.
+#
 
 set -e
 

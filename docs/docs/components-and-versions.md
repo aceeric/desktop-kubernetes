@@ -49,18 +49,19 @@ The categories are:
 
 To install different add-on versions change the version in the `scripts/addons` directory. (Version updates sometimes require `values.yaml` changes and other tweaks to the install logic.)
 
-| Add-on                              | Chart Version |
+| Add-on                              | Chart Version | Note |
 |-|-|
-| Calico networking (Tigera Operator) | v3.31.3 |
-| Cert Manager                        | v1.19.2 |
-| Cilium networking                   | 1.18.5  |
-| CoreDNS                             | 1.45.0  |
-| External DNS                        | 1.19.0  |
-| Ingress NGINX Controller            | 4.14.1  |
-| Kube Prometheus Stack               | 80.6.0  |
-| Kubernetes Dashboard                | 7.14.0  |
-| Metrics Server                      | 3.13.0  |
-| NFS Subdir External Provisioner     | 4.0.18  |
-| Nginx Gateway Fabric                | 2.4.1   |
-| OpenEBS Local PV Provisioner        | 4.4.0   |
-| Vcluster                            | 0.30.4  |
+| Calico networking (Tigera Operator) | v3.31.3 ||
+| Cert Manager                        | v1.19.2 ||
+| Cilium networking                   | 1.18.5  ||
+| CoreDNS                             | 1.45.0  ||
+| External DNS                        | 1.19.0  ||
+| Headlamp                            | 0.40.0  ||
+| Ingress NGINX Controller            | 4.14.1  |(deprecated)|
+| Kube Prometheus Stack               | 80.6.0  ||
+| Kubernetes Dashboard                | 7.14.0  ||
+| Metrics Server                      | 3.13.0  ||
+| NFS Subdir External Provisioner     | 4.0.18  ||
+| Nginx Gateway Fabric                | 2.4.1   ||
+| OpenEBS Local PV Provisioner        | 4.4.0   ||
+| Vcluster                            | 0.30.4  ||

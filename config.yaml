@@ -7,18 +7,20 @@ addons:
   - name: coredns
     enabled: true
   - name: ingress-nginx
-    enabled: true
+    enabled: false
     ssl-passthrough: false
   - name: nginx-gateway-fabric
-    enabled: false
+    enabled: true
   - name: cert-manager
     enabled: true
   - name: external-dns
     enabled: false
   - name: kube-prometheus-stack
     enabled: true
-  - name: kubernetes-dashboard
+  - name: headlamp
     enabled: true
+  - name: kubernetes-dashboard
+    enabled: false
   - name: metrics-server
     enabled: true
   - name: openebs

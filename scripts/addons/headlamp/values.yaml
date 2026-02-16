@@ -1,0 +1,24 @@
+config:
+  baseURL: /headlamp
+
+httpRoute:
+  enabled: true
+  labels:
+    app.kubernetes.io/component: ingress
+  parentRefs:
+    - name: dtk-gateway
+      namespace: nginx-gateway
+  rules:
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /headlamp
+      backendRefs:
+        - name: headlamp
+          port: 80
+      filters:
+        - type: RequestHeaderModifier
+          requestHeaderModifier:
+            add:
+              - name: Authorization
+                value: "Bearer 18bb628a-9f6c-4cc6-aae3-3bf15a89ff62" 

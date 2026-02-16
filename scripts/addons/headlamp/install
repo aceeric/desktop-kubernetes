@@ -1,0 +1,26 @@
+#!/usr/bin/env bash
+#
+# Helm-installs headlamp. Hard-wires the static cluster token into the auth header
+# so you can automatically log in. After installation, access Headlamp on:
+#
+# http://<hostname>/headlamp/
+#
+# (I don't know why the trailing space is required.)
+#
+
+config=$1
+
+CHART_VER=0.40.0
+
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+url=https://github.com/kubernetes-sigs/headlamp/releases/download/headlamp-helm-$CHART_VER/headlamp-$CHART_VER.tgz
+tgz=$DTKBASE/binaries/$(basename $url)
+xec download-obj --url=$url --dest=$tgz
+
+admin_kubeconfig=$(yq .cluster.admin-kubeconfig $config)
+helm upgrade --install headlamp $tgz\
+  --namespace headlamp\
+  --create-namespace\
+  --kubeconfig $admin_kubeconfig\
+  --values $script_dir/values.yaml\
+  --wait
