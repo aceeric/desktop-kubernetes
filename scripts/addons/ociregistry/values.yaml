@@ -20,17 +20,20 @@ observability:
 metrics:
   port: 2112
 
-persistence:
-  persistentVolumeClaim:
-    enabled: true
-    newClaimSpec:
-      storageClassName: nfs-client
-      accessModes:
-      - ReadWriteOnce
-      volumeMode: Filesystem
-      resources:
-        requests:
-          storage: 5Gi
+# Uncomment to enable persistence. Otherwise will deploy with ephemeral
+# pod storage:
+
+# persistence:
+#   persistentVolumeClaim:
+#     enabled: true
+#     newClaimSpec:
+#       storageClassName: nfs-client
+#       accessModes:
+#       - ReadWriteOnce
+#       volumeMode: Filesystem
+#       resources:
+#         requests:
+#           storage: 5Gi
 
 deploymentStrategy:
   type: RollingUpdate

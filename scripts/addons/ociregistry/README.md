@@ -19,6 +19,12 @@ addons:
 
 ## Ingress
 
-At this time, only the Kubernetes Gateway API is supported for ingress. The helm values specify an `HTTPRoute` with a host name of `ociregistry.io`. The registry serves on `/`. The reason is that some tools (the Docker CLI) have trouble with a registry serving on anything other than `/`. Ingress is optional. If you're installing the registry exclusively as an in-cluster mirror then you don't need access to the registry externally but its installed with external access anyway.
+Key things to be aware of:
+
+1. At this time, only the Kubernetes Gateway API is supported for ingress. This means that you must install the `nginx-gateway-fabric` addon **before** this add-on.
+2. If you enable metrics, then the Ociregistry chart **requires** the `kube-prometheus-stack` addon to be installed first.
+3. By default, the add-on installs with ephemeral pod storage as a way to evaluate the the add-on. Modify the add-on values as needed for storage persistence.
+
+The helm values specify an `HTTPRoute` with a host name of `ociregistry.io`. The registry serves on `/`. The reason is that some tools (the Docker CLI) have trouble with a registry serving on anything other than `/`. Ingress is optional. If you're installing the registry exclusively as an in-cluster mirror then you don't need access to the registry externally but its installed with external access anyway.
 
 With the ingress so configured you can test the registry by pulling through it: `docker pull ociregistry.io/docker.io/hello-world:latest`.
