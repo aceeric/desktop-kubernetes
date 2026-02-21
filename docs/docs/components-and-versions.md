@@ -22,7 +22,7 @@ The categories are:
 | Host | genisoimage (used to create a VirtualBox kickstart ISO) | 1.1.11 | Yes | - |
 | Host | Virtual Box / VBoxManage | 7.0.10 | Yes | - |
 | Host | helm | v4.1.1 | - | - |
-| Host | kubectl (client only) | v1.35.0 | - | - |
+| Host | kubectl (client only) | v1.35.1 | - | - |
 | Host | curl | 7.81.0 | - | - |
 | Host | yq | 4.40.5 | - | - |
 | Host | virt-install / virt-clone | 4.0.0 | - | Yes |
@@ -32,13 +32,13 @@ The categories are:
 | Guest VM | Rocky Linux ISO | 8.10 | - | - |
 | Guest VM | Alma Linux ISO | 8.10 and 9.7 _(9.7 is the default)_ | - | - |
 | Guest VM | Virtual Box Guest Additions ISO | 7.0.18 | Yes | - |
-| Kubernetes | kube-apiserver | 1.35.0 | - | - |
-| Kubernetes | kube-controller-manager | 1.35.0 | - | - |
-| Kubernetes | kube-scheduler | 1.35.0 | - | - |
-| Kubernetes | kubelet | 1.35.0 | - | - |
-| Kubernetes | kube-proxy (if installed) | 1.35.0 | - | - |
-| Kubernetes | etcd | v3.6.7 | - | - |
-| Kubernetes | crictl | v1.35.0 | - | - |
+| Kubernetes | kube-apiserver | 1.35.1 | - | - |
+| Kubernetes | kube-controller-manager | 1.35.1 | - | - |
+| Kubernetes | kube-scheduler | 1.35.1 | - | - |
+| Kubernetes | kubelet | 1.35.1 | - | - |
+| Kubernetes | kube-proxy (if installed) | 1.35.1 | - | - |
+| Kubernetes | etcd | v3.6.8 | - | - |
+| Kubernetes | crictl | v1.35.1 | - | - |
 | Kubernetes | runc | v1.4.0 | - | - |
 | Kubernetes | cni plugins | v1.9.0 | - | - |
 | Kubernetes | containerd | 2.1.4 | - | - |
@@ -52,17 +52,17 @@ To install different add-on versions change the version in the `scripts/addons` 
 | Add-on                              | Chart Version | Note |
 |-|-|-|
 | Calico networking (Tigera Operator) | v3.31.3 ||
-| Cert Manager                        | v1.19.2 ||
-| Cilium networking                   | 1.18.5  ||
-| CoreDNS                             | 1.45.0  ||
+| Cert Manager                        | v1.19.3 ||
+| Cilium networking                   | 1.19.1  ||
+| CoreDNS                             | 1.45.2  ||
 | External DNS                        | 1.19.0  ||
 | Headlamp                            | 0.40.0  ||
 | Ingress NGINX Controller            | 4.14.1  |(deprecated)|
-| Kube Prometheus Stack               | 80.6.0  ||
+| Kube Prometheus Stack               | 82.2.0  ||
 | Kubernetes Dashboard                | 7.14.0  |(deprecated)|
 | Metrics Server                      | 3.13.0  ||
 | NFS Subdir External Provisioner     | 4.0.18  ||
-| Nginx Gateway Fabric                | 2.4.1   ||
-| Ociregistry                         | 1.12.3  ||
+| Nginx Gateway Fabric                | 2.4.2   ||
+| Ociregistry                         | 1.12.4  ||
 | OpenEBS Local PV Provisioner        | 4.4.0   ||
 | Vcluster                            | 0.30.4  ||
