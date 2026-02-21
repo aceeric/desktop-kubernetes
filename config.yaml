@@ -6,10 +6,6 @@ addons:
     enabled: true
   - name: coredns
     enabled: true
-  - name: ociregistry
-    enabled: false
-    image-path:
-    containerd-mirror-enabled: false
   - name: ingress-nginx
     enabled: false
     ssl-passthrough: false
@@ -21,6 +17,10 @@ addons:
     enabled: false
   - name: kube-prometheus-stack
     enabled: true
+  - name: ociregistry
+    enabled: false
+    image-path:
+    containerd-mirror-enabled: false
   - name: headlamp
     enabled: true
   - name: kubernetes-dashboard
