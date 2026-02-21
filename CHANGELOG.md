@@ -1,5 +1,11 @@
 # Change Log
 
+## 20-Feb-2026
+Commit: `TODO`
+
+1. Kubernetes `v1.35.1`, etcd `v3.6.8`
+2. Update add-ons: cert-manager `v1.19.3`, cilium `1.19.1`, coredns `1.45.2`, kube-prometheus-stack `82.2.0`, nginx-gateway-fabric `2.4.2`, ociregistry `1.12.4`
+
 ## 15-Feb-2026
 Commit: `bb44371`
 
