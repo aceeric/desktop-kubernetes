@@ -9,16 +9,30 @@ httpRoute:
     - name: dtk-gateway
       namespace: nginx-gateway
   rules:
-    - matches:
-        - path:
-            type: PathPrefix
-            value: /headlamp
-      backendRefs:
-        - name: headlamp
+    - backendRefs:
+        - group: ""
+          kind: Service
+          name: headlamp
           port: 80
+          weight: 1
       filters:
-        - type: RequestHeaderModifier
-          requestHeaderModifier:
+        - requestHeaderModifier:
             add:
               - name: Authorization
                 value: "Bearer 18bb628a-9f6c-4cc6-aae3-3bf15a89ff62" 
+          type: RequestHeaderModifier
+      matches:
+        - path:
+            type: PathPrefix
+            value: /headlamp/
+    - filters:
+        - requestRedirect:
+            path:
+              replaceFullPath: /headlamp/
+              type: ReplaceFullPath
+            statusCode: 301
+          type: RequestRedirect
+      matches:
+        - path:
+            type: Exact
+            value: /headlamp
