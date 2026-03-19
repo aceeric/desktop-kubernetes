@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+
+CURVER=$(curl -Ls https://dl.k8s.io/release/stable.txt)
+
+read -p "Last kubectl is $CURVER. Press ENTER to install or CTRL-C to quit"
+
+curl -LO "https://dl.k8s.io/release/$CURVER/bin/linux/amd64/kubectl"
+chmod +x kubectl
+sudo mv kubectl /usr/local/bin/
