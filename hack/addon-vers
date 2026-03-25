@@ -5,4 +5,3 @@ find scripts/addons -name install |\
   sed -e 's/CHART_VER=//' -e 's|scripts/addons/||' -e 's|/install||' |\
   sort |\
   column -s : -t -N ADDON,CHARTVER
-exit
