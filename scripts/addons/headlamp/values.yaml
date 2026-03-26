@@ -1,5 +1,8 @@
 config:
   baseURL: /headlamp
+  # work-around for bug in chart version 0.40.1
+  # see https://github.com/kubernetes-sigs/headlamp/issues/4883
+  sessionTTL: null
 
 httpRoute:
   enabled: true
