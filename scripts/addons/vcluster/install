@@ -3,9 +3,12 @@
 # Helm-installs Vcluster.
 #
 
+echo VCLUSTER ADDON IS CURRENTLY DEPRECATED - MAY REVISIT IN FUTURE
+exit 1
+
 config=$1
 
-CHART_VER=0.33.0
+CHART_VER=0.33.1
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
