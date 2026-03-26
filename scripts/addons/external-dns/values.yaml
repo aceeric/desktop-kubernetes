@@ -1,9 +1,90 @@
+# The external DNS chart does not allow to remove the webhook sidecar - even when the provider
+# is external to the cluster. I submitted a PR (https://github.com/kubernetes-sigs/external-dns/pull/5586)
+# but it was ignored. When I used Helm 3, I used a post renderer to remove the sidecar. In Helm
+# 4, post renderers have to be installed as helm plugins. I don't care for that to accomplish such a
+# trivial task as removing a sidecar. So all the nonsense in this values file is to create a fake
+# webhook sidecar container that does nothing except respond to a health check.
+---
 provider:
   name: webhook
-  # the webhook sidecar will get removed by the post-renderer so these
-  # values are meaningless. They're just needed otherwise the chart will
-  # will fail.
   webhook:
     image:
-      repository: slug
-      tag: slug
+      repository: docker.io/python
+      tag: 3.11-slim
+    args:
+      - /app/server.py
+    extraVolumeMounts:
+      - name: script
+        mountPath: /app
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      runAsGroup: 65532
+      runAsNonRoot: true
+      runAsUser: 65532
+
+#extraContainers:
+#  - name: debug
+#    securityContext:
+#      allowPrivilegeEscalation: false
+#      capabilities:
+#        drop:
+#        - ALL
+#      runAsGroup: 65532
+#      runAsNonRoot: true
+#      runAsUser: 65532
+#    image: docker.io/python:3.11-slim
+#    command: ["/bin/sh", "-c", "sleep 24h"]
+#    volumeMounts:
+#      - name: script
+#        mountPath: /app
+
+extraVolumes:
+  - name: script
+    emptyDir: {}
+
+extraVolumeMounts:
+  - name: script
+    mountPath: /app
+
+podSecurityContext: {}
+
+initContainers:
+  - name: init
+    securityContext:
+      allowPrivilegeEscalation: false
+      capabilities:
+        drop:
+        - ALL
+      runAsGroup: 65532
+      runAsNonRoot: true
+      runAsUser: 65532
+    image: docker.io/alpine:latest
+    command: ["/bin/sh", "-c"]
+    volumeMounts:
+      - name: script
+        mountPath: /app
+    args:
+      - |
+        cat <<'EOF' > /app/server.py
+        #!/usr/local/bin/python
+
+        import http.server
+        import socketserver
+        import sys
+
+        PORT = 8080
+
+        class HealthCheckHandler(http.server.SimpleHTTPRequestHandler):
+            def do_GET(self):
+                self.send_response(200)
+                self.end_headers()
+                self.wfile.write(b'ok')
+
+        with socketserver.TCPServer(("", PORT), HealthCheckHandler) as httpd:
+            print(f"Serving at port {PORT}")
+            httpd.serve_forever()
+        EOF
+        chmod +x /app/server.py

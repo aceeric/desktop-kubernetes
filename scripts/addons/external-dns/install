@@ -1,11 +1,12 @@
 #!/usr/bin/env bash
 #
-# Helm-installs the External DNS.
+# Helm-installs the External DNS. Note - the webhook server must be running when you
+# run this install or external dns will error...
 #
 
 config=$1
 
-CHART_VER=1.19.0
+CHART_VER=1.20.0
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 url=https://github.com/kubernetes-sigs/external-dns/releases/download/external-dns-helm-chart-$CHART_VER/external-dns-$CHART_VER.tgz
@@ -34,7 +35,6 @@ helm upgrade --install external-dns $tgz\
   --namespace external-dns\
   --create-namespace\
   --kubeconfig $admin_kubeconfig\
-  --post-renderer $script_dir/post-render.py\
   --values $script_dir/values.yaml\
   --values $script_dir/extra-values.yaml\
-  --wait\
+  --wait
