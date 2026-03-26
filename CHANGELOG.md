@@ -1,5 +1,17 @@
 # Change Log
 
+## 26-Mar-2026
+Commit: `5352bc1`
+
+1. Vcluster addon deprecated for now
+2. Add administrative script to get latest chart versions (mostly works)
+3. Update add-ons: vcluster `0.33.0`, ociregistry `1.12.6`, Gateway API CRDs version `1.5.1`, kube-prometheus-stack `82.14.0`, headlamp `0.40.1`, external-dns `1.20.0`, cilium `1.19.2`, cert-manager `v1.20.0`, calico `v3.31.4`
+4. Doc updates, including current versions
+5. Add deprecation/dependency comments to `config.yaml`
+6. Version `1.35.2` (Kubernetes `1.35.2`)
+7. Headlamp HTTPRoute handles `/headlamp` and `/headlamp/`
+8. Better cli version display
+
 ## 20-Feb-2026
 Commit: `2df3a70`
 
