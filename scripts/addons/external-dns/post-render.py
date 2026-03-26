@@ -3,6 +3,8 @@
 # Removes the webhook sidecar which is not needed because the webhook runs on the
 # desktop, not in the cluster.
 #
+# DEPRECATED - DOES NOT WORK IN HELM 4
+#
 
 import sys
 import yaml
