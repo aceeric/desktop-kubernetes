@@ -9,6 +9,7 @@ addons:
   - name: ingress-nginx
     enabled: false
     ssl-passthrough: false
+    comment: Deprecated
   - name: nginx-gateway-fabric
     enabled: true
   - name: cert-manager
@@ -21,10 +22,13 @@ addons:
     enabled: false
     image-path:
     containerd-mirror-enabled: false
+    comment: Requires nginx-gateway-fabric (expects HTTPRoute)
   - name: headlamp
     enabled: true
+    comment: Requires nginx-gateway-fabric (expects HTTPRoute)
   - name: kubernetes-dashboard
     enabled: false
+    comment: Deprecated
   - name: metrics-server
     enabled: true
   - name: openebs
