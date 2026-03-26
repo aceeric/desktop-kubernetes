@@ -16,29 +16,29 @@ The categories are:
 
 | Category | Component | Version | VirtualBox Only | KVM Only |
 |-|-|-|-|-|
-| Host | Linux desktop | Ubuntu 22.04.5 LTS | - | - |
-| Host | openssl | 3.0.2 | - | - |
-| Host | openssh | OpenSSH_8.9p1 | - | - |
+| Host | Linux desktop | Ubuntu 24.04.4 | - | - |
+| Host | openssl | 3.0.13 | - | - |
+| Host | openssh | OpenSSH_9.6p1 | - | - |
 | Host | genisoimage (used to create a VirtualBox kickstart ISO) | 1.1.11 | Yes | - |
 | Host | Virtual Box / VBoxManage | 7.0.10 | Yes | - |
 | Host | helm | v4.1.1 | - | - |
-| Host | kubectl (client only) | v1.35.1 | - | - |
-| Host | curl | 7.81.0 | - | - |
+| Host | kubectl (client only) | v1.35.2 | - | - |
+| Host | curl | 8.5.0 | - | - |
 | Host | yq | 4.40.5 | - | - |
-| Host | virt-install / virt-clone | 4.0.0 | - | Yes |
-| Host | virsh | 8.0.0 | - | Yes |
+| Host | virt-install / virt-clone | 4.1.0 | - | Yes |
+| Host | virsh | 10.0.0 | - | Yes |
 | Host | Hydrophone | v0.7.0 | - | - |
 | Guest VM | Centos ISO | Stream-9-latest-x86_64 | - | - |
 | Guest VM | Rocky Linux ISO | 8.10 | - | - |
 | Guest VM | Alma Linux ISO | 8.10 and 9.7 _(9.7 is the default)_ | - | - |
 | Guest VM | Virtual Box Guest Additions ISO | 7.0.18 | Yes | - |
-| Kubernetes | kube-apiserver | 1.35.1 | - | - |
-| Kubernetes | kube-controller-manager | 1.35.1 | - | - |
-| Kubernetes | kube-scheduler | 1.35.1 | - | - |
-| Kubernetes | kubelet | 1.35.1 | - | - |
-| Kubernetes | kube-proxy (if installed) | 1.35.1 | - | - |
+| Kubernetes | kube-apiserver | 1.35.2 | - | - |
+| Kubernetes | kube-controller-manager | 1.35.2 | - | - |
+| Kubernetes | kube-scheduler | 1.35.2 | - | - |
+| Kubernetes | kubelet | 1.35.2 | - | - |
+| Kubernetes | kube-proxy (if installed) | 1.35.2 | - | - |
 | Kubernetes | etcd | v3.6.8 | - | - |
-| Kubernetes | crictl | v1.35.1 | - | - |
+| Kubernetes | crictl | v1.35.2 | - | - |
 | Kubernetes | runc | v1.4.0 | - | - |
 | Kubernetes | cni plugins | v1.9.0 | - | - |
 | Kubernetes | containerd | 2.1.4 | - | - |
@@ -51,18 +51,22 @@ To install different add-on versions change the version in the `scripts/addons` 
 
 | Add-on                              | Chart Version | Note |
 |-|-|-|
-| Calico networking (Tigera Operator) | v3.31.3 ||
-| Cert Manager                        | v1.19.3 ||
-| Cilium networking                   | 1.19.1  ||
+| Calico networking (Tigera Operator) | v3.31.4 ||
+| Cert Manager                        | v1.20.0 ||
+| Cilium networking                   | 1.19.2  ||
 | CoreDNS                             | 1.45.2  ||
-| External DNS                        | 1.19.0  ||
-| Headlamp                            | 0.40.0  ||
-| Ingress NGINX Controller            | 4.14.1  |(deprecated)|
-| Kube Prometheus Stack               | 82.2.0  ||
-| Kubernetes Dashboard                | 7.14.0  |(deprecated)|
+| External DNS                        | 1.20.0  ||
+| Headlamp                            | 0.40.1  |(2)|
+| Ingress NGINX Controller            | 4.14.1  |(1)|
+| Kube Prometheus Stack               | 82.14.0 ||
+| Kubernetes Dashboard                | 7.14.0  |(1)|
 | Metrics Server                      | 3.13.0  ||
 | NFS Subdir External Provisioner     | 4.0.18  ||
 | Nginx Gateway Fabric                | 2.4.2   ||
-| Ociregistry                         | 1.12.4  ||
+| Ociregistry                         | 1.12.6  |(2)|
 | OpenEBS Local PV Provisioner        | 4.4.0   ||
-| Vcluster                            | 0.30.4  ||
+| Vcluster                            | 0.33.0  ||
+
+Notes:
+1. Deprecated
+2. Requires Gateway API CRDs (installed by Nginx Gateway Fabric add-on)
