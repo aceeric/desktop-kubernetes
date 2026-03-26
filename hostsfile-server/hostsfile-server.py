@@ -130,7 +130,7 @@ class CustomHTTPRequestHandler(BaseHTTPRequestHandler):
         """
         post_data = self.get_post_data()
         if not post_data:
-            self._send_response(400, mime_type, {"error": "No adjustment data provided"})
+            self._send_response(200, mime_type, [])
             return
         global records
         records = post_data
