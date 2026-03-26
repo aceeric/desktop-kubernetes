@@ -11,7 +11,6 @@ DTK implements this using two components:
 
 > For details on External DNS's webhook design, see [their documentation](https://kubernetes-sigs.github.io/external-dns/v0.18.0/docs/tutorials/webhook-provider/#exposed-endpoints).
 
-
 The steps described in this guide assume you are running the Python HTTP server found in the `hostsfile-server` directory of DTK - either as a `systemd` service (which is how I run it) or just from the command line while you're provisioning and running your cluster. Details on this are provided further down in this document.
 
 !!! Important
