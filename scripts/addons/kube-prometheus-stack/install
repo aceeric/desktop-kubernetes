@@ -5,7 +5,7 @@
 
 config=$1
 
-CHART_VER=82.2.0
+CHART_VER=82.14.0
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
