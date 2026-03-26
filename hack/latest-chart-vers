@@ -1,0 +1,69 @@
+#!/usr/bin/env bash
+
+if [[ -z "$GITHUB_USERNAME" ]] | [[ -z "$GITHUB_ACCESS_TOKEN" ]]; then
+  echo "need two env vars: GITHUB_USERNAME and GITHUB_ACCESS_TOKEN for ghcr.io access"
+  exit 1
+fi
+
+(
+  ver=$(grep CHART_VER= scripts/addons/calico/install)
+  echo -n "calico ${ver#*=} "
+  curl --silent "https://api.github.com/repos/projectcalico/calico/releases/latest" | jq -r ".tag_name"
+
+  ver=$(grep CHART_VER= scripts/addons/cert-manager/install)
+  echo -n "cert-manager ${ver#*=} "
+  curl -sL "https://charts.jetstack.io/index.yaml" | yq eval ".entries.cert-manager[].version" |\
+    grep -Eo '[0-9]+\.[0-9]+\.[0-9]+' | sort -V | tail -n1
+
+  ver=$(grep CHART_VER= scripts/addons/cilium/install)
+  echo -n "cilium ${ver#*=} "
+  curl -sL "https://helm.cilium.io/index.yaml" | yq eval ".entries.cilium[].version" |\
+    grep -Eo '[0-9]+\.[0-9]+\.[0-9]+' | sort -V | tail -n1
+
+  ver=$(grep CHART_VER= scripts/addons/coredns/install)
+  echo -n "coredns ${ver#*=} "
+  curl --silent "https://api.github.com/repos/coredns/helm/releases/latest" | jq -r ".tag_name"
+
+  ver=$(grep CHART_VER= scripts/addons/external-dns/install)
+  echo -n "external-dns ${ver#*=} "
+  curl --silent "https://api.github.com/repos/kubernetes-sigs/external-dns/releases/latest" | jq -r ".tag_name"
+
+  ver=$(grep CHART_VER= scripts/addons/headlamp/install)
+  echo -n "headlamp ${ver#*=} "
+  curl --silent "https://api.github.com/repos/kubernetes-sigs/headlamp/releases/latest" | jq -r ".tag_name"
+
+  #ver=$(grep CHART_VER= scripts/addons/ingress-nginx/install)
+  #echo -n "ingress-nginx ${ver#*=} "
+  #curl --silent "https://api.github.com/repos/kubernetes/ingress-nginx/releases/latest" | jq -r ".tag_name"
+
+  ver=$(grep CHART_VER= scripts/addons/kube-prometheus-stack/install)
+  echo -n "kube-prometheus-stack ${ver#*=} "
+  curl --silent "https://api.github.com/repos/prometheus-community/helm-charts/releases" | jq -r ".[].tag_name" |\
+    grep kube-prometheus-stack | sort | tail -n1
+
+  ver=$(grep CHART_VER= scripts/addons/metrics-server/install)
+  echo -n "metrics-server ${ver#*=} "
+  curl --silent "https://api.github.com/repos/kubernetes-sigs/metrics-server/releases" | jq -r ".[].tag_name" |\
+    grep metrics-server-helm-chart | sort -V | tail -n1
+
+  ver=$(grep CHART_VER= scripts/addons/nfs-provisioner/install)
+  echo -n "nfs-provisioner ${ver#*=} "
+  curl --silent "https://api.github.com/repos/kubernetes-sigs/nfs-subdir-external-provisioner/releases/latest" | jq -r ".tag_name"
+
+  ver=$(grep CHART_VER= scripts/addons/nginx-gateway-fabric/install)
+  echo -n "nginx-gateway-fabric ${ver#*=} "
+  curl -s -H "Authorization: Bearer $(echo -n '$GITHUB_USERNAME:$GITHUB_ACCESS_TOKEN' | base64)" https://ghcr.io/v2/nginx/nginx-gateway-fabric/tags/list |\
+    jq -r '.tags[]' | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+' | sort -V | tail -n1
+
+  ver=$(grep CHART_VER= scripts/addons/ociregistry/install)
+  echo -n "ociregistry ${ver#*=} "
+  curl -s https://quay.io/v2/appzygy/helm-charts/ociregistry/tags/list | jq -r '.tags[]' | grep -Eo '[0-9]+\.[0-9]+\.[0-9]+' | sort -V | tail -n1
+
+  ver=$(grep CHART_VER= scripts/addons/openebs/install)
+  echo -n "openebs ${ver#*=} "
+  curl --silent "https://api.github.com/repos/openebs/dynamic-localpv-provisioner/releases/latest" | jq -r ".tag_name"
+
+  ver=$(grep CHART_VER= scripts/addons/vcluster/install)
+  echo -n "vcluster ${ver#*=} "
+  curl --silent "https://api.github.com/repos/loft-sh/vcluster/releases/latest" | jq -r ".tag_name"
+) | column -t -N CHART,CURVER,LATEST
