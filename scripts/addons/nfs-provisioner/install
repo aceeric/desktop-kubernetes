@@ -9,10 +9,9 @@ set -e
 config=$1
 
 CHART_VER=4.0.18
-CHART_NAME=nfs-subdir-external-provisioner
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-url=https://github.com/kubernetes-sigs/$CHART_NAME/releases/download/$CHART_NAME-$CHART_VER/$CHART_NAME-$CHART_VER.tgz
+url=https://github.com/kubernetes-sigs/nfs-subdir-external-provisioner/releases/download/nfs-subdir-external-provisioner-$CHART_VER/nfs-subdir-external-provisioner-$CHART_VER.tgz
 tgz=$DTKBASE/binaries/$(basename $url)
 xec download-obj --url=$url --dest=$tgz
 
