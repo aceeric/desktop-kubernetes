@@ -1,38 +1,16 @@
-version = 3
+version = 4
 root = '/var/lib/containerd'
 state = '/run/containerd'
 temp = ''
 disabled_plugins = []
 required_plugins = []
 oom_score = 0
-imports = []
-
-[grpc]
-  address = '/run/containerd/containerd.sock'
-  tcp_address = ''
-  tcp_tls_ca = ''
-  tcp_tls_cert = ''
-  tcp_tls_key = ''
-  uid = 0
-  gid = 0
-  max_recv_message_size = 16777216
-  max_send_message_size = 16777216
-
-[ttrpc]
-  address = ''
-  uid = 0
-  gid = 0
+imports = ['/etc/containerd/conf.d/*.toml']
 
 [debug]
-  address = ''
-  uid = 0
-  gid = 0
   level = ''
   format = ''
-
-[metrics]
-  address = ''
-  grpc_histogram = false
+  log_trace_id = false
 
 [plugins]
   [plugins.'io.containerd.cri.v1.images']
@@ -47,7 +25,7 @@ imports = []
     use_local_image_pull = false
 
     [plugins.'io.containerd.cri.v1.images'.pinned_images]
-      sandbox = 'registry.k8s.io/pause:3.10'
+      sandbox = 'registry.k8s.io/pause:3.10.2'
 
     [plugins.'io.containerd.cri.v1.images'.registry]
       config_path = '/etc/containerd/certs.d'
@@ -74,6 +52,8 @@ imports = []
     cdi_spec_dirs = ['/etc/cdi', '/var/run/cdi']
     drain_exec_sync_io_timeout = '0s'
     ignore_deprecation_warnings = []
+    stats_collect_period = ''
+    stats_retention_period = ''
 
     [plugins.'io.containerd.cri.v1.runtime'.containerd]
       default_runtime_name = 'runc'
@@ -105,6 +85,7 @@ imports = []
             NoNewKeyring = false
             Root = ''
             ShimCgroup = ''
+            SystemdCgroup = false
 
     [plugins.'io.containerd.cri.v1.runtime'.cni]
       bin_dir = ''
@@ -118,6 +99,8 @@ imports = []
 
   [plugins.'io.containerd.differ.v1.erofs']
     mkfs_options = []
+    enable_tar_index = false
+    enable_dmverity = false
 
   [plugins.'io.containerd.gc.v1.scheduler']
     pause_threshold = 0.02
@@ -151,11 +134,16 @@ imports = []
     content_sharing_policy = 'shared'
     no_sync = false
 
+  [plugins.'io.containerd.metrics.v1.grpc-prometheus']
+    grpc_histogram = false
+
   [plugins.'io.containerd.monitor.container.v1.restart']
     interval = '10s'
 
   [plugins.'io.containerd.monitor.task.v1.cgroups']
     no_prometheus = false
+
+  [plugins.'io.containerd.mount-handler.v1.erofs']
 
   [plugins.'io.containerd.nri.v1.nri']
     disable = false
@@ -166,8 +154,48 @@ imports = []
     plugin_request_timeout = '2s'
     disable_connections = false
 
+    [plugins.'io.containerd.nri.v1.nri'.default_validator]
+      enable = false
+      reject_oci_hook_adjustment = false
+      reject_runtime_default_seccomp_adjustment = false
+      reject_unconfined_seccomp_adjustment = false
+      reject_custom_seccomp_adjustment = false
+      reject_namespace_adjustment = false
+      reject_sysctl_adjustment = false
+      required_plugins = []
+      tolerate_missing_plugins_annotation = ''
+
   [plugins.'io.containerd.runtime.v2.task']
     platforms = ['linux/amd64']
+
+  [plugins.'io.containerd.server.v1.debug']
+    address = ''
+    uid = 0
+    gid = 0
+
+  [plugins.'io.containerd.server.v1.grpc']
+    address = '/run/containerd/containerd.sock'
+    uid = 1000
+    gid = 1000
+    max_recv_message_size = 16777216
+    max_send_message_size = 16777216
+
+  [plugins.'io.containerd.server.v1.grpc-tcp']
+    address = ''
+    tls_ca = ''
+    tls_cert = ''
+    tls_key = ''
+    tls_common_name = ''
+    max_recv_message_size = 16777216
+    max_send_message_size = 16777216
+
+  [plugins.'io.containerd.server.v1.metrics']
+    address = ''
+
+  [plugins.'io.containerd.server.v1.ttrpc']
+    address = '/run/containerd/containerd.sock.ttrpc'
+    uid = 1000
+    gid = 1000
 
   [plugins.'io.containerd.service.v1.diff-service']
     default = ['walking']
@@ -179,6 +207,7 @@ imports = []
 
   [plugins.'io.containerd.shim.v1.manager']
     env = []
+    socket_dir = ''
 
   [plugins.'io.containerd.snapshotter.v1.blockfile']
     root_path = ''
@@ -204,6 +233,8 @@ imports = []
     ovl_mount_options = []
     enable_fsverity = false
     set_immutable = false
+    default_size = ''
+    dmverity_mode = ''
 
   [plugins.'io.containerd.snapshotter.v1.native']
     root_path = ''
@@ -226,6 +257,7 @@ imports = []
     max_concurrent_uploaded_layers = 3
     check_platform_supported = false
     config_path = ''
+    max_concurrent_unpacks = 1
 
 [cgroup]
   path = ''
