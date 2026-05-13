@@ -41,7 +41,7 @@ The categories are:
 | Kubernetes | crictl | v1.35.2 | - | - |
 | Kubernetes | runc | v1.4.0 | - | - |
 | Kubernetes | cni plugins | v1.9.0 | - | - |
-| Kubernetes | containerd | 2.1.4 | - | - |
+| Kubernetes | containerd | 2.3.0 | - | - |
 
 > The Virtual Box Guest Additions ISO enables getting the IP address of a VM.
 
