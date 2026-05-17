@@ -1,5 +1,10 @@
 # Change Log
 
+## 17-May-2026
+Commit: ``
+
+1. Update add-ons: calico `v3.32.0`, cert-manager `v1.20.2`, cilium `1.19.4`, external-dns `1.21.1`, headlamp `0.42.0`, kube-prometheus-stack `85.1.2`, nginx-gateway-fabric `2.6.0`, ociregistry `1.13.0`.
+
 ## 12-May-2026
 Commit: `f9faeb2`
 

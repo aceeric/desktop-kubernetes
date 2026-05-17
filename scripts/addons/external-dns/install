@@ -6,7 +6,7 @@
 
 config=$1
 
-CHART_VER=1.20.0
+CHART_VER=1.21.1
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 url=https://github.com/kubernetes-sigs/external-dns/releases/download/external-dns-helm-chart-$CHART_VER/external-dns-$CHART_VER.tgz
