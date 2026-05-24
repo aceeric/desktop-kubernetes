@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+#
+# Resizes the partition mounted on "/"
+#
+
+set -e
+
+PART=$(findmnt -n -o SOURCE / | grep -o '[0-9]*$')
+growpart /dev/vda $PART
+xfs_growfs /
