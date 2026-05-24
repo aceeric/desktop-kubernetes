@@ -96,6 +96,14 @@ case $operation in
       --config=$config\
       --priv-key=$DTKBASE/generated/kickstart/id_ed25519
     ;;
+  create-template-vm)
+    kickstart=$(yq .$virt.kickstart $config)
+    xec $virt/create-template-vm\
+      --template-vmname=$vm_template_vmname\
+      --linux=$vm_linux\
+      --kickstart=$kickstart\
+      --os-variant=$kvm_os_variant
+    ;;
   verify-upstreams)
     xec check-objects upstreams
     ;;
