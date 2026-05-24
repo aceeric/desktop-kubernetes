@@ -6,6 +6,7 @@
 set -e
 
 long_opts=priv-key:,template-vmname:,clone-vmname:,clone-ram:,clone-cpus:,clone-disk:
+script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 priv_key=
 template_vmname=
@@ -58,8 +59,9 @@ CONTAINERD_ADDRESS=/run/containerd/containerd.sock
 EOF
 
 if [[ -n $clone_disk ]]; then
-  echo "resizing partition 3 on /dev/vda"
-  ssh -i $priv_key root@$clone_ip "growpart /dev/vda 3 && xfs_growfs /"
+  echo "resizing partition"
+  scp -p -i $priv_key $script_dir/resizer root@$clone_ip:/tmp
+  ssh -i $priv_key root@$clone_ip /tmp/resizer
 fi
 
 echo "done cloning \"$clone_vmname\""

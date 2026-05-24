@@ -106,7 +106,7 @@ This section is only used if `virt = kvm`
 
 | Key | Description |
 |-|-|
-| `vm.linux` | Determines the Linux variant.  Valid values are `alma9` for Alma 9.7 (the default), `alma8` for Alma 8.10, `centos9` for CentOS 9 Stream, and `rocky` for Rocky Linux. Ignored unless `vm.create-template` is specified. **CentOS and Rocky are un-tested.** (It's on the to-do list.) |
+| `vm.linux` | Determines the Linux variant.  Valid values are `alma9` for Alma 9.7 (the default), `alma10` for Alma 10.1, `alma8` for Alma 8.10, `centos9` for CentOS 9 Stream, and `rocky` for Rocky Linux. Ignored unless `vm.create-template` is specified. **CentOS and Rocky are un-tested.** (It's on the to-do list.) |
 | `vm.create-template` | Values are `true` (the  default) or `false`. Causes the script to create a template VM before bringing up the cluster. (This step by far takes the longest.) The template is then used to clone all the cluster nodes. If `false`, the script expects to find an existing VM to clone from per the `vm.template-vmname` setting. You can override this with command line arg `--create-template=true\|false`. **This setting must be `true` for the very first cluster you create - meaning - you have to create a template at least once.** |
 | `vm.template-vmname` {: .nowrap-column } | Specifies the template VM name to create - or clone from. |
 

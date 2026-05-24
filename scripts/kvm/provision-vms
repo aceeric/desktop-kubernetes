@@ -22,20 +22,6 @@ if ! parsed=$(xec parseargs $long_opts "$@"); then
 fi
 eval $(echo -e "$parsed")
 
-linux_iso_path=
-if [[ $linux == "alma8" ]]; then
-  linux_iso_path=$ALMA8_ISO_FILE
-elif [[ $linux == "alma9" ]]; then
-  linux_iso_path=$ALMA9_ISO_FILE
-elif [[ $linux == "rocky" ]]; then
-  linux_iso_path=$ROCKY_ISO_FILE
-elif [[ $linux == "centos9" ]]; then
-  linux_iso_path=$CENTOS9_ISO_FILE
-else
-  echo "unknown/unspecified linux distro"
-  exit 1
-fi
-
 # create-template-vm gens SSH keypair $DTKBASE/generated/kickstart/id_ed25519
 # if it does not already exist - which is used below when cloning the VM
 
@@ -44,7 +30,7 @@ if [[ $create_template -eq 1 ]] ; then
   echo "creating a template VM"
   $script_dir/create-template-vm\
    --template-vmname=$template_vmname\
-   --linux-iso-path=$linux_iso_path\
+   --linux=$linux\
    --kickstart=$kickstart\
    --os-variant=$os_variant
 fi

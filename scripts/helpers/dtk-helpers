@@ -80,6 +80,9 @@ function parse_cmdline() {
       check-tools)
         operation="$arg"
         ;;
+      create-template-vm)
+        operation="$arg"
+        ;;
       --config=*)
         config=$(echo $arg | cut -d= -f2)
         ;;
@@ -134,7 +137,7 @@ function parse_cmdline() {
   fi
 
   valid_ops=(".cluster-create." ".cluster-delete." ".cluster-up." ".cluster-down." ".install-addon."
-  ".verify-upstreams." ".verify-files." ".check-tools." ".version." ".help.")
+  ".verify-upstreams." ".verify-files." ".check-tools." ".version." ".help." ".create-template-vm.")
   if [[ ! ${valid_ops[@]} =~ ".$operation." ]]; then
     echo "unknown operation '$operation', try: ./dtk help (the command line was re-designed in version v1.34.1-1)"
     exit 1
@@ -179,7 +182,7 @@ function set_cmdline_overrides() {
 # (e.g., for omitted values.)
 #
 function validate_config_values() {
-  supported_linux=(".centos9." ".rocky." ".alma8." ".alma9.")
+  supported_linux=(".centos9." ".rocky." ".alma8." ".alma9." ".alma10.")
   if [[ ! ${supported_linux[@]} =~ ".$vm_linux." ]]; then
     echo "unsupported value for linux config: $vm_linux"
     exit 1

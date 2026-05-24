@@ -5,11 +5,11 @@
 
 set -e
 
-long_opts=template-vmname:,linux-iso-path:,host-only-network:,kickstart:,os-variant:
+long_opts=template-vmname:,linux:,host-only-network:,kickstart:,os-variant:
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 template_vmname=
-linux_iso_path=
+linux=
 host_only_network=
 kickstart=
 os_variant=
@@ -19,6 +19,22 @@ if ! parsed=$(xec parseargs $long_opts "$@"); then
   exit 1
 fi
 eval $(echo -e "$parsed")
+
+linux_iso_path=
+if [[ $linux == "alma8" ]]; then
+  linux_iso_path=$ALMA8_ISO_FILE
+elif [[ $linux == "alma9" ]]; then
+  linux_iso_path=$ALMA9_ISO_FILE
+elif [[ $linux == "alma10" ]]; then
+  linux_iso_path=$ALMA10_ISO_FILE
+elif [[ $linux == "rocky" ]]; then
+  linux_iso_path=$ROCKY_ISO_FILE
+elif [[ $linux == "centos9" ]]; then
+  linux_iso_path=$CENTOS9_ISO_FILE
+else
+  echo "unknown/unspecified linux distro"
+  exit 1
+fi
 
 echo "checking/generating SSH keys"
 xec gen-ssh-keyfiles
@@ -36,7 +52,6 @@ virt-install\
   --memory 2000\
   --vcpus 2\
   --disk size=30\
-  --cdrom $linux_iso_path\
   --location $linux_iso_path\
   --boot hd,cdrom\
   --graphics none\

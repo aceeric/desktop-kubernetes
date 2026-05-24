@@ -2,6 +2,7 @@
 
 ALMA8_VER=8.10
 ALMA9_VER=9.7
+ALMA10_VER=10.1
 CNI_PLUGINS_VER=v1.9.0
 CONTAINERD_VER=2.3.0
 CRICTL_VER=v1.36.0
@@ -17,6 +18,8 @@ ALMA8_ISO_DOWNLOAD=https://repo.almalinux.org/almalinux/$ALMA8_VER/isos/x86_64/A
 ALMA8_ISO_FILE=$DTKBASE/binaries/AlmaLinux-$ALMA8_VER-x86_64-dvd.iso
 ALMA9_ISO_DOWNLOAD=https://raw.repo.almalinux.org/almalinux/9/isos/x86_64/AlmaLinux-$ALMA9_VER-x86_64-dvd.iso
 ALMA9_ISO_FILE=$DTKBASE/binaries/AlmaLinux-$ALMA9_VER-x86_64-dvd.iso
+ALMA10_ISO_DOWNLOAD=https://repo.almalinux.org/almalinux/10/isos/x86_64_v2/AlmaLinux-$ALMA10_VER-x86_64_v2-dvd.iso
+ALMA10_ISO_FILE=$DTKBASE/binaries/AlmaLinux-$ALMA10_VER-x86_64_v2-dvd.iso
 CENTOS9_ISO_DOWNLOAD=http://mirror.stream.centos.org/9-stream/BaseOS/x86_64/iso/CentOS-Stream-9-latest-x86_64-dvd1.iso
 CENTOS9_ISO_FILE=$DTKBASE/binaries/CentOS-Stream-9-latest-x86_64-dvd1.iso
 CNI_PLUGINS_BINARY=$DTKBASE/binaries/cni-plugins-linux-amd64-$CNI_PLUGINS_VER.tgz

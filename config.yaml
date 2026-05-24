@@ -48,16 +48,16 @@ k8s:
 kvm:
   network: nat
   kickstart: kvm.text.ks.cfg
-  os-variant: almalinux9
+  os-variant: almalinux10
 vbox:
   host-network-interface:
   host-only-network: 192.168.56
   kickstart: vbox.text.ks.cfg
   vboxdir:
 vm:
-  linux: alma9
+  linux: alma10
   create-template: true
-  template-vmname: alma9.7
+  template-vmname: alma10.1
 dns:
   domain: dtk.io
   host-ip:

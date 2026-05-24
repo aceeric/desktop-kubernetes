@@ -29,6 +29,8 @@ if [[ $linux == "alma8" ]]; then
   linux_iso_path=$ALMA8_ISO_FILE
 elif [[ $linux == "alma9" ]]; then
   linux_iso_path=$ALMA9_ISO_FILE
+elif [[ $linux == "alma10" ]]; then
+  linux_iso_path=$ALMA10_ISO_FILE
 elif [[ $linux == "rocky" ]]; then
   linux_iso_path=$ROCKY_ISO_FILE
 elif [[ $linux == "centos9" ]]; then
