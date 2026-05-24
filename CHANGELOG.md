@@ -1,5 +1,11 @@
 # Change Log
 
+## 24-May-2026
+Tag: `v1.36.1-uncertified`
+
+1. Kubernetes `1.36.1`, crictl `c1.36.0`
+2. Support Alma 10.1 as the default
+
 ## 17-May-2026
 Commit: `35a2414`
 
