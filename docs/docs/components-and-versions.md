@@ -22,7 +22,7 @@ The categories are:
 | Host | genisoimage (used to create a VirtualBox kickstart ISO) | 1.1.11 | Yes | - |
 | Host | Virtual Box / VBoxManage | 7.0.10 | Yes | - |
 | Host | helm | v4.1.1 | - | - |
-| Host | kubectl (client only) | v1.35.2 | - | - |
+| Host | kubectl (client only) | v1.36.1 | - | - |
 | Host | curl | 8.5.0 | - | - |
 | Host | yq | 4.40.5 | - | - |
 | Host | virt-install / virt-clone | 4.1.0 | - | Yes |
@@ -32,13 +32,13 @@ The categories are:
 | Guest VM | Rocky Linux ISO | 8.10 | - | - |
 | Guest VM | Alma Linux ISO | 8.10 and 9.7 _(9.7 is the default)_ | - | - |
 | Guest VM | Virtual Box Guest Additions ISO | 7.0.18 | Yes | - |
-| Kubernetes | kube-apiserver | 1.35.2 | - | - |
-| Kubernetes | kube-controller-manager | 1.35.2 | - | - |
-| Kubernetes | kube-scheduler | 1.35.2 | - | - |
-| Kubernetes | kubelet | 1.35.2 | - | - |
-| Kubernetes | kube-proxy (if installed) | 1.35.2 | - | - |
+| Kubernetes | kube-apiserver | 1.36.1 | - | - |
+| Kubernetes | kube-controller-manager | 1.36.1 | - | - |
+| Kubernetes | kube-scheduler | 1.36.1 | - | - |
+| Kubernetes | kubelet | 1.36.1 | - | - |
+| Kubernetes | kube-proxy (if installed) | 1.36.1 | - | - |
 | Kubernetes | etcd | v3.6.8 | - | - |
-| Kubernetes | crictl | v1.35.2 | - | - |
+| Kubernetes | crictl | v1.36.0 | - | - |
 | Kubernetes | runc | v1.4.0 | - | - |
 | Kubernetes | cni plugins | v1.9.0 | - | - |
 | Kubernetes | containerd | 2.3.0 | - | - |
