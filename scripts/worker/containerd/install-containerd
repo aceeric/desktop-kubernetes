@@ -24,10 +24,9 @@ fi
 eval $(echo -e "$parsed")
 
 echo "Copying containerd binary to worker"
-cat $containerd_binary | ssh -i $priv_key root@$worker_ip\
- "tar zxvf - --strip-components 1 --no-same-owner -C /bin/ bin"
+ssh -i $priv_key root@$worker_ip "tar -zxf - --strip-components 1 --no-same-owner -C /bin/ bin" < $containerd_binary
 
-echo "Copying containerd service and toml files to worker VM"
+echo "Copying containerd service and toml files to worker"
 scp -i $priv_key $script_dir/containerd.service root@$worker_ip:/etc/systemd/system/
 
 ssh -i $priv_key root@$worker_ip "mkdir -p /etc/containerd/certs.d"
@@ -52,7 +51,7 @@ EOF
 # This containerd .conflist can run the cluster fine without Calico/Cilium but requires kube-proxy to be installed
 # if running without Calico/Cilium.
 
-echo "Copying 20-containerd-net.conflist to /etc/cni/net.d/ in worker VM"
+echo "Copying 20-containerd-net.conflist to /etc/cni/net.d/ in worker"
 ssh -i $priv_key root@$worker_ip "mkdir -p /etc/cni/net.d /var/log/desktop-kubernetes/cni"
 sed $script_dir/20-containerd-net.conflist\
  -e "s|PODCIDR|$pod_cidr|g" | ssh -i $priv_key root@$worker_ip "cat > /etc/cni/net.d/20-containerd-net.conflist"
@@ -89,6 +88,5 @@ if [[ $imagecnt -ne 0 ]]; then
     scp -i $priv_key $image root@$worker_ip:/tmp/images/
   done
   echo "Importing images into host containerd cache"
-  scp -i $priv_key $script_dir/import-images root@$worker_ip:/tmp/images/
-  ssh -i $priv_key root@$worker_ip "chmod +x /tmp/images/import-images && /tmp/images/import-images"
+  scp -p -i $priv_key $script_dir/import-images root@$worker_ip:/tmp/images/
 fi

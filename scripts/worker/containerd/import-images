@@ -9,7 +9,7 @@
 image_path=/tmp/images
 
 find $image_path -name '*.tgz' | while read tarball; do
-  tar -zxvf $tarball -C $image_path
+  tar -zxf $tarball -C $image_path
   rm -f $tarball
 done
 

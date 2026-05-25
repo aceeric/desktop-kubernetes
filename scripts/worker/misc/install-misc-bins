@@ -24,15 +24,13 @@ eval $(echo -e "$parsed")
 echo "Copying misc kubernetes binaries"
 
 echo "Copying crictl binary and config to worker"
-cat $crictl_binary | ssh -i $priv_key root@$worker_ip\
- "tar zxvf - --no-same-owner -C /usr/local/bin/ crictl && chmod +x /usr/local/bin/crictl"
+ssh -i $priv_key root@$worker_ip "tar -zxf - --no-same-owner -C /usr/local/bin/ crictl" < $crictl_binary
 scp -i $priv_key $script_dir/crictl.yaml root@$worker_ip:/etc/
 
 echo "Copying runc binary to worker"
 scp -i $priv_key $runc_binary root@$worker_ip:/usr/local/bin/runc
 
 echo "Copying cni plugins binary to worker"
-ssh -i $priv_key root@$worker_ip "mkdir -p /opt/cni/bin"
-cat $cni_plugins_binary | ssh -i $priv_key root@$worker_ip "tar zxvf - --no-same-owner -C /opt/cni/bin/"
+ssh -i $priv_key root@$worker_ip "mkdir -p /opt/cni/bin && tar -zxf - --no-same-owner -C /opt/cni/bin/" < $cni_plugins_binary
 
 echo "Done copying binaries"

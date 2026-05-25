@@ -35,8 +35,8 @@ scp -i $priv_key $kubernetes_cert $kubernetes_key $ca_cert root@$controller_ip:/
 
 subdir=$(basename -s .tar.gz $etcd_gzip)
 echo "extracting etcd binaries to controller"
-cat "$etcd_gzip" | ssh -i $priv_key root@$controller_ip \
- "tar zxvf - --no-same-owner --strip-components 1 -C /usr/local/bin/ $subdir/etcd $subdir/etcdctl"
+ssh -i $priv_key root@$controller_ip\
+  "tar -zxf - --no-same-owner --strip-components 1 -C /usr/local/bin/ $subdir/etcd $subdir/etcdctl" < $etcd_gzip
 
 if [[ $containerized_cplane -eq 0 ]]; then
   echo "generating etcd service file"
