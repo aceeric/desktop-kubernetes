@@ -13,11 +13,13 @@ export DTKVERDATE=24-May-2026
 operation=
 config=$DTKBASE/config.yaml
 create_template=
+cluster_name=
 create_vms=1
 addon=
 
 # set from config.yaml by scripts/helpers/parse-config.py
 virt=
+k8s_cluster_name=
 k8s_containerized_cplane=
 k8s_cluster_cidr=
 k8s_cluster_dns=
@@ -47,14 +49,17 @@ validate_config_file
 # read the config file and set vars above
 eval $($DTKBASE/scripts/helpers/parse-config.py $config)
 
-# sanity check configuration settings
-validate_config_values
-
 # allow the command line to override configuration file settings
 set_cmdline_overrides
 
+# sanity check configuration settings
+validate_config_values
+
 # set component versions and urls
 set -a && source $DTKBASE/artifacts && set +a
+
+# localize generated files to a cluster subdir
+export GENERATED=generated/$k8s_cluster_name
 
 case $operation in
   help)
@@ -62,9 +67,9 @@ case $operation in
     ;;
   cluster-create)
     xec create-cluster\
-      --admin-kubeconfig=$DTKBASE/generated/kubeconfig/admin.kubeconfig\
-      --ca-cert=$DTKBASE/generated/cert/ca.pem\
-      --ca-key=$DTKBASE/generated/cert/ca-key.pem\
+      --admin-kubeconfig=$DTKBASE/$GENERATED/kubeconfig/admin.kubeconfig\
+      --ca-cert=$DTKBASE/$GENERATED/cert/ca.pem\
+      --ca-key=$DTKBASE/$GENERATED/cert/ca-key.pem\
       --cluster-cidr=$k8s_cluster_cidr\
       --config=$config\
       --containerized-cplane=$k8s_containerized_cplane\
@@ -75,7 +80,7 @@ case $operation in
       --kube-proxy-enabled=$k8s_kube_proxy\
       --linux=$vm_linux\
       --os-variant=$kvm_os_variant\
-      --priv-key=$DTKBASE/generated/kickstart/id_ed25519\
+      --priv-key=$DTKBASE/generated/ssh/id_ed25519\
       --template-vmname=$vm_template_vmname\
       --vboxdir=$vbox_vboxdir\
       --virt=$virt
@@ -92,9 +97,9 @@ case $operation in
   install-addon)
     xec install-addons\
       --addon=$addon\
-      --admin-kubeconfig=$DTKBASE/generated/kubeconfig/admin.kubeconfig\
+      --admin-kubeconfig=$DTKBASE/$GENERATED/kubeconfig/admin.kubeconfig\
       --config=$config\
-      --priv-key=$DTKBASE/generated/kickstart/id_ed25519
+      --priv-key=$DTKBASE/generated/ssh/id_ed25519
     ;;
   create-template-vm)
     kickstart=$(yq .$virt.kickstart $config)

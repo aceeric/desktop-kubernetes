@@ -51,7 +51,7 @@ xec gen-certs-kubeconfig\
  --ca-key=$ca_key
 
 ssh -i $priv_key root@$controller_ip "mkdir -p /var/lib/kubernetes/"
-scp -i $priv_key $DTKBASE/generated/cert/service-account*.pem $DTKBASE/generated/cert/aggregator*.pem\
+scp -i $priv_key $DTKBASE/$GENERATED/cert/service-account*.pem $DTKBASE/$GENERATED/cert/aggregator*.pem\
   root@$controller_ip:/var/lib/kubernetes
 
 echo "copying additional kube-apiserver TLS material to controller VM"

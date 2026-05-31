@@ -36,8 +36,13 @@ eval $(echo -e "$parsed")
 begin_timestamp=$(date +%s%N | cut -b1-13)
 
 echo "creating directories to generate various files into"
+
+# the keypair will be used for all VMs including templates so put it in one place
+mkdir -p $DTKBASE/generated/ssh
+
+# other generated files will be grouped under the cluster name
 for dir in kickstart kubeconfig cert hostonly-netcfg iso; do
-  mkdir -p $DTKBASE/generated/$dir
+  mkdir -p $DTKBASE/$GENERATED/$dir
 done
 
 echo "downloading core cluster components"

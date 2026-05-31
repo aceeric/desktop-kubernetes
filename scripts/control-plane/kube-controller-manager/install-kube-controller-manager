@@ -37,7 +37,7 @@ xec gen-certs-kubeconfig\
   --ca-key=$ca_key
 
 echo "copying kube-controller-manager kubeconfig file to controller VM"
-scp -i $priv_key $DTKBASE/generated/kubeconfig/kube-controller-manager.kubeconfig root@$controller_ip:/var/lib/kubernetes/
+scp -i $priv_key $DTKBASE/$GENERATED/kubeconfig/kube-controller-manager.kubeconfig root@$controller_ip:/var/lib/kubernetes/
 
 if [[ $containerized_cplane -eq 0 ]]; then
   echo "copying kube-controller-manager binary to controller VM"

@@ -47,8 +47,8 @@ xec install-etcd\
  --controller-ip=$controller_ip\
  --controller-hostname=$controller_hostname\
  --etcd-gzip=$ETCD_GZIP\
- --kubernetes-cert=$DTKBASE/generated/cert/kubernetes.pem\
- --kubernetes-key=$DTKBASE/generated/cert/kubernetes-key.pem\
+ --kubernetes-cert=$DTKBASE/$GENERATED/cert/kubernetes.pem\
+ --kubernetes-key=$DTKBASE/$GENERATED/cert/kubernetes-key.pem\
  --admin-kubeconfig=$admin_kubeconfig\
  --containerized-cplane=$containerized_cplane\
  --ca-cert=$ca_cert
@@ -58,8 +58,8 @@ xec install-kube-apiserver\
  --priv-key=$priv_key\
  --controller-ip=$controller_ip\
  --kube-apiserver-binary=$KUBE_APISERVER_BINARY\
- --kubernetes-cert=$DTKBASE/generated/cert/kubernetes.pem\
- --kubernetes-key=$DTKBASE/generated/cert/kubernetes-key.pem\
+ --kubernetes-cert=$DTKBASE/$GENERATED/cert/kubernetes.pem\
+ --kubernetes-key=$DTKBASE/$GENERATED/cert/kubernetes-key.pem\
  --containerized-cplane=$containerized_cplane\
  --admin-kubeconfig=$admin_kubeconfig\
  --ca-cert=$ca_cert\

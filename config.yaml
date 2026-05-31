@@ -39,6 +39,7 @@ k8s:
   containerized-cplane:
   cluster-cidr: 10.200.0.0/16
   cluster-dns: 10.32.0.10
+  cluster-name: default
   kube-proxy: false
   containerd-mirror:
     enabled: false

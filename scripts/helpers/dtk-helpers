@@ -116,6 +116,17 @@ function parse_cmdline() {
         fi
         create_vms="${!i}"
         ;;
+      --cluster-name=*)
+        cluster_name=$(echo $arg | cut -d= -f2)
+        ;;
+      --cluster-name)
+        ((i++))
+        if [[ -z "${!i}" ]]; then
+          parse_error=1
+          break
+        fi
+        cluster_name="${!i}"
+        ;;
       version)
         operation="version"
         ;;
@@ -175,6 +186,10 @@ function set_cmdline_overrides() {
       vm_create_template=0
       ;;
   esac
+
+  if [[ -n "$cluster_name" ]]; then
+    k8s_cluster_name=$cluster_name
+  fi
 }
 
 #
@@ -185,6 +200,11 @@ function validate_config_values() {
   supported_linux=(".centos9." ".rocky." ".alma8." ".alma9." ".alma10.")
   if [[ ! ${supported_linux[@]} =~ ".$vm_linux." ]]; then
     echo "unsupported value for linux config: $vm_linux"
+    exit 1
+  fi
+
+  if [[ -z "$k8s_cluster_name" ]]; then
+    echo "need a cluster name in the config file or the command line"
     exit 1
   fi
 

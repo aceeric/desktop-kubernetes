@@ -30,6 +30,7 @@ dtk command [sub-command] [flags]
 |-|-|
 | `--config` | The path to a configuration yaml file that specifies the cluster options. If not provided, uses the configuration yaml file in the same directory as the CLI. |
 | `--create-template` {: .nowrap-column } | Overrides the setting specified in the configuration yaml. Allowed values are `true` and `false`. |
+| `--cluster-name` | Overrides the cluster name specified in the configuration yaml. This will be used to create a sub-directory under the `generated` directory to hold files generated for the cluster, so so it must be valid as a sub-directory name. |
 | `--create-vms` | Create VMs. Allowed values are `true` and `false`. Default is true. If false, then the VMs in the configuration yaml file must be up and running, and the installer will simply install Kubernetes on them. |
 | `--help` | Same as the help command. |
 

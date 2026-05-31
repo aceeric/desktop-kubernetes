@@ -37,9 +37,9 @@ echo "Copying kubelet files to worker VM"
 
 scp -i $priv_key $kubelet_binary root@$worker_ip:/usr/local/bin/kubelet
 ssh -i $priv_key root@$worker_ip "mkdir -p /var/lib/kubelet/kubeconfig /var/lib/kubernetes"
-scp -i $priv_key $DTKBASE/generated/cert/kubelet-$worker_hostname.pem root@$worker_ip:/var/lib/kubelet/kubelet.pem
-scp -i $priv_key $DTKBASE/generated/cert/kubelet-$worker_hostname-key.pem root@$worker_ip:/var/lib/kubelet/kubelet-key.pem
-scp -i $priv_key $DTKBASE/generated/kubeconfig/kubelet-$worker_hostname.kubeconfig root@$worker_ip:/var/lib/kubelet/kubeconfig/kubelet.kubeconfig
+scp -i $priv_key $DTKBASE/$GENERATED/cert/kubelet-$worker_hostname.pem root@$worker_ip:/var/lib/kubelet/kubelet.pem
+scp -i $priv_key $DTKBASE/$GENERATED/cert/kubelet-$worker_hostname-key.pem root@$worker_ip:/var/lib/kubelet/kubelet-key.pem
+scp -i $priv_key $DTKBASE/$GENERATED/kubeconfig/kubelet-$worker_hostname.kubeconfig root@$worker_ip:/var/lib/kubelet/kubeconfig/kubelet.kubeconfig
 scp -i $priv_key $ca_cert root@$worker_ip:/var/lib/kubernetes/
 scp -i $priv_key $script_dir/kubelet-config.yaml root@$worker_ip:/var/lib/kubelet/
 scp -i $priv_key $script_dir/kubelet.service root@$worker_ip:/etc/systemd/system/

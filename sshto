@@ -11,4 +11,5 @@ else
   echo "need vbox or kvm in arg 2"
   exit 1
 fi
-ssh -i ./generated/kickstart/id_ed25519 root@$ip
+
+ssh -i ./generated/ssh/id_ed25519 root@$ip

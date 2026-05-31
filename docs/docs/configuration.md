@@ -46,6 +46,7 @@ The `k8s` section has configuration settings that configure Kubernetes, independ
 | Key | Description |
 |-|-|
 | `k8s.containerized-cplane` {: .nowrap-column } | If specified, creates the control plane components as static pods on the controller VM like kubeadm, RKE2, et. al. (By default, Desktop Kubermetes creates the control plane components as as systemd units.) Allowed values: `all`, or any of: `etcd`, `kube-apiserver`, `kube-proxy`, `kube-scheduler`, `kube-controller-manager` (comma-separated.) E.g.: `etcd,kube-apiserver` |
+| `k8s.cluster-name` | This is the cluster name. Cluster-specific files (e.g. kubeconfig) are generated to the `generated` directory and grouped in a sub-directory with this name. This allows to create and work with multiple clusters concurrently. |
 | `k8s.cluster-cidr` | Configures CIDR range for Pods. This is applied to the `kube-controller-manager`. (Be aware of `--node-cidr-mask-size...` args which you can't override at this time.) |
 | `k8s.cluster-dns` | Ignored - not yet implemented. |
 | `k8s.kube-proxy` | If true, you can run the cluster without Calico or Cilium (or other CNI) using the default CNI configuration that is established by `scripts/worker/containerd/install-containerd`. |

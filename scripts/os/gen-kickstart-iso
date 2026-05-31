@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 #
-# Creates an ISO from the script directory and writes the ISO into the project 'generated/kickstart'
+# Creates an ISO from the script directory and writes the ISO into the project '$GENERATED/kickstart'
 # directory. Expects the name of a kickstart config file in arg 1 in the same directory as the script.
 #
 
@@ -10,8 +10,8 @@ kickstart=$1
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-cp $script_dir/desktop-kubernetes.service $script_dir/desktop-kubernetes.sh $DTKBASE/generated/kickstart
-cp $DTKBASE/kickstarts/$kickstart $DTKBASE/generated/kickstart/ks.cfg
+cp $script_dir/desktop-kubernetes.service $script_dir/desktop-kubernetes.sh $DTKBASE/$GENERATED/kickstart
+cp $DTKBASE/kickstarts/$kickstart $DTKBASE/$GENERATED/kickstart/ks.cfg
 
-rm -f $DTKBASE/generated/iso/kickstart.iso
-genisoimage -J -R -input-charset utf-8 -volid OEMDRV -o $DTKBASE/generated/iso/kickstart.iso $DTKBASE/generated/kickstart
+rm -f $DTKBASE/$GENERATED/iso/kickstart.iso
+genisoimage -J -R -input-charset utf-8 -volid OEMDRV -o $DTKBASE/$GENERATED/iso/kickstart.iso $DTKBASE/$GENERATED/kickstart

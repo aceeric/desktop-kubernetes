@@ -35,7 +35,7 @@ xec gen-ssh-keyfiles
 
 echo "generating kickstart ISO"
 xec gen-kickstart-iso $kickstart
-kickstart_iso_path=$DTKBASE/generated/iso/kickstart.iso
+kickstart_iso_path=$DTKBASE/$GENERATED/iso/kickstart.iso
 
 if [[ ! -z "$host_only_network" ]]; then
   echo "creating new host only network for $host_only_network"

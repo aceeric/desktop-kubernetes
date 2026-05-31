@@ -23,6 +23,7 @@
 import yaml, sys, os
 
 valid_configs = [
+    "k8s.cluster-name",
     "k8s.containerized-cplane",
     "k8s.cluster-cidr",
     "k8s.cluster-dns",

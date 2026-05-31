@@ -3,14 +3,14 @@
 # Generates an SSH key pair if not already present. The Key pair eventually gets
 # wired into the template VM. So the private key can be used to SSH into any VM
 # cloned from the template. Outputs: id_ed25519 and id_ed25519.pub in id_ed25519
-# in $DTKBASE/generated/kickstart directory.
+# in $DTKBASE/generated/ssh directory.
 #
 
 set -e
 
-if [[ ! -f $DTKBASE/generated/kickstart/id_ed25519 ]] || [[ ! -f $DTKBASE/generated/kickstart/id_ed25519.pub ]]; then
+if [[ ! -f $DTKBASE/generated/ssh/id_ed25519 ]] || [[ ! -f $DTKBASE/generated/ssh/id_ed25519.pub ]]; then
   echo "generating key pair"
-  ssh-keygen -t ed25519 -N '' -f $DTKBASE/generated/kickstart/id_ed25519 <<<y
+  ssh-keygen -t ed25519 -N '' -f $DTKBASE/generated/ssh/id_ed25519 <<<y
 else
   echo "key pair already exists"
 fi

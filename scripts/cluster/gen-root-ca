@@ -5,10 +5,10 @@
 # so if they already exist just keep re-using them.
 #
 # Outputs:
-#   - $DTKBASE/generated/cert/ca-key.pem
-#   - $DTKBASE/generated/cert/ca.pem
+#   - $DTKBASE/$GENERATED/cert/ca-key.pem
+#   - $DTKBASE/$GENERATED/cert/ca.pem
 
-mapfile -t certfiles < <(ls -1 $DTKBASE/generated/cert/ca{,-key}.pem)
+mapfile -t certfiles < <(ls -1 $DTKBASE/$GENERATED/cert/ca{,-key}.pem)
 
 if [[ "${#certfiles[@]}" -eq 2 ]]; then
   echo "CA cert and key already exist - skipping"
@@ -16,17 +16,17 @@ if [[ "${#certfiles[@]}" -eq 2 ]]; then
 fi
 
 openssl genrsa\
-  -out "$DTKBASE/generated/cert/ca-key.pem"\
+  -out "$DTKBASE/$GENERATED/cert/ca-key.pem"\
   2048
 
 openssl req\
   -x509\
   -new\
   -nodes\
-  -key "$DTKBASE/generated/cert/ca-key.pem"\
+  -key "$DTKBASE/$GENERATED/cert/ca-key.pem"\
   -sha256\
   -subj "/CN=internalca"\
   -days 10000\
-  -out "$DTKBASE/generated/cert/ca.pem"\
+  -out "$DTKBASE/$GENERATED/cert/ca.pem"\
   -addext "basicConstraints=critical,CA:TRUE"\
   -addext "keyUsage=critical,digitalSignature,keyCertSign,cRLSign"

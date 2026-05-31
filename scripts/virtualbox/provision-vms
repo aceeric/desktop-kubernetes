@@ -40,7 +40,7 @@ else
   exit 1
 fi
 
-# create-template-vm gens SSH keypair $DTKBASE/generated/kickstart/id_ed25519
+# create-template-vm gens SSH keypair $DTKBASE/generated/ssh/id_ed25519
 # if it does not already exist - which is used below when cloning the VM
 
 if [[ $create_template -eq 1 ]] ; then
@@ -66,7 +66,7 @@ for ((i = 0; i < $vmcnt; ++i)); do
   vm_ip=$(yq .vms[$i].ip $config)
 
   $script_dir/clone-vm\
-   --priv-key=$DTKBASE/generated/kickstart/id_ed25519\
+   --priv-key=$DTKBASE/generated/ssh/id_ed25519\
    --template-vmname=$template_vmname\
    --clone-vmname=$vm_name\
    --clone-ram=$vm_mem\
@@ -81,4 +81,4 @@ done
 
 # do this now to avoid needing DNS before CoreDNS is installed
 echo "configuring /etc/hosts in VMs"
-xec virtualbox/configure-etc-hosts $DTKBASE/generated/kickstart/id_ed25519 "${vm_names[@]}"
+xec virtualbox/configure-etc-hosts $DTKBASE/generated/ssh/id_ed25519 "${vm_names[@]}"

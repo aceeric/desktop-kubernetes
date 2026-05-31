@@ -43,7 +43,7 @@ $script_dir/gen-hostonly-ifcfg-iso $network_octets $host_octet
 # mount ISO to VM
 echo "attaching ifcfg-enp0s8 ISO to VM $vmname"
 sleep 5s && VBoxManage storageattach $vmname --storagectl IDE --port 0 --device 0 --type dvddrive\
- --medium $DTKBASE/generated/iso/ifcfg-enp0s8.iso
+ --medium $DTKBASE/$GENERATED/iso/ifcfg-enp0s8.iso
 
 # start VM - this will cause the desktop-kubernetes systemd service to copy the config file 'ifcfg-enp0s8' from
 # the ISO to the /etc/sysconfig/network-scripts directory in the guest which configures network interface. See

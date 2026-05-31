@@ -37,7 +37,7 @@ xec gen-certs-kubeconfig\
 
 echo "copying configuration files to controller VM"
 ssh -i $priv_key root@$controller_ip "mkdir -p /var/lib/kubernetes /etc/kubernetes/config"
-scp -i $priv_key $DTKBASE/generated/kubeconfig/kube-scheduler.kubeconfig root@$controller_ip:/var/lib/kubernetes/
+scp -i $priv_key $DTKBASE/$GENERATED/kubeconfig/kube-scheduler.kubeconfig root@$controller_ip:/var/lib/kubernetes/
 scp -i $priv_key $script_dir/kube-scheduler.yaml root@$controller_ip:/etc/kubernetes/config/
 
 if [[ $containerized_cplane -eq 0 ]]; then
