@@ -1,5 +1,20 @@
 # Change Log
 
+## 31-May-2026
+Commit: `8dc9101`
+
+1. Add a `k8.cluster-name` to the config yaml, and generate all cluster-specific files to a subdirectory under `generated` matching that name. Except the keypair files (`id_ed25519` and `id_ed25519.pub`.) These go under `generated/ssh/` and will be shared by all VMs and clusters. **This is a breaking change.** You'll need to move these from their prior location `generated/kickstart/`. And you'll need to move all the files under `generated` for any existing cluster. E.g. given a cluster name `foobar` then:
+   ```
+   generated
+   ├── foobar
+   │   ├── cert
+   │   ├── hostonly-netcfg
+   │   ├── iso
+   │   ├── kickstart
+   │   └── kubeconfig
+   └── ssh
+   ```
+
 ## 24-May-2026
 Tag: `v1.36.1-uncertified`
 
