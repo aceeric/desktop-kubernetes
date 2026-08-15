@@ -1,4 +1,9 @@
-# Change Log
+# CHANGELOG
+
+## 14-Aug-2025
+Commit: `4b4ab41`
+
+1. kubernetes `v1.36.2`, cni plugins `v1.9.1`, containerd `2.3.4`, etcd `v3.7.1`, runc `v1.5.1`, calico `v3.32.`1, cert-manager `v1.21.1`, cilium `1.19.6`, coredns `1.47.0`, headlamp `0.44.0`, kube-prometheus-stack `88.3.0`, metrics-server `3.13.1`, nginx-gateway-fabric `2.6.7`, ociregistry `1.16.0`, openebs `4.5.1`, vcluster `0.36.1`
 
 ## 31-May-2026
 Commit: `8dc9101`
