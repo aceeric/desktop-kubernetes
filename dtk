@@ -6,8 +6,8 @@
 set -e
 
 export DTKBASE="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-export DTKVER=v1.36.1
-export DTKVERDATE=24-May-2026
+export DTKVER=v1.36.2
+export DTKVERDATE=15-Aug-2026
 
 # set from the command line by parse_cmdline function (defaults are hard-coded)
 operation=
