@@ -10,8 +10,8 @@ set -e
 
 config=$1
 
-CHART_VER=2.6.0
-CRDS_VER=1.5.1
+CHART_VER=2.6.7
+CRDS_VER=1.6.1
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 

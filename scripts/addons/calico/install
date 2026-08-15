@@ -5,7 +5,7 @@
 
 config=$1
 
-CHART_VER=v3.32.0
+CHART_VER=v3.32.1
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 url=https://github.com/projectcalico/calico/releases/download/$CHART_VER/tigera-operator-$CHART_VER.tgz

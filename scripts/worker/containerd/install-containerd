@@ -30,8 +30,8 @@ echo "Copying containerd service and toml files to worker"
 scp -i $priv_key $script_dir/containerd.service root@$worker_ip:/etc/systemd/system/
 
 ssh -i $priv_key root@$worker_ip "mkdir -p /etc/containerd/certs.d"
-# 12-May-2026 be aware of https://github.com/containerd/containerd/issues/12808
-# toml produced by 'containerd config default > config.2.3.0.toml' then hand-update
+# 14-Aug-2026 be aware of https://github.com/containerd/containerd/issues/12808
+# toml produced by 'containerd config default > config.2.3.4.toml' then hand-update
 # config_path which is empty by default:
 # [plugins]
 #   [plugins.'io.containerd.cri.v1.images']

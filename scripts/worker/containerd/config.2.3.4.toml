@@ -54,6 +54,8 @@ imports = ['/etc/containerd/conf.d/*.toml']
     ignore_deprecation_warnings = []
     stats_collect_period = ''
     stats_retention_period = ''
+    enable_criu = true
+    enable_experimental_restore_via_create = false
 
     [plugins.'io.containerd.cri.v1.runtime'.containerd]
       default_runtime_name = 'runc'

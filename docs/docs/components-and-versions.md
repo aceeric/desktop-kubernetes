@@ -22,7 +22,7 @@ The categories are:
 | Host | genisoimage (used to create a VirtualBox kickstart ISO) | 1.1.11 | Yes | - |
 | Host | Virtual Box / VBoxManage | 7.0.10 | Yes | - |
 | Host | helm | v4.1.1 | - | - |
-| Host | kubectl (client only) | v1.36.1 | - | - |
+| Host | kubectl (client only) | v1.36.2 | - | - |
 | Host | curl | 8.5.0 | - | - |
 | Host | yq | 4.40.5 | - | - |
 | Host | virt-install / virt-clone | 4.1.0 | - | Yes |
@@ -32,16 +32,16 @@ The categories are:
 | Guest VM | Rocky Linux ISO | 8.10 | - | - |
 | Guest VM | Alma Linux ISO | 8.10 and 9.7 _(9.7 is the default)_ | - | - |
 | Guest VM | Virtual Box Guest Additions ISO | 7.0.18 | Yes | - |
-| Kubernetes | kube-apiserver | 1.36.1 | - | - |
-| Kubernetes | kube-controller-manager | 1.36.1 | - | - |
-| Kubernetes | kube-scheduler | 1.36.1 | - | - |
-| Kubernetes | kubelet | 1.36.1 | - | - |
-| Kubernetes | kube-proxy (if installed) | 1.36.1 | - | - |
-| Kubernetes | etcd | v3.6.8 | - | - |
+| Kubernetes | kube-apiserver | 1.36.2 | - | - |
+| Kubernetes | kube-controller-manager | 1.36.2 | - | - |
+| Kubernetes | kube-scheduler | 1.36.2 | - | - |
+| Kubernetes | kubelet | 1.36.2 | - | - |
+| Kubernetes | kube-proxy (if installed) | 1.36.2 | - | - |
+| Kubernetes | etcd | v3.7.1 | - | - |
 | Kubernetes | crictl | v1.36.0 | - | - |
-| Kubernetes | runc | v1.4.0 | - | - |
-| Kubernetes | cni plugins | v1.9.0 | - | - |
-| Kubernetes | containerd | 2.3.0 | - | - |
+| Kubernetes | runc | v1.5.1 | - | - |
+| Kubernetes | cni plugins | v1.9.1 | - | - |
+| Kubernetes | containerd | 2.3.4 | - | - |
 
 > The Virtual Box Guest Additions ISO enables getting the IP address of a VM.
 
@@ -51,21 +51,21 @@ To install different add-on versions change the version in the `scripts/addons` 
 
 | Add-on                              | Chart Version | Note |
 |-|-|-|
-| Calico networking (Tigera Operator) | v3.31.4 ||
-| Cert Manager                        | v1.20.0 ||
-| Cilium networking                   | 1.19.2  ||
-| CoreDNS                             | 1.45.2  ||
+| Calico networking (Tigera Operator) | v3.32.1 ||
+| Cert Manager                        | v1.21.1 ||
+| Cilium networking                   | 1.19.6  ||
+| CoreDNS                             | 1.47.0  ||
 | External DNS                        | 1.20.0  ||
-| Headlamp                            | 0.40.1  |(2)|
+| Headlamp                            | 0.44.0  |(2)|
 | Ingress NGINX Controller            | 4.14.1  |(1)|
-| Kube Prometheus Stack               | 82.14.0 ||
+| Kube Prometheus Stack               | 88.3.0 ||
 | Kubernetes Dashboard                | 7.14.0  |(1)|
-| Metrics Server                      | 3.13.0  ||
+| Metrics Server                      | 3.13.1  ||
 | NFS Subdir External Provisioner     | 4.0.18  ||
-| Nginx Gateway Fabric                | 2.4.2   ||
-| Ociregistry                         | 1.12.6  |(2)|
-| OpenEBS Local PV Provisioner        | 4.4.0   ||
-| Vcluster                            | 0.33.0  ||
+| Nginx Gateway Fabric                | 2.6.7   ||
+| Ociregistry                         | 1.16.0  |(2)|
+| OpenEBS Local PV Provisioner        | 4.5.1   ||
+| Vcluster                            | 0.36.1  ||
 
 Notes:
 1. Deprecated

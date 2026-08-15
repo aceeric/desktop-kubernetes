@@ -8,7 +8,7 @@
 
 config=$1
 
-CHART_VER=0.42.0
+CHART_VER=0.44.0
 
 script_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 url=https://github.com/kubernetes-sigs/headlamp/releases/download/headlamp-helm-$CHART_VER/headlamp-$CHART_VER.tgz
