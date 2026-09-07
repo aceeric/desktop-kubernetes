@@ -15,11 +15,11 @@ k8s:
 kvm:
   network: nat
   kickstart: kvm.text.ks.cfg
-  os-variant: almalinux9
+  os-variant: almalinux10
 vm:
-  linux: alma9
+  linux: alma10
   create-template: true
-  template-vmname: alma9.7
+  template-vmname: alma10.2
 vms:
   - name: kronos
     cpu: 2

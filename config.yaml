@@ -58,7 +58,7 @@ vbox:
 vm:
   linux: alma10
   create-template: true
-  template-vmname: alma10.1
+  template-vmname: alma10.2
 dns:
   domain: dtk.io
   host-ip:

@@ -19,6 +19,7 @@ if [[ "$1" == "files" ]]; then
 
   for f in $ALMA8_ISO_FILE\
     $ALMA9_ISO_FILE\
+    $ALMA10_ISO_FILE\
     $CENTOS9_ISO_FILE\
     $CNI_PLUGINS_BINARY\
     $CONTAINERD_BINARY\

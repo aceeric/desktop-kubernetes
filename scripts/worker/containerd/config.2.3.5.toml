@@ -111,17 +111,6 @@ imports = ['/etc/containerd/conf.d/*.toml']
     schedule_delay = '0s'
     startup_delay = '100ms'
 
-  [plugins.'io.containerd.grpc.v1.cri']
-    disable_tcp_service = true
-    stream_server_address = '127.0.0.1'
-    stream_server_port = '0'
-    stream_idle_timeout = '4h0m0s'
-    enable_tls_streaming = false
-
-    [plugins.'io.containerd.grpc.v1.cri'.x509_key_pair_streaming]
-      tls_cert_file = ''
-      tls_key_file = ''
-
   [plugins.'io.containerd.image-verifier.v1.bindir']
     bin_dir = '/opt/containerd/image-verifier/bin'
     max_verifiers = 10

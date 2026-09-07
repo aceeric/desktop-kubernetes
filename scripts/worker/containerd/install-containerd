@@ -37,6 +37,8 @@ ssh -i $priv_key root@$worker_ip "mkdir -p /etc/containerd/certs.d"
 #   [plugins.'io.containerd.cri.v1.images']
 #     [plugins.'io.containerd.cri.v1.images'.registry]
 #       config_path = '/etc/containerd/certs.d'
+# Also disabled_plugins = ['io.containerd.grpc.v1.cri'] >  disabled_plugins = []
+# See https://github.com/containerd/containerd/issues/14121
 scp -i $priv_key $script_dir/config.$CONTAINERD_VER.toml root@$worker_ip:/etc/containerd/config.toml
 
 # June 2025 per https://kubernetes.io/docs/setup/production-environment/container-runtimes/
