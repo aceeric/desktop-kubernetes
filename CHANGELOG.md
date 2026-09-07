@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 07-Sep-2026
+Tag: `v1.37.0`
+
+1. Kubernetes `1.37.0`, containerd `2.3.5`, Alma `10.2`
+
 ## 14-Aug-2025
 Commit: `4b4ab41`
 

@@ -46,5 +46,3 @@ vms:
     disk:
     pod-cidr: 10.200.3.0/24
 cluster:
-  admin-kubeconfig: /home/eace/projects/desktop-kubernetes/generated/kubeconfig/admin.kubeconfig
-  priv-key: /home/eace/projects/desktop-kubernetes/generated/kickstart/id_ed25519
