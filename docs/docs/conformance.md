@@ -63,9 +63,10 @@ This section assumes you've forked the conformance repo per their guidance. E.g.
    -rw-rw-r-- 1 eace eace     549 Dec 24 11:31 PRODUCT.yaml
    -rw-rw-r-- 1 eace eace    3441 Dec 24 11:31 README.md
    ```
-1. Git add and commit to the branch with message AND signoff:
+1. Git add and commit to the branch with message AND signoff (note the blank line):
    ```shell
    git commit -m 'Conformance results for v1.35/desktop-kubernetes
+
    Signed-off-by: Eric Ace <24485843+aceeric@users.noreply.github.com>'
    ```
 1. Push to GitHub.
