@@ -12,7 +12,7 @@ The project can use either KVM or VirtualBox to provision the cluster VMs. The d
 ## Get Desktop Kubernetes
 
 ```shell
-$ git clone --branch v1.35.0 https://github.com/aceeric/desktop-kubernetes.git
+$ git clone --branch v1.37.0 https://github.com/aceeric/desktop-kubernetes.git
 $ cd desktop-kubernetes
 ```
 

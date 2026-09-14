@@ -10,10 +10,10 @@ After installing this add-on, you can test it by deploying the example. To set t
 
 ```shell
 NAME      STATUS  ROLES              VERSION  INTERNAL-IP
-atlas     Ready   worker             v1.35.0  192.168.122.107
-hyperion  Ready   worker             v1.35.0  192.168.122.20
-kronos    Ready   controller,worker  v1.35.0  192.168.122.24
-perses    Ready   worker             v1.35.0  192.168.122.231
+atlas     Ready   worker             v1.37.0  192.168.122.107
+hyperion  Ready   worker             v1.37.0  192.168.122.20
+kronos    Ready   controller,worker  v1.37.0  192.168.122.24
+perses    Ready   worker             v1.37.0  192.168.122.231
 ```
 
 Observe that `kronos` is the control plane node.

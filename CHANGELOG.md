@@ -1,7 +1,12 @@
 # CHANGELOG
 
-## 07-Sep-2026
+## 14-Sep-2026
 Tag: `v1.37.0`
+
+1. Certfied kubernetes 1.37.0
+
+## 07-Sep-2026
+Commit: `b3e0d0b`
 
 1. Kubernetes `1.37.0`, containerd `2.3.5`, Alma `10.2`
 
