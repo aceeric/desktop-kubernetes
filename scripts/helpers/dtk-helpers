@@ -77,6 +77,9 @@ function parse_cmdline() {
         operation="$arg"
         addon="${!i}"
         ;;
+      kubeconfig)
+        operation="$arg"
+        ;;
       check-tools)
         operation="$arg"
         ;;
@@ -147,7 +150,7 @@ function parse_cmdline() {
     exit 1
   fi
 
-  valid_ops=(".cluster-create." ".cluster-delete." ".cluster-up." ".cluster-down." ".install-addon."
+  valid_ops=(".cluster-create." ".cluster-delete." ".cluster-up." ".cluster-down." ".install-addon." ".kubeconfig."
   ".verify-upstreams." ".verify-files." ".check-tools." ".version." ".help." ".create-template-vm.")
   if [[ ! ${valid_ops[@]} =~ ".$operation." ]]; then
     echo "unknown operation '$operation', try: ./dtk help (the command line was re-designed in version v1.34.1-1)"

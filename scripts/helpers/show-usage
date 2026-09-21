@@ -37,6 +37,8 @@ done <<< '
                    files              Reports on which core k8s components have already been
                                       downloaded to the file system.
     install-addon  The addon name     Install an add-on from the scripts/addons directory.
+    kubeconfig     n/a                Echos an export statement you can use to set your KUBECONFIG.
+                                      E.g.: eval `./dtk --config mycluster.yaml kubeconfig`
     check-tools    n/a                Reports on the presence or absence, and version, of the tools
                                       used by the CLI to provision a cluster.
     version        n/a                Displays the version.

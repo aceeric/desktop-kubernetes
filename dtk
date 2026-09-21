@@ -85,6 +85,9 @@ case $operation in
       --vboxdir=$vbox_vboxdir\
       --virt=$virt
     ;;
+  kubeconfig)
+    echo "export KUBECONFIG=$DTKBASE/$GENERATED/kubeconfig/admin.kubeconfig"
+    ;;
   cluster-delete)
     xec $virt/up-down-del del $config
     ;;
