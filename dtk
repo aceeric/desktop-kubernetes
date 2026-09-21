@@ -104,6 +104,12 @@ case $operation in
       --config=$config\
       --priv-key=$DTKBASE/generated/ssh/id_ed25519
     ;;
+  install-addons)
+    xec install-addons\
+      --admin-kubeconfig=$DTKBASE/$GENERATED/kubeconfig/admin.kubeconfig\
+      --config=$config\
+      --priv-key=$DTKBASE/generated/ssh/id_ed25519
+    ;;
   create-template-vm)
     kickstart=$(yq .$virt.kickstart $config)
     xec $virt/create-template-vm\
