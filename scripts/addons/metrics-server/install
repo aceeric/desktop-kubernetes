@@ -5,7 +5,7 @@
 
 config=$1
 
-CHART_VER=3.13.1
+CHART_VER=3.14.0
 
 admin_kubeconfig=$(yq .cluster.admin-kubeconfig $config)
 
