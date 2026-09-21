@@ -12,21 +12,22 @@ fi
 
   ver=$(grep CHART_VER= scripts/addons/cert-manager/install)
   echo -n "cert-manager ${ver#*=} "
-  curl -sL "https://charts.jetstack.io/index.yaml" | yq eval ".entries.cert-manager[].version" |\
-    grep -Eo '[0-9]+\.[0-9]+\.[0-9]+' | sort -V | tail -n1
+  curl -sL "https://charts.jetstack.io/index.yaml" |\
+    yq eval '.entries.cert-manager[].version | select(test("^v[0-9]+\.[0-9]+\.[0-9]+$"))' - | sort -V | tail -n1
 
   ver=$(grep CHART_VER= scripts/addons/cilium/install)
   echo -n "cilium ${ver#*=} "
-  curl -sL "https://helm.cilium.io/index.yaml" | yq eval ".entries.cilium[].version" |\
-    grep -Eo '[0-9]+\.[0-9]+\.[0-9]+' | sort -V | tail -n1
+  curl -sL "https://helm.cilium.io/index.yaml" | \
+    yq eval '.entries.cilium[].version | select(test("^[0-9]+\.[0-9]+\.[0-9]+$"))' - | sort -V | tail -n1
 
   ver=$(grep CHART_VER= scripts/addons/coredns/install)
   echo -n "coredns ${ver#*=} "
-  curl --silent "https://api.github.com/repos/coredns/helm/releases/latest" | jq -r ".tag_name"
+  curl --silent "https://api.github.com/repos/coredns/helm/releases/latest" | jq -r ".tag_name" | sed 's/^coredns-//'
 
   ver=$(grep CHART_VER= scripts/addons/external-dns/install)
   echo -n "external-dns ${ver#*=} "
-  curl --silent "https://api.github.com/repos/kubernetes-sigs/external-dns/releases/latest" | jq -r ".tag_name"
+  curl --silent "https://github.com/kubernetes-sigs/external-dns/releases" | grep -oE 'external-dns-helm-chart-[0-9]+\.[0-9]+\.[0-9]+' |\
+    head -n1 | sed 's/^external-dns-helm-chart-//'
 
   ver=$(grep CHART_VER= scripts/addons/headlamp/install)
   echo -n "headlamp ${ver#*=} "
@@ -39,16 +40,17 @@ fi
   ver=$(grep CHART_VER= scripts/addons/kube-prometheus-stack/install)
   echo -n "kube-prometheus-stack ${ver#*=} "
   curl --silent "https://api.github.com/repos/prometheus-community/helm-charts/releases" | jq -r ".[].tag_name" |\
-    grep kube-prometheus-stack | sort | tail -n1
+    grep kube-prometheus-stack | sort | tail -n1 | sed 's/^kube-prometheus-stack-//'
 
   ver=$(grep CHART_VER= scripts/addons/metrics-server/install)
   echo -n "metrics-server ${ver#*=} "
   curl --silent "https://api.github.com/repos/kubernetes-sigs/metrics-server/releases" | jq -r ".[].tag_name" |\
-    grep metrics-server-helm-chart | sort -V | tail -n1
+    grep metrics-server-helm-chart | sort -V | tail -n1 | sed 's/^metrics-server-helm-chart-//'
 
   ver=$(grep CHART_VER= scripts/addons/nfs-provisioner/install)
   echo -n "nfs-provisioner ${ver#*=} "
-  curl --silent "https://api.github.com/repos/kubernetes-sigs/nfs-subdir-external-provisioner/releases/latest" | jq -r ".tag_name"
+  curl --silent "https://api.github.com/repos/kubernetes-sigs/nfs-subdir-external-provisioner/releases/latest" | jq -r ".tag_name" |\
+     sed 's/^nfs-subdir-external-provisioner-//'
 
   ver=$(grep CHART_VER= scripts/addons/nginx-gateway-fabric/install)
   echo -n "nginx-gateway-fabric ${ver#*=} "
