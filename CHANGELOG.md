@@ -1,5 +1,10 @@
 # CHANGELOG
 
+## 10-Nov-2026
+Commit: `488b230`
+
+1. calico `v3.33.0`, cert-manager `v1.21.3`, cilium `1.20.4`, coredns `1.50.4`, external-dns `1.23.0`, headlamp `0.46.0`, kube-prometheus-stack `93.1.2`, nginx-gateway-fabric `2.8.1`, gateway api CRDs `1.7.0`, ociregistry `2.1.0`
+
 ## 21-Sep-2026
 Commit: `5b09edd`
 
